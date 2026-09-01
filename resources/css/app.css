@@ -1,0 +1,285 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    .dark {
+        color-scheme: dark;
+    }
+}
+
+@layer components {
+    .brand-spinner-icon {
+        position: relative;
+        display: inline-flex;
+        height: 4.25rem;
+        width: 4.25rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        background: #ffffff;
+        box-shadow: 0 16px 35px rgb(30 64 175 / 0.18), 0 0 0 1px rgb(191 219 254 / 0.9);
+    }
+
+    .brand-spinner-icon::before {
+        position: absolute;
+        inset: -0.35rem;
+        content: "";
+        border-radius: inherit;
+        border: 3px solid rgb(191 219 254 / 0.65);
+        border-top-color: #1d4ed8;
+        border-right-color: #38bdf8;
+        animation: brand-spinner-rotate 0.9s linear infinite;
+    }
+
+    .brand-spinner-icon img {
+        position: relative;
+        z-index: 1;
+        animation: brand-spinner-pulse 1.5s ease-in-out infinite;
+    }
+
+    .system-page-transition {
+        animation: system-page-enter 180ms ease-out both;
+    }
+
+    .app-viewport {
+        height: 100vh;
+        height: 100svh;
+        height: 100dvh;
+        min-height: 100vh;
+        min-height: 100svh;
+        min-height: 100dvh;
+    }
+
+    .app-scroll-main {
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
+        touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+    }
+
+    .scrollbar-hidden,
+    .app-scroll-main,
+    .mobile-scroll-area,
+    .sidebar-scroll-area {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .scrollbar-hidden::-webkit-scrollbar,
+    .app-scroll-main::-webkit-scrollbar,
+    .mobile-scroll-area::-webkit-scrollbar,
+    .sidebar-scroll-area::-webkit-scrollbar {
+        display: none;
+        height: 0;
+        width: 0;
+    }
+
+    .mobile-scroll-area {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+        touch-action: pan-y;
+    }
+
+    .face-verification-modal {
+        width: min(26rem, calc(100vw - 1.5rem));
+        max-height: calc(100dvh - 1.5rem);
+    }
+
+    .face-verification-preview {
+        max-height: min(13rem, 42dvh);
+    }
+
+    .sidebar-brand-soft {
+        background:
+            linear-gradient(135deg, rgb(239 246 255 / 0.96), rgb(255 255 255 / 0.88) 52%, rgb(219 234 254 / 0.92));
+        box-shadow: inset 0 -1px 0 rgb(147 197 253 / 0.22);
+    }
+
+    .dark .bg-white {
+        background-color: #0f172a;
+    }
+
+    .dark .bg-slate-50,
+    .dark .bg-blue-50,
+    .dark .bg-blue-50\/60,
+    .dark .bg-blue-50\/70 {
+        background-color: #111827;
+    }
+
+    .dark .text-blue-950,
+    .dark .text-slate-900,
+    .dark .text-slate-800,
+    .dark .text-gray-900 {
+        color: #f8fafc;
+    }
+
+    .dark .text-slate-700,
+    .dark .text-slate-600,
+    .dark .text-gray-700,
+    .dark .text-gray-600 {
+        color: #cbd5e1;
+    }
+
+    .dark .text-slate-500,
+    .dark .text-gray-500 {
+        color: #94a3b8;
+    }
+
+    .dark .border-blue-100,
+    .dark .border-slate-200,
+    .dark .border-gray-200 {
+        border-color: #1e293b;
+    }
+
+    .dark .brand-spinner-icon {
+        background: #0f172a;
+        box-shadow: 0 16px 35px rgb(56 189 248 / 0.12), 0 0 0 1px rgb(30 41 59);
+    }
+
+    .dark .divide-blue-50 > :not([hidden]) ~ :not([hidden]),
+    .dark .divide-blue-100 > :not([hidden]) ~ :not([hidden]) {
+        border-color: #1e293b;
+    }
+
+    .dark input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='hidden']),
+    .dark select,
+    .dark textarea {
+        border-color: #334155;
+        background-color: #020617;
+        color: #f8fafc;
+    }
+
+    .dark input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='hidden'])::placeholder,
+    .dark textarea::placeholder {
+        color: #64748b;
+    }
+
+    .dark input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='hidden']):focus,
+    .dark select:focus,
+    .dark textarea:focus {
+        border-color: #60a5fa;
+        --tw-ring-color: rgb(59 130 246 / 0.35);
+    }
+
+    .dark input[type='file'] {
+        border-color: #334155;
+        color: #cbd5e1;
+    }
+
+    .dark input:-webkit-autofill,
+    .dark input:-webkit-autofill:hover,
+    .dark input:-webkit-autofill:focus {
+        -webkit-text-fill-color: #f8fafc;
+        box-shadow: 0 0 0 1000px #020617 inset;
+    }
+
+    .dark .sidebar-brand-soft {
+        background: linear-gradient(135deg, rgb(15 23 42 / 0.98), rgb(30 41 59 / 0.9));
+        box-shadow: inset 0 -1px 0 rgb(59 130 246 / 0.18);
+    }
+}
+
+@keyframes brand-spinner-rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes brand-spinner-pulse {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.04);
+    }
+}
+
+@keyframes system-page-enter {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media (max-width: 640px) {
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+
+    body {
+        overflow-wrap: anywhere;
+    }
+}
+
+@media (max-width: 1023px) {
+    html,
+    body {
+        height: auto;
+        min-height: 100%;
+    }
+
+    body {
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .app-viewport {
+        height: auto;
+        min-height: 100vh;
+        min-height: 100svh;
+        min-height: 100dvh;
+        overflow: visible;
+    }
+
+    .app-content-shell {
+        height: auto;
+        min-height: 100vh;
+        min-height: 100svh;
+        min-height: 100dvh;
+    }
+
+    .app-scroll-main {
+        overflow-y: visible;
+        overscroll-behavior-y: auto;
+        padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+    }
+}
+
+@media print {
+    body {
+        background: #ffffff !important;
+    }
+
+    nav,
+    header,
+    .print\:hidden {
+        display: none !important;
+    }
+}

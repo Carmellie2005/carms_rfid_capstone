@@ -1,0 +1,53 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="softShadow" x="96" y="80" width="832" height="864" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#111827" flood-opacity="0.16"/>
+    </filter>
+    <linearGradient id="arcBlue" x1="706" y1="178" x2="954" y2="674" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38BDF8"/>
+      <stop offset="0.52" stop-color="#0EA5E9"/>
+      <stop offset="1" stop-color="#0B2A67"/>
+    </linearGradient>
+    <linearGradient id="arcMid" x1="676" y1="286" x2="834" y2="642" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#93C5FD"/>
+      <stop offset="1" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="orbitBlue" x1="126" y1="766" x2="724" y2="832" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B2A67"/>
+      <stop offset="0.52" stop-color="#38BDF8"/>
+      <stop offset="1" stop-color="#117B3D"/>
+    </linearGradient>
+  </defs>
+
+  <g filter="url(#softShadow)">
+    <circle cx="512" cy="512" r="382" fill="#FFFFFF" fill-opacity="0.86"/>
+    <circle cx="512" cy="512" r="389" stroke="#E5F4FF" stroke-width="18"/>
+    <circle cx="512" cy="512" r="401" stroke="#11174E" stroke-opacity="0.18" stroke-width="4"/>
+    <image href="slsu-emblem-original.png" x="155" y="116" width="714" height="714" preserveAspectRatio="xMidYMid meet"/>
+  </g>
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M904 204C972 286 1000 386 995 499C991 571 965 636 925 685" stroke="#0B2A67" stroke-opacity="0.22" stroke-width="48"/>
+    <path d="M904 204C972 286 1000 386 995 499C991 571 965 636 925 685" stroke="url(#arcBlue)" stroke-width="32"/>
+    <path d="M909 208C966 283 988 379 984 486" stroke="#E0F2FE" stroke-opacity="0.7" stroke-width="7"/>
+
+    <path d="M852 265C909 329 935 407 932 493C930 548 913 599 884 642" stroke="#0B2A67" stroke-opacity="0.2" stroke-width="38"/>
+    <path d="M852 265C909 329 935 407 932 493C930 548 913 599 884 642" stroke="url(#arcMid)" stroke-width="25"/>
+    <path d="M857 269C902 326 922 398 920 482" stroke="#E0F2FE" stroke-opacity="0.62" stroke-width="6"/>
+  </g>
+
+  <path d="M146 754C245 873 448 905 667 818" stroke="url(#orbitBlue)" stroke-width="25" stroke-linecap="round"/>
+  <path d="M184 725C292 816 451 837 622 781" stroke="#E5F4FF" stroke-width="9" stroke-linecap="round"/>
+
+  <g transform="rotate(-8 791 781)">
+    <rect x="673" y="686" width="264" height="174" rx="30" fill="#FFFFFF" stroke="#11174E" stroke-width="15"/>
+    <rect x="708" y="724" width="62" height="50" rx="9" fill="#F8D15D" stroke="#A46308" stroke-width="5"/>
+    <path d="M739 724V774M708 748H770" stroke="#A46308" stroke-width="4" stroke-linecap="round"/>
+    <path d="M799 729H874" stroke="#38BDF8" stroke-width="15" stroke-linecap="round"/>
+    <path d="M799 771H849" stroke="#11174E" stroke-width="15" stroke-linecap="round"/>
+    <path d="M799 812H884" stroke="#16A34A" stroke-width="15" stroke-linecap="round"/>
+    <path d="M871 742C884 757 884 781 871 796" stroke="#38BDF8" stroke-width="10" stroke-linecap="round"/>
+    <path d="M895 723C921 750 921 789 895 816" stroke="#2563EB" stroke-width="10" stroke-linecap="round"/>
+    <path d="M920 704C961 746 961 794 920 836" stroke="#0B2A67" stroke-width="10" stroke-linecap="round"/>
+  </g>
+</svg>
