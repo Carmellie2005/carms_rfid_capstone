@@ -215,15 +215,51 @@ function randomLivenessChallenge() {
     return LIVENESS_CHALLENGES[Math.floor(Math.random() * LIVENESS_CHALLENGES.length)];
 }
 
-if ('serviceWorker' in navigator) {
+let deferredPwaInstallPrompt = null;
+let serviceWorkerRegistrationPromise = null;
+const pwaInstallPromptListeners = new Set();
+
+function isPwaInstalled() {
+    return window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+}
+
+function canRegisterServiceWorker() {
+    return 'serviceWorker' in navigator
+        && (window.isSecureContext || isLocalhostHostname());
+}
+
+function registerServiceWorker() {
+    if (! canRegisterServiceWorker()) {
+        return Promise.resolve(null);
+    }
+
+    if (! serviceWorkerRegistrationPromise) {
+        serviceWorkerRegistrationPromise = navigator.serviceWorker.register('/sw.js')
+            .catch(() => null);
+    }
+
+    return serviceWorkerRegistrationPromise;
+}
+
+function notifyPwaInstallPromptListeners() {
+    pwaInstallPromptListeners.forEach((listener) => listener(deferredPwaInstallPrompt));
+}
+
+window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredPwaInstallPrompt = event;
+    notifyPwaInstallPromptListeners();
+});
+
+window.addEventListener('appinstalled', () => {
+    deferredPwaInstallPrompt = null;
+    notifyPwaInstallPromptListeners();
+});
+
+if (canRegisterServiceWorker()) {
     window.addEventListener('load', () => {
-        const localhost = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
-
-        if (! window.isSecureContext && ! localhost) {
-            return;
-        }
-
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
+        registerServiceWorker();
     });
 }
 
@@ -231,18 +267,29 @@ Alpine.data('pwaInstallPrompt', () => ({
     deferredPrompt: null,
     canInstall: false,
     installed: false,
+    checkingInstall: true,
+    serviceWorkerReady: false,
     message: '',
+    promptListener: null,
 
     init() {
-        this.installed = window.matchMedia('(display-mode: standalone)').matches
-            || window.navigator.standalone === true;
+        this.installed = isPwaInstalled();
+        this.syncInstallPrompt();
 
-        window.addEventListener('beforeinstallprompt', (event) => {
-            event.preventDefault();
-            this.deferredPrompt = event;
-            this.canInstall = true;
-            this.message = '';
+        this.promptListener = () => {
+            this.syncInstallPrompt();
+        };
+
+        pwaInstallPromptListeners.add(this.promptListener);
+
+        registerServiceWorker().then((registration) => {
+            this.serviceWorkerReady = Boolean(registration || navigator.serviceWorker?.controller);
+            this.checkingInstall = false;
         });
+
+        setTimeout(() => {
+            this.checkingInstall = false;
+        }, 3000);
 
         window.addEventListener('appinstalled', () => {
             this.installed = true;
@@ -250,6 +297,21 @@ Alpine.data('pwaInstallPrompt', () => ({
             this.deferredPrompt = null;
             this.message = 'App installed.';
         });
+    },
+
+    destroy() {
+        if (this.promptListener) {
+            pwaInstallPromptListeners.delete(this.promptListener);
+        }
+    },
+
+    syncInstallPrompt() {
+        this.deferredPrompt = deferredPwaInstallPrompt;
+        this.canInstall = Boolean(this.deferredPrompt) && ! this.installed;
+
+        if (this.canInstall) {
+            this.message = '';
+        }
     },
 
     isLocalhost() {
@@ -269,7 +331,11 @@ Alpine.data('pwaInstallPrompt', () => ({
             return 'Install needs HTTPS. Local Wi-Fi IP testing can still use the browser menu then Add to Home screen.';
         }
 
-        return 'Open this page in Chrome or Edge and wait a moment, or use the browser menu then Add to Home screen.';
+        if (this.checkingInstall || ! this.serviceWorkerReady) {
+            return 'Preparing install. Wait a few seconds, then tap Install Now again.';
+        }
+
+        return 'Use Chrome or Edge, then open the browser menu and choose Install app or Add to Home screen.';
     },
 
     installLabel() {
@@ -277,10 +343,19 @@ Alpine.data('pwaInstallPrompt', () => ({
             return 'Installed';
         }
 
+        if (this.checkingInstall && ! this.canInstall) {
+            return 'Preparing Install';
+        }
+
         return 'Install Now';
     },
 
     async install() {
+        await registerServiceWorker();
+
+        this.installed = isPwaInstalled();
+        this.syncInstallPrompt();
+
         if (this.installed) {
             this.message = 'App already installed.';
             return;
@@ -291,14 +366,21 @@ Alpine.data('pwaInstallPrompt', () => ({
             return;
         }
 
-        this.deferredPrompt.prompt();
+        const prompt = this.deferredPrompt;
 
-        const choice = await this.deferredPrompt.userChoice;
+        prompt.prompt();
+
+        const choice = await prompt.userChoice.catch(() => ({ outcome: 'dismissed' }));
 
         if (choice.outcome === 'accepted') {
             this.message = 'Installing app...';
         } else {
             this.message = 'Installation cancelled.';
+        }
+
+        if (deferredPwaInstallPrompt === prompt) {
+            deferredPwaInstallPrompt = null;
+            notifyPwaInstallPromptListeners();
         }
 
         this.deferredPrompt = null;
