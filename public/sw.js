@@ -1,4 +1,4 @@
-const CACHE_NAME = 'slsu-bontoc-patrol-v9';
+const CACHE_NAME = 'slsu-bontoc-patrol-v10';
 const OFFLINE_URL = '/offline.html';
 const CORE_ASSETS = [
     OFFLINE_URL,
@@ -9,6 +9,8 @@ const CORE_ASSETS = [
     '/apple-touch-icon.png',
     '/pwa-icon-192.png',
     '/pwa-icon-512.png',
+    '/pwa-icon-maskable-192.png',
+    '/pwa-icon-maskable-512.png',
     '/images/slsu-rfid-system-logo-ai-v2.png',
     '/images/user-icons/supervisor-account.png',
     '/images/user-icons/guard-account.png',

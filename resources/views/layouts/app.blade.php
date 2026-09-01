@@ -29,6 +29,8 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="min-h-full overflow-x-hidden font-sans antialiased lg:h-full lg:overflow-hidden">
+        <x-pwa-launch-splash />
+
         @php
             $user = Auth::user();
             $role = $user->role ?? 'admin';

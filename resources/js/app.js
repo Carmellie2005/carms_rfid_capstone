@@ -18,6 +18,8 @@ const SMILE_RATIO_THRESHOLD = 0.38;
 const SMILE_RATIO_DELTA = 0.035;
 const TURN_HEAD_THRESHOLD = 0.16;
 const LIVENESS_SCAN_DELAY = 120;
+const PWA_LAUNCH_SPLASH_MS = 1400;
+const PWA_LAUNCH_SPLASH_STORAGE_KEY = 'slsu-pwa-launch-splash-shown';
 const LOCALHOST_HOSTNAMES = ['localhost', '127.0.0.1', '[::1]', '::1'];
 let faceModelPromise = null;
 
@@ -224,6 +226,24 @@ function isPwaInstalled() {
         || window.navigator.standalone === true;
 }
 
+function shouldShowPwaLaunchSplash() {
+    if (! isPwaInstalled()) {
+        return false;
+    }
+
+    try {
+        if (window.sessionStorage.getItem(PWA_LAUNCH_SPLASH_STORAGE_KEY)) {
+            return false;
+        }
+
+        window.sessionStorage.setItem(PWA_LAUNCH_SPLASH_STORAGE_KEY, '1');
+    } catch {
+        return true;
+    }
+
+    return true;
+}
+
 function canRegisterServiceWorker() {
     return 'serviceWorker' in navigator
         && (window.isSecureContext || isLocalhostHostname());
@@ -263,12 +283,30 @@ if (canRegisterServiceWorker()) {
     });
 }
 
-Alpine.data('pwaInstallPrompt', () => ({
+Alpine.data('pwaLaunchSplash', () => ({
+    visible: false,
+
+    init() {
+        if (! shouldShowPwaLaunchSplash()) {
+            return;
+        }
+
+        this.visible = true;
+
+        setTimeout(() => {
+            this.visible = false;
+        }, PWA_LAUNCH_SPLASH_MS);
+    },
+}));
+
+Alpine.data('pwaInstallPrompt', (config = {}) => ({
+    startUrl: config.startUrl || '/',
     deferredPrompt: null,
     canInstall: false,
     installed: false,
     checkingInstall: true,
     serviceWorkerReady: false,
+    installState: 'idle',
     message: '',
     promptListener: null,
 
@@ -295,7 +333,8 @@ Alpine.data('pwaInstallPrompt', () => ({
             this.installed = true;
             this.canInstall = false;
             this.deferredPrompt = null;
-            this.message = 'App installed.';
+            this.installState = 'installed';
+            this.message = 'Installed successfully. Tap Open App to continue.';
         });
     },
 
@@ -312,6 +351,10 @@ Alpine.data('pwaInstallPrompt', () => ({
         if (this.canInstall) {
             this.message = '';
         }
+    },
+
+    isBusy() {
+        return ['preparing', 'prompting', 'installing'].includes(this.installState);
     },
 
     isLocalhost() {
@@ -339,42 +382,71 @@ Alpine.data('pwaInstallPrompt', () => ({
     },
 
     installLabel() {
-        if (this.installed) {
-            return 'Installed';
+        if (this.installState === 'preparing' || (this.checkingInstall && ! this.canInstall)) {
+            return 'Preparing Install';
         }
 
-        if (this.checkingInstall && ! this.canInstall) {
-            return 'Preparing Install';
+        if (this.installState === 'prompting') {
+            return 'Confirm Install';
+        }
+
+        if (this.installState === 'installing') {
+            return 'Installing...';
+        }
+
+        if (this.installed || this.installState === 'installed') {
+            return 'Open App';
         }
 
         return 'Install Now';
     },
 
+    openApp() {
+        window.location.href = this.startUrl;
+    },
+
     async install() {
+        if (this.isBusy()) {
+            return;
+        }
+
+        if (this.installed || this.installState === 'installed') {
+            this.openApp();
+            return;
+        }
+
+        this.installState = 'preparing';
+        this.message = 'Preparing install...';
         await registerServiceWorker();
 
         this.installed = isPwaInstalled();
         this.syncInstallPrompt();
 
         if (this.installed) {
-            this.message = 'App already installed.';
+            this.installState = 'installed';
+            this.openApp();
             return;
         }
 
         if (! this.deferredPrompt) {
+            this.installState = 'idle';
             this.message = this.unavailableMessage();
             return;
         }
 
         const prompt = this.deferredPrompt;
 
+        this.installState = 'prompting';
+        this.message = 'Confirm the install request in your browser.';
         prompt.prompt();
 
         const choice = await prompt.userChoice.catch(() => ({ outcome: 'dismissed' }));
 
         if (choice.outcome === 'accepted') {
+            this.installState = 'installing';
             this.message = 'Installing app...';
         } else {
+            this.installState = 'idle';
             this.message = 'Installation cancelled.';
         }
 
@@ -385,6 +457,16 @@ Alpine.data('pwaInstallPrompt', () => ({
 
         this.deferredPrompt = null;
         this.canInstall = false;
+
+        if (choice.outcome === 'accepted') {
+            setTimeout(() => {
+                if (! this.installed) {
+                    this.installed = true;
+                    this.installState = 'installed';
+                    this.message = 'Installed successfully. Tap Open App to continue.';
+                }
+            }, 1200);
+        }
     },
 }));
 
