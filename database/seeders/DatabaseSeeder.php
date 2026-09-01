@@ -34,6 +34,18 @@ class DatabaseSeeder extends Seeder
 
         $guards = [
             [
+                'employee_no' => 'TEST-01',
+                'name' => 'Carmela Bihay Hernandez',
+                'username' => 'carmela.bihay.hernandez',
+                'password' => 'password',
+                'email' => 'carmela.bihay.hernandez@guard.local',
+                'phone' => '09773209561',
+                'rfid_uid' => 'F33C8D37',
+                'face_reference' => null,
+                'shift' => 'Night Shift',
+                'status' => 'active',
+            ],
+            [
                 'employee_no' => 'SG-DEMO',
                 'name' => 'Demo Guard',
                 'username' => 'guard.demo',
