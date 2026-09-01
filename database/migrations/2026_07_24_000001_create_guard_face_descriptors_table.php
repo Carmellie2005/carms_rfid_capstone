@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('guard_face_descriptors', function (Blueprint $table) {
             $table->id();
             $table->foreignId('guard_id')->constrained('guards')->cascadeOnDelete();
-            $table->json('descriptor');
+            $table->json('descriptor')->nullable();
             $table->string('model_name')->default('face-api.js');
             $table->string('image_path')->nullable();
             $table->boolean('is_primary')->default(false);

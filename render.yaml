@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: carms-rfid-capstone
+    env: docker
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: APP_NAME
+        value: SLSU Bontoc Patrol
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        value: https://carms-rfid-capstone.onrender.com
+      - key: APP_KEY
+        sync: false
+      - key: APP_TIMEZONE
+        value: Asia/Manila
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DATABASE_URL
+        fromDatabase:
+          name: carms-rfid-capstone-db
+          property: connectionString
+      - key: CACHE_DRIVER
+        value: file
+      - key: FILESYSTEM_DISK
+        value: public
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: SESSION_DRIVER
+        value: file
+      - key: RUN_SEEDERS
+        value: true
+
+databases:
+  - name: carms-rfid-capstone-db
+    plan: free
