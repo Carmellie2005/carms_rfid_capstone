@@ -1,4 +1,4 @@
-const CACHE_NAME = 'slsu-bontoc-patrol-v10';
+const CACHE_NAME = 'slsu-bontoc-patrol-v11';
 const OFFLINE_URL = '/offline.html';
 const CORE_ASSETS = [
     OFFLINE_URL,

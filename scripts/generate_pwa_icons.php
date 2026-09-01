@@ -22,25 +22,26 @@ if (! $source) {
 
 $sourceWidth = imagesx($source);
 $sourceHeight = imagesy($source);
+$sourceBounds = findVisibleBounds($source, $sourceWidth, $sourceHeight);
 
 $icons = [
-    ['path' => $root.'/public/pwa-icon-192.png', 'size' => 192, 'padding' => 0.08, 'rounded' => true],
-    ['path' => $root.'/public/pwa-icon-512.png', 'size' => 512, 'padding' => 0.08, 'rounded' => true],
-    ['path' => $root.'/public/pwa-icon-maskable-192.png', 'size' => 192, 'padding' => 0.18, 'rounded' => false],
-    ['path' => $root.'/public/pwa-icon-maskable-512.png', 'size' => 512, 'padding' => 0.18, 'rounded' => false],
-    ['path' => $root.'/public/apple-touch-icon.png', 'size' => 180, 'padding' => 0.08, 'rounded' => false],
-    ['path' => $root.'/public/favicon.png', 'size' => 512, 'padding' => 0.08, 'rounded' => true],
-    ['path' => $root.'/public/favicon-32x32.png', 'size' => 32, 'padding' => 0.08, 'rounded' => true],
+    ['path' => $root.'/public/pwa-icon-192.png', 'size' => 192, 'padding' => 0.035, 'rounded' => true],
+    ['path' => $root.'/public/pwa-icon-512.png', 'size' => 512, 'padding' => 0.035, 'rounded' => true],
+    ['path' => $root.'/public/pwa-icon-maskable-192.png', 'size' => 192, 'padding' => 0.09, 'rounded' => false],
+    ['path' => $root.'/public/pwa-icon-maskable-512.png', 'size' => 512, 'padding' => 0.09, 'rounded' => false],
+    ['path' => $root.'/public/apple-touch-icon.png', 'size' => 180, 'padding' => 0.035, 'rounded' => false],
+    ['path' => $root.'/public/favicon.png', 'size' => 512, 'padding' => 0.035, 'rounded' => true],
+    ['path' => $root.'/public/favicon-32x32.png', 'size' => 32, 'padding' => 0.035, 'rounded' => true],
 ];
 
 foreach ($icons as $icon) {
-    generateIcon($source, $sourceWidth, $sourceHeight, $icon['path'], $icon['size'], $icon['padding'], $icon['rounded']);
+    generateIcon($source, $sourceBounds, $icon['path'], $icon['size'], $icon['padding'], $icon['rounded']);
     echo "Generated {$icon['path']}\n";
 }
 
 imagedestroy($source);
 
-function generateIcon($source, int $sourceWidth, int $sourceHeight, string $outputPath, int $finalSize, float $paddingRatio, bool $rounded): void
+function generateIcon($source, array $sourceBounds, string $outputPath, int $finalSize, float $paddingRatio, bool $rounded): void
 {
     $scale = 4;
     $size = $finalSize * $scale;
@@ -78,7 +79,7 @@ function generateIcon($source, int $sourceWidth, int $sourceHeight, string $outp
     }
 
     $boxSize = $size - ($padding * 2);
-    $sourceRatio = $sourceWidth / $sourceHeight;
+    $sourceRatio = $sourceBounds['width'] / $sourceBounds['height'];
 
     if ($sourceRatio >= 1) {
         $targetWidth = $boxSize;
@@ -96,12 +97,12 @@ function generateIcon($source, int $sourceWidth, int $sourceHeight, string $outp
         $source,
         $targetX,
         $targetY,
-        0,
-        0,
+        $sourceBounds['x'],
+        $sourceBounds['y'],
         $targetWidth,
         $targetHeight,
-        $sourceWidth,
-        $sourceHeight
+        $sourceBounds['width'],
+        $sourceBounds['height']
     );
 
     $final = imagecreatetruecolor($finalSize, $finalSize);
@@ -112,6 +113,53 @@ function generateIcon($source, int $sourceWidth, int $sourceHeight, string $outp
     imagepng($final, $outputPath, 9);
     imagedestroy($canvas);
     imagedestroy($final);
+}
+
+function findVisibleBounds($source, int $sourceWidth, int $sourceHeight): array
+{
+    $minX = $sourceWidth;
+    $minY = $sourceHeight;
+    $maxX = -1;
+    $maxY = -1;
+
+    for ($y = 0; $y < $sourceHeight; $y++) {
+        for ($x = 0; $x < $sourceWidth; $x++) {
+            $rgba = imagecolorat($source, $x, $y);
+            $alpha = ($rgba & 0x7F000000) >> 24;
+            $red = ($rgba >> 16) & 255;
+            $green = ($rgba >> 8) & 255;
+            $blue = $rgba & 255;
+
+            if ($alpha < 120 && ($red < 246 || $green < 246 || $blue < 246)) {
+                $minX = min($minX, $x);
+                $minY = min($minY, $y);
+                $maxX = max($maxX, $x);
+                $maxY = max($maxY, $y);
+            }
+        }
+    }
+
+    if ($maxX < $minX || $maxY < $minY) {
+        return [
+            'x' => 0,
+            'y' => 0,
+            'width' => $sourceWidth,
+            'height' => $sourceHeight,
+        ];
+    }
+
+    $margin = (int) round(max($maxX - $minX + 1, $maxY - $minY + 1) * 0.025);
+    $minX = max(0, $minX - $margin);
+    $minY = max(0, $minY - $margin);
+    $maxX = min($sourceWidth - 1, $maxX + $margin);
+    $maxY = min($sourceHeight - 1, $maxY + $margin);
+
+    return [
+        'x' => $minX,
+        'y' => $minY,
+        'width' => $maxX - $minX + 1,
+        'height' => $maxY - $minY + 1,
+    ];
 }
 
 function drawRoundedRectangle($image, int $x1, int $y1, int $x2, int $y2, int $radius, int $color): void
