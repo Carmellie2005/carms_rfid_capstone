@@ -74,6 +74,13 @@
 
                     return path.endsWith('/pdf') || path.endsWith('.pdf');
                 },
+                navigateWithVisibleLoader(link) {
+                    this.pageBusy = true;
+
+                    window.setTimeout(() => {
+                        window.location.href = link.href;
+                    }, 120);
+                },
                 handlePageClick(event) {
                     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
                         return;
@@ -102,6 +109,12 @@
                     }
 
                     if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash) {
+                        return;
+                    }
+
+                    if (link.dataset.pageLoaderDelay === 'true') {
+                        event.preventDefault();
+                        this.navigateWithVisibleLoader(link);
                         return;
                     }
 

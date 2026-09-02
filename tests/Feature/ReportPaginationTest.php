@@ -54,6 +54,7 @@ class ReportPaginationTest extends TestCase
             ->assertOk()
             ->assertSeeText('Showing 1 to 10 of 12 patrol report records')
             ->assertSeeText('Patrol page 1 of 2')
+            ->assertSee('data-page-loader-delay="true"', false)
             ->assertSee('CP-REPORT-12')
             ->assertDontSee('CP-REPORT-01')
             ->assertSeeText('Showing 1 to 5 of 7 incident report records')
