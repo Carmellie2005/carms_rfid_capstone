@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Checkpoint;
 use App\Models\Guard;
 use App\Models\IncidentReport;
+use App\Models\IncidentReportImage;
 use App\Models\PatrolLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -54,6 +55,52 @@ class IncidentReportPdfTest extends TestCase
         $this
             ->actingAs($otherUser)
             ->get(route('incidents.pdf', $incident))
+            ->assertForbidden();
+    }
+
+    public function test_supervisor_can_view_incident_image_from_database_copy(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'admin']);
+        $incident = $this->createIncidentReport();
+        $image = IncidentReportImage::create([
+            'incident_report_id' => $incident->id,
+            'image_path' => 'incident-reports/missing-render-file.png',
+            'original_name' => 'render-copy.png',
+            'mime_type' => 'image/png',
+            'image_data' => base64_encode(base64_decode($this->tinyPngBase64())),
+            'source' => 'upload',
+            'sort_order' => 1,
+        ]);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('incidents.images.show', [$incident, $image]));
+
+        $response->assertOk();
+        $this->assertStringContainsString('image/png', $response->headers->get('content-type'));
+        $this->assertSame(base64_decode($this->tinyPngBase64()), $response->getContent());
+    }
+
+    public function test_guard_cannot_view_another_guards_incident_image(): void
+    {
+        $ownerUser = User::factory()->create(['role' => 'guard']);
+        $ownerGuard = $this->createGuard($ownerUser, 'G-001');
+        $incident = $this->createIncidentReport($ownerGuard);
+        $image = IncidentReportImage::create([
+            'incident_report_id' => $incident->id,
+            'image_path' => 'incident-reports/guard-owned.png',
+            'mime_type' => 'image/png',
+            'image_data' => base64_encode(base64_decode($this->tinyPngBase64())),
+            'source' => 'upload',
+            'sort_order' => 1,
+        ]);
+
+        $otherUser = User::factory()->create(['role' => 'guard']);
+        $this->createGuard($otherUser, 'G-002');
+
+        $this
+            ->actingAs($otherUser)
+            ->get(route('incidents.images.show', [$incident, $image]))
             ->assertForbidden();
     }
 
@@ -107,5 +154,10 @@ class IncidentReportPdfTest extends TestCase
             'shift' => 'Day Shift',
             'status' => 'active',
         ]);
+    }
+
+    private function tinyPngBase64(): string
+    {
+        return 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=';
     }
 }

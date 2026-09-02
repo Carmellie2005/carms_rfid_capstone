@@ -553,11 +553,14 @@ class GuardPatrolController extends Controller
         foreach (array_slice($incidentImageFiles, 0, 3) as $index => $item) {
             $file = $item['file'];
             $path = $file->store('incident-reports', 'public');
+            $contents = file_get_contents($file->getRealPath());
             $paths[] = $path;
 
             $incidentReport->images()->create([
                 'image_path' => $path,
                 'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType() ?: 'image/jpeg',
+                'image_data' => $contents === false ? null : base64_encode($contents),
                 'source' => $item['source'],
                 'sort_order' => $index + 1,
             ]);

@@ -14,6 +14,8 @@ class IncidentReportImage extends Model
         'incident_report_id',
         'image_path',
         'original_name',
+        'mime_type',
+        'image_data',
         'source',
         'sort_order',
     ];

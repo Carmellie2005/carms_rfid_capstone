@@ -266,6 +266,8 @@ class FaceVerificationTest extends TestCase
         $this->assertCount(3, $incident->images);
         $this->assertSame(['upload', 'upload', 'camera'], $incident->images->pluck('source')->all());
         $this->assertSame($incident->images->first()->image_path, $incident->image_path);
+        $this->assertNotNull($incident->images->first()->image_data);
+        $this->assertStringStartsWith('image/', $incident->images->first()->mime_type);
 
         $incident->images->each(fn ($image) => Storage::disk('public')->assertExists($image->image_path));
     }

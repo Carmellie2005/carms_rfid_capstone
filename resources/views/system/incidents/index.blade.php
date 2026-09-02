@@ -92,20 +92,22 @@
                                 </dl>
                                 <p class="mt-4 whitespace-pre-line text-sm leading-6 text-slate-700">{{ $incident->description }}</p>
                                 @php
-                                    $imagePaths = $incident->images->pluck('image_path')->filter()->values();
-
-                                    if ($imagePaths->isEmpty() && $incident->image_path) {
-                                        $imagePaths = collect([$incident->image_path]);
-                                    }
+                                    $incidentImages = $incident->images
+                                        ->filter(fn ($image) => $image->image_data || ($image->image_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($image->image_path)))
+                                        ->values();
                                 @endphp
 
-                                @if ($imagePaths->isNotEmpty())
+                                @if ($incidentImages->isNotEmpty())
                                     <div class="mt-4 grid gap-2" style="grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));">
-                                        @foreach ($imagePaths as $imagePath)
-                                            <a href="{{ asset('storage/'.$imagePath) }}" target="_blank" class="block overflow-hidden rounded-md border border-blue-100 bg-blue-50">
-                                                <img src="{{ asset('storage/'.$imagePath) }}" alt="Incident image {{ $loop->iteration }}" class="h-36 w-full object-cover sm:h-44">
+                                        @foreach ($incidentImages as $incidentImage)
+                                            <a href="{{ route('incidents.images.show', [$incident, $incidentImage]) }}" target="_blank" class="block overflow-hidden rounded-md border border-blue-100 bg-blue-50">
+                                                <img src="{{ route('incidents.images.show', [$incident, $incidentImage]) }}" alt="Incident image {{ $loop->iteration }}" class="h-36 w-full object-cover sm:h-44">
                                             </a>
                                         @endforeach
+                                    </div>
+                                @elseif ($incident->image_path || $incident->images->isNotEmpty())
+                                    <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
+                                        Incident image is unavailable on this deployment.
                                     </div>
                                 @endif
                                 @if ($incident->admin_notes)

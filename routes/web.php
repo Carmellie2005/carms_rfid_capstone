@@ -41,6 +41,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/patrol/pending-scan', [GuardPatrolController::class, 'pendingScan'])->name('patrol.pending-scan');
     Route::post('/patrol/verify-face', [GuardPatrolController::class, 'verifyFace'])->name('patrol.verify-face');
     Route::post('/patrol/scan', [GuardPatrolController::class, 'store'])->name('patrol.store');
+    Route::get('/incidents/{incidentReport}/images/{incidentReportImage}', [IncidentReportController::class, 'image'])->name('incidents.images.show');
     Route::get('/patrol-logs/pdf', [PatrolLogController::class, 'downloadPdf'])->name('patrol-logs.pdf');
     Route::get('/patrol-logs', [PatrolLogController::class, 'index'])->name('patrol-logs.index');
     Route::get('/incidents/{incidentReport}/pdf', [IncidentReportController::class, 'downloadPdf'])->name('incidents.pdf');

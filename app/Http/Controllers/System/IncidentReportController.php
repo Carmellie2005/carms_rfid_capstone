@@ -4,6 +4,7 @@ namespace App\Http\Controllers\System;
 
 use App\Http\Controllers\Controller;
 use App\Models\IncidentReport;
+use App\Models\IncidentReportImage;
 use App\Support\AuditLogger;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -65,6 +66,31 @@ class IncidentReportController extends Controller
         return $pdf->download($this->pdfFilename($incidentReport));
     }
 
+    public function image(Request $request, IncidentReport $incidentReport, IncidentReportImage $incidentReportImage): Response
+    {
+        abort_unless($incidentReportImage->incident_report_id === $incidentReport->id, 404);
+
+        $this->ensureCanDownloadIncident($request, $incidentReport);
+
+        $contents = null;
+        $mimeType = $incidentReportImage->mime_type ?: 'image/jpeg';
+
+        if ($incidentReportImage->image_path && Storage::disk('public')->exists($incidentReportImage->image_path)) {
+            $contents = Storage::disk('public')->get($incidentReportImage->image_path);
+            $mimeType = Storage::disk('public')->mimeType($incidentReportImage->image_path) ?: $mimeType;
+        } elseif ($incidentReportImage->image_data) {
+            $decoded = base64_decode($incidentReportImage->image_data, true);
+            $contents = $decoded === false ? null : $decoded;
+        }
+
+        abort_if($contents === null, 404);
+
+        return response($contents, 200, [
+            'Content-Type' => $mimeType,
+            'Cache-Control' => 'private, max-age=300',
+        ]);
+    }
+
     private function ensureCanDownloadIncident(Request $request, IncidentReport $incidentReport): void
     {
         if ($request->user()->role === 'admin') {
@@ -87,16 +113,56 @@ class IncidentReportController extends Controller
             $imagePaths = collect([$incidentReport->image_path]);
         }
 
-        return $imagePaths
-            ->filter(fn ($path) => Storage::disk('public')->exists($path))
-            ->map(function ($path) {
-                $mimeType = Storage::disk('public')->mimeType($path) ?: 'image/jpeg';
-                $contents = Storage::disk('public')->get($path);
+        if ($incidentReport->images->isNotEmpty()) {
+            return $incidentReport->images
+                ->map(fn (IncidentReportImage $image) => $this->imageDataUriFromImage($image))
+                ->filter()
+                ->values()
+                ->all();
+        }
 
-                return sprintf('data:%s;base64,%s', $mimeType, base64_encode($contents));
+        return $imagePaths
+            ->map(function ($path) {
+                return $this->imageDataUriFromPath($path);
             })
+            ->filter()
             ->values()
             ->all();
+    }
+
+    private function imageDataUriFromImage(IncidentReportImage $image): ?string
+    {
+        if ($image->image_path) {
+            $dataUri = $this->imageDataUriFromPath($image->image_path);
+
+            if ($dataUri) {
+                return $dataUri;
+            }
+        }
+
+        if (! $image->image_data) {
+            return null;
+        }
+
+        $contents = base64_decode($image->image_data, true);
+
+        if ($contents === false) {
+            return null;
+        }
+
+        return sprintf('data:%s;base64,%s', $image->mime_type ?: 'image/jpeg', base64_encode($contents));
+    }
+
+    private function imageDataUriFromPath(string $path): ?string
+    {
+        if (! Storage::disk('public')->exists($path)) {
+            return null;
+        }
+
+        $mimeType = Storage::disk('public')->mimeType($path) ?: 'image/jpeg';
+        $contents = Storage::disk('public')->get($path);
+
+        return sprintf('data:%s;base64,%s', $mimeType, base64_encode($contents));
     }
 
     private function letterheadDataUri(): ?string
