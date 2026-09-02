@@ -36,12 +36,12 @@ class ReportController extends Controller
 
         $patrols = (clone $patrolQuery)
             ->latest('scanned_at')
-            ->paginate(15, ['*'], 'patrol_page')
+            ->paginate(10, ['*'], 'patrol_page')
             ->withQueryString();
 
         $incidents = (clone $incidentQuery)
             ->latest('incident_at')
-            ->paginate(8, ['*'], 'incident_page')
+            ->paginate(5, ['*'], 'incident_page')
             ->withQueryString();
 
         return view('system.reports.index', [

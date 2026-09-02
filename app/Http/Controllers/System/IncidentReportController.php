@@ -24,7 +24,7 @@ class IncidentReportController extends Controller
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->status))
             ->when($request->filled('priority'), fn ($query) => $query->where('priority', $request->priority))
             ->latest('incident_at')
-            ->paginate(10)
+            ->paginate(5)
             ->withQueryString();
 
         return view('system.incidents.index', compact('incidents'));

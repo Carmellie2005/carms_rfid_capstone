@@ -54,6 +54,10 @@
                 </div>
             </form>
 
+            @if ($incidents->hasPages())
+                <x-pagination-panel :paginator="$incidents" label="incident reports" page-label="Incident reports page" class="rounded-md border border-blue-100 bg-white px-4 py-3 shadow-sm" />
+            @endif
+
             <div class="space-y-4">
                 @forelse ($incidents as $incident)
                     @php
@@ -141,7 +145,7 @@
                 @endforelse
             </div>
 
-            {{ $incidents->links() }}
+            <x-pagination-panel :paginator="$incidents" label="incident reports" page-label="Incident reports page" class="rounded-md border border-blue-100 bg-white px-4 py-3 shadow-sm" />
         </div>
     </div>
 </x-app-layout>

@@ -85,6 +85,8 @@
                     <h3 class="font-semibold text-blue-950">Patrol Summary</h3>
                 </div>
 
+                <x-pagination-panel :paginator="$patrols" label="patrol report records" page-label="Patrol page" class="border-b border-blue-50 px-5 py-3" />
+
                 <div class="grid gap-3 p-3 lg:hidden print:hidden">
                     @forelse ($patrols as $patrol)
                         @php
@@ -171,15 +173,17 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="border-t border-blue-100 px-5 py-4 print:hidden">
-                    {{ $patrols->links() }}
-                </div>
+                @if ($patrols->hasPages())
+                    <x-pagination-panel :paginator="$patrols" label="patrol report records" page-label="Patrol page" class="border-t border-blue-100 px-5 py-4" />
+                @endif
             </section>
 
             <section class="overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm">
                 <div class="border-b border-blue-100 px-5 py-4">
                     <h3 class="font-semibold text-blue-950">Incident Summary</h3>
                 </div>
+
+                <x-pagination-panel :paginator="$incidents" label="incident report records" page-label="Incident page" class="border-b border-blue-50 px-5 py-3" />
 
                 <div class="grid gap-3 p-3 lg:hidden print:hidden">
                     @forelse ($incidents as $incident)
@@ -269,9 +273,9 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="border-t border-blue-100 px-5 py-4 print:hidden">
-                    {{ $incidents->links() }}
-                </div>
+                @if ($incidents->hasPages())
+                    <x-pagination-panel :paginator="$incidents" label="incident report records" page-label="Incident page" class="border-t border-blue-100 px-5 py-4" />
+                @endif
             </section>
         </div>
     </div>
