@@ -46,6 +46,7 @@ class AuditTrailReportTest extends TestCase
             ->assertOk()
             ->assertSee('Selected guard patrol record.')
             ->assertDontSee('Other guard patrol record.')
+            ->assertSee('border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700', false)
             ->assertSee('Download PDF')
             ->assertSee('Print PDF');
     }

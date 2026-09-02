@@ -1,13 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-blue-950">RFID Reader Status</h2>
                 <p class="mt-1 text-sm text-blue-600">Checkpoint devices and reader health</p>
             </div>
-            <a href="{{ route('checkpoints.index') }}" class="inline-flex w-full items-center justify-center rounded-md border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 sm:w-auto">
-                Manage Checkpoints
-            </a>
         </div>
     </x-slot>
 

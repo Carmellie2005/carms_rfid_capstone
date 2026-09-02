@@ -40,7 +40,7 @@
                     <input id="search" name="search" value="{{ request('search') }}" placeholder="Actor, action, IP, or description" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
                 <div class="flex flex-wrap items-end gap-2 md:col-span-2 xl:col-span-1 xl:self-end xl:justify-end">
-                    <button type="submit" class="h-9 rounded-md bg-blue-700 px-3 text-xs font-semibold text-white hover:bg-blue-800">Filter</button>
+                    <button type="submit" class="h-9 rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50">Filter</button>
                     <a href="{{ route('audit-logs.index') }}" class="inline-flex h-9 items-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">Clear</a>
                     <a href="{{ route('audit-logs.pdf', $exportQuery) }}" class="inline-flex h-9 items-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">
                         Download PDF
