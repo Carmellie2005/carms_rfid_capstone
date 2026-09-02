@@ -19,7 +19,7 @@
                 @if ($paginator->onFirstPage())
                     <span class="inline-flex h-9 items-center justify-center rounded-md border border-slate-200 px-3 text-xs font-semibold text-slate-400">Previous</span>
                 @else
-                    <a href="{{ $paginator->previousPageUrl() }}" data-page-loader-delay="true" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">Previous</a>
+                    <a href="{{ $paginator->previousPageUrl() }}" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">Previous</a>
                 @endif
 
                 <span class="whitespace-nowrap text-xs font-semibold text-slate-500">
@@ -27,7 +27,7 @@
                 </span>
 
                 @if ($paginator->hasMorePages())
-                    <a href="{{ $paginator->nextPageUrl() }}" data-page-loader-delay="true" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">Next</a>
+                    <a href="{{ $paginator->nextPageUrl() }}" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">Next</a>
                 @else
                     <span class="inline-flex h-9 items-center justify-center rounded-md border border-slate-200 px-3 text-xs font-semibold text-slate-400">Next</span>
                 @endif

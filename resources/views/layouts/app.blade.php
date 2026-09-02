@@ -62,59 +62,10 @@
                         return;
                     }
 
-                    this.pageBusy = true;
-                },
-                shouldSkipGlobalLoaderForLink(link) {
-                    return link.target === '_blank'
-                        || link.hasAttribute('download')
-                        || link.dataset.skipGlobalLoader === 'true';
-                },
-                isDownloadLikeUrl(url) {
-                    const path = url.pathname.toLowerCase().replace(/\/+$/, '');
+                    const form = event.target;
+                    const method = (form?.getAttribute('method') || 'GET').toUpperCase();
 
-                    return path.endsWith('/pdf') || path.endsWith('.pdf');
-                },
-                navigateWithVisibleLoader(link) {
-                    this.pageBusy = true;
-
-                    window.setTimeout(() => {
-                        window.location.href = link.href;
-                    }, 120);
-                },
-                handlePageClick(event) {
-                    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-                        return;
-                    }
-
-                    const link = event.target.closest('a[href]');
-
-                    if (! link || this.shouldSkipGlobalLoaderForLink(link)) {
-                        return;
-                    }
-
-                    const href = link.getAttribute('href') || '';
-
-                    if (href === '' || href.startsWith('#') || href.startsWith('javascript:')) {
-                        return;
-                    }
-
-                    const url = new URL(link.href, window.location.href);
-
-                    if (url.origin !== window.location.origin) {
-                        return;
-                    }
-
-                    if (this.isDownloadLikeUrl(url)) {
-                        return;
-                    }
-
-                    if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash) {
-                        return;
-                    }
-
-                    if (link.dataset.pageLoaderDelay === 'true') {
-                        event.preventDefault();
-                        this.navigateWithVisibleLoader(link);
+                    if (method === 'GET') {
                         return;
                     }
 
@@ -122,7 +73,6 @@
                 },
             }"
             x-on:submit="markPageBusy($event)"
-            x-on:click="handlePageClick($event)"
             x-on:open-notifications-modal.window="notificationsOpen = true"
             x-on:keydown.escape.window="notificationsOpen = false"
             class="app-viewport bg-blue-50/60 dark:bg-slate-950 lg:overflow-hidden"
