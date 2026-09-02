@@ -36,26 +36,26 @@
 
 <section>
     <header>
-        <h2 class="text-lg font-semibold text-blue-950">
+        <h2 class="text-base font-semibold text-blue-950">
             {{ __('Profile Picture & Information') }}
         </h2>
 
-        <p class="mt-1 text-sm text-slate-600">
-            {{ __('Update your profile photo and personal account details.') }}
+        <p class="mt-1 text-xs text-slate-600">
+            {{ __('Profile photo and personal account details.') }}
         </p>
 
         @if ($isGuard)
-            <div class="mt-4 grid gap-3 border-y border-blue-100 py-3 sm:grid-cols-2">
+            <div class="mt-3 grid gap-3 border-y border-blue-100 py-2 sm:grid-cols-2">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Profile Completion</p>
-                    <p class="mt-1 text-xl font-bold text-blue-950">{{ $profileCompletionPercent }}%</p>
-                    <p class="text-sm font-semibold {{ $profileCompletionPercent === 100 ? 'text-emerald-700' : 'text-amber-700' }}">
+                    <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Profile Completion</p>
+                    <p class="mt-0.5 text-lg font-bold text-blue-950">{{ $profileCompletionPercent }}%</p>
+                    <p class="text-xs font-semibold {{ $profileCompletionPercent === 100 ? 'text-emerald-700' : 'text-amber-700' }}">
                         {{ $profileCompletionPercent === 100 ? 'Complete' : 'Needs updates' }}
                     </p>
                 </div>
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Face Registration</p>
-                    <p class="mt-1 text-sm font-semibold {{ $hasProcessedFaceRegistration ? 'text-emerald-700' : 'text-amber-700' }}">{{ $faceDataLabel }}</p>
+                    <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Face Registration</p>
+                    <p class="mt-1 text-xs font-semibold {{ $hasProcessedFaceRegistration ? 'text-emerald-700' : 'text-amber-700' }}">{{ $faceDataLabel }}</p>
                 </div>
             </div>
         @endif
@@ -69,7 +69,7 @@
         method="post"
         action="{{ route('profile.update') }}"
         enctype="multipart/form-data"
-        class="mt-6 space-y-6"
+        class="mt-4 space-y-4"
         x-data="guardFaceForm({ faceSamples: [], liveRegistration: @js($isGuard && $guardProfile && ! $hasProcessedFaceRegistration) })"
         x-init="boot()"
         x-on:submit="handleSubmit($event)"
@@ -78,17 +78,17 @@
         @csrf
         @method('patch')
 
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <span class="inline-flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-50 ring-1 ring-blue-100">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <span class="inline-flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-50 ring-1 ring-blue-100">
                 <img src="{{ $profilePhotoUrl }}" alt="{{ $roleLabel }} profile photo" class="h-full w-full object-cover">
             </span>
 
             <div class="min-w-0 flex-1">
                 <x-input-label for="profile_photo" :value="__('Profile Picture')" />
-                <input id="profile_photo" name="profile_photo" type="file" accept="image/jpeg,image/png,image/webp" class="mt-1 block w-full rounded-md border border-slate-300 text-sm text-slate-700 shadow-sm file:mr-4 file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100">
-                <p class="mt-2 text-xs text-slate-500">Accepted formats: JPG, PNG, WEBP. Maximum size: 2 MB.</p>
+                <input id="profile_photo" name="profile_photo" type="file" accept="image/jpeg,image/png,image/webp" class="mt-1 block w-full rounded-md border border-slate-300 text-xs text-slate-700 shadow-sm file:mr-3 file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-blue-700 hover:file:bg-blue-100">
+                <p class="mt-1.5 text-[0.68rem] text-slate-500">JPG, PNG, WEBP. Maximum size: 2 MB.</p>
                 @if ($user->profile_photo_path)
-                    <label for="remove_profile_photo" class="mt-3 flex items-center gap-2 text-sm font-medium text-slate-700">
+                    <label for="remove_profile_photo" class="mt-2 flex items-center gap-2 text-xs font-medium text-slate-700">
                         <input id="remove_profile_photo" name="remove_profile_photo" type="checkbox" value="1" class="rounded border-slate-300 text-blue-700 shadow-sm focus:ring-blue-500">
                         <span>Remove current profile picture</span>
                     </label>
@@ -99,30 +99,30 @@
         </div>
 
         @if ($isGuard)
-            <div class="border-t border-blue-100 pt-6">
+            <div class="border-t border-blue-100 pt-4">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                        <h3 class="text-base font-semibold text-blue-950">Face Registration</h3>
-                        <p class="mt-1 text-sm text-slate-600">One-time face reference for checkpoint verification.</p>
+                        <h3 class="text-sm font-semibold text-blue-950">Face Registration</h3>
+                        <p class="mt-1 text-xs text-slate-600">One-time face reference for checkpoint verification.</p>
                     </div>
-                    <span class="inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ring-1 {{ $hasProcessedFaceRegistration ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : ($hasFaceRegistration ? 'bg-amber-50 text-amber-700 ring-amber-200' : 'bg-red-50 text-red-700 ring-red-200') }}">
+                    <span class="inline-flex w-fit rounded-md px-2.5 py-1 text-[0.68rem] font-semibold ring-1 {{ $hasProcessedFaceRegistration ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : ($hasFaceRegistration ? 'bg-amber-50 text-amber-700 ring-amber-200' : 'bg-red-50 text-red-700 ring-red-200') }}">
                         {{ $hasProcessedFaceRegistration ? 'Ready' : ($hasFaceRegistration ? 'Needs face data' : 'Required') }}
                     </span>
                 </div>
 
                 @if (! $guardProfile)
-                    <p class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
+                    <p class="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
                         This account is not linked to a guard profile yet.
                     </p>
                 @elseif (! $hasProcessedFaceRegistration)
-                    <div class="mt-4 rounded-md border border-blue-100 bg-blue-50/60 p-4">
+                    <div class="mt-3 rounded-md border border-blue-100 bg-blue-50/60 p-3">
                         <input type="hidden" name="face_registration_capture" :value="liveCapture">
                         <input type="hidden" name="face_liveness_confirmed" :value="livenessPassed ? '1' : ''">
                         <template x-if="liveDescriptor">
                             <input type="hidden" name="face_descriptors[]" :value="descriptorPayload(liveDescriptor)">
                         </template>
 
-                        <div class="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+                        <div class="grid gap-3 lg:grid-cols-[1fr_0.95fr]">
                             <div>
                                 <x-input-label :value="__('Live Camera Registration')" />
                                 <div class="mt-2 overflow-hidden rounded-md bg-slate-950">
@@ -149,39 +149,39 @@
                                 <input x-ref="registrationPhotoInput" type="file" accept="image/*" capture="user" class="sr-only" x-on:change="useRegistrationCaptureFile($event)">
                             </div>
 
-                            <div class="flex flex-col justify-between gap-4">
-                                <div class="rounded-md border border-blue-100 bg-white px-3 py-3 text-sm text-blue-800">
+                            <div class="flex flex-col justify-between gap-3">
+                                <div class="rounded-md border border-blue-100 bg-white px-3 py-2 text-xs text-blue-800">
                                     <p class="font-semibold">Liveness Check</p>
-                                    <p class="mt-1 text-slate-600">Face guide and random action challenge before saving the one-time reference.</p>
-                                    <p class="mt-2 text-xs font-semibold text-blue-700">Random action challenge: smile or turn head slightly.</p>
+                                    <p class="mt-1 text-slate-600">Face guide and random action challenge before saving.</p>
+                                    <p class="mt-1.5 text-[0.68rem] font-semibold text-blue-700">Random action challenge: smile or turn head slightly.</p>
                                 </div>
 
-                                <div class="grid gap-2 text-sm">
-                                    <div class="flex items-center gap-3 rounded-md border border-blue-100 bg-white px-3 py-2">
-                                        <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ring-1" :class="['face', 'blink', 'smile', 'turn', 'complete'].includes(livenessStatus) ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-500 ring-slate-200'">1</span>
+                                <div class="grid gap-2 text-xs">
+                                    <div class="flex items-center gap-2 rounded-md border border-blue-100 bg-white px-3 py-2">
+                                        <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[0.68rem] font-bold ring-1" :class="['face', 'blink', 'smile', 'turn', 'complete'].includes(livenessStatus) ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-500 ring-slate-200'">1</span>
                                         <span class="font-medium text-slate-700">Face inside guide</span>
                                     </div>
-                                    <div class="flex items-center gap-3 rounded-md border border-blue-100 bg-white px-3 py-2">
-                                        <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ring-1" :class="livenessPassed ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-500 ring-slate-200'">2</span>
+                                    <div class="flex items-center gap-2 rounded-md border border-blue-100 bg-white px-3 py-2">
+                                        <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[0.68rem] font-bold ring-1" :class="livenessPassed ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-500 ring-slate-200'">2</span>
                                         <span class="font-medium text-slate-700" x-text="livenessPassed ? livenessChallengeLabel() : (registrationCameraOpen ? livenessChallengeLabel() : 'Complete random challenge')"></span>
                                     </div>
-                                    <div class="flex items-center gap-3 rounded-md border border-blue-100 bg-white px-3 py-2">
-                                        <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ring-1" :class="liveDescriptor ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-500 ring-slate-200'">3</span>
+                                    <div class="flex items-center gap-2 rounded-md border border-blue-100 bg-white px-3 py-2">
+                                        <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[0.68rem] font-bold ring-1" :class="liveDescriptor ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-500 ring-slate-200'">3</span>
                                         <span class="font-medium text-slate-700">Capture reference</span>
                                     </div>
                                 </div>
 
                                 <div class="grid gap-2">
-                                    <button type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" x-on:click="openRegistrationCamera()" x-bind:disabled="liveProcessing">
+                                    <button type="button" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-xs font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" x-on:click="openRegistrationCamera()" x-bind:disabled="liveProcessing">
                                         Open Camera
                                     </button>
-                                    <button type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" x-on:click="openRegistrationPhotoCapture()" x-bind:disabled="liveProcessing">
+                                    <button type="button" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-xs font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" x-on:click="openRegistrationPhotoCapture()" x-bind:disabled="liveProcessing">
                                         Take Photo
                                     </button>
-                                    <button type="button" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300" x-on:click="captureRegistrationFace()" x-bind:disabled="! registrationCameraOpen || ! livenessPassed || liveProcessing">
+                                    <button type="button" class="inline-flex h-9 items-center justify-center rounded-md bg-blue-700 px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300" x-on:click="captureRegistrationFace()" x-bind:disabled="! registrationCameraOpen || ! livenessPassed || liveProcessing">
                                         <span x-text="liveProcessing ? 'Processing...' : 'Capture Face'"></span>
                                     </button>
-                                    <button type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50" x-show="liveCapture" x-cloak x-on:click="retakeRegistrationFace()">
+                                    <button type="button" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-xs font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50" x-show="liveCapture" x-cloak x-on:click="retakeRegistrationFace()">
                                         Retake
                                     </button>
                                 </div>
@@ -208,7 +208,7 @@
             </div>
         @endif
 
-        <div class="grid gap-5 md:grid-cols-2">
+        <div class="grid gap-3 md:grid-cols-2">
             <div>
                 <x-input-label for="name" :value="__('Full Name')" />
                 <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
@@ -253,69 +253,69 @@
         </div>
 
         @if ($isSupervisor)
-            <div class="border-t border-blue-100 pt-6">
-                <h3 class="text-base font-semibold text-blue-950">Office Information</h3>
-                <dl class="mt-4 grid gap-4 md:grid-cols-2">
-                    <div class="border-b border-blue-100 pb-3">
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Position</dt>
+            <div class="border-t border-blue-100 pt-4">
+                <h3 class="text-sm font-semibold text-blue-950">Office Information</h3>
+                <dl class="mt-3 grid gap-3 md:grid-cols-2">
+                    <div class="border-b border-blue-100 pb-2">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Position</dt>
                         <dd class="mt-1 text-sm font-semibold text-slate-800">Head / Supervisor</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-3">
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Office</dt>
+                    <div class="border-b border-blue-100 pb-2">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Office</dt>
                         <dd class="mt-1 text-sm font-semibold text-slate-800">Security and Safety Services Office</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-3 md:border-b-0 md:pb-0">
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Role in System</dt>
+                    <div class="border-b border-blue-100 pb-2 md:border-b-0 md:pb-0">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Role in System</dt>
                         <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $roleLabel }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Account Status</dt>
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Account Status</dt>
                         <dd class="mt-1 text-sm font-semibold text-emerald-700">Active</dd>
                     </div>
                 </dl>
             </div>
         @elseif ($isGuard && $guardProfile)
-            <div class="border-t border-blue-100 pt-6">
-                <h3 class="text-base font-semibold text-blue-950">Guard Information</h3>
-                <dl class="mt-4 grid gap-4 md:grid-cols-2">
-                    <div class="border-b border-blue-100 pb-3">
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Position</dt>
+            <div class="border-t border-blue-100 pt-4">
+                <h3 class="text-sm font-semibold text-blue-950">Guard Information</h3>
+                <dl class="mt-3 grid gap-3 md:grid-cols-2">
+                    <div class="border-b border-blue-100 pb-2">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Position</dt>
                         <dd class="mt-1 text-sm font-semibold text-slate-800">Security Guard</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-3">
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Office</dt>
+                    <div class="border-b border-blue-100 pb-2">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Office</dt>
                         <dd class="mt-1 text-sm font-semibold text-slate-800">Security and Safety Services Office</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-3">
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Employee No.</dt>
+                    <div class="border-b border-blue-100 pb-2">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Employee No.</dt>
                         <dd class="mt-1 font-mono text-sm font-semibold text-slate-800">{{ $guardProfile->employee_no }}</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-3">
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">RFID UID</dt>
+                    <div class="border-b border-blue-100 pb-2">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">RFID UID</dt>
                         <dd class="mt-1 font-mono text-sm font-semibold text-slate-800">{{ $guardProfile->rfid_uid }}</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-3">
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Assigned Shift</dt>
+                    <div class="border-b border-blue-100 pb-2">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Assigned Shift</dt>
                         <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $guardProfile->shift ?: 'Unassigned' }}</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-3">
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Account Status</dt>
+                    <div class="border-b border-blue-100 pb-2">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Account Status</dt>
                         <dd class="mt-1 text-sm font-semibold {{ $guardProfile->status === 'active' ? 'text-emerald-700' : 'text-slate-600' }}">{{ ucfirst($guardProfile->status) }}</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-3 md:border-b-0 md:pb-0">
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Face Reference</dt>
+                    <div class="border-b border-blue-100 pb-2 md:border-b-0 md:pb-0">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Face Reference</dt>
                         <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $guardProfile->face_reference ?: 'Not set' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Live Face Registration</dt>
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Live Face Registration</dt>
                         <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $hasProcessedFaceRegistration ? 'Completed' : 'Not registered' }}</dd>
                     </div>
                 </dl>
             </div>
         @elseif ($isGuard)
-            <div class="border-t border-blue-100 pt-6">
-                <h3 class="text-base font-semibold text-blue-950">Guard Information</h3>
-                <p class="mt-2 text-sm text-amber-700">This account is not linked to a guard profile yet.</p>
+            <div class="border-t border-blue-100 pt-4">
+                <h3 class="text-sm font-semibold text-blue-950">Guard Information</h3>
+                <p class="mt-2 text-xs text-amber-700">This account is not linked to a guard profile yet.</p>
             </div>
         @endif
 

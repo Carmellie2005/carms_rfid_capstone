@@ -28,68 +28,68 @@
                 <div class="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800">{{ session('status') }}</div>
             @endif
 
-            <div class="grid gap-3 md:hidden">
+            <div class="grid grid-cols-2 gap-3 lg:hidden">
                 @forelse ($guards as $guard)
                     @php
                         $hasLiveFaceRegistration = $guard->faceDescriptors->contains(fn ($sample) => is_array($sample->descriptor) && count($sample->descriptor) === 128);
                     @endphp
-                    <article class="rounded-lg border border-blue-100 bg-white p-4 shadow-sm">
-                        <div class="flex items-start justify-between gap-3">
+                    <article class="min-w-0 rounded-md border border-blue-100 bg-white p-3 shadow-sm">
+                        <div class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
                                 <button
                                     type="button"
                                     data-records-url="{{ route('guards.records', $guard) }}"
                                     x-on:click="openGuardRecord($event.currentTarget.dataset.recordsUrl)"
-                                    class="block max-w-full truncate text-left font-semibold text-blue-950 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                    class="block max-w-full truncate text-left text-sm font-semibold text-blue-950 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                                 >
                                     {{ $guard->name }}
                                 </button>
-                                <p class="mt-1 text-xs text-slate-500">{{ $guard->employee_no }}</p>
+                                <p class="mt-1 truncate text-xs text-slate-500">{{ $guard->employee_no }}</p>
                             </div>
-                            <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 {{ $guard->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-600 ring-slate-200' }}">
+                            <span class="shrink-0 whitespace-nowrap rounded-md px-2 py-1 text-[0.65rem] font-semibold ring-1 {{ $guard->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-600 ring-slate-200' }}">
                                 {{ ucfirst($guard->status) }}
                             </span>
                         </div>
 
-                        <dl class="mt-4 grid gap-3 text-sm text-slate-600">
-                            <div>
-                                <dt class="text-xs font-semibold uppercase text-blue-800">Account</dt>
-                                <dd class="mt-1 font-mono font-semibold text-blue-900">{{ $guard->user?->username ?? 'No account' }}</dd>
+                        <dl class="mt-3 grid gap-2 text-xs text-slate-600">
+                            <div class="min-w-0">
+                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Account</dt>
+                                <dd class="mt-1 truncate font-mono font-semibold text-blue-900">{{ $guard->user?->username ?? 'No account' }}</dd>
+                            </div>
+                            <div class="min-w-0">
+                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">RFID UID</dt>
+                                <dd class="mt-1 truncate font-mono">{{ $guard->rfid_uid }}</dd>
                             </div>
                             <div>
-                                <dt class="text-xs font-semibold uppercase text-blue-800">RFID UID</dt>
-                                <dd class="mt-1 font-mono">{{ $guard->rfid_uid }}</dd>
+                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Face Registration</dt>
+                                <dd class="mt-1 whitespace-nowrap">{{ $hasLiveFaceRegistration ? 'Registered' : 'Not registered' }}</dd>
                             </div>
-                            <div>
-                                <dt class="text-xs font-semibold uppercase text-blue-800">Face Registration</dt>
-                                <dd class="mt-1">{{ $hasLiveFaceRegistration ? 'Registered' : 'Not registered' }}</dd>
+                            <div class="min-w-0">
+                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Contact</dt>
+                                <dd class="mt-1 truncate">{{ $guard->email ?? 'No email' }}</dd>
+                                <dd class="truncate text-xs text-slate-500">{{ $guard->phone ?? 'No phone' }}</dd>
                             </div>
-                            <div>
-                                <dt class="text-xs font-semibold uppercase text-blue-800">Contact</dt>
-                                <dd class="mt-1">{{ $guard->email ?? 'No email' }}</dd>
-                                <dd class="text-xs text-slate-500">{{ $guard->phone ?? 'No phone' }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-xs font-semibold uppercase text-blue-800">Shift</dt>
-                                <dd class="mt-1">{{ $guard->shift ?? 'Unassigned' }}</dd>
+                            <div class="min-w-0">
+                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Shift</dt>
+                                <dd class="mt-1 truncate">{{ $guard->shift ?? 'Unassigned' }}</dd>
                             </div>
                         </dl>
 
-                        <div class="mt-4 grid grid-cols-2 gap-2">
-                            <a href="{{ route('guards.edit', $guard) }}" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 px-3 text-sm font-semibold text-blue-700 hover:bg-blue-50">Edit</a>
+                        <div class="mt-3 grid grid-cols-2 gap-2">
+                            <a href="{{ route('guards.edit', $guard) }}" class="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">Edit</a>
                             <form method="POST" action="{{ route('guards.destroy', $guard) }}" onsubmit="return confirm('Remove this guard profile?')">
                                 @csrf
                                 @method('DELETE')
-                                <button class="inline-flex h-10 w-full items-center justify-center rounded-md border border-red-200 px-3 text-sm font-semibold text-red-700 hover:bg-red-50" type="submit">Delete</button>
+                                <button class="inline-flex h-9 w-full items-center justify-center whitespace-nowrap rounded-md border border-red-200 px-2 text-xs font-semibold text-red-700 hover:bg-red-50" type="submit">Delete</button>
                             </form>
                         </div>
                     </article>
                 @empty
-                    <div class="rounded-lg border border-blue-100 bg-white px-5 py-8 text-center text-slate-500 shadow-sm">No guards registered.</div>
+                    <div class="col-span-2 rounded-md border border-blue-100 bg-white px-5 py-8 text-center text-slate-500 shadow-sm">No guards registered.</div>
                 @endforelse
             </div>
 
-            <div class="hidden overflow-hidden rounded-lg border border-blue-100 bg-white shadow-sm md:block">
+            <div class="hidden overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm lg:block">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-blue-100 text-sm">
                         <thead class="bg-blue-50/70 text-left text-xs font-semibold uppercase text-blue-800">
@@ -133,7 +133,7 @@
                                     <td class="px-5 py-4 text-slate-600">{{ $hasLiveFaceRegistration ? 'Registered' : 'Not registered' }}</td>
                                     <td class="px-5 py-4 text-slate-600">{{ $guard->shift ?? 'Unassigned' }}</td>
                                     <td class="px-5 py-4">
-                                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 {{ $guard->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-600 ring-slate-200' }}">
+                                        <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $guard->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-600 ring-slate-200' }}">
                                             {{ ucfirst($guard->status) }}
                                         </span>
                                     </td>
@@ -430,13 +430,13 @@
                                                         <div class="text-xs text-slate-500" x-text="patrol.checkpoint_code || ''"></div>
                                                     </td>
                                                     <td class="px-4 py-3">
-                                                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(patrol.rfid_status)" x-text="patrol.rfid_status_label"></span>
+                                                        <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(patrol.rfid_status)" x-text="patrol.rfid_status_label"></span>
                                                     </td>
                                                     <td class="px-4 py-3">
-                                                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(patrol.facial_status)" x-text="patrol.facial_status_label"></span>
+                                                        <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(patrol.facial_status)" x-text="patrol.facial_status_label"></span>
                                                     </td>
                                                     <td class="px-4 py-3">
-                                                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(patrol.status)" x-text="patrol.status_label"></span>
+                                                        <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(patrol.status)" x-text="patrol.status_label"></span>
                                                     </td>
                                                 </tr>
                                             </template>
@@ -458,7 +458,7 @@
                                                     <h5 class="font-semibold text-slate-900" x-text="incident.title || 'Incident report'"></h5>
                                                     <p class="mt-1 text-sm text-slate-500" x-text="`${incident.checkpoint} - ${incident.reported_at || 'No date'}`"></p>
                                                 </div>
-                                                <span class="inline-flex w-fit rounded-full px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(incident.status)" x-text="incident.status_label"></span>
+                                                <span class="inline-flex w-fit whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(incident.status)" x-text="incident.status_label"></span>
                                             </div>
                                             <p class="mt-2 text-sm text-slate-600" x-text="[incident.type, incident.priority_label].filter(Boolean).join(' / ')"></p>
                                         </article>
@@ -475,7 +475,7 @@
                                     <template x-for="attempt in recordFaceAttempts" :key="attempt.id">
                                         <div class="flex flex-col gap-2 rounded-md border border-blue-100 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
                                             <div>
-                                                <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(attempt.status)" x-text="attempt.status_label"></span>
+                                                <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(attempt.status)" x-text="attempt.status_label"></span>
                                                 <span class="ml-2 text-slate-500" x-text="attempt.verified_at || attempt.created_at || 'No date'"></span>
                                             </div>
                                             <p class="text-xs text-slate-500" x-show="attempt.match_distance" x-text="`Distance ${attempt.match_distance} / threshold ${attempt.match_threshold}`"></p>

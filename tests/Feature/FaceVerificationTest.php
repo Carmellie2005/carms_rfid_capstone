@@ -90,7 +90,13 @@ class FaceVerificationTest extends TestCase
             ->assertSee('Emergency equipment accessible')
             ->assertSee('Theft or Robbery')
             ->assertSee('Medical Emergency')
-            ->assertSee('Alarm or CCTV Issue');
+            ->assertSee('Alarm or CCTV Issue')
+            ->assertSee('Selected image previews')
+            ->assertSee('NIGHT SHIFT')
+            ->assertSee('Himo C.')
+            ->assertSee('UID')
+            ->assertDontSee('Submit Incident')
+            ->assertDontSee('Use this card at the checkpoint reader');
     }
 
     public function test_server_face_verification_endpoint_accepts_matching_face_without_exposing_saved_descriptor(): void

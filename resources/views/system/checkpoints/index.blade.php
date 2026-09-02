@@ -28,45 +28,45 @@
                 <div class="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800">{{ session('status') }}</div>
             @endif
 
-            <div class="grid gap-3 md:hidden">
+            <div class="grid grid-cols-2 gap-3 lg:hidden">
                 @forelse ($checkpoints as $checkpoint)
-                    <article class="rounded-lg border border-blue-100 bg-white p-4 shadow-sm">
-                        <div class="flex items-start justify-between gap-3">
+                    <article class="min-w-0 rounded-md border border-blue-100 bg-white p-3 shadow-sm">
+                        <div class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
-                                <h3 class="truncate font-semibold text-blue-950">{{ $checkpoint->name }}</h3>
+                                <h3 class="truncate text-sm font-semibold text-blue-950">{{ $checkpoint->name }}</h3>
                                 <p class="mt-1 font-mono text-xs text-slate-500">{{ $checkpoint->code }}</p>
                             </div>
-                            <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 {{ $checkpoint->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-600 ring-slate-200' }}">
+                            <span class="shrink-0 whitespace-nowrap rounded-md px-2 py-1 text-[0.65rem] font-semibold ring-1 {{ $checkpoint->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-600 ring-slate-200' }}">
                                 {{ ucfirst($checkpoint->status) }}
                             </span>
                         </div>
 
-                        <dl class="mt-4 grid gap-3 text-sm text-slate-600">
-                            <div>
-                                <dt class="text-xs font-semibold uppercase text-blue-800">Location</dt>
-                                <dd class="mt-1">{{ $checkpoint->location }}</dd>
+                        <dl class="mt-3 grid gap-2 text-xs text-slate-600">
+                            <div class="min-w-0">
+                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Location</dt>
+                                <dd class="mt-1 truncate">{{ $checkpoint->location }}</dd>
                             </div>
-                            <div>
-                                <dt class="text-xs font-semibold uppercase text-blue-800">Device UID</dt>
-                                <dd class="mt-1 font-mono">{{ $checkpoint->device_uid ?? 'None' }}</dd>
+                            <div class="min-w-0">
+                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Device UID</dt>
+                                <dd class="mt-1 truncate font-mono">{{ $checkpoint->device_uid ?? 'None' }}</dd>
                             </div>
                         </dl>
 
-                        <div class="mt-4 grid grid-cols-2 gap-2">
-                            <a href="{{ route('checkpoints.edit', $checkpoint) }}" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 px-3 text-sm font-semibold text-blue-700 hover:bg-blue-50">Edit</a>
+                        <div class="mt-3 grid grid-cols-2 gap-2">
+                            <a href="{{ route('checkpoints.edit', $checkpoint) }}" class="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">Edit</a>
                             <form method="POST" action="{{ route('checkpoints.destroy', $checkpoint) }}" onsubmit="return confirm('Remove this checkpoint?')">
                                 @csrf
                                 @method('DELETE')
-                                <button class="inline-flex h-10 w-full items-center justify-center rounded-md border border-red-200 px-3 text-sm font-semibold text-red-700 hover:bg-red-50" type="submit">Delete</button>
+                                <button class="inline-flex h-9 w-full items-center justify-center whitespace-nowrap rounded-md border border-red-200 px-2 text-xs font-semibold text-red-700 hover:bg-red-50" type="submit">Delete</button>
                             </form>
                         </div>
                     </article>
                 @empty
-                    <div class="rounded-lg border border-blue-100 bg-white px-5 py-8 text-center text-slate-500 shadow-sm">No checkpoints registered.</div>
+                    <div class="col-span-2 rounded-md border border-blue-100 bg-white px-5 py-8 text-center text-slate-500 shadow-sm">No checkpoints registered.</div>
                 @endforelse
             </div>
 
-            <div class="hidden overflow-hidden rounded-lg border border-blue-100 bg-white shadow-sm md:block">
+            <div class="hidden overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm lg:block">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-blue-100 text-sm">
                         <thead class="bg-blue-50/70 text-left text-xs font-semibold uppercase text-blue-800">
@@ -88,7 +88,7 @@
                                     <td class="px-5 py-4 text-slate-600">{{ $checkpoint->location }}</td>
                                     <td class="px-5 py-4 font-mono text-slate-700">{{ $checkpoint->device_uid ?? 'None' }}</td>
                                     <td class="px-5 py-4">
-                                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 {{ $checkpoint->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-600 ring-slate-200' }}">
+                                        <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $checkpoint->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-600 ring-slate-200' }}">
                                             {{ ucfirst($checkpoint->status) }}
                                         </span>
                                     </td>

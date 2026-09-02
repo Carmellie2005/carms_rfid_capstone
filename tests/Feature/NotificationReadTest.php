@@ -14,6 +14,67 @@ class NotificationReadTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_notification_dropdown_shows_recent_unread_alerts_and_view_all_link(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'admin']);
+
+        foreach (range(1, 6) as $index) {
+            IncidentReport::create([
+                'category' => 'Recent Alert '.$index,
+                'priority' => 'high',
+                'severity' => 'high',
+                'incident_at' => now()->subMinutes($index),
+                'description' => 'Notification dropdown test.',
+                'status' => 'submitted',
+            ]);
+        }
+
+        $this
+            ->actingAs($supervisor)
+            ->get('/profile')
+            ->assertOk()
+            ->assertSee('Latest 5 of 6 unread alerts')
+            ->assertSee('View all notifications')
+            ->assertSee('open-notifications-modal', false)
+            ->assertSee('embedded=1', false)
+            ->assertSee('Recent Alert 1')
+            ->assertSee('Recent Alert 5')
+            ->assertDontSee('Recent Alert 6');
+    }
+
+    public function test_user_can_view_all_notifications_with_pagination(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'admin']);
+
+        foreach (range(1, 13) as $index) {
+            IncidentReport::create([
+                'category' => sprintf('Paged Alert %02d', $index),
+                'priority' => 'normal',
+                'severity' => 'medium',
+                'incident_at' => now()->subMinutes($index),
+                'description' => 'Notification page test.',
+                'status' => 'submitted',
+            ]);
+        }
+
+        $this
+            ->actingAs($supervisor)
+            ->get(route('notifications.index'))
+            ->assertOk()
+            ->assertSee('All Notifications')
+            ->assertSee('13 unread alerts')
+            ->assertSee('Paged Alert 01')
+            ->assertSee('Paged Alert 12')
+            ->assertDontSee('Paged Alert 13');
+
+        $this
+            ->actingAs($supervisor)
+            ->get(route('notifications.index', ['page' => 2]))
+            ->assertOk()
+            ->assertSee('Paged Alert 13')
+            ->assertDontSee('Paged Alert 12');
+    }
+
     public function test_user_can_mark_notification_as_read_and_activity_is_logged(): void
     {
         $supervisor = User::factory()->create(['role' => 'admin']);

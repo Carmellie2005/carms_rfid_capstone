@@ -92,6 +92,41 @@ class PatrolLogReportTest extends TestCase
             ->assertDontSee('Aug 29, 2026');
     }
 
+    public function test_my_patrol_logs_are_paginated_for_guard(): void
+    {
+        $guard = $this->createGuard('SG-PAGE', 'RFID-PAGE');
+
+        foreach (range(1, 7) as $number) {
+            $this->createPatrolLog(
+                $guard,
+                Carbon::parse('2026-09-02 20:00:00', config('app.timezone'))->addMinutes($number),
+                sprintf('CP-PAGE-%02d', $number),
+            );
+        }
+
+        $response = $this
+            ->actingAs($guard->user)
+            ->get(route('patrol-logs.index'));
+
+        $response
+            ->assertOk()
+            ->assertSeeText('Showing 1 to 6 of 7 my patrol logs')
+            ->assertSeeText('Page 1 of 2')
+            ->assertSee('CP-PAGE-07')
+            ->assertDontSee('08:01 PM');
+
+        $response = $this
+            ->actingAs($guard->user)
+            ->get(route('patrol-logs.index', ['page' => 2]));
+
+        $response
+            ->assertOk()
+            ->assertSeeText('Showing 7 to 7 of 7 my patrol logs')
+            ->assertSeeText('Page 2 of 2')
+            ->assertSee('CP-PAGE-01')
+            ->assertDontSee('08:07 PM');
+    }
+
     private function createGuard(string $employeeNo, string $rfidUid): Guard
     {
         $user = User::factory()->create([

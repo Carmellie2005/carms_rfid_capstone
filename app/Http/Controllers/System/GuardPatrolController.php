@@ -42,7 +42,6 @@ class GuardPatrolController extends Controller
             'patrolScheduleMessage' => PatrolSchedule::isTestingMode() ? PatrolSchedule::testingNotice() : PatrolSchedule::closedMessage(),
             'patrolTestingNotice' => PatrolSchedule::testingNotice(),
             'patrolScheduleNextOpen' => PatrolSchedule::nextOpenAt()->format('M d, Y h:i A'),
-            'showIncident' => request()->routeIs('patrol.incident'),
         ]);
     }
 

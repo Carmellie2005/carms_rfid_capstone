@@ -23,15 +23,26 @@ class ReportController extends Controller
             ? Carbon::parse($request->input('to'), $timezone)
             : now($timezone);
 
-        $patrols = PatrolLog::with(['securityGuard', 'checkpoint'])
-            ->whereBetween('scanned_at', [$from->copy()->startOfDay(), $to->copy()->endOfDay()])
-            ->latest('scanned_at')
-            ->get();
+        $patrolQuery = PatrolLog::with(['securityGuard', 'checkpoint'])
+            ->whereBetween('scanned_at', [$from->copy()->startOfDay(), $to->copy()->endOfDay()]);
 
-        $incidents = IncidentReport::with(['securityGuard', 'checkpoint'])
-            ->whereBetween('incident_at', [$from->copy()->startOfDay(), $to->copy()->endOfDay()])
+        $incidentQuery = IncidentReport::with(['securityGuard', 'checkpoint'])
+            ->whereBetween('incident_at', [$from->copy()->startOfDay(), $to->copy()->endOfDay()]);
+
+        $patrolStatusCounts = (clone $patrolQuery)
+            ->selectRaw('status, count(*) as aggregate')
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
+        $patrols = (clone $patrolQuery)
+            ->latest('scanned_at')
+            ->paginate(15, ['*'], 'patrol_page')
+            ->withQueryString();
+
+        $incidents = (clone $incidentQuery)
             ->latest('incident_at')
-            ->get();
+            ->paginate(8, ['*'], 'incident_page')
+            ->withQueryString();
 
         return view('system.reports.index', [
             'from' => $from,
@@ -41,12 +52,12 @@ class ReportController extends Controller
             'guards' => Guard::orderBy('name')->get(),
             'checkpoints' => Checkpoint::orderBy('name')->get(),
             'summary' => [
-                'valid' => $patrols->where('status', 'valid')->count(),
-                'suspicious' => $patrols->where('status', 'suspicious')->count(),
-                'invalid' => $patrols->where('status', 'invalid')->count(),
-                'profileIncomplete' => $patrols->where('status', 'profile_incomplete')->count(),
-                'outsideSchedule' => $patrols->where('status', 'outside_schedule')->count(),
-                'incidents' => $incidents->count(),
+                'valid' => (int) ($patrolStatusCounts['valid'] ?? 0),
+                'suspicious' => (int) ($patrolStatusCounts['suspicious'] ?? 0),
+                'invalid' => (int) ($patrolStatusCounts['invalid'] ?? 0),
+                'profileIncomplete' => (int) ($patrolStatusCounts['profile_incomplete'] ?? 0),
+                'outsideSchedule' => (int) ($patrolStatusCounts['outside_schedule'] ?? 0),
+                'incidents' => (clone $incidentQuery)->count(),
             ],
         ]);
     }

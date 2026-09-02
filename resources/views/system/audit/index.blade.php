@@ -12,7 +12,7 @@
                 $exportQuery = request()->only(['guard_id', 'action', 'date', 'search']);
             @endphp
 
-            <form method="GET" action="{{ route('audit-logs.index') }}" class="grid gap-3 rounded-lg border border-blue-100 bg-white p-3 shadow-sm md:grid-cols-2 xl:grid-cols-[minmax(170px,1fr)_minmax(170px,1fr)_minmax(140px,0.75fr)_minmax(220px,1.2fr)_auto] print:hidden">
+            <form method="GET" action="{{ route('audit-logs.index') }}" class="grid gap-3 rounded-md border border-blue-100 bg-white p-3 shadow-sm md:grid-cols-2 xl:grid-cols-[minmax(170px,1fr)_minmax(170px,1fr)_minmax(140px,0.75fr)_minmax(220px,1.2fr)_auto] print:hidden">
                 <div>
                     <label for="guard_id" class="block text-xs font-semibold uppercase text-blue-800">Guard</label>
                     <select id="guard_id" name="guard_id" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -51,9 +51,9 @@
                 </div>
             </form>
 
-            <section class="overflow-hidden rounded-lg border border-blue-100 bg-white shadow-sm">
+            <section class="overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm">
                 <div class="hidden overflow-x-auto lg:block">
-                    <table class="min-w-full divide-y divide-blue-100">
+                    <table class="min-w-[62rem] divide-y divide-blue-100">
                         <thead class="bg-blue-50/70">
                             <tr>
                                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-blue-800">Time</th>
@@ -73,7 +73,7 @@
                                         <div class="text-xs text-slate-500">{{ $log->user?->email }}</div>
                                     </td>
                                     <td class="px-5 py-4">
-                                        <span class="inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-200">
+                                        <span class="inline-flex whitespace-nowrap rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-200">
                                             {{ str($log->action)->replace('_', ' ')->title() }}
                                         </span>
                                     </td>
@@ -99,19 +99,19 @@
                     </table>
                 </div>
 
-                <div class="grid gap-3 p-4 lg:hidden">
+                <div class="grid gap-3 p-3 sm:p-4 lg:hidden">
                     @forelse ($logs as $log)
-                        <article class="rounded-lg border border-blue-100 p-4">
-                            <div class="flex items-start justify-between gap-3">
-                                <div>
-                                    <p class="text-sm font-semibold text-blue-950">{{ $log->actor_name ?: 'System' }}</p>
+                        <article class="min-w-0 rounded-md border border-blue-100 p-3">
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-semibold text-blue-950">{{ $log->actor_name ?: 'System' }}</p>
                                     <p class="mt-1 text-xs text-slate-500">{{ $log->created_at->timezone('Asia/Manila')->format('M d, Y h:i A') }}</p>
                                 </div>
-                                <span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-200">
+                                <span class="max-w-[7rem] shrink-0 truncate whitespace-nowrap rounded-md bg-blue-50 px-2 py-1 text-[0.65rem] font-semibold text-blue-700 ring-1 ring-blue-200 sm:px-2.5 sm:text-xs">
                                     {{ str($log->action)->replace('_', ' ')->title() }}
                                 </span>
                             </div>
-                            <p class="mt-3 text-sm text-slate-600">{{ $log->description }}</p>
+                            <p class="mt-3 text-xs text-slate-600 sm:text-sm">{{ $log->description }}</p>
                             <p class="mt-2 font-mono text-xs text-slate-500">{{ $log->ip_address ?: 'N/A' }}</p>
                             @if ($log->properties)
                                 <details class="mt-3 text-sm">
@@ -121,7 +121,7 @@
                             @endif
                         </article>
                     @empty
-                        <div class="rounded-lg border border-blue-100 px-5 py-8 text-center text-slate-500">No audit records found.</div>
+                        <div class="rounded-md border border-blue-100 px-5 py-8 text-center text-slate-500">No audit records found.</div>
                     @endforelse
                 </div>
 

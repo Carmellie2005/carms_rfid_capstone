@@ -1,12 +1,10 @@
 <x-app-layout>
     @php
-        $incidentDefault = old('has_incident') || ($showIncident ?? false);
+        $incidentDefault = (bool) old('has_incident');
         $checkpointChecklistItems = \App\Support\PatrolChecklist::items();
         $incidentCategories = \App\Support\PatrolChecklist::incidentCategories();
         $guardName = $guardProfile?->name ?? Auth::user()->name;
         $guardEmployeeNo = $guardProfile?->employee_no ?? 'Account only';
-        $guardRfid = $guardProfile?->rfid_uid ?? '';
-        $guardShift = $guardProfile?->shift ?? 'Unassigned shift';
         $openChecklist = $errors->any() && old('patrol_log_id');
         $faceRegistrationComplete = (bool) ($faceRegistrationComplete ?? false);
         $patrolScheduleOpen = (bool) ($patrolScheduleOpen ?? true);
@@ -35,18 +33,6 @@
             ],
         ] : null;
     @endphp
-
-    <x-slot name="header">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h2 class="text-xl font-semibold leading-tight text-blue-950">{{ __('Scan Checkpoint') }}</h2>
-                <p class="mt-1 text-sm text-blue-600">ESP32 RFID checkpoint scan with camera verification and patrol checklist</p>
-            </div>
-            <a href="{{ route('patrol-logs.index') }}" class="inline-flex w-full items-center justify-center rounded-md border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 sm:w-auto">
-                My Patrol Logs
-            </a>
-        </div>
-    </x-slot>
 
     <div class="py-5 sm:py-8">
         <div class="mx-auto max-w-6xl space-y-5 px-4 sm:px-6 lg:px-8">
@@ -100,24 +86,6 @@
                 </div>
             @endif
 
-            <section class="grid gap-4 md:grid-cols-3">
-                <div class="rounded-lg border border-blue-100 bg-white p-5 shadow-sm">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Guard</p>
-                    <p class="mt-2 text-lg font-semibold text-blue-950">{{ $guardName }}</p>
-                    <p class="mt-1 text-sm text-slate-500">{{ $guardEmployeeNo }}</p>
-                </div>
-                <div class="rounded-lg border border-blue-100 bg-white p-5 shadow-sm">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Assigned RFID</p>
-                    <p class="mt-2 font-mono text-lg font-semibold text-blue-950">{{ $guardRfid ?: 'No RFID assigned' }}</p>
-                    <p class="mt-1 text-sm text-slate-500">Use this card at the checkpoint reader</p>
-                </div>
-                <div class="rounded-lg border border-blue-100 bg-white p-5 shadow-sm">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Shift</p>
-                    <p class="mt-2 text-lg font-semibold text-blue-950">{{ $guardShift }}</p>
-                    <p class="mt-1 text-sm text-slate-500">{{ now()->timezone('Asia/Manila')->format('h:i A') }}</p>
-                </div>
-            </section>
-
             @if (! $guardProfile || $faceRegistrationComplete)
             <form
                 method="POST"
@@ -152,102 +120,137 @@
                 <input type="hidden" name="face_capture" :value="faceCapture">
                 <input type="hidden" name="captured_descriptor" :value="capturedDescriptor">
 
-                <section class="rounded-lg border border-blue-100 bg-white p-4 shadow-sm sm:p-6">
-                    <div class="grid gap-5 lg:grid-cols-[0.85fr_1.15fr]">
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Device Flow</p>
-                            <h3 class="mt-2 text-lg font-semibold text-blue-950">Checkpoint RFID Scan</h3>
+                <section class="rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-4">
+                    <div class="space-y-3">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">Device Flow</p>
+                                <h3 class="mt-0.5 text-base font-semibold text-blue-950">Checkpoint Scan Progress</h3>
+                            </div>
+                            <span class="inline-flex w-fit items-center gap-2 rounded-md px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-wide ring-1"
+                                :class="faceVerified ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : (pendingScan ? 'bg-blue-50 text-blue-700 ring-blue-200' : 'bg-slate-50 text-slate-600 ring-slate-200')"
+                                x-text="faceVerified ? 'Step 3 of 3' : (pendingScan ? 'Step 2 of 3' : 'Step 1 of 3')">
+                            </span>
+                        </div>
 
-                            <div class="mt-5 grid gap-3">
-                                <div class="flex items-center gap-3 rounded-md border border-blue-100 p-3" :class="pendingScan ? 'bg-blue-50/60' : 'bg-white'">
-                                    <span class="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition" :class="pendingScan ? 'bg-white text-blue-700 ring-2 ring-blue-200' : 'bg-blue-700 text-white'">
-                                        <svg x-show="pendingScan" x-cloak class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <div class="rounded-md border border-blue-100 bg-blue-50/60 px-3 py-3 sm:px-4">
+                            <div class="grid grid-cols-[2rem_minmax(1.5rem,1fr)_2rem_minmax(1.5rem,1fr)_2rem] items-center sm:grid-cols-[2.25rem_minmax(2rem,1fr)_2.25rem_minmax(2rem,1fr)_2.25rem]">
+                                <div class="flex justify-center">
+                                    <span class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold shadow-sm transition sm:h-9 sm:w-9 sm:text-sm"
+                                        :class="pendingScan ? 'bg-emerald-600 text-white' : 'bg-blue-700 text-white ring-4 ring-blue-100'">
+                                        <svg x-show="pendingScan" x-cloak class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                             <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                         <span x-show="! pendingScan">1</span>
                                     </span>
-                                    <div>
-                                        <p class="text-sm font-semibold text-blue-950">RFID checkpoint scan</p>
-                                        <p class="text-xs text-slate-500">Tap the registered guard card on the ESP32 reader.</p>
-                                    </div>
                                 </div>
-                                <div class="flex items-center gap-3 rounded-md border border-blue-100 p-3" :class="pendingScan ? 'bg-blue-50/60' : 'bg-white'">
-                                    <span class="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition" :class="faceVerified ? 'bg-white text-blue-700 ring-2 ring-blue-200' : (pendingScan ? 'bg-blue-700 text-white' : 'bg-slate-100 text-slate-500')">
-                                        <svg x-show="faceVerified" x-cloak class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <span class="h-1 rounded-full transition" :class="pendingScan ? 'bg-emerald-500' : 'bg-blue-200'"></span>
+                                <div class="flex justify-center">
+                                    <span class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold shadow-sm transition sm:h-9 sm:w-9 sm:text-sm"
+                                        :class="faceVerified ? 'bg-emerald-600 text-white' : (pendingScan ? 'bg-blue-700 text-white ring-4 ring-blue-100' : 'bg-white text-slate-400 ring-1 ring-slate-200')">
+                                        <svg x-show="faceVerified" x-cloak class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                             <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                         <span x-show="! faceVerified">2</span>
                                     </span>
-                                    <div>
-                                        <p class="text-sm font-semibold text-blue-950">Camera verification</p>
-                                        <p class="text-xs text-slate-500">Capture the guard face after the RFID scan is accepted.</p>
-                                    </div>
                                 </div>
-                                <div class="flex items-center gap-3 rounded-md border border-blue-100 p-3" :class="faceVerified ? 'bg-blue-50/60' : 'bg-white'">
-                                    <span class="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold" :class="faceVerified ? 'bg-blue-700 text-white' : 'bg-slate-100 text-slate-500'">3</span>
-                                    <div>
-                                        <p class="text-sm font-semibold text-blue-950">Checklist and incident</p>
-                                        <p class="text-xs text-slate-500">Submit the patrol checklist after face verification.</p>
-                                    </div>
+                                <span class="h-1 rounded-full transition" :class="faceVerified ? 'bg-emerald-500' : (pendingScan ? 'bg-blue-200' : 'bg-slate-200')"></span>
+                                <div class="flex justify-center">
+                                    <span class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold shadow-sm transition sm:h-9 sm:w-9 sm:text-sm"
+                                        :class="faceVerified ? 'bg-blue-700 text-white ring-4 ring-blue-100' : 'bg-white text-slate-400 ring-1 ring-slate-200'">3</span>
                                 </div>
+                            </div>
+
+                            <div class="mt-2 grid grid-cols-3 gap-1 text-center text-[0.62rem] font-bold uppercase tracking-wide sm:text-[0.68rem]">
+                                <span class="whitespace-nowrap" :class="pendingScan ? 'text-emerald-700' : 'text-blue-800'">RFID Scan</span>
+                                <span class="whitespace-nowrap" :class="faceVerified ? 'text-emerald-700' : (pendingScan ? 'text-blue-800' : 'text-slate-400')">Face Verify</span>
+                                <span class="whitespace-nowrap" :class="faceVerified ? 'text-blue-800' : 'text-slate-400'">Checklist</span>
                             </div>
                         </div>
 
-                        <div class="rounded-lg border border-blue-100 bg-blue-50/60 p-4 sm:p-5">
-                            <div x-show="! pendingScan" x-transition.opacity.duration.200ms class="flex min-h-72 flex-col items-center justify-center rounded-md border border-dashed border-blue-200 bg-white p-6 text-center">
-                                <div class="flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-blue-700">
-                                    <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <div class="rounded-md border border-blue-100 bg-blue-50/40 p-2.5 sm:p-3">
+                            <div x-show="! pendingScan" x-transition.opacity.duration.200ms class="flex min-h-[13rem] flex-col items-center justify-center rounded-md border border-dashed border-blue-200 bg-white p-4 text-center sm:min-h-[15rem]">
+                                <div class="flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-blue-700">
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                         <path d="M7 7.5h10v9H7v-9ZM9.5 4.5h5M9.5 19.5h5M4 10v4M20 10v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
                                 </div>
-                                <h3 class="mt-4 text-lg font-semibold text-blue-950">Waiting for RFID scan</h3>
-                                <p class="mt-2 max-w-md text-sm leading-6 text-slate-500" x-text="scanMessage"></p>
-                                <div x-show="patrolScheduleOpen" class="mt-5 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800 ring-1 ring-blue-100">
+                                <p class="mt-3 text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">Step 1</p>
+                                <h3 class="mt-0.5 text-base font-semibold text-blue-950">Scan RFID Card</h3>
+                                <p class="mt-1.5 max-w-md text-sm leading-5 text-slate-500" x-text="scanMessage"></p>
+                                <div x-show="patrolScheduleOpen" class="mt-4 inline-flex items-center gap-2 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-800 ring-1 ring-blue-100">
                                     <span class="h-2 w-2 animate-pulse rounded-full bg-blue-700"></span>
                                     <span x-text="patrolScheduleTestingMode ? 'Testing mode: open anytime' : 'Listening for ESP32 scan'"></span>
                                 </div>
-                                <div x-show="! patrolScheduleOpen" x-cloak class="mt-5 inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">
+                                <div x-show="! patrolScheduleOpen" x-cloak class="mt-4 inline-flex items-center gap-2 rounded-md bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">
                                     Scheduled patrol only
                                 </div>
                             </div>
 
-                            <div x-show="pendingScan" x-cloak x-transition.opacity.duration.200ms class="space-y-5">
-                                <div class="rounded-md border border-emerald-100 bg-white p-4">
+                            <div x-show="pendingScan && ! faceVerified" x-cloak x-transition.opacity.duration.200ms class="space-y-3">
+                                <div class="rounded-md border border-emerald-100 bg-white p-3">
                                     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                         <div>
-                                            <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700">RFID Accepted</p>
-                                            <h3 class="mt-2 text-lg font-semibold text-blue-950" x-text="pendingScan?.checkpoint?.name || 'Checkpoint'"></h3>
+                                            <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-emerald-700">Step 1 complete</p>
+                                            <h3 class="mt-0.5 text-base font-semibold text-blue-950" x-text="pendingScan?.checkpoint?.name || 'Checkpoint'"></h3>
                                             <p class="mt-1 text-sm text-slate-500" x-text="pendingScan?.scanned_at || ''"></p>
                                         </div>
-                                        <span class="inline-flex w-fit rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-200">
+                                        <span class="inline-flex w-fit rounded-md bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-200">
                                             Face required
                                         </span>
                                     </div>
                                 </div>
 
-                                <dl class="grid gap-3 sm:grid-cols-2">
-                                    <div class="rounded-md border border-blue-100 bg-white p-3">
-                                        <dt class="text-xs font-semibold uppercase text-blue-800">Guard</dt>
-                                        <dd class="mt-1 font-semibold text-slate-900" x-text="pendingScan?.guard?.name || guardName"></dd>
+                                <dl class="grid gap-2 sm:grid-cols-4">
+                                    <div class="rounded-md border border-blue-100 bg-white p-2.5">
+                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Guard</dt>
+                                        <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="pendingScan?.guard?.name || guardName"></dd>
                                         <dd class="text-xs text-slate-500" x-text="pendingScan?.guard?.employee_no || guardEmployeeNo"></dd>
                                     </div>
-                                    <div class="rounded-md border border-blue-100 bg-white p-3">
-                                        <dt class="text-xs font-semibold uppercase text-blue-800">RFID UID</dt>
-                                        <dd class="mt-1 font-mono text-slate-900" x-text="pendingScan?.rfid_uid || ''"></dd>
+                                    <div class="rounded-md border border-blue-100 bg-white p-2.5">
+                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">RFID UID</dt>
+                                        <dd class="mt-1 truncate font-mono text-sm text-slate-900" x-text="pendingScan?.rfid_uid || ''"></dd>
                                     </div>
-                                    <div class="rounded-md border border-blue-100 bg-white p-3">
-                                        <dt class="text-xs font-semibold uppercase text-blue-800">Checkpoint Code</dt>
-                                        <dd class="mt-1 font-mono text-slate-900" x-text="pendingScan?.checkpoint?.code || pendingScan?.checkpoint_code || ''"></dd>
+                                    <div class="rounded-md border border-blue-100 bg-white p-2.5">
+                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Checkpoint</dt>
+                                        <dd class="mt-1 truncate font-mono text-sm text-slate-900" x-text="pendingScan?.checkpoint?.code || pendingScan?.checkpoint_code || ''"></dd>
                                     </div>
-                                    <div class="rounded-md border border-blue-100 bg-white p-3">
-                                        <dt class="text-xs font-semibold uppercase text-blue-800">Device UID</dt>
-                                        <dd class="mt-1 font-mono text-slate-900" x-text="pendingScan?.checkpoint?.device_uid || 'Device recorded'"></dd>
+                                    <div class="rounded-md border border-blue-100 bg-white p-2.5">
+                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Device UID</dt>
+                                        <dd class="mt-1 truncate font-mono text-sm text-slate-900" x-text="pendingScan?.checkpoint?.device_uid || 'Device recorded'"></dd>
                                     </div>
                                 </dl>
 
                                 <x-input-error :messages="$errors->get('patrol_log_id')" class="mt-2" />
 
-                                <div x-show="faceVerified" x-cloak x-transition.opacity.duration.200ms class="rounded-md border border-emerald-100 bg-emerald-50 px-4 py-3">
+                                <div class="rounded-md border border-blue-100 bg-white p-3">
+                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <div class="flex items-start gap-3">
+                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700 ring-1 ring-blue-100">
+                                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                    <path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" stroke="currentColor" stroke-width="2" />
+                                                    <path d="M4 19c1.6-3 4.3-4.5 8-4.5S18.4 16 20 19M5 5h3M16 5h3M5 5v3M19 5v3M5 16v3M5 19h3M19 16v3M16 19h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                                </svg>
+                                            </span>
+                                            <div>
+                                                <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">Step 2</p>
+                                                <h4 class="mt-0.5 text-sm font-semibold text-blue-950">Verify Face</h4>
+                                                <p class="mt-1 text-xs text-slate-500">Capture the guard face to confirm this RFID scan.</p>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="openFaceModal()" :disabled="! patrolScheduleOpen || faceModelLoading || cameraOpening || verificationBusy || submittingPatrol">
+                                            <svg x-show="faceModelLoading || cameraOpening" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                                            </svg>
+                                            <span x-text="! patrolScheduleOpen ? 'Closed' : (faceModelLoading ? 'Loading...' : (cameraOpening ? 'Opening...' : 'Open Camera'))"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div x-show="faceVerified" x-cloak x-transition.opacity.duration.200ms class="space-y-3">
+                                <div class="rounded-md border border-emerald-100 bg-emerald-50 px-4 py-3">
                                     <div class="flex items-center gap-3">
                                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-emerald-700 ring-1 ring-emerald-100">
                                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -255,25 +258,40 @@
                                             </svg>
                                         </span>
                                         <div>
-                                            <p class="text-sm font-semibold text-emerald-800">Face verification complete</p>
-                                            <p class="mt-0.5 text-xs text-emerald-700">Review the scan details, then continue to the checklist.</p>
+                                            <p class="text-sm font-semibold text-emerald-800">Steps 1 and 2 complete</p>
+                                            <p class="mt-0.5 text-xs text-emerald-700">RFID and face verification are confirmed.</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                    <span class="text-sm font-semibold" :class="faceVerified ? 'text-emerald-700' : 'text-blue-700'" x-text="faceVerified ? 'Ready for checklist.' : 'Continue to camera verification.'"></span>
-                                    <div class="flex flex-col gap-2 sm:flex-row">
-                                        <button type="button" class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" x-show="faceVerified" x-transition.opacity.duration.150ms @click="continueToChecklist()">
-                                            Continue to Checklist
-                                        </button>
-                                        <button type="button" class="inline-flex h-11 items-center justify-center rounded-md px-5 text-sm font-semibold shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60" :class="faceVerified ? 'border border-blue-200 bg-white text-blue-700 hover:bg-blue-50' : 'bg-blue-700 text-white hover:bg-blue-800 disabled:bg-blue-300'" @click="openFaceModal()" :disabled="! patrolScheduleOpen || faceModelLoading || cameraOpening || verificationBusy || submittingPatrol">
-                                            <svg x-show="faceModelLoading || cameraOpening" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
-                                            </svg>
-                                            <span x-text="! patrolScheduleOpen ? 'Closed' : (faceModelLoading ? 'Loading...' : (cameraOpening ? 'Opening...' : (faceVerified ? 'Recheck Face' : 'Open Camera')))"></span>
-                                        </button>
+                                <dl class="grid gap-2 sm:grid-cols-2">
+                                    <div class="rounded-md border border-blue-100 bg-white p-2.5">
+                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Checkpoint</dt>
+                                        <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="pendingScan?.checkpoint?.name || 'Checkpoint'"></dd>
+                                        <dd class="text-xs text-slate-500" x-text="pendingScan?.scanned_at || ''"></dd>
+                                    </div>
+                                    <div class="rounded-md border border-blue-100 bg-white p-2.5">
+                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Guard</dt>
+                                        <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="pendingScan?.guard?.name || guardName"></dd>
+                                        <dd class="text-xs text-slate-500" x-text="pendingScan?.guard?.employee_no || guardEmployeeNo"></dd>
+                                    </div>
+                                </dl>
+
+                                <div class="rounded-md border border-blue-100 bg-white p-3">
+                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <div>
+                                            <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">Step 3</p>
+                                            <h4 class="mt-0.5 text-sm font-semibold text-blue-950">Checklist and Incident</h4>
+                                            <p class="mt-1 text-xs text-slate-500">Complete the patrol checklist before submitting this checkpoint visit.</p>
+                                        </div>
+                                        <div class="flex flex-col gap-2 sm:flex-row">
+                                            <button type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60" @click="openFaceModal()" :disabled="faceModelLoading || cameraOpening || verificationBusy || submittingPatrol">
+                                                Recheck Face
+                                            </button>
+                                            <button type="button" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="continueToChecklist()" :disabled="submittingPatrol">
+                                                Open Checklist
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -285,6 +303,7 @@
                     <section class="face-verification-modal mobile-scroll-area overflow-y-auto rounded-lg bg-white shadow-2xl dark:bg-slate-900">
                         <div class="flex items-center justify-between gap-3 border-b border-blue-100 px-4 py-2.5 dark:border-slate-800">
                             <div>
+                                <p class="text-[0.68rem] font-bold uppercase tracking-wide text-blue-700">Step 2</p>
                                 <h3 class="text-base font-semibold text-blue-950">Camera Verification</h3>
                             </div>
                             <button type="button" class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-blue-100 bg-white text-slate-700 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800" @click="closeFaceModal()" aria-label="Close camera modal">
@@ -440,6 +459,17 @@
                                             <p class="mt-2 text-xs text-slate-500">
                                                 Required when an incident is observed. Upload 2 to 3 images, or take one photo using the camera. Maximum 3 images total.
                                             </p>
+                                            <div x-show="incidentImagePreviews.length" x-cloak class="mt-3">
+                                                <p class="text-xs font-semibold text-slate-700">Selected image previews</p>
+                                                <div class="mt-2 grid grid-cols-3 gap-2">
+                                                    <template x-for="preview in incidentImagePreviews" :key="preview.id">
+                                                        <figure class="min-w-0 overflow-hidden rounded-md border border-blue-100 bg-blue-50">
+                                                            <img :src="preview.url" :alt="preview.name" class="h-20 w-full object-cover sm:h-24">
+                                                            <figcaption class="truncate px-2 py-1 text-[0.65rem] font-medium text-slate-600" x-text="preview.name"></figcaption>
+                                                        </figure>
+                                                    </template>
+                                                </div>
+                                            </div>
                                             <p x-show="incidentImageCount > 0 && ! incidentImageError" x-cloak class="mt-2 text-xs font-semibold text-blue-700" x-text="`${incidentImageCount} image${incidentImageCount === 1 ? '' : 's'} selected`"></p>
                                             <p x-show="incidentImageError" x-cloak class="mt-2 text-xs font-semibold text-red-700" x-text="incidentImageError"></p>
                                         </div>

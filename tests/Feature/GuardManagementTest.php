@@ -86,8 +86,44 @@ class GuardManagementTest extends TestCase
             ->assertSee('aria-label="Show password"', false)
             ->assertSee('aria-label="Show confirm password"', false)
             ->assertSee('Create Guard Account')
+            ->assertSee('Guard Management')
+            ->assertSee('Registered guards, RFID cards, and live face registration status')
             ->assertSee('Guard Profiles')
             ->assertDontSee('Register Guard');
+    }
+
+    public function test_guard_index_hides_unregistered_rfid_placeholder(): void
+    {
+        $supervisor = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'supervisor',
+        ]);
+
+        Guard::create([
+            'employee_no' => 'UNKNOWN',
+            'name' => 'Unregistered RFID Card',
+            'rfid_uid' => 'UNKNOWN',
+            'status' => 'inactive',
+        ]);
+
+        Guard::create([
+            'user_id' => User::factory()->create(['role' => 'guard'])->id,
+            'employee_no' => 'SG-VISIBLE',
+            'name' => 'Visible Guard',
+            'email' => 'visible.guard@example.com',
+            'rfid_uid' => 'RFID-VISIBLE',
+            'shift' => 'Night Shift',
+            'status' => 'active',
+        ]);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('guards.index'));
+
+        $response
+            ->assertOk()
+            ->assertSee('Visible Guard')
+            ->assertDontSee('Unregistered RFID Card');
     }
 
     public function test_supervisor_can_fetch_guard_records_for_modal(): void

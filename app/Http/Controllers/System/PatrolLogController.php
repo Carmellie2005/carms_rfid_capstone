@@ -25,7 +25,7 @@ class PatrolLogController extends Controller
 
         $logs = $this->patrolLogQuery($request, $isSupervisor, $guardProfile)
             ->latest('scanned_at')
-            ->paginate(12)
+            ->paginate($isSupervisor ? 12 : 6)
             ->withQueryString();
 
         return view('system.patrols.index', [

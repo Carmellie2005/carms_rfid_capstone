@@ -31,7 +31,7 @@
                 $exportQuery = request()->only(['status', 'guard_id', 'checkpoint_id', 'date']);
             @endphp
 
-            <form method="GET" action="{{ route('patrol-logs.index') }}" class="grid gap-3 rounded-lg border border-blue-100 bg-white p-3 shadow-sm {{ $isSupervisor ? 'md:grid-cols-2 xl:grid-cols-[minmax(150px,0.8fr)_minmax(170px,1fr)_minmax(150px,0.8fr)_minmax(140px,0.75fr)_auto]' : 'md:grid-cols-2 xl:grid-cols-[minmax(150px,0.8fr)_minmax(150px,0.8fr)_minmax(140px,0.75fr)_auto]' }}">
+            <form method="GET" action="{{ route('patrol-logs.index') }}" class="grid gap-3 rounded-md border border-blue-100 bg-white p-3 shadow-sm {{ $isSupervisor ? 'md:grid-cols-2 xl:grid-cols-[minmax(150px,0.8fr)_minmax(170px,1fr)_minmax(150px,0.8fr)_minmax(140px,0.75fr)_auto]' : 'md:grid-cols-2 xl:grid-cols-[minmax(150px,0.8fr)_minmax(150px,0.8fr)_minmax(140px,0.75fr)_auto]' }}">
                 <div>
                     <label for="status" class="block text-xs font-semibold uppercase text-blue-800">Status</label>
                     <select id="status" name="status" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -66,7 +66,7 @@
                     <input id="date" name="date" type="date" value="{{ request('date') }}" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
                 <div class="flex flex-wrap items-end gap-2 {{ $isSupervisor ? 'md:col-span-2 xl:col-span-1' : 'md:col-span-2 xl:col-span-1' }} xl:self-end xl:justify-end">
-                    <button class="h-9 rounded-md bg-blue-700 px-3 text-xs font-semibold text-white hover:bg-blue-800" type="submit">Filter</button>
+                    <button class="h-9 rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50" type="submit">Filter</button>
                     <a href="{{ route('patrol-logs.index') }}" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">Clear</a>
                     <a href="{{ route('patrol-logs.pdf', $exportQuery) }}" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">
                         Download PDF
@@ -77,41 +77,71 @@
                 </div>
             </form>
 
-            <div class="grid gap-3 md:hidden">
+            <div class="flex flex-col gap-3 rounded-md border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                <p class="whitespace-nowrap">
+                    @if ($logs->total())
+                        <span class="font-semibold text-blue-950">Showing {{ $logs->firstItem() }} to {{ $logs->lastItem() }} of {{ $logs->total() }} {{ $isSupervisor ? 'patrol logs' : 'my patrol logs' }}</span>
+                    @else
+                        No patrol logs to display
+                    @endif
+                </p>
+
+                @if ($logs->hasPages())
+                    <div class="flex items-center gap-2">
+                        @if ($logs->onFirstPage())
+                            <span class="inline-flex h-9 items-center justify-center rounded-md border border-slate-200 px-3 text-xs font-semibold text-slate-400">Previous</span>
+                        @else
+                            <a href="{{ $logs->previousPageUrl() }}" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">Previous</a>
+                        @endif
+
+                        <span class="whitespace-nowrap text-xs font-semibold text-slate-500">
+                            Page {{ $logs->currentPage() }} of {{ $logs->lastPage() }}
+                        </span>
+
+                        @if ($logs->hasMorePages())
+                            <a href="{{ $logs->nextPageUrl() }}" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">Next</a>
+                        @else
+                            <span class="inline-flex h-9 items-center justify-center rounded-md border border-slate-200 px-3 text-xs font-semibold text-slate-400">Next</span>
+                        @endif
+                    </div>
+                @endif
+            </div>
+
+            <div class="grid gap-3 lg:hidden">
                 @forelse ($logs as $log)
                     @php
                         $scanTime = $log->scanned_at?->timezone(config('app.timezone'));
                     @endphp
-                    <article class="rounded-lg border border-blue-100 bg-white p-4 shadow-sm">
-                        <div class="flex items-start justify-between gap-3">
-                            <div>
-                                <p class="text-xs font-semibold uppercase text-blue-800">{{ $scanTime?->format('M d, Y') ?? 'No date' }}</p>
+                    <article class="min-w-0 rounded-md border border-blue-100 bg-white p-3 shadow-sm">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                                <p class="truncate text-[0.65rem] font-semibold uppercase text-blue-800 sm:text-xs">{{ $scanTime?->format('M d, Y') ?? 'No date' }}</p>
                                 <p class="mt-1 text-sm font-semibold text-blue-950">{{ $scanTime?->format('h:i A') ?? 'No time' }}</p>
                             </div>
-                            <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
+                            <span class="max-w-[7rem] shrink-0 truncate whitespace-nowrap rounded-md px-2 py-1 text-[0.65rem] font-semibold ring-1 sm:px-2.5 sm:text-xs {{ $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
                                 {{ str($log->status)->replace('_', ' ')->title() }}
                             </span>
                         </div>
 
-                        <dl class="mt-4 grid gap-3 text-sm text-slate-600">
-                            <div>
-                                <dt class="text-xs font-semibold uppercase text-blue-800">Guard</dt>
-                                <dd class="mt-1 font-medium text-slate-900">{{ $log->securityGuard?->name ?? 'Unknown' }}</dd>
-                                <dd class="text-xs text-slate-500">{{ $log->securityGuard?->employee_no ?? 'No guard match' }}</dd>
+                        <dl class="mt-3 grid gap-2 text-xs text-slate-600 sm:text-sm">
+                            <div class="min-w-0">
+                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 sm:text-xs">Guard</dt>
+                                <dd class="mt-1 truncate font-medium text-slate-900">{{ $log->securityGuard?->name ?? 'Unknown' }}</dd>
+                                <dd class="truncate text-xs text-slate-500">{{ $log->securityGuard?->employee_no ?? 'No guard match' }}</dd>
                             </div>
-                            <div>
-                                <dt class="text-xs font-semibold uppercase text-blue-800">Checkpoint</dt>
-                                <dd class="mt-1 font-medium text-slate-900">{{ $log->checkpoint?->name ?? 'Unknown' }}</dd>
-                                <dd class="font-mono text-xs text-slate-500">{{ $log->checkpoint_code }}</dd>
+                            <div class="min-w-0">
+                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 sm:text-xs">Checkpoint</dt>
+                                <dd class="mt-1 truncate font-medium text-slate-900">{{ $log->checkpoint?->name ?? 'Unknown' }}</dd>
+                                <dd class="truncate font-mono text-xs text-slate-500">{{ $log->checkpoint_code }}</dd>
                             </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <dt class="text-xs font-semibold uppercase text-blue-800">RFID</dt>
-                                    <dd class="mt-1 font-mono">{{ $log->rfid_uid }}</dd>
+                            <div class="grid gap-2 sm:grid-cols-2">
+                                <div class="min-w-0">
+                                    <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 sm:text-xs">RFID</dt>
+                                    <dd class="mt-1 truncate font-mono">{{ $log->rfid_uid }}</dd>
                                 </div>
-                                <div>
-                                    <dt class="text-xs font-semibold uppercase text-blue-800">Face</dt>
-                                    <dd class="mt-1">{{ str($log->facial_status)->replace('_', ' ')->title() }}</dd>
+                                <div class="min-w-0">
+                                    <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 sm:text-xs">Face</dt>
+                                    <dd class="mt-1 truncate">{{ str($log->facial_status)->replace('_', ' ')->title() }}</dd>
                                 </div>
                             </div>
                         </dl>
@@ -120,20 +150,20 @@
                             @php
                                 $mobileFlags = \App\Support\PatrolChecklist::checkedLabels($log->checklistResponse);
                             @endphp
-                            <div class="mt-4 flex flex-wrap gap-1">
+                            <div class="mt-3 flex flex-wrap gap-1">
                                 @forelse ($mobileFlags as $label)
-                                    <span class="rounded bg-blue-50 px-2 py-1 text-xs text-blue-700">{{ $label }}</span>
+                                    <span class="rounded-md bg-blue-50 px-2 py-1 text-[0.65rem] text-blue-700 sm:text-xs">{{ $label }}</span>
                                 @empty
                                     <span class="text-xs text-slate-500">No checked checklist items</span>
                                 @endforelse
                             </div>
                         @endif
 
-                        <div class="mt-4 rounded-md bg-slate-50 p-3 text-sm text-slate-600">
+                        <div class="mt-3 rounded-md bg-slate-50 p-2 text-xs text-slate-600 sm:p-3 sm:text-sm">
                             <span class="font-semibold text-slate-800">Incident:</span>
                             @if ($log->incidentReport)
                                 {{ $log->incidentReport->category }} - {{ str($log->incidentReport->status)->replace('_', ' ')->title() }}
-                                <a href="{{ route('incidents.pdf', $log->incidentReport) }}" class="mt-2 inline-flex items-center justify-center rounded-md border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-50">
+                                <a href="{{ route('incidents.pdf', $log->incidentReport) }}" class="mt-2 inline-flex items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-50">
                                     Download PDF
                                 </a>
                             @else
@@ -142,13 +172,13 @@
                         </div>
                     </article>
                 @empty
-                    <div class="rounded-lg border border-blue-100 bg-white px-5 py-8 text-center text-slate-500 shadow-sm">No patrol logs found.</div>
+                    <div class="rounded-md border border-blue-100 bg-white px-5 py-8 text-center text-slate-500 shadow-sm">No patrol logs found.</div>
                 @endforelse
             </div>
 
-            <div class="hidden overflow-hidden rounded-lg border border-blue-100 bg-white shadow-sm md:block">
+            <div class="hidden overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm lg:block">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-blue-100 text-sm">
+                    <table class="min-w-[72rem] divide-y divide-blue-100 text-sm">
                         <thead class="bg-blue-50/70 text-left text-xs font-semibold uppercase text-blue-800">
                             <tr>
                                 <th class="px-5 py-3">Scan</th>
@@ -182,7 +212,7 @@
                                     <td class="px-5 py-4 font-mono text-slate-700">{{ $log->rfid_uid }}</td>
                                     <td class="px-5 py-4 text-slate-600">{{ str($log->facial_status)->replace('_', ' ')->title() }}</td>
                                     <td class="px-5 py-4">
-                                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
+                                        <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
                                             {{ str($log->status)->replace('_', ' ')->title() }}
                                         </span>
                                         @if ($log->notes)
@@ -227,7 +257,9 @@
                 </div>
             </div>
 
-            {{ $logs->links() }}
+            <div class="rounded-md border border-blue-100 bg-white px-5 py-4 shadow-sm">
+                {{ $logs->links() }}
+            </div>
         </div>
     </div>
 </x-app-layout>

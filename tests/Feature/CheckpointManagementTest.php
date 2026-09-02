@@ -54,6 +54,7 @@ class CheckpointManagementTest extends TestCase
             ->assertSee('x-on:click="$dispatch(\'open-create-checkpoint\')"', false)
             ->assertSee('Create Checkpoint')
             ->assertSee('Checkpoints')
+            ->assertSee('Checkpoint Management')
             ->assertDontSee('Checkpoint List')
             ->assertDontSee(route('checkpoints.create'), false);
     }

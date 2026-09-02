@@ -46,65 +46,16 @@
             $accountPhotoUrl = $user?->profile_photo_path
                 ? asset('storage/'.$user->profile_photo_path)
                 : asset($accountIconPath);
-            $todayDate = now('Asia/Manila')->toDateString();
-            $guardProfileId = $isSupervisor ? null : $user?->guardProfile?->id;
-
-            $notificationIncidentQuery = \App\Models\IncidentReport::with(['securityGuard', 'checkpoint'])
-                ->whereIn('status', ['submitted', 'under_review'])
-                ->when(! $isSupervisor, fn ($query) => $query->where('guard_id', $guardProfileId ?? 0))
-                ->whereDoesntHave('notificationReads', fn ($query) => $query->where('user_id', $user?->id));
-
-            $notificationPatrolQuery = \App\Models\PatrolLog::with(['securityGuard', 'checkpoint'])
-                ->whereIn('status', ['suspicious', 'invalid', 'pending_face', 'profile_incomplete', 'outside_schedule'])
-                ->whereDate('scanned_at', $todayDate)
-                ->when(! $isSupervisor, fn ($query) => $query->where('guard_id', $guardProfileId ?? 0))
-                ->whereDoesntHave('notificationReads', fn ($query) => $query->where('user_id', $user?->id));
-
-            $notificationCount = (clone $notificationIncidentQuery)->count() + (clone $notificationPatrolQuery)->count();
-
-            $incidentNotifications = (clone $notificationIncidentQuery)
-                ->latest('incident_at')
-                ->take(4)
-                ->get()
-                ->map(fn ($incident) => [
-                    'read_type' => 'incident',
-                    'read_id' => $incident->id,
-                    'type' => 'Incident',
-                    'title' => $incident->category ?: 'Incident report',
-                    'body' => collect([$incident->securityGuard?->name, $incident->checkpoint?->name])->filter()->implode(' - ') ?: 'Incident report submitted',
-                    'time' => $incident->incident_at,
-                    'badge' => ucfirst($incident->priority ?: 'Normal'),
-                    'href' => $isSupervisor
-                        ? route('incidents.index', ['status' => $incident->status])
-                        : route('patrol-logs.index', ['date' => $incident->incident_at?->toDateString()]),
-                ]);
-
-            $patrolNotifications = (clone $notificationPatrolQuery)
-                ->latest('scanned_at')
-                ->take(4)
-                ->get()
-                ->map(fn ($patrol) => [
-                    'read_type' => 'patrol',
-                    'read_id' => $patrol->id,
-                    'type' => 'Patrol',
-                    'title' => \Illuminate\Support\Str::of($patrol->status)->replace('_', ' ')->title()->toString().' scan',
-                    'body' => collect([$patrol->securityGuard?->name, $patrol->checkpoint?->name])->filter()->implode(' - ') ?: 'Checkpoint scan needs review',
-                    'time' => $patrol->scanned_at,
-                    'badge' => \Illuminate\Support\Str::of($patrol->status)->replace('_', ' ')->title()->toString(),
-                    'href' => route('patrol-logs.index', ['status' => $patrol->status, 'date' => $patrol->scanned_at?->toDateString()]),
-                ]);
-
-            $notificationItems = $incidentNotifications
-                ->concat($patrolNotifications)
-                ->sortByDesc(fn ($item) => $item['time']?->timestamp ?? 0)
-                ->take(6)
-                ->values();
+            $notificationCount = \App\Support\NotificationFeed::unreadCountFor($user);
+            $notificationPreviewLimit = \App\Support\NotificationFeed::DROPDOWN_LIMIT;
+            $notificationItems = \App\Support\NotificationFeed::unreadItemsFor($user, $notificationPreviewLimit);
         @endphp
 
         <div
             x-data="{
                 sidebarOpen: false,
                 sidebarCollapsed: false,
+                notificationsOpen: false,
                 pageBusy: false,
                 markPageBusy(event) {
                     if (event.defaultPrevented || event.target?.dataset?.skipGlobalLoader === 'true') {
@@ -159,6 +110,8 @@
             }"
             x-on:submit="markPageBusy($event)"
             x-on:click="handlePageClick($event)"
+            x-on:open-notifications-modal.window="notificationsOpen = true"
+            x-on:keydown.escape.window="notificationsOpen = false"
             class="app-viewport bg-blue-50/60 dark:bg-slate-950 lg:overflow-hidden"
         >
             <div
@@ -211,12 +164,12 @@
                         >
                             <div class="min-w-0">
                                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Today</p>
-                                <p class="truncate text-xs font-semibold text-blue-950 dark:text-blue-100 sm:text-base">
-                                    <span class="sm:hidden">{{ $mobileToday }}</span>
-                                    <span class="hidden sm:inline">{{ $today }}</span>
+                                <p class="truncate text-xs font-semibold text-blue-950 dark:text-blue-100 lg:text-base">
+                                    <span class="lg:hidden">{{ $mobileToday }}</span>
+                                    <span class="hidden lg:inline">{{ $today }}</span>
                                     <span class="text-slate-400">|</span>
-                                    <span class="font-mono sm:hidden" x-text="shortTimeNow">{{ $currentShortTime }}</span>
-                                    <span class="hidden font-mono sm:inline" x-text="timeNow">{{ $currentTime }}</span>
+                                    <span class="font-mono lg:hidden" x-text="shortTimeNow">{{ $currentShortTime }}</span>
+                                    <span class="hidden font-mono lg:inline" x-text="timeNow">{{ $currentTime }}</span>
                                 </p>
                             </div>
                         </div>
@@ -269,7 +222,11 @@
                                             <div>
                                                 <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Notifications</p>
                                                 <p class="text-xs text-slate-500 dark:text-slate-400">
-                                                    {{ $notificationCount }} unread {{ \Illuminate\Support\Str::plural('alert', $notificationCount) }}
+                                                    @if ($notificationCount > $notificationPreviewLimit)
+                                                        Latest {{ $notificationPreviewLimit }} of {{ $notificationCount }} unread alerts
+                                                    @else
+                                                        {{ $notificationCount }} unread {{ \Illuminate\Support\Str::plural('alert', $notificationCount) }}
+                                                    @endif
                                                 </p>
                                             </div>
                                             <div class="flex items-center gap-2">
@@ -297,9 +254,15 @@
                                                     <a href="{{ $item['href'] }}" class="min-w-0 flex-1 focus:outline-none">
                                                         <p class="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">{{ $item['type'] }}</p>
                                                         <p class="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $item['title'] }}</p>
-                                                        <p class="mt-1 line-clamp-2 text-xs leading-5 text-slate-500 dark:text-slate-400">{{ $item['body'] }}</p>
-                                                        @if ($item['time'])
-                                                            <p class="mt-2 text-xs font-medium text-slate-400">{{ $item['time']->diffForHumans() }}</p>
+                                                        <p class="mt-1 max-h-10 overflow-hidden text-xs leading-5 text-slate-500 dark:text-slate-400">{{ $item['body'] }}</p>
+                                                        @if ($item['time_label'] !== 'Not recorded')
+                                                            <p class="mt-2 text-xs font-medium text-slate-400">
+                                                                {{ $item['time_label'] }}
+                                                                @if ($item['relative_time'])
+                                                                    <span class="text-slate-300 dark:text-slate-600">|</span>
+                                                                    {{ $item['relative_time'] }}
+                                                                @endif
+                                                            </p>
                                                         @endif
                                                     </a>
                                                     <div class="flex shrink-0 flex-col items-end gap-2">
@@ -328,15 +291,9 @@
                                     </div>
 
                                     <div class="shrink-0 px-3 py-3 sm:px-4">
-                                        @if ($isSupervisor)
-                                            <a href="{{ route('incidents.index') }}" class="inline-flex w-full items-center justify-center rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900">
-                                                View Incident Reports
-                                            </a>
-                                        @else
-                                            <a href="{{ route('patrol-logs.index') }}" class="inline-flex w-full items-center justify-center rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900">
-                                                View My Patrol Logs
-                                            </a>
-                                        @endif
+                                        <a href="{{ route('notifications.index') }}" data-skip-global-loader="true" x-on:click.prevent="open = false; $dispatch('open-notifications-modal')" class="inline-flex w-full items-center justify-center rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900">
+                                            View all notifications
+                                        </a>
                                     </div>
                                 </section>
                             </div>
@@ -405,6 +362,52 @@
                     {{ $slot }}
                 </main>
             </div>
+
+            <div
+                x-show="notificationsOpen"
+                x-cloak
+                x-transition.opacity.duration.150ms
+                class="fixed inset-0 z-[80] bg-slate-950/45"
+                x-on:click="notificationsOpen = false"
+                aria-hidden="true"
+            ></div>
+
+            <section
+                x-show="notificationsOpen"
+                x-cloak
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 translate-y-3 sm:translate-x-4 sm:translate-y-0"
+                x-transition:enter-end="opacity-100 translate-y-0 sm:translate-x-0"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 translate-y-0 sm:translate-x-0"
+                x-transition:leave-end="opacity-0 translate-y-3 sm:translate-x-4 sm:translate-y-0"
+                class="fixed inset-0 z-[85] flex flex-col bg-white shadow-2xl dark:bg-slate-900 sm:inset-y-4 sm:left-auto sm:right-4 sm:w-[min(34rem,calc(100vw-2rem))] sm:rounded-md"
+                role="dialog"
+                aria-modal="true"
+                aria-label="All notifications"
+            >
+                <div class="flex shrink-0 items-center justify-between gap-3 border-b border-blue-100 px-4 py-3 dark:border-slate-800">
+                    <div class="min-w-0">
+                        <h2 class="truncate text-base font-semibold text-blue-950 dark:text-blue-100">All Notifications</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ $notificationCount }} unread {{ \Illuminate\Support\Str::plural('alert', $notificationCount) }}</p>
+                    </div>
+                    <div class="flex shrink-0 items-center gap-2">
+                        <a href="{{ route('notifications.index') }}" class="hidden whitespace-nowrap text-xs font-semibold text-blue-700 hover:text-blue-900 dark:text-blue-200 dark:hover:text-blue-100 sm:inline-flex">
+                            Open page
+                        </a>
+                        <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-blue-100 text-slate-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900" x-on:click="notificationsOpen = false" aria-label="Close notifications modal">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <iframe
+                    x-bind:src="notificationsOpen ? '{{ route('notifications.index', ['embedded' => 1]) }}' : 'about:blank'"
+                    title="All notifications"
+                    class="min-h-0 flex-1 border-0 bg-blue-50/60 dark:bg-slate-950"
+                ></iframe>
+            </section>
         </div>
     </body>
 </html>

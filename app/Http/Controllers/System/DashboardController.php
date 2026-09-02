@@ -7,11 +7,12 @@ use App\Models\Checkpoint;
 use App\Models\Guard;
 use App\Models\IncidentReport;
 use App\Models\PatrolLog;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke(Request $request): View
     {
         $timezone = config('app.timezone');
         $today = now($timezone)->toDateString();
@@ -29,9 +30,10 @@ class DashboardController extends Controller
                 'suspiciousScans' => PatrolLog::whereIn('status', ['invalid', 'suspicious', 'profile_incomplete', 'outside_schedule'])->count(),
             ],
             'recentPatrols' => PatrolLog::with(['securityGuard', 'checkpoint'])
+                ->where('status', '!=', 'expired')
                 ->latest('scanned_at')
-                ->take(8)
-                ->get(),
+                ->paginate(6, ['*'], 'recent_patrol_page')
+                ->withQueryString(),
             'recentIncidents' => IncidentReport::with(['securityGuard', 'checkpoint'])
                 ->latest('incident_at')
                 ->take(5)

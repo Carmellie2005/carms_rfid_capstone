@@ -900,6 +900,7 @@ Alpine.data('patrolScan', (config = {}) => ({
     incident: config.incident || false,
     incidentImageCount: 0,
     incidentImageError: '',
+    incidentImagePreviews: [],
     pendingScan: config.pendingScan || null,
     pendingScanUrl: config.pendingScanUrl,
     faceVerifyUrl: config.faceVerifyUrl,
@@ -1233,6 +1234,36 @@ Alpine.data('patrolScan', (config = {}) => ({
         return this.$refs[refName]?.files?.length || 0;
     },
 
+    incidentFiles() {
+        return [
+            ...Array.from(this.$refs.incidentUploadImages?.files || []),
+            ...Array.from(this.$refs.incidentCameraImages?.files || []),
+        ];
+    },
+
+    clearIncidentImagePreviews() {
+        this.incidentImagePreviews.forEach((preview) => {
+            if (preview.url) {
+                URL.revokeObjectURL(preview.url);
+            }
+        });
+
+        this.incidentImagePreviews = [];
+    },
+
+    refreshIncidentImagePreviews() {
+        this.clearIncidentImagePreviews();
+
+        this.incidentImagePreviews = this.incidentFiles()
+            .filter((file) => ! file.type || file.type.startsWith('image/'))
+            .slice(0, 3)
+            .map((file, index) => ({
+                id: `${file.name}-${file.size}-${file.lastModified}-${index}`,
+                name: file.name,
+                url: URL.createObjectURL(file),
+            }));
+    },
+
     updateIncidentImageCount(event = null) {
         let uploadCount = this.incidentFileCount('incidentUploadImages');
         let cameraCount = this.incidentFileCount('incidentCameraImages');
@@ -1245,11 +1276,13 @@ Alpine.data('patrolScan', (config = {}) => ({
             total = uploadCount + cameraCount;
             this.incidentImageError = 'Attach up to 3 incident images only.';
             this.incidentImageCount = total;
+            this.refreshIncidentImagePreviews();
 
             return false;
         }
 
         this.incidentImageCount = total;
+        this.refreshIncidentImagePreviews();
 
         if (this.incident && total === 0) {
             this.incidentImageError = 'Attach at least one incident image before submitting.';
@@ -1475,18 +1508,34 @@ Alpine.data('dashboardCharts', (analytics) => ({
         return document.documentElement.classList.contains('dark') ? '#1e293b' : '#dbeafe';
     },
 
-    baseOptions() {
+    isCompactChart() {
+        return window.matchMedia('(max-width: 640px)').matches;
+    },
+
+    baseOptions({ legend = false } = {}) {
+        const compact = this.isCompactChart();
+
         return {
             responsive: true,
             maintainAspectRatio: false,
+            resizeDelay: 100,
             animation: false,
+            layout: {
+                padding: compact ? 0 : 4,
+            },
             plugins: {
                 legend: {
+                    display: legend,
+                    position: compact ? 'bottom' : 'top',
                     labels: {
                         color: this.chartTextColor(),
-                        boxWidth: 12,
+                        boxWidth: compact ? 10 : 12,
+                        boxHeight: compact ? 10 : 12,
+                        padding: compact ? 10 : 12,
+                        usePointStyle: true,
                         font: {
                             family: 'Figtree',
+                            size: compact ? 10 : 12,
                         },
                     },
                 },
@@ -1505,15 +1554,21 @@ Alpine.data('dashboardCharts', (analytics) => ({
     },
 
     axisOptions() {
+        const compact = this.isCompactChart();
+
         return {
             x: {
                 grid: {
                     color: this.gridColor(),
                 },
                 ticks: {
+                    autoSkip: true,
                     color: this.chartTextColor(),
+                    maxRotation: 0,
+                    maxTicksLimit: compact ? 4 : 8,
                     font: {
                         family: 'Figtree',
+                        size: compact ? 10 : 12,
                     },
                 },
             },
@@ -1525,9 +1580,11 @@ Alpine.data('dashboardCharts', (analytics) => ({
                 },
                 ticks: {
                     color: this.chartTextColor(),
+                    maxTicksLimit: compact ? 5 : 8,
                     stepSize: 1,
                     font: {
                         family: 'Figtree',
+                        size: compact ? 10 : 12,
                     },
                 },
             },
@@ -1580,7 +1637,7 @@ Alpine.data('dashboardCharts', (analytics) => ({
             },
             options: {
                 ...this.baseOptions(),
-                cutout: '68%',
+                cutout: this.isCompactChart() ? '62%' : '68%',
             },
         }));
     },

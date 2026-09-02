@@ -21,7 +21,10 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->get('/profile');
 
-        $response->assertOk();
+        $response
+            ->assertOk()
+            ->assertDontSee('Update Password')
+            ->assertDontSee('Delete Account');
     }
 
     public function test_guard_profile_page_displays_guard_information(): void

@@ -26,6 +26,7 @@ class GuardController extends Controller
             'guards' => Guard::with('user')
                 ->with('faceDescriptors:id,guard_id,descriptor')
                 ->withCount('faceDescriptors')
+                ->where('employee_no', '!=', 'UNKNOWN')
                 ->latest()
                 ->paginate(10),
             'newGuard' => new Guard([
@@ -37,6 +38,8 @@ class GuardController extends Controller
 
     public function records(Guard $guard): JsonResponse
     {
+        abort_if($guard->employee_no === 'UNKNOWN', 404);
+
         $guard->loadMissing('user');
 
         $patrolLogs = $guard->patrolLogs()
