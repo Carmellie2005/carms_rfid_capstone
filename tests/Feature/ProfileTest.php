@@ -68,6 +68,33 @@ class ProfileTest extends TestCase
             ->assertSee('Completed');
     }
 
+    public function test_missing_profile_photo_falls_back_to_guard_icon(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'guard',
+            'username' => 'missing.photo',
+            'profile_photo_path' => 'profile-photos/missing-render-file.jpg',
+        ]);
+
+        Guard::create([
+            'user_id' => $user->id,
+            'employee_no' => 'SG-PHOTO',
+            'name' => 'Missing Photo Guard',
+            'rfid_uid' => 'RFID-PHOTO',
+            'shift' => 'Night Shift',
+            'status' => 'active',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/profile');
+
+        $response
+            ->assertOk()
+            ->assertSee('images/user-icons/guard-account.png')
+            ->assertDontSee('storage/profile-photos/missing-render-file.jpg');
+    }
+
     public function test_completed_guard_profile_displays_one_hundred_percent_completion(): void
     {
         $user = User::factory()->create([

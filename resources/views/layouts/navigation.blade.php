@@ -15,9 +15,11 @@
     $guardSidebarEmployeeNo = $guardSidebarProfile?->employee_no ?? 'Account only';
     $guardSidebarRfid = $guardSidebarProfile?->rfid_uid ?: 'No UID';
     $guardSidebarShift = strtoupper($guardSidebarProfile?->shift ?? 'Unassigned shift');
+    $guardSidebarFallbackPhotoUrl = asset('images/user-icons/guard-account.png');
     $guardSidebarPhotoUrl = Auth::user()->profile_photo_path
+        && \Illuminate\Support\Facades\Storage::disk('public')->exists(Auth::user()->profile_photo_path)
         ? asset('storage/'.Auth::user()->profile_photo_path)
-        : asset('images/user-icons/guard-account.png');
+        : $guardSidebarFallbackPhotoUrl;
 
     $linkClasses = fn ($active) => $active
         ? 'flex items-center gap-3 rounded-lg bg-blue-700 px-3 py-2.5 text-sm font-semibold text-white shadow-sm'
@@ -257,7 +259,7 @@
 
                         <div class="mt-3 grid grid-cols-[2.5rem_minmax(0,1fr)_minmax(4.75rem,auto)] items-center gap-2 rounded-md border border-blue-100 bg-white p-2 dark:border-slate-700 dark:bg-slate-900">
                             <span class="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-blue-50 ring-1 ring-blue-100 dark:bg-slate-800 dark:ring-slate-700">
-                                <img src="{{ $guardSidebarPhotoUrl }}" alt="{{ $guardSidebarFullName }} profile photo" class="h-full w-full object-cover">
+                                <img src="{{ $guardSidebarPhotoUrl }}" alt="{{ $guardSidebarFullName }} profile photo" onerror="this.onerror=null; this.src='{{ $guardSidebarFallbackPhotoUrl }}';" class="h-full w-full object-cover">
                             </span>
                             <div class="min-w-0">
                                 <p class="truncate text-xs font-bold text-slate-900 dark:text-slate-100" title="{{ $guardSidebarFullName }}">{{ $guardSidebarDisplayName }}</p>

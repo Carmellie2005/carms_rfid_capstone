@@ -43,9 +43,11 @@
             $accountIconPath = $isSupervisor
                 ? 'images/user-icons/supervisor-account.png'
                 : 'images/user-icons/guard-account.png';
+            $accountFallbackPhotoUrl = asset($accountIconPath);
             $accountPhotoUrl = $user?->profile_photo_path
+                && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->profile_photo_path)
                 ? asset('storage/'.$user->profile_photo_path)
-                : asset($accountIconPath);
+                : $accountFallbackPhotoUrl;
             $notificationCount = \App\Support\NotificationFeed::unreadCountFor($user);
             $notificationPreviewLimit = \App\Support\NotificationFeed::DROPDOWN_LIMIT;
             $notificationItems = \App\Support\NotificationFeed::unreadItemsFor($user, $notificationPreviewLimit);
@@ -274,6 +276,7 @@
                                             <img
                                                 src="{{ $accountPhotoUrl }}"
                                                 alt="{{ $roleLabel }} profile photo"
+                                                onerror="this.onerror=null; this.src='{{ $accountFallbackPhotoUrl }}';"
                                                 class="h-full w-full object-cover"
                                             >
                                         </span>
@@ -286,6 +289,7 @@
                                             <img
                                                 src="{{ $accountPhotoUrl }}"
                                                 alt="{{ $roleLabel }} profile photo"
+                                                onerror="this.onerror=null; this.src='{{ $accountFallbackPhotoUrl }}';"
                                                 class="h-full w-full object-cover"
                                             >
                                         </span>

@@ -10,9 +10,11 @@
     $fallbackIconPath = $isSupervisor
         ? 'images/user-icons/supervisor-account.png'
         : 'images/user-icons/guard-account.png';
+    $profileFallbackPhotoUrl = asset($fallbackIconPath);
     $profilePhotoUrl = $user->profile_photo_path
+        && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->profile_photo_path)
         ? asset('storage/'.$user->profile_photo_path)
-        : asset($fallbackIconPath);
+        : $profileFallbackPhotoUrl;
     $profileCompletionItems = [
         filled($user->name),
         filled($user->username),
@@ -80,7 +82,7 @@
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
             <span class="inline-flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-50 ring-1 ring-blue-100">
-                <img src="{{ $profilePhotoUrl }}" alt="{{ $roleLabel }} profile photo" class="h-full w-full object-cover">
+                <img src="{{ $profilePhotoUrl }}" alt="{{ $roleLabel }} profile photo" onerror="this.onerror=null; this.src='{{ $profileFallbackPhotoUrl }}';" class="h-full w-full object-cover">
             </span>
 
             <div class="min-w-0 flex-1">
