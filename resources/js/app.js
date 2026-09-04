@@ -300,6 +300,7 @@ Alpine.data('pwaLaunchSplash', () => ({
 }));
 
 Alpine.data('pwaInstallPrompt', (config = {}) => ({
+    appName: config.appName || 'BC Patrol',
     startUrl: config.startUrl || '/',
     deferredPrompt: null,
     canInstall: false,
@@ -307,6 +308,7 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
     checkingInstall: true,
     serviceWorkerReady: false,
     installState: 'idle',
+    installModalOpen: false,
     message: '',
     promptListener: null,
 
@@ -334,7 +336,8 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
             this.canInstall = false;
             this.deferredPrompt = null;
             this.installState = 'installed';
-            this.message = 'Installed successfully. Tap Open App to continue.';
+            this.installModalOpen = true;
+            this.message = `${this.appName} installed successfully.`;
         });
     },
 
@@ -359,6 +362,62 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
 
     isLocalhost() {
         return isLocalhostHostname();
+    },
+
+    canDismissInstallModal() {
+        return this.installModalOpen && ! this.isBusy();
+    },
+
+    closeInstallModal() {
+        if (! this.canDismissInstallModal()) {
+            return;
+        }
+
+        this.installModalOpen = false;
+    },
+
+    installModalTitle() {
+        if (this.installState === 'preparing') {
+            return 'Preparing install';
+        }
+
+        if (this.installState === 'prompting') {
+            return 'Confirm installation';
+        }
+
+        if (this.installState === 'installing') {
+            return 'Installing...';
+        }
+
+        if (this.installState === 'installed') {
+            return 'Installed successfully';
+        }
+
+        if (this.message === 'Installation cancelled.') {
+            return 'Installation cancelled';
+        }
+
+        return 'Install not available';
+    },
+
+    installModalMessage() {
+        if (this.installState === 'preparing') {
+            return 'Preparing the app for installation.';
+        }
+
+        if (this.installState === 'prompting') {
+            return 'Confirm the install request in your browser.';
+        }
+
+        if (this.installState === 'installing') {
+            return 'Please wait while the app is installed.';
+        }
+
+        if (this.installState === 'installed') {
+            return `${this.appName} is ready. Open the app login to continue.`;
+        }
+
+        return this.message || this.unavailableMessage();
     },
 
     isIos() {
@@ -410,8 +469,11 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
             return;
         }
 
+        this.installModalOpen = true;
+
         if (this.installed || this.installState === 'installed') {
-            this.openApp();
+            this.installState = 'installed';
+            this.message = `${this.appName} is ready.`;
             return;
         }
 
@@ -424,7 +486,7 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
 
         if (this.installed) {
             this.installState = 'installed';
-            this.openApp();
+            this.message = `${this.appName} is ready.`;
             return;
         }
 
@@ -438,13 +500,20 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
 
         this.installState = 'prompting';
         this.message = 'Confirm the install request in your browser.';
-        prompt.prompt();
+
+        try {
+            prompt.prompt();
+        } catch {
+            this.installState = 'idle';
+            this.message = this.unavailableMessage();
+            return;
+        }
 
         const choice = await prompt.userChoice.catch(() => ({ outcome: 'dismissed' }));
 
         if (choice.outcome === 'accepted') {
             this.installState = 'installing';
-            this.message = 'Installing app...';
+            this.message = `Installing ${this.appName}...`;
         } else {
             this.installState = 'idle';
             this.message = 'Installation cancelled.';
@@ -463,7 +532,7 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
                 if (! this.installed) {
                     this.installed = true;
                     this.installState = 'installed';
-                    this.message = 'Installed successfully. Tap Open App to continue.';
+                    this.message = `${this.appName} installed successfully.`;
                 }
             }, 1200);
         }

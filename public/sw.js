@@ -1,4 +1,4 @@
-const CACHE_NAME = 'slsu-bc-patrol-v12';
+const CACHE_NAME = 'bc-patrol-v13';
 const OFFLINE_URL = '/offline.html';
 const CORE_ASSETS = [
     OFFLINE_URL,

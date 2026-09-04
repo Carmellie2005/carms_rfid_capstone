@@ -35,4 +35,16 @@ class WelcomePageTest extends TestCase
             ->assertSee('Karyl G. Viure')
             ->assertSee('Quality Assurance');
     }
+
+    public function test_public_landing_page_has_pwa_install_success_modal(): void
+    {
+        $response = $this->get('/');
+
+        $response
+            ->assertOk()
+            ->assertSee("pwaInstallPrompt({ appName: 'BC Patrol'", false)
+            ->assertSee('installModalOpen', false)
+            ->assertSee('installModalTitle()', false)
+            ->assertSee('Open BC Patrol');
+    }
 }

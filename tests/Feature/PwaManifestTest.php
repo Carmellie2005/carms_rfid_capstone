@@ -14,15 +14,16 @@ class PwaManifestTest extends TestCase
             flags: JSON_THROW_ON_ERROR
         );
 
-        $this->assertSame('SLSU BC Patrol', $manifest['name']);
-        $this->assertSame('SLSU BC Patrol', $manifest['short_name']);
+        $this->assertSame('BC Patrol', $manifest['name']);
+        $this->assertSame('BC Patrol', $manifest['short_name']);
+        $this->assertSame('/login', $manifest['start_url']);
 
         $icons = collect($manifest['icons']);
 
-        $this->assertTrue($icons->contains(fn ($icon) => $icon['src'] === '/pwa-icon-192.png?v=slsu-logo-v12' && $icon['purpose'] === 'any'));
-        $this->assertTrue($icons->contains(fn ($icon) => $icon['src'] === '/pwa-icon-512.png?v=slsu-logo-v12' && $icon['purpose'] === 'any'));
-        $this->assertTrue($icons->contains(fn ($icon) => $icon['src'] === '/pwa-icon-maskable-192.png?v=slsu-logo-v12' && $icon['purpose'] === 'maskable'));
-        $this->assertTrue($icons->contains(fn ($icon) => $icon['src'] === '/pwa-icon-maskable-512.png?v=slsu-logo-v12' && $icon['purpose'] === 'maskable'));
+        $this->assertTrue($icons->contains(fn ($icon) => $icon['src'] === '/pwa-icon-192.png?v=slsu-logo-v13' && $icon['purpose'] === 'any'));
+        $this->assertTrue($icons->contains(fn ($icon) => $icon['src'] === '/pwa-icon-512.png?v=slsu-logo-v13' && $icon['purpose'] === 'any'));
+        $this->assertTrue($icons->contains(fn ($icon) => $icon['src'] === '/pwa-icon-maskable-192.png?v=slsu-logo-v13' && $icon['purpose'] === 'maskable'));
+        $this->assertTrue($icons->contains(fn ($icon) => $icon['src'] === '/pwa-icon-maskable-512.png?v=slsu-logo-v13' && $icon['purpose'] === 'maskable'));
 
         $this->assertFileExists(public_path('pwa-icon-192.png'));
         $this->assertFileExists(public_path('pwa-icon-512.png'));
