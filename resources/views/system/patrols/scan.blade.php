@@ -294,8 +294,8 @@
                                 <span x-show="cameraOpen && ! faceCapture" x-cloak class="face-auto-scan-ring" :class="faceGuideState === 'centered' ? 'opacity-100' : 'opacity-70'"></span>
 
                                 <div class="absolute inset-0 overflow-hidden rounded-full border-[6px] border-blue-700 bg-gradient-to-b from-sky-100 via-blue-50 to-emerald-50 shadow-[0_16px_45px_rgba(37,99,235,0.18)] dark:border-blue-500 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800">
-                                    <video x-ref="faceVideo" x-show="cameraOpen && ! faceCapture" class="h-full w-full object-cover" autoplay playsinline muted></video>
-                                    <img x-show="faceCapture" :src="faceCapture" alt="Captured face" class="h-full w-full object-cover">
+                                    <video x-ref="faceVideo" x-show="cameraOpen && ! faceCapture" class="camera-unmirrored h-full w-full object-cover" autoplay playsinline muted></video>
+                                    <img x-show="faceCapture" :src="faceCapture" alt="Captured face" class="camera-unmirrored h-full w-full object-cover">
 
                                     <div x-show="! cameraOpen && ! faceCapture" class="absolute inset-0 flex flex-col items-center justify-center px-6 text-blue-800 dark:text-blue-100">
                                         <span class="flex h-16 w-16 items-center justify-center rounded-full bg-white/75 text-blue-700 shadow-sm ring-1 ring-blue-100 dark:bg-slate-900/80 dark:text-blue-200 dark:ring-slate-700">

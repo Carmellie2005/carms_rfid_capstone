@@ -98,6 +98,10 @@
         max-width: 17rem;
     }
 
+    .camera-unmirrored {
+        transform: scaleX(-1);
+    }
+
     .face-auto-scan-ring {
         position: absolute;
         inset: -0.6rem;

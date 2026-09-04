@@ -98,6 +98,7 @@ class FaceVerificationTest extends TestCase
             ->assertSee('Verifying automatically...')
             ->assertSee('face-verification-circle')
             ->assertSee('face-auto-scan-ring')
+            ->assertSee('camera-unmirrored')
             ->assertSee('beginAutomaticFaceVerification()', false)
             ->assertSee('NIGHT SHIFT')
             ->assertSee('Himo C.')

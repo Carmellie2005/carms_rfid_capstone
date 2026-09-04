@@ -1480,12 +1480,8 @@ Alpine.data('patrolScan', (config = {}) => ({
             return { ready: false, message: 'Move slightly farther from the camera.' };
         }
 
-        if (horizontalOffset < -0.16) {
-            return { ready: false, message: 'Move your face a little to the right.' };
-        }
-
-        if (horizontalOffset > 0.16) {
-            return { ready: false, message: 'Move your face a little to the left.' };
+        if (Math.abs(horizontalOffset) > 0.16) {
+            return { ready: false, message: 'Center your face inside the circle.' };
         }
 
         if (verticalOffset < -0.18) {
