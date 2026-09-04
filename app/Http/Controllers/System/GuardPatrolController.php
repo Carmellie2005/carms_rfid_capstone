@@ -4,6 +4,7 @@ namespace App\Http\Controllers\System;
 
 use App\Http\Controllers\Controller;
 use App\Models\Checkpoint;
+use App\Models\FaceVerificationAttempt;
 use App\Models\Guard;
 use App\Models\IncidentReport;
 use App\Models\PatrolLog;
@@ -27,6 +28,12 @@ class GuardPatrolController extends Controller
     {
         $guardProfile = auth()->user()?->guardProfile;
         $patrolScheduleOpen = PatrolSchedule::isOpen();
+        $pendingPatrol = $guardProfile && $patrolScheduleOpen
+            ? $this->latestPendingPatrolFor($guardProfile)
+            : null;
+        $pendingFaceAttempt = $pendingPatrol
+            ? $this->latestVerifiedFaceAttemptFor($pendingPatrol)
+            : null;
         $faceRegistrationComplete = $guardProfile
             ? $this->hasCompletedFaceRegistration($guardProfile)
             : false;
@@ -34,7 +41,9 @@ class GuardPatrolController extends Controller
         return view('system.patrols.scan', [
             'checkpoints' => Checkpoint::where('status', 'active')->orderBy('name')->get(),
             'guardProfile' => $guardProfile,
-            'pendingPatrol' => $guardProfile && $patrolScheduleOpen ? $this->latestPendingPatrolFor($guardProfile) : null,
+            'pendingPatrol' => $pendingPatrol,
+            'pendingFaceVerified' => (bool) $pendingFaceAttempt,
+            'pendingFaceMatchDistance' => $pendingFaceAttempt?->match_distance,
             'faceRegistrationComplete' => $faceRegistrationComplete,
             'patrolScheduleOpen' => $patrolScheduleOpen,
             'patrolScheduleTestingMode' => PatrolSchedule::isTestingMode(),
@@ -122,6 +131,18 @@ class GuardPatrolController extends Controller
             $data['face_capture'],
         );
 
+        if (! $faceResult['processable']) {
+            return response()->json([
+                'verified' => false,
+                'status' => 'failed',
+                'message' => $faceResult['message'],
+                'match_distance' => $faceResult['match_distance'],
+                'match_threshold' => FaceVerification::matchThreshold(),
+            ], 422);
+        }
+
+        $this->recordFaceVerificationAttempt($patrolLog, $guard, $faceResult);
+
         return response()->json([
             'verified' => $faceResult['verified'],
             'status' => $faceResult['verified'] ? 'verified' : 'failed',
@@ -174,11 +195,21 @@ class GuardPatrolController extends Controller
             return back()->with('warning', 'No pending RFID scan is available for this guard. Please scan your card at the checkpoint again.');
         }
 
-        $faceResult = $this->evaluateFaceVerification(
-            $guard,
-            $data['captured_descriptor'] ?? null,
-            $data['face_capture'] ?? null,
-        );
+        $verifiedFaceAttempt = $this->latestVerifiedFaceAttemptFor($patrolLog);
+        $faceResult = $verifiedFaceAttempt
+            ? [
+                'processable' => true,
+                'verified' => true,
+                'message' => 'Face verification already completed. Continue to the patrol checklist.',
+                'captured_descriptor' => $verifiedFaceAttempt->captured_descriptor,
+                'captured_image' => null,
+                'match_distance' => $verifiedFaceAttempt->match_distance === null ? null : (float) $verifiedFaceAttempt->match_distance,
+            ]
+            : $this->evaluateFaceVerification(
+                $guard,
+                $data['captured_descriptor'] ?? null,
+                $data['face_capture'] ?? null,
+            );
 
         if (! $faceResult['processable']) {
             return back()
@@ -203,9 +234,7 @@ class GuardPatrolController extends Controller
                 ->withErrors(['incident_images' => $incidentImageError]);
         }
 
-        DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $facialStatus, $patrolStatus, $capturedDescriptor, $capturedImage, $matchDistance, $incidentImageFiles, $submittedAt, &$incidentReport) {
-            $capturedImagePath = $this->storeFaceCapture($capturedImage, $guard);
-
+        DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $facialStatus, $patrolStatus, $capturedDescriptor, $capturedImage, $matchDistance, $incidentImageFiles, $submittedAt, $verifiedFaceAttempt, &$incidentReport) {
             $patrolLog->update([
                 'facial_status' => $facialStatus,
                 'status' => $patrolStatus,
@@ -214,19 +243,14 @@ class GuardPatrolController extends Controller
 
             $this->expireOtherPendingPatrols($guard, $patrolLog);
 
-            $patrolLog->faceVerificationAttempts()->create([
-                'guard_id' => $guard->id,
-                'status' => $facialStatus,
-                'match_distance' => $matchDistance,
-                'match_threshold' => FaceVerification::matchThreshold(),
-                'captured_image_path' => $capturedImagePath,
-                'captured_descriptor' => $capturedDescriptor,
-                'notes' => match (true) {
-                    $facialStatus === 'verified' => 'Face matched the guard pre-registered face reference for ESP32 RFID scan.',
-                    default => 'Face did not match the guard pre-registered face reference after ESP32 RFID scan.',
-                },
-                'verified_at' => $submittedAt,
-            ]);
+            if (! $verifiedFaceAttempt) {
+                $this->recordFaceVerificationAttempt($patrolLog, $guard, [
+                    'verified' => $facialStatus === 'verified',
+                    'captured_descriptor' => $capturedDescriptor,
+                    'captured_image' => $capturedImage,
+                    'match_distance' => $matchDistance,
+                ], $submittedAt);
+            }
 
             if ($facialStatus === 'failed') {
                 return;
@@ -331,12 +355,16 @@ class GuardPatrolController extends Controller
 
     private function patrolLogPayload(PatrolLog $patrolLog): array
     {
+        $verifiedFaceAttempt = $this->latestVerifiedFaceAttemptFor($patrolLog);
+
         return [
             'id' => $patrolLog->id,
             'rfid_uid' => $patrolLog->rfid_uid,
             'checkpoint_code' => $patrolLog->checkpoint_code,
             'status' => $patrolLog->status,
             'facial_status' => $patrolLog->facial_status,
+            'face_verified' => (bool) $verifiedFaceAttempt,
+            'match_distance' => $verifiedFaceAttempt?->match_distance,
             'scanned_at' => $patrolLog->scanned_at?->timezone('Asia/Manila')->format('M d, Y h:i A'),
             'guard' => [
                 'name' => $patrolLog->securityGuard?->name,
@@ -349,6 +377,35 @@ class GuardPatrolController extends Controller
                 'device_uid' => $patrolLog->checkpoint?->device_uid,
             ],
         ];
+    }
+
+    private function latestVerifiedFaceAttemptFor(PatrolLog $patrolLog): ?FaceVerificationAttempt
+    {
+        return $patrolLog->faceVerificationAttempts()
+            ->where('status', 'verified')
+            ->latest('verified_at')
+            ->latest('id')
+            ->first();
+    }
+
+    private function recordFaceVerificationAttempt(PatrolLog $patrolLog, Guard $guard, array $faceResult, mixed $verifiedAt = null): FaceVerificationAttempt
+    {
+        $facialStatus = ($faceResult['verified'] ?? false) ? 'verified' : 'failed';
+        $capturedImagePath = $this->storeFaceCapture($faceResult['captured_image'] ?? null, $guard);
+
+        return $patrolLog->faceVerificationAttempts()->create([
+            'guard_id' => $guard->id,
+            'status' => $facialStatus,
+            'match_distance' => $faceResult['match_distance'] ?? null,
+            'match_threshold' => FaceVerification::matchThreshold(),
+            'captured_image_path' => $capturedImagePath,
+            'captured_descriptor' => $faceResult['captured_descriptor'] ?? null,
+            'notes' => match (true) {
+                $facialStatus === 'verified' => 'Face matched the guard pre-registered face reference for ESP32 RFID scan.',
+                default => 'Face did not match the guard pre-registered face reference after ESP32 RFID scan.',
+            },
+            'verified_at' => $verifiedAt ?? now(config('app.timezone')),
+        ]);
     }
 
     private function evaluateFaceVerification(Guard $guard, ?string $descriptorJson, ?string $captureDataUrl): array

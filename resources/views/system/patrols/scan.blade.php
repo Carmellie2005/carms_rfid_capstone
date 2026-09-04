@@ -5,7 +5,9 @@
         $incidentCategories = \App\Support\PatrolChecklist::incidentCategories();
         $guardName = $guardProfile?->name ?? Auth::user()->name;
         $guardEmployeeNo = $guardProfile?->employee_no ?? 'Account only';
-        $openChecklist = $errors->any() && old('patrol_log_id');
+        $pendingFaceVerified = (bool) ($pendingFaceVerified ?? false);
+        $pendingFaceMatchDistance = $pendingFaceMatchDistance ?? null;
+        $openChecklist = ($errors->any() && old('patrol_log_id')) || $pendingFaceVerified;
         $faceRegistrationComplete = (bool) ($faceRegistrationComplete ?? false);
         $patrolScheduleOpen = (bool) ($patrolScheduleOpen ?? true);
         $patrolScheduleTestingMode = (bool) ($patrolScheduleTestingMode ?? false);
@@ -20,6 +22,8 @@
             'checkpoint_code' => $pendingPatrol->checkpoint_code,
             'status' => $pendingPatrol->status,
             'facial_status' => $pendingPatrol->facial_status,
+            'face_verified' => $pendingFaceVerified,
+            'match_distance' => $pendingFaceMatchDistance,
             'scanned_at' => $pendingPatrol->scanned_at?->timezone('Asia/Manila')->format('M d, Y h:i A'),
             'guard' => [
                 'name' => $pendingPatrol->securityGuard?->name,
@@ -101,14 +105,16 @@
                     guardName: @js($guardName),
                     guardEmployeeNo: @js($guardEmployeeNo),
                     patrolLogId: @js(old('patrol_log_id', $pendingPatrol?->id)),
-                    scanMessage: @js($pendingScan ? 'RFID scan received successfully. Continue to face verification.' : ($patrolScheduleOpen ? $scanWaitingMessage : $patrolScheduleMessage)),
+                    scanMessage: @js($pendingFaceVerified ? 'Face verified successfully. Complete the checklist.' : ($pendingScan ? 'RFID scan received successfully. Continue to face verification.' : ($patrolScheduleOpen ? $scanWaitingMessage : $patrolScheduleMessage))),
                     patrolScheduleOpen: @js($patrolScheduleOpen),
                     patrolScheduleTestingMode: @js($patrolScheduleTestingMode),
                     patrolScheduleMessage: @js($patrolScheduleMessage),
                     patrolTestingNotice: @js($patrolTestingNotice),
                     openChecklist: @js((bool) $openChecklist),
+                    faceVerified: @js((bool) $pendingFaceVerified),
                     faceCapture: @js(old('face_capture', '')),
                     capturedDescriptor: @js(old('captured_descriptor', '')),
+                    matchDistance: @js($pendingFaceMatchDistance),
                 })"
                 x-init="boot()"
                 x-on:submit="handleSubmit($event)"

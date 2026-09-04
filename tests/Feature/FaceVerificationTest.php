@@ -131,6 +131,84 @@ class FaceVerificationTest extends TestCase
             ]);
 
         $this->assertSame($guard->id, $patrolLog->guard_id);
+
+        $this->assertDatabaseHas('patrol_logs', [
+            'id' => $patrolLog->id,
+            'facial_status' => 'pending',
+            'status' => 'pending_face',
+        ]);
+
+        $this->assertDatabaseHas('face_verification_attempts', [
+            'patrol_log_id' => $patrolLog->id,
+            'guard_id' => $guard->id,
+            'status' => 'verified',
+        ]);
+    }
+
+    public function test_guard_can_refresh_after_face_verification_and_submit_checklist_without_reverification(): void
+    {
+        [$user, $guard, $patrolLog, $descriptor] = $this->pendingPatrolWithFaceDescriptor();
+
+        $this
+            ->actingAs($user)
+            ->postJson(route('patrol.verify-face'), [
+                'patrol_log_id' => $patrolLog->id,
+                'captured_descriptor' => json_encode($this->nearMatchingDescriptor($descriptor)),
+                'face_capture' => $this->validFaceCapture(),
+            ])
+            ->assertOk()
+            ->assertJson([
+                'verified' => true,
+                'status' => 'verified',
+            ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get(route('patrol.scan'));
+
+        $response
+            ->assertOk()
+            ->assertSee('faceVerified: true', false)
+            ->assertSee('openChecklist: true', false)
+            ->assertSee('Face verified successfully. Complete the checklist.', false);
+
+        $response = $this
+            ->actingAs($user)
+            ->from(route('patrol.scan'))
+            ->post(route('patrol.store'), [
+                'patrol_log_id' => $patrolLog->id,
+                'area_secure' => '1',
+                'perimeter_checked' => '1',
+                'equipment_functional' => '1',
+                'cctv_alarm_checked' => '1',
+                'fire_exits_clear' => '1',
+                'emergency_equipment_accessible' => '1',
+                'no_unauthorized_person' => '1',
+            ]);
+
+        $response
+            ->assertRedirect(route('patrol.scan'))
+            ->assertSessionHas('status');
+
+        $this->assertSame(1, $patrolLog->faceVerificationAttempts()->count());
+
+        $this->assertDatabaseHas('patrol_logs', [
+            'id' => $patrolLog->id,
+            'guard_id' => $guard->id,
+            'facial_status' => 'verified',
+            'status' => 'valid',
+        ]);
+
+        $this->assertDatabaseHas('checklist_responses', [
+            'patrol_log_id' => $patrolLog->id,
+            'area_secure' => 1,
+            'perimeter_checked' => 1,
+            'equipment_functional' => 1,
+            'cctv_alarm_checked' => 1,
+            'fire_exits_clear' => 1,
+            'emergency_equipment_accessible' => 1,
+            'no_unauthorized_person' => 1,
+        ]);
     }
 
     public function test_guard_patrol_rejects_exact_descriptor_replay(): void
