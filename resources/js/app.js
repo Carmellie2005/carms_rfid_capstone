@@ -943,7 +943,9 @@ Alpine.data('patrolScan', (config = {}) => ({
             return;
         }
 
-        if (! this.pendingScan) {
+        if (this.pendingScan && ! this.faceVerified) {
+            this.$nextTick(() => this.openFaceModal());
+        } else if (! this.pendingScan) {
             this.startPolling();
         }
     },
@@ -981,6 +983,7 @@ Alpine.data('patrolScan', (config = {}) => ({
                 this.patrolLogId = data.patrol_log.id;
                 this.scanMessage = 'RFID scan received successfully. Continue to face verification.';
                 clearInterval(this.pollingTimer);
+                this.$nextTick(() => this.openFaceModal());
             } else if (data.message) {
                 this.scanMessage = data.message;
             }

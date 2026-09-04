@@ -85,7 +85,7 @@
     }
 
     .face-verification-modal {
-        width: min(23rem, calc(100vw - 1.25rem));
+        width: min(26rem, calc(100vw - 1.25rem));
         max-height: calc(100dvh - 1.5rem);
     }
 
@@ -93,10 +93,16 @@
         max-height: min(28rem, 62dvh);
     }
 
+    .face-verification-circle {
+        width: min(17rem, 72vw);
+        max-width: 17rem;
+    }
+
     .face-auto-scan-ring {
         position: absolute;
-        inset: -0.55rem;
-        border-radius: inherit;
+        inset: -0.6rem;
+        z-index: 0;
+        border-radius: 9999px;
         border: 2px solid rgb(52 211 153 / 0.22);
         transition: opacity 160ms ease;
     }

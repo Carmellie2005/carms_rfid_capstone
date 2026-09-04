@@ -195,9 +195,9 @@
                                             <h3 class="mt-0.5 text-base font-semibold text-blue-950" x-text="pendingScan?.checkpoint?.name || 'Checkpoint'"></h3>
                                             <p class="mt-1 text-sm text-slate-500" x-text="pendingScan?.scanned_at || ''"></p>
                                         </div>
-                                        <span class="inline-flex w-fit rounded-md bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-200">
+                                        <button type="button" class="inline-flex w-fit rounded-md bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-200 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openFaceModal()">
                                             Face required
-                                        </span>
+                                        </button>
                                     </div>
                                 </div>
 
@@ -222,31 +222,6 @@
                                 </dl>
 
                                 <x-input-error :messages="$errors->get('patrol_log_id')" class="mt-2" />
-
-                                <div class="rounded-md border border-blue-100 bg-white p-3">
-                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <div class="flex items-start gap-3">
-                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700 ring-1 ring-blue-100">
-                                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                    <path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" stroke="currentColor" stroke-width="2" />
-                                                    <path d="M4 19c1.6-3 4.3-4.5 8-4.5S18.4 16 20 19M5 5h3M16 5h3M5 5v3M19 5v3M5 16v3M5 19h3M19 16v3M16 19h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                                </svg>
-                                            </span>
-                                            <div>
-                                                <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">Step 2</p>
-                                                <h4 class="mt-0.5 text-sm font-semibold text-blue-950">Face Verification</h4>
-                                                <p class="mt-1 text-xs text-slate-500">Allow camera access, then keep your face inside the guide.</p>
-                                            </div>
-                                        </div>
-                                        <button type="button" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="openFaceModal()" :disabled="! patrolScheduleOpen || faceModelLoading || cameraOpening || verificationBusy || submittingPatrol">
-                                            <svg x-show="faceModelLoading || cameraOpening" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
-                                            </svg>
-                                            <span x-text="! patrolScheduleOpen ? 'Closed' : (faceModelLoading ? 'Loading...' : (cameraOpening ? 'Opening...' : 'Start Step 2'))"></span>
-                                        </button>
-                                    </div>
-                                </div>
                             </div>
 
                             <div x-show="faceVerified" x-cloak x-transition.opacity.duration.200ms class="space-y-3">
@@ -299,50 +274,42 @@
                     </div>
                 </section>
 
-                <div x-show="faceModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-slate-950/60 p-3 sm:p-6">
-                    <section class="face-verification-modal mobile-scroll-area overflow-y-auto rounded-md bg-white shadow-2xl dark:bg-slate-900">
-                        <div class="flex items-center justify-between gap-3 border-b border-blue-100 px-4 py-2.5 dark:border-slate-800">
-                            <div>
-                                <p class="text-[0.68rem] font-bold uppercase tracking-wide text-blue-700">Step 2</p>
-                                <h3 class="text-base font-semibold text-blue-950">Camera Verification</h3>
-                            </div>
-                            <button type="button" class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-blue-100 bg-white text-slate-700 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800" @click="closeFaceModal()" aria-label="Close camera modal">
+                <div x-show="faceModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-slate-950/55 p-3 sm:p-6">
+                    <section class="face-verification-modal mobile-scroll-area overflow-y-auto rounded-md bg-white px-4 py-4 text-center shadow-2xl dark:bg-slate-900 sm:px-6 sm:py-5">
+                        <div class="flex justify-end">
+                            <button type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-slate-700 ring-1 ring-blue-100 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-700 dark:focus:ring-offset-slate-900" @click="closeFaceModal()" aria-label="Close face verification">
                                 <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                     <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                                 </svg>
                             </button>
                         </div>
 
-                        <div class="p-3 sm:p-4">
-                            <div class="face-verification-preview relative mx-auto aspect-[3/4] w-full overflow-hidden rounded-md bg-slate-950">
-                                <video x-ref="faceVideo" x-show="cameraOpen && ! faceCapture" class="h-full w-full object-cover" autoplay playsinline muted></video>
-                                <img x-show="faceCapture" :src="faceCapture" alt="Captured face" class="h-full w-full object-cover">
+                        <div class="-mt-2">
+                            <p class="text-sm font-bold uppercase tracking-wide text-blue-700">Step 2</p>
+                            <h3 class="mt-1 text-2xl font-bold tracking-tight text-blue-950 dark:text-white">Face Verification</h3>
+                        </div>
 
-                                <div x-show="! cameraOpen && ! faceCapture" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 px-5 text-center text-white">
-                                    <span class="flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/20">
-                                        <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                            <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h2l1.2-1.6A1 1 0 0 1 10.5 4h3a1 1 0 0 1 .8.4L16.5 6h1A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                                            <path d="M15 12.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" stroke="currentColor" stroke-width="2" />
-                                        </svg>
-                                    </span>
-                                    <p class="mt-4 text-sm font-semibold">Allow camera access to start</p>
-                                    <p class="mt-1 max-w-56 text-xs leading-5 text-blue-100">The camera will scan and verify automatically after your face is centered.</p>
-                                </div>
+                        <div class="mt-6">
+                            <div class="face-verification-circle relative mx-auto aspect-square">
+                                <span x-show="cameraOpen && ! faceCapture" x-cloak class="face-auto-scan-ring" :class="faceGuideState === 'centered' ? 'opacity-100' : 'opacity-70'"></span>
 
-                                <div x-show="cameraOpen && ! faceCapture" x-cloak class="pointer-events-none absolute inset-0">
-                                    <div class="absolute left-1/2 top-1/2 h-[58%] w-[68%] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 transition"
-                                        :class="faceGuideState === 'centered' ? 'border-emerald-300 shadow-[0_0_32px_rgba(16,185,129,0.45)]' : 'border-white/80 shadow-[0_0_22px_rgba(255,255,255,0.16)]'">
-                                        <span class="face-auto-scan-ring" :class="faceGuideState === 'centered' ? 'opacity-100' : 'opacity-70'"></span>
-                                    </div>
-                                    <div class="absolute inset-x-5 bottom-5 rounded-md bg-slate-950/75 p-2.5 backdrop-blur-sm">
-                                        <div class="h-1 overflow-hidden rounded-full bg-white/20">
-                                            <div class="h-full rounded-full bg-emerald-400 transition-all duration-150" :style="`width: ${faceScanProgress}%`"></div>
-                                        </div>
-                                        <p class="mt-2 text-center text-xs font-semibold text-white" x-text="verificationMessage"></p>
+                                <div class="absolute inset-0 overflow-hidden rounded-full border-[6px] border-blue-700 bg-gradient-to-b from-sky-100 via-blue-50 to-emerald-50 shadow-[0_16px_45px_rgba(37,99,235,0.18)] dark:border-blue-500 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800">
+                                    <video x-ref="faceVideo" x-show="cameraOpen && ! faceCapture" class="h-full w-full object-cover" autoplay playsinline muted></video>
+                                    <img x-show="faceCapture" :src="faceCapture" alt="Captured face" class="h-full w-full object-cover">
+
+                                    <div x-show="! cameraOpen && ! faceCapture" class="absolute inset-0 flex flex-col items-center justify-center px-6 text-blue-800 dark:text-blue-100">
+                                        <span class="flex h-16 w-16 items-center justify-center rounded-full bg-white/75 text-blue-700 shadow-sm ring-1 ring-blue-100 dark:bg-slate-900/80 dark:text-blue-200 dark:ring-slate-700">
+                                            <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                <path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" stroke="currentColor" stroke-width="2" />
+                                                <path d="M4 19c1.6-3 4.3-4.5 8-4.5S18.4 16 20 19M5 5h3M16 5h3M5 5v3M19 5v3M5 16v3M5 19h3M19 16v3M16 19h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                            </svg>
+                                        </span>
+                                        <p class="mt-4 text-sm font-semibold">Allow camera access</p>
+                                        <p class="mt-1 text-xs leading-5 text-blue-700/80 dark:text-blue-200">Your camera preview will stay inside this circle.</p>
                                     </div>
                                 </div>
 
-                                <div x-show="faceModelLoading || cameraOpening || capturingFace || verificationBusy" x-cloak x-transition.opacity.duration.150ms class="absolute inset-0 flex items-center justify-center bg-slate-950/75 p-4 text-white">
+                                <div x-show="faceModelLoading || cameraOpening || capturingFace || verificationBusy" x-cloak x-transition.opacity.duration.150ms class="absolute inset-0 flex items-center justify-center rounded-full bg-white/85 p-4 text-blue-950 backdrop-blur-sm dark:bg-slate-950/80 dark:text-blue-100">
                                     <x-brand-spinner>
                                         <span x-text="faceModelLoading ? 'Loading face model...' : (cameraOpening ? 'Opening camera...' : (capturingFace ? 'Capturing face...' : 'Verifying face...'))"></span>
                                         <x-slot name="description">
@@ -354,9 +321,42 @@
                             <canvas x-ref="faceCanvas" class="hidden"></canvas>
                             <input x-ref="faceCaptureInput" type="file" accept="image/*" capture="user" class="sr-only" @change="useFaceCaptureFile($event)">
 
-                            <p x-show="cameraError" x-text="cameraError" class="mt-3 text-sm font-semibold text-red-700"></p>
-                            <p x-show="verificationMessage && (! cameraOpen || faceCapture)" x-text="verificationMessage" class="mt-2 text-sm font-semibold leading-5 text-blue-800"></p>
-                            <p class="mt-2 text-xs font-semibold text-blue-700" x-show="matchDistance !== null" x-text="`Match distance: ${matchDistance}`"></p>
+                            <div class="mt-6 space-y-3 text-left">
+                                <div class="flex items-center gap-3">
+                                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700 ring-1 ring-blue-100 dark:bg-slate-800 dark:text-blue-200 dark:ring-slate-700">
+                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M5 5h4M15 5h4M5 5v4M19 5v4M5 15v4M5 19h4M19 15v4M15 19h4M9.5 12a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                    </span>
+                                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">Position your face inside the circle</p>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950 dark:text-emerald-200 dark:ring-emerald-900">
+                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" stroke="currentColor" stroke-width="2" />
+                                            <path d="m7.8 12.2 2.5 2.5 5.9-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </span>
+                                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">Keep still while scanning</p>
+                                </div>
+                            </div>
+
+                            <div x-show="cameraOpen && ! faceCapture" x-cloak class="mx-auto mt-5 max-w-64">
+                                <div class="h-1.5 overflow-hidden rounded-full bg-emerald-100">
+                                    <div class="h-full rounded-full bg-emerald-500 transition-all duration-150" :style="`width: ${faceScanProgress}%`"></div>
+                                </div>
+                            </div>
+
+                            <p x-show="cameraError" x-text="cameraError" class="mt-4 text-sm font-semibold text-red-700"></p>
+                            <p x-show="verificationMessage && (! cameraOpen || faceCapture)" x-text="verificationMessage" class="mt-3 text-sm font-semibold leading-5 text-blue-800 dark:text-blue-200"></p>
+                            <p class="mt-2 text-xs font-semibold text-blue-700 dark:text-blue-300" x-show="matchDistance !== null" x-text="`Match distance: ${matchDistance}`"></p>
+
+                            <div x-show="cameraOpen && ! faceCapture && ! cameraError" x-cloak class="mx-auto mt-5 inline-flex items-center gap-2 rounded-md bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950 dark:text-emerald-200 dark:ring-emerald-900">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <span x-text="verificationBusy ? 'Checking face...' : 'Verifying automatically...'"></span>
+                            </div>
 
                             <div class="mt-3">
                                 <button x-show="! cameraOpen && ! faceCapture" type="button" class="inline-flex h-10 w-full items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300 dark:focus:ring-offset-slate-900" @click="beginAutomaticFaceVerification()" :disabled="faceModelLoading || cameraOpening || capturingFace || verificationBusy || submittingPatrol">
