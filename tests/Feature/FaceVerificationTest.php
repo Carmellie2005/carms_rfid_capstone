@@ -92,9 +92,15 @@ class FaceVerificationTest extends TestCase
             ->assertSee('Medical Emergency')
             ->assertSee('Alarm or CCTV Issue')
             ->assertSee('Selected image previews')
+            ->assertSee('Allow Camera Access')
+            ->assertSee('face-auto-scan-ring')
+            ->assertSee('aspect-[3/4]', false)
+            ->assertSee('beginAutomaticFaceVerification()', false)
             ->assertSee('NIGHT SHIFT')
             ->assertSee('Himo C.')
             ->assertSee('UID')
+            ->assertDontSee('Open Camera')
+            ->assertDontSee('Retake')
             ->assertDontSee('Submit Incident')
             ->assertDontSee('Use this card at the checkpoint reader');
     }

@@ -234,8 +234,8 @@
                                             </span>
                                             <div>
                                                 <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">Step 2</p>
-                                                <h4 class="mt-0.5 text-sm font-semibold text-blue-950">Verify Face</h4>
-                                                <p class="mt-1 text-xs text-slate-500">Capture the guard face to confirm this RFID scan.</p>
+                                                <h4 class="mt-0.5 text-sm font-semibold text-blue-950">Face Verification</h4>
+                                                <p class="mt-1 text-xs text-slate-500">Allow camera access, then keep your face inside the guide.</p>
                                             </div>
                                         </div>
                                         <button type="button" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="openFaceModal()" :disabled="! patrolScheduleOpen || faceModelLoading || cameraOpening || verificationBusy || submittingPatrol">
@@ -243,7 +243,7 @@
                                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                                 <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
                                             </svg>
-                                            <span x-text="! patrolScheduleOpen ? 'Closed' : (faceModelLoading ? 'Loading...' : (cameraOpening ? 'Opening...' : 'Open Camera'))"></span>
+                                            <span x-text="! patrolScheduleOpen ? 'Closed' : (faceModelLoading ? 'Loading...' : (cameraOpening ? 'Opening...' : 'Start Step 2'))"></span>
                                         </button>
                                     </div>
                                 </div>
@@ -300,7 +300,7 @@
                 </section>
 
                 <div x-show="faceModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-slate-950/60 p-3 sm:p-6">
-                    <section class="face-verification-modal mobile-scroll-area overflow-y-auto rounded-lg bg-white shadow-2xl dark:bg-slate-900">
+                    <section class="face-verification-modal mobile-scroll-area overflow-y-auto rounded-md bg-white shadow-2xl dark:bg-slate-900">
                         <div class="flex items-center justify-between gap-3 border-b border-blue-100 px-4 py-2.5 dark:border-slate-800">
                             <div>
                                 <p class="text-[0.68rem] font-bold uppercase tracking-wide text-blue-700">Step 2</p>
@@ -314,17 +314,39 @@
                         </div>
 
                         <div class="p-3 sm:p-4">
-                            <div class="face-verification-preview relative aspect-video overflow-hidden rounded-md bg-slate-950">
-                                <video x-ref="faceVideo" x-show="! faceCapture" class="h-full w-full object-cover" autoplay playsinline muted></video>
+                            <div class="face-verification-preview relative mx-auto aspect-[3/4] w-full overflow-hidden rounded-md bg-slate-950">
+                                <video x-ref="faceVideo" x-show="cameraOpen && ! faceCapture" class="h-full w-full object-cover" autoplay playsinline muted></video>
                                 <img x-show="faceCapture" :src="faceCapture" alt="Captured face" class="h-full w-full object-cover">
-                                <div x-show="! cameraOpen && ! faceCapture" class="absolute inset-0 flex items-center justify-center text-sm font-semibold text-white">
-                                    <span x-text="cameraOpening ? 'Opening camera...' : 'Camera preview'"></span>
+
+                                <div x-show="! cameraOpen && ! faceCapture" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 px-5 text-center text-white">
+                                    <span class="flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/20">
+                                        <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h2l1.2-1.6A1 1 0 0 1 10.5 4h3a1 1 0 0 1 .8.4L16.5 6h1A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                                            <path d="M15 12.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" stroke="currentColor" stroke-width="2" />
+                                        </svg>
+                                    </span>
+                                    <p class="mt-4 text-sm font-semibold">Allow camera access to start</p>
+                                    <p class="mt-1 max-w-56 text-xs leading-5 text-blue-100">The camera will scan and verify automatically after your face is centered.</p>
                                 </div>
-                                <div x-show="faceModelLoading || cameraOpening || verificationBusy" x-cloak x-transition.opacity.duration.150ms class="absolute inset-0 flex items-center justify-center bg-slate-950/75 p-4 text-white">
+
+                                <div x-show="cameraOpen && ! faceCapture" x-cloak class="pointer-events-none absolute inset-0">
+                                    <div class="absolute left-1/2 top-1/2 h-[58%] w-[68%] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 transition"
+                                        :class="faceGuideState === 'centered' ? 'border-emerald-300 shadow-[0_0_32px_rgba(16,185,129,0.45)]' : 'border-white/80 shadow-[0_0_22px_rgba(255,255,255,0.16)]'">
+                                        <span class="face-auto-scan-ring" :class="faceGuideState === 'centered' ? 'opacity-100' : 'opacity-70'"></span>
+                                    </div>
+                                    <div class="absolute inset-x-5 bottom-5 rounded-md bg-slate-950/75 p-2.5 backdrop-blur-sm">
+                                        <div class="h-1 overflow-hidden rounded-full bg-white/20">
+                                            <div class="h-full rounded-full bg-emerald-400 transition-all duration-150" :style="`width: ${faceScanProgress}%`"></div>
+                                        </div>
+                                        <p class="mt-2 text-center text-xs font-semibold text-white" x-text="verificationMessage"></p>
+                                    </div>
+                                </div>
+
+                                <div x-show="faceModelLoading || cameraOpening || capturingFace || verificationBusy" x-cloak x-transition.opacity.duration.150ms class="absolute inset-0 flex items-center justify-center bg-slate-950/75 p-4 text-white">
                                     <x-brand-spinner>
-                                        <span x-text="faceModelLoading ? 'Loading face model...' : (cameraOpening ? 'Opening camera...' : 'Verifying face...')"></span>
+                                        <span x-text="faceModelLoading ? 'Loading face model...' : (cameraOpening ? 'Opening camera...' : (capturingFace ? 'Capturing face...' : 'Verifying face...'))"></span>
                                         <x-slot name="description">
-                                            <span x-text="faceModelLoading ? 'Preparing the face matcher.' : (cameraOpening ? 'Requesting camera access.' : 'Matching the captured face reference.')"></span>
+                                            <span x-text="faceModelLoading ? 'Preparing the face matcher.' : (cameraOpening ? 'Requesting camera access.' : 'This step will continue automatically.')"></span>
                                         </x-slot>
                                     </x-brand-spinner>
                                 </div>
@@ -333,39 +355,20 @@
                             <input x-ref="faceCaptureInput" type="file" accept="image/*" capture="user" class="sr-only" @change="useFaceCaptureFile($event)">
 
                             <p x-show="cameraError" x-text="cameraError" class="mt-3 text-sm font-semibold text-red-700"></p>
-                            <p x-show="verificationMessage" x-text="verificationMessage" class="mt-2 text-sm font-semibold leading-5 text-blue-800"></p>
+                            <p x-show="verificationMessage && (! cameraOpen || faceCapture)" x-text="verificationMessage" class="mt-2 text-sm font-semibold leading-5 text-blue-800"></p>
                             <p class="mt-2 text-xs font-semibold text-blue-700" x-show="matchDistance !== null" x-text="`Match distance: ${matchDistance}`"></p>
 
-                            <div class="mt-3 grid grid-cols-2 gap-2">
-                                <button type="button" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white px-2 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="openCamera()" :disabled="faceModelLoading || cameraOpening || verificationBusy || submittingPatrol">
-                                    <svg x-show="cameraOpening" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <div class="mt-3">
+                                <button x-show="! cameraOpen && ! faceCapture" type="button" class="inline-flex h-10 w-full items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300 dark:focus:ring-offset-slate-900" @click="beginAutomaticFaceVerification()" :disabled="faceModelLoading || cameraOpening || capturingFace || verificationBusy || submittingPatrol">
+                                    <svg x-show="faceModelLoading || cameraOpening" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
                                     </svg>
-                                    <span x-text="cameraOpening ? 'Opening...' : 'Open Camera'"></span>
+                                    <span x-text="faceModelLoading ? 'Preparing...' : (cameraOpening ? 'Opening...' : 'Allow Camera Access')"></span>
                                 </button>
-                                <button type="button" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white px-2 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="openFacePhotoCapture()" :disabled="faceModelLoading || cameraOpening || capturingFace || verificationBusy || submittingPatrol">
-                                    <span x-text="capturingFace ? 'Preparing...' : 'Take Photo'"></span>
-                                </button>
-                                <button type="button" class="inline-flex h-9 items-center justify-center rounded-md bg-blue-700 px-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300" @click="captureFace()" :disabled="! cameraOpen || faceModelLoading || cameraOpening || capturingFace || verificationBusy || submittingPatrol">
-                                    <svg x-show="capturingFace" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
-                                    </svg>
-                                    <span x-text="capturingFace ? 'Capturing...' : 'Capture'"></span>
-                                </button>
-                                <button type="button" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white px-2 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="retakeFace()" :disabled="faceModelLoading || cameraOpening || capturingFace || verificationBusy || submittingPatrol">
-                                    Retake
-                                </button>
-                            </div>
 
-                            <div class="mt-2">
-                                <button type="button" class="inline-flex h-10 w-full items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="verifyCapturedFace()" :disabled="! faceCapture || faceModelLoading || cameraOpening || verificationBusy || submittingPatrol">
-                                    <svg x-show="faceModelLoading || verificationBusy" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
-                                    </svg>
-                                    <span x-text="faceModelLoading ? 'Loading...' : (verificationBusy ? 'Verifying...' : 'Verify Face')"></span>
+                                <button x-show="cameraError && ! cameraOpening && ! faceModelLoading && ! verificationBusy && ! capturingFace" x-cloak type="button" class="mt-2 inline-flex h-10 w-full items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-slate-800" @click="restartFaceVerification()" :disabled="submittingPatrol">
+                                    Try Again
                                 </button>
                             </div>
                         </div>

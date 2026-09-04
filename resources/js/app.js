@@ -85,7 +85,7 @@ function csrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 }
 
-function cameraAccessMessage(error = null, insecureFallbackMessage = null) {
+function cameraAccessMessage(error = null, insecureFallbackMessage = null, permissionFallbackMessage = null) {
     const name = error?.name || '';
 
     if (! canUseLiveCameraPreview()) {
@@ -93,7 +93,7 @@ function cameraAccessMessage(error = null, insecureFallbackMessage = null) {
     }
 
     if (['NotAllowedError', 'PermissionDeniedError', 'SecurityError'].includes(name)) {
-        return 'Camera permission was blocked. Allow camera access in the browser, or use Take Photo.';
+        return permissionFallbackMessage || 'Camera permission was blocked. Allow camera access in the browser, or use Take Photo.';
     }
 
     if (['NotFoundError', 'DevicesNotFoundError'].includes(name)) {
@@ -928,9 +928,14 @@ Alpine.data('patrolScan', (config = {}) => ({
     verificationMessage: '',
     matchDistance: config.matchDistance || null,
     submittingPatrol: false,
+    autoScanTimer: null,
+    faceGuideState: 'idle',
+    faceScanProgress: 0,
+    stableFaceFrames: 0,
+    requiredStableFaceFrames: 6,
 
     boot() {
-        this.verificationMessage = 'Capture the guard face, then verify it with the server before opening the checklist.';
+        this.verificationMessage = 'Allow camera access to start automatic face verification.';
 
         if (! this.patrolScheduleOpen) {
             this.scanMessage = this.patrolScheduleMessage;
@@ -997,14 +1002,41 @@ Alpine.data('patrolScan', (config = {}) => ({
 
         this.faceModalOpen = true;
         this.cameraError = '';
+        this.faceGuideState = 'idle';
+        this.faceScanProgress = 0;
+        this.stableFaceFrames = 0;
+        this.verificationMessage = 'Tap Allow Camera Access, then center your face inside the guide.';
+    },
+
+    async beginAutomaticFaceVerification() {
+        if (this.faceModelLoading || this.cameraOpening || this.capturingFace || this.verificationBusy || this.submittingPatrol) {
+            return;
+        }
+
+        if (! this.pendingScan) {
+            this.cameraError = 'Scan your RFID card at the checkpoint reader first.';
+            return;
+        }
+
+        this.retakeFace();
+        this.cameraError = '';
+        this.faceGuideState = 'loading';
+        this.verificationMessage = 'Preparing camera verification...';
+
+        if (! canUseLiveCameraPreview()) {
+            this.verificationMessage = 'Opening the phone camera capture. Submit a clear front-facing photo.';
+            this.$refs.faceCaptureInput?.click();
+            return;
+        }
 
         this.faceModelLoading = true;
 
         try {
-            this.verificationMessage = 'Loading face verification model...';
             await loadFaceModels();
-            this.verificationMessage = 'Capture the guard face, then verify it with the server.';
+            this.verificationMessage = 'Requesting camera permission...';
+            await this.openCamera();
         } catch (error) {
+            this.faceGuideState = 'error';
             this.cameraError = 'Face verification model could not be loaded.';
         } finally {
             this.faceModelLoading = false;
@@ -1062,20 +1094,26 @@ Alpine.data('patrolScan', (config = {}) => ({
 
             if (! response.ok || ! data.verified) {
                 this.faceVerified = false;
+                this.faceGuideState = 'error';
+                this.stopAutoFaceScan();
                 this.cameraError = data.message || 'Face verification failed.';
                 this.verificationMessage = 'Verification failed. Retake the photo and try again.';
                 return;
             }
 
             this.faceVerified = true;
+            this.faceGuideState = 'success';
             this.faceModalOpen = false;
             this.stopCamera();
-            this.checklistModalOpen = false;
+            this.checklistModalOpen = true;
             this.verificationMessage = this.matchDistance !== null
                 ? `Face verified successfully. Match distance: ${this.matchDistance}.`
                 : (data.message || 'Face verified successfully.');
-            this.scanMessage = 'Face verified successfully. Continue to the checklist when ready.';
+            this.scanMessage = 'Face verified successfully. Complete the checklist.';
+            this.$nextTick(() => document.getElementById('area_secure')?.focus());
         } catch (error) {
+            this.faceGuideState = 'error';
+            this.stopAutoFaceScan();
             this.cameraError = error.message || 'Face verification failed.';
             this.verificationMessage = 'Verification failed. Retake the photo.';
         } finally {
@@ -1086,6 +1124,7 @@ Alpine.data('patrolScan', (config = {}) => ({
     closeFaceModal() {
         this.faceModalOpen = false;
         this.stopCamera();
+        this.stopAutoFaceScan();
     },
 
     openFacePhotoCapture() {
@@ -1115,9 +1154,12 @@ Alpine.data('patrolScan', (config = {}) => ({
             const dataUrl = await dataUrlFromImageFile(file, { maxSize: 1280, quality: 0.82 });
             this.setFaceCapture(
                 dataUrl,
-                'Face photo captured successfully. Press Verify Face to check it.',
+                'Face photo captured successfully. Verifying automatically...',
             );
+            this.capturingFace = false;
+            await this.verifyCapturedFace();
         } catch (error) {
+            this.faceGuideState = 'error';
             this.cameraError = error.message || 'Face photo could not be prepared.';
             this.verificationMessage = 'Retake the photo and try again.';
         } finally {
@@ -1139,7 +1181,10 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.verificationMessage = 'Opening camera...';
 
         if (! canUseLiveCameraPreview()) {
-            this.cameraError = cameraAccessMessage();
+            this.cameraError = cameraAccessMessage(
+                null,
+                'Live camera preview needs HTTPS on phones. Open this system through HTTPS and try again.',
+            );
             this.verificationMessage = 'Opening phone camera capture...';
             this.cameraOpening = false;
             this.$refs.faceCaptureInput?.click();
@@ -1147,7 +1192,7 @@ Alpine.data('patrolScan', (config = {}) => ({
         }
 
         if (! navigator.mediaDevices || ! navigator.mediaDevices.getUserMedia) {
-            this.cameraError = 'Live camera preview is not available in this browser. Use Take Photo instead.';
+            this.cameraError = 'Live camera preview is not available in this browser.';
             this.cameraOpening = false;
             return;
         }
@@ -1155,14 +1200,27 @@ Alpine.data('patrolScan', (config = {}) => ({
         try {
             this.stopCamera();
             this.cameraStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'user' },
+                video: {
+                    facingMode: 'user',
+                    width: { ideal: 720 },
+                    height: { ideal: 960 },
+                    aspectRatio: { ideal: 0.75 },
+                },
                 audio: false,
             });
             this.$refs.faceVideo.srcObject = this.cameraStream;
+            await this.$refs.faceVideo.play().catch(() => null);
             this.cameraOpen = true;
-            this.verificationMessage = 'Camera is ready. Position your face, then capture.';
+            this.faceGuideState = 'scanning';
+            this.verificationMessage = 'Position your face inside the guide.';
+            this.startAutoFaceScan();
         } catch (error) {
-            this.cameraError = cameraAccessMessage(error);
+            this.faceGuideState = 'error';
+            this.cameraError = cameraAccessMessage(
+                error,
+                'Live camera preview needs HTTPS on phones. Open this system through HTTPS and try again.',
+                'Camera permission was blocked. Allow camera access in the browser settings, then try again.',
+            );
             this.verificationMessage = 'Camera could not be opened.';
         } finally {
             this.cameraOpening = false;
@@ -1214,11 +1272,19 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.matchDistance = null;
         this.faceVerified = false;
         this.cameraError = '';
-        this.verificationMessage = 'Capture the guard face, then verify it with the server.';
+        this.faceGuideState = 'idle';
+        this.faceScanProgress = 0;
+        this.stableFaceFrames = 0;
+        this.verificationMessage = 'Tap Allow Camera Access, then center your face inside the guide.';
 
         if (this.$refs.faceCaptureInput) {
             this.$refs.faceCaptureInput.value = '';
         }
+    },
+
+    async restartFaceVerification() {
+        this.retakeFace();
+        await this.beginAutomaticFaceVerification();
     },
 
     continueToChecklist() {
@@ -1302,12 +1368,167 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     stopCamera() {
+        this.stopAutoFaceScan();
+
         if (this.cameraStream) {
             this.cameraStream.getTracks().forEach((track) => track.stop());
             this.cameraStream = null;
         }
 
         this.cameraOpen = false;
+    },
+
+    startAutoFaceScan() {
+        this.stopAutoFaceScan();
+        this.faceGuideState = 'scanning';
+        this.faceScanProgress = 0;
+        this.stableFaceFrames = 0;
+        this.scheduleAutoFaceScan(250);
+    },
+
+    stopAutoFaceScan() {
+        if (this.autoScanTimer) {
+            clearTimeout(this.autoScanTimer);
+            this.autoScanTimer = null;
+        }
+    },
+
+    scheduleAutoFaceScan(delay = 160) {
+        this.stopAutoFaceScan();
+        this.autoScanTimer = setTimeout(() => this.scanLiveFace(), delay);
+    },
+
+    async scanLiveFace() {
+        this.autoScanTimer = null;
+
+        if (! this.cameraOpen || this.faceCapture || this.faceVerified || this.capturingFace || this.verificationBusy) {
+            return;
+        }
+
+        const video = this.$refs.faceVideo;
+
+        if (! video || ! video.videoWidth || ! video.videoHeight) {
+            this.verificationMessage = 'Starting camera preview...';
+            this.scheduleAutoFaceScan(180);
+            return;
+        }
+
+        try {
+            const detection = await faceapi
+                .detectSingleFace(video, faceDetectorOptions())
+                .withFaceLandmarks();
+
+            if (! detection) {
+                this.stableFaceFrames = 0;
+                this.faceScanProgress = 0;
+                this.faceGuideState = 'scanning';
+                this.verificationMessage = 'Position your face inside the guide.';
+                this.scheduleAutoFaceScan(180);
+                return;
+            }
+
+            const guide = this.facePositionGuide(detection.detection.box, video);
+
+            if (! guide.ready) {
+                this.stableFaceFrames = 0;
+                this.faceScanProgress = 0;
+                this.faceGuideState = 'scanning';
+                this.verificationMessage = guide.message;
+                this.scheduleAutoFaceScan(180);
+                return;
+            }
+
+            this.stableFaceFrames += 1;
+            this.faceGuideState = 'centered';
+            this.faceScanProgress = Math.min(100, Math.round((this.stableFaceFrames / this.requiredStableFaceFrames) * 100));
+            this.verificationMessage = this.faceScanProgress >= 70
+                ? 'Hold still. Verifying automatically...'
+                : 'Face detected. Keep still inside the guide.';
+
+            if (this.stableFaceFrames >= this.requiredStableFaceFrames) {
+                await this.captureAndVerifyFace();
+                return;
+            }
+        } catch (error) {
+            this.stableFaceFrames = 0;
+            this.faceScanProgress = 0;
+            this.faceGuideState = 'scanning';
+            this.verificationMessage = 'Scanning face position...';
+        }
+
+        this.scheduleAutoFaceScan(180);
+    },
+
+    facePositionGuide(box, video) {
+        const videoWidth = video.videoWidth || 1;
+        const videoHeight = video.videoHeight || 1;
+        const centerX = Number(box.x) + (Number(box.width) / 2);
+        const centerY = Number(box.y) + (Number(box.height) / 2);
+        const horizontalOffset = (centerX - (videoWidth / 2)) / videoWidth;
+        const verticalOffset = (centerY - (videoHeight / 2)) / videoHeight;
+        const faceWidthRatio = Number(box.width) / videoWidth;
+        const faceHeightRatio = Number(box.height) / videoHeight;
+
+        if (faceWidthRatio < 0.22 || faceHeightRatio < 0.24) {
+            return { ready: false, message: 'Move closer to the camera.' };
+        }
+
+        if (faceWidthRatio > 0.72 || faceHeightRatio > 0.86) {
+            return { ready: false, message: 'Move slightly farther from the camera.' };
+        }
+
+        if (horizontalOffset < -0.16) {
+            return { ready: false, message: 'Move your face a little to the right.' };
+        }
+
+        if (horizontalOffset > 0.16) {
+            return { ready: false, message: 'Move your face a little to the left.' };
+        }
+
+        if (verticalOffset < -0.18) {
+            return { ready: false, message: 'Move your face slightly down.' };
+        }
+
+        if (verticalOffset > 0.2) {
+            return { ready: false, message: 'Raise your face slightly.' };
+        }
+
+        return { ready: true, message: 'Face detected. Keep still inside the guide.' };
+    },
+
+    async captureAndVerifyFace() {
+        if (this.capturingFace || this.verificationBusy) {
+            return;
+        }
+
+        const video = this.$refs.faceVideo;
+        const canvas = this.$refs.faceCanvas;
+
+        if (! video || ! video.videoWidth || ! canvas) {
+            this.faceGuideState = 'error';
+            this.cameraError = 'Camera preview is not ready. Try again.';
+            return;
+        }
+
+        this.capturingFace = true;
+        this.faceGuideState = 'verifying';
+        this.cameraError = '';
+        this.verificationMessage = 'Face centered. Verifying automatically...';
+
+        try {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            this.setFaceCapture(
+                canvas.toDataURL('image/jpeg', 0.82),
+                'Face captured. Verifying automatically...',
+            );
+            this.stopCamera();
+        } finally {
+            this.capturingFace = false;
+        }
+
+        await this.verifyCapturedFace();
     },
 
     handleSubmit(event) {
