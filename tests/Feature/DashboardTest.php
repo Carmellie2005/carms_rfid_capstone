@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Checkpoint;
 use App\Models\Guard;
+use App\Models\IncidentReport;
 use App\Models\PatrolLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -96,5 +97,58 @@ class DashboardTest extends TestCase
             ->assertOk()
             ->assertSee('Visible Dashboard Checkpoint')
             ->assertDontSee('Expired Dashboard Checkpoint');
+    }
+
+    public function test_dashboard_normal_priority_badge_is_distinct_from_submitted_status(): void
+    {
+        $supervisor = User::factory()->create([
+            'name' => 'Security Supervisor',
+            'role' => 'admin',
+            'username' => 'supervisor',
+        ]);
+
+        $guardUser = User::factory()->create(['role' => 'guard']);
+        $guard = Guard::create([
+            'user_id' => $guardUser->id,
+            'employee_no' => 'SG-INCIDENT-COLOR',
+            'name' => 'Incident Color Guard',
+            'email' => 'incident.color.guard@example.com',
+            'rfid_uid' => 'RFID-INCIDENT-COLOR',
+            'shift' => 'Night Shift',
+            'status' => 'active',
+        ]);
+
+        $checkpoint = Checkpoint::create([
+            'code' => 'CP-INCIDENT-COLOR',
+            'name' => 'Incident Color Checkpoint',
+            'location' => 'Campus',
+            'device_uid' => 'ESP32-INCIDENT-COLOR',
+            'status' => 'active',
+        ]);
+
+        IncidentReport::create([
+            'guard_id' => $guard->id,
+            'checkpoint_id' => $checkpoint->id,
+            'title' => 'Damaged Facility',
+            'incident_type' => 'Damaged Facility',
+            'category' => 'Damaged Facility',
+            'priority' => 'normal',
+            'severity' => 'medium',
+            'incident_at' => now(),
+            'reported_at' => now(),
+            'description' => 'Window damage was reported.',
+            'status' => 'submitted',
+        ]);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('dashboard'));
+
+        $response
+            ->assertOk()
+            ->assertSee('bg-slate-50 text-slate-700 ring-slate-200', false)
+            ->assertSee('bg-blue-50 text-blue-700 ring-blue-200', false)
+            ->assertSee('Normal')
+            ->assertSee('Submitted');
     }
 }

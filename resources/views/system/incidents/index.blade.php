@@ -11,7 +11,7 @@
     @php
         $priorityClasses = [
             'low' => 'bg-sky-50 text-sky-700 ring-sky-200',
-            'normal' => 'bg-blue-50 text-blue-700 ring-blue-200',
+            'normal' => 'bg-slate-50 text-slate-700 ring-slate-200',
             'high' => 'bg-amber-50 text-amber-700 ring-amber-200',
             'critical' => 'bg-red-50 text-red-700 ring-red-200',
         ];
