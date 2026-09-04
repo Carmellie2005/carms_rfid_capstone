@@ -19,10 +19,10 @@ class PwaManifestTest extends TestCase
 
         $icons = collect($manifest['icons']);
 
-        $this->assertTrue($icons->contains(fn ($icon) => $icon['src'] === '/pwa-icon-192.png?v=slsu-logo-v11' && $icon['purpose'] === 'any'));
-        $this->assertTrue($icons->contains(fn ($icon) => $icon['src'] === '/pwa-icon-512.png?v=slsu-logo-v11' && $icon['purpose'] === 'any'));
-        $this->assertTrue($icons->contains(fn ($icon) => $icon['src'] === '/pwa-icon-maskable-192.png?v=slsu-logo-v11' && $icon['purpose'] === 'maskable'));
-        $this->assertTrue($icons->contains(fn ($icon) => $icon['src'] === '/pwa-icon-maskable-512.png?v=slsu-logo-v11' && $icon['purpose'] === 'maskable'));
+        $this->assertTrue($icons->contains(fn ($icon) => $icon['src'] === '/pwa-icon-192.png?v=slsu-logo-v12' && $icon['purpose'] === 'any'));
+        $this->assertTrue($icons->contains(fn ($icon) => $icon['src'] === '/pwa-icon-512.png?v=slsu-logo-v12' && $icon['purpose'] === 'any'));
+        $this->assertTrue($icons->contains(fn ($icon) => $icon['src'] === '/pwa-icon-maskable-192.png?v=slsu-logo-v12' && $icon['purpose'] === 'maskable'));
+        $this->assertTrue($icons->contains(fn ($icon) => $icon['src'] === '/pwa-icon-maskable-512.png?v=slsu-logo-v12' && $icon['purpose'] === 'maskable'));
 
         $this->assertFileExists(public_path('pwa-icon-192.png'));
         $this->assertFileExists(public_path('pwa-icon-512.png'));

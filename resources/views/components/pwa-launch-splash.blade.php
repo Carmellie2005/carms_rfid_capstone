@@ -11,7 +11,7 @@
         <div class="relative">
             <div class="absolute inset-0 rounded-[2rem] bg-blue-500/20 blur-2xl"></div>
             <img
-                src="{{ asset('pwa-icon-192.png') }}?v=slsu-logo-v11"
+                src="{{ asset('pwa-icon-192.png') }}?v=slsu-logo-v12"
                 alt="SLSU BC Patrol app icon"
                 class="relative h-24 w-24 rounded-[1.65rem] border border-blue-100 bg-white object-contain p-2 shadow-2xl shadow-blue-950/15 dark:border-slate-700 dark:bg-slate-900"
             >
