@@ -1,7 +1,7 @@
 {
     "id": "/",
-    "name": "SLSU Bontoc Patrol",
-    "short_name": "SLSU Bontoc Patrol",
+    "name": "SLSU BC Patrol",
+    "short_name": "SLSU BC Patrol",
     "description": "SLSU Bontoc patrol monitoring, checkpoint verification, and incident reporting system.",
     "start_url": "/",
     "scope": "/",

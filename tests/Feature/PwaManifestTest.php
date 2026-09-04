@@ -14,8 +14,8 @@ class PwaManifestTest extends TestCase
             flags: JSON_THROW_ON_ERROR
         );
 
-        $this->assertSame('SLSU Bontoc Patrol', $manifest['name']);
-        $this->assertSame('SLSU Bontoc Patrol', $manifest['short_name']);
+        $this->assertSame('SLSU BC Patrol', $manifest['name']);
+        $this->assertSame('SLSU BC Patrol', $manifest['short_name']);
 
         $icons = collect($manifest['icons']);
 
