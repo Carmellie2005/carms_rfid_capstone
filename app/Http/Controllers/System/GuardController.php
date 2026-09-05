@@ -5,6 +5,7 @@ namespace App\Http\Controllers\System;
 use App\Http\Controllers\Controller;
 use App\Models\Guard;
 use App\Models\User;
+use App\Rules\UsernameOrEmail;
 use App\Support\AuditLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -227,7 +228,7 @@ class GuardController extends Controller
             'shift' => ['nullable', 'string', 'max:100'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'notes' => ['nullable', 'string', 'max:2000'],
-            'username' => ['required', 'string', 'max:50', 'regex:/^[A-Za-z0-9._-]+$/', Rule::unique('users', 'username')->ignore($userId)],
+            'username' => ['required', 'string', 'max:255', new UsernameOrEmail, Rule::unique('users', 'username')->ignore($userId), Rule::unique('users', 'email')->ignore($userId)],
             'password' => $passwordRules,
         ]);
 
@@ -281,6 +282,10 @@ class GuardController extends Controller
 
     private function accountEmail(?string $email, string $username): string
     {
+        if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
+            return $username;
+        }
+
         if (filled($email)) {
             return $email;
         }

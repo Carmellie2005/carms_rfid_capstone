@@ -77,8 +77,8 @@
                         <h3 class="text-base font-semibold text-blue-950">Login Account</h3>
                     </div>
                     <div>
-                        <label for="username" class="block text-sm font-medium text-slate-700">Username</label>
-                        <input id="username" name="username" value="{{ old('username', $guard->user?->username) }}" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="username">
+                        <label for="username" class="block text-sm font-medium text-slate-700">Username or Email</label>
+                        <input id="username" name="username" type="text" value="{{ old('username', $guard->user?->username) }}" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="username" inputmode="email">
                         <x-input-error :messages="$errors->get('username')" class="mt-2" />
                     </div>
                     <div>

@@ -48,6 +48,23 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('patrol.scan'));
     }
 
+    public function test_users_can_authenticate_using_an_email_style_username(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'actual.email@example.com',
+            'username' => 'email.username@example.com',
+            'role' => 'guard',
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => $user->username,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('patrol.scan'));
+    }
+
     public function test_remember_me_sets_a_recaller_cookie(): void
     {
         $user = User::factory()->create();

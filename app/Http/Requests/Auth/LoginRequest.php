@@ -42,17 +42,23 @@ class LoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
 
         $login = Str::lower(trim($this->string('email')->toString()));
-        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $fields = filter_var($login, FILTER_VALIDATE_EMAIL)
+            ? ['email', 'username']
+            : ['username'];
 
-        if (! Auth::attempt([$field => $login, 'password' => $this->string('password')->toString()], $this->rememberLogin())) {
-            RateLimiter::hit($this->throttleKey());
+        foreach ($fields as $field) {
+            if (Auth::attempt([$field => $login, 'password' => $this->string('password')->toString()], $this->rememberLogin())) {
+                RateLimiter::clear($this->throttleKey());
 
-            throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
+                return;
+            }
         }
 
-        RateLimiter::clear($this->throttleKey());
+        RateLimiter::hit($this->throttleKey());
+
+        throw ValidationException::withMessages([
+            'email' => trans('auth.failed'),
+        ]);
     }
 
     /**

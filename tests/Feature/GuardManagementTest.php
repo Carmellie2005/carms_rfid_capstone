@@ -50,6 +50,41 @@ class GuardManagementTest extends TestCase
         $this->assertSame(0, $guard->faceDescriptors()->count());
     }
 
+    public function test_supervisor_can_create_guard_with_email_as_username(): void
+    {
+        $supervisor = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'supervisor',
+        ]);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->post(route('guards.store'), [
+                'employee_no' => 'SG-EMAIL-LOGIN',
+                'name' => 'Email Login Guard',
+                'email' => null,
+                'phone' => '09171234567',
+                'rfid_uid' => 'RFID-EMAIL-LOGIN',
+                'face_reference' => null,
+                'shift' => 'Night Shift',
+                'status' => 'active',
+                'notes' => null,
+                'username' => 'email.login.guard@example.com',
+                'password' => 'password',
+                'password_confirmation' => 'password',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('guards.index'));
+
+        $guard = Guard::where('employee_no', 'SG-EMAIL-LOGIN')->firstOrFail();
+        $user = User::where('username', 'email.login.guard@example.com')->firstOrFail();
+
+        $this->assertSame($user->id, $guard->user_id);
+        $this->assertSame('email.login.guard@example.com', $user->email);
+    }
+
     public function test_supervisor_guard_form_has_no_face_upload_field(): void
     {
         $supervisor = User::factory()->create([
