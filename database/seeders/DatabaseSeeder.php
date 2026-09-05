@@ -35,9 +35,18 @@ class DatabaseSeeder extends Seeder
             ->delete();
 
         $removedGuardEmployeeNos = ['SG-DEMO', 'SG-001', 'SG-002'];
+        $removedGuardNames = ['Demo Guard', 'Juan Dela Cruz', 'Maria Santos'];
+        $removedGuardEmails = ['guard.demo@example.com', 'juan.guard@example.com', 'maria.guard@example.com'];
+        $removedGuardRfids = ['RFID-DEMO', 'RFID-001', 'RFID-002'];
         $removedGuardUsernames = ['guard.demo', 'juan.guard', 'maria.guard'];
 
-        Guard::whereIn('employee_no', $removedGuardEmployeeNos)
+        Guard::where(function ($query) use ($removedGuardEmployeeNos, $removedGuardNames, $removedGuardEmails, $removedGuardRfids): void {
+            $query
+                ->whereIn('employee_no', $removedGuardEmployeeNos)
+                ->orWhereIn('name', $removedGuardNames)
+                ->orWhereIn('email', $removedGuardEmails)
+                ->orWhereIn('rfid_uid', $removedGuardRfids);
+        })
             ->with('user')
             ->get()
             ->each(function (Guard $guard): void {
@@ -50,7 +59,12 @@ class DatabaseSeeder extends Seeder
                 }
             });
 
-        User::whereIn('username', $removedGuardUsernames)
+        User::where(function ($query) use ($removedGuardUsernames, $removedGuardEmails, $removedGuardNames): void {
+            $query
+                ->whereIn('username', $removedGuardUsernames)
+                ->orWhereIn('email', $removedGuardEmails)
+                ->orWhereIn('name', $removedGuardNames);
+        })
             ->where('role', 'guard')
             ->delete();
 
