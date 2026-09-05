@@ -34,6 +34,9 @@
     $faceDataLabel = $hasProcessedFaceRegistration
         ? 'Face Data Processed'
         : ($hasFaceRegistration ? 'Face Data Needs Processing' : 'Face Data Missing');
+    $faceRegistrationHasErrors = $errors->has('face_registration_capture')
+        || $errors->has('face_liveness_confirmed')
+        || count($errors->get('face_descriptors.*')) > 0;
 @endphp
 
 <section>
@@ -72,7 +75,11 @@
         action="{{ route('profile.update') }}"
         enctype="multipart/form-data"
         class="mt-4 space-y-4"
-        x-data="guardFaceForm({ faceSamples: [], liveRegistration: @js($isGuard && $guardProfile && ! $hasProcessedFaceRegistration) })"
+        x-data="guardFaceForm({
+            faceSamples: [],
+            liveRegistration: @js($isGuard && $guardProfile && ! $hasProcessedFaceRegistration),
+            openRegistration: @js($faceRegistrationHasErrors),
+        })"
         x-init="boot()"
         x-on:submit="handleSubmit($event)"
         x-on:beforeunload.window="stopRegistrationCamera()"
@@ -117,90 +124,153 @@
                         This account is not linked to a guard profile yet.
                     </p>
                 @elseif (! $hasProcessedFaceRegistration)
-                    <div class="mt-3 rounded-md border border-blue-100 bg-blue-50/60 p-3">
+                    <div class="mt-3">
                         <input type="hidden" name="face_registration_capture" :value="liveCapture">
                         <input type="hidden" name="face_liveness_confirmed" :value="livenessPassed ? '1' : ''">
                         <template x-if="liveDescriptor">
                             <input type="hidden" name="face_descriptors[]" :value="descriptorPayload(liveDescriptor)">
                         </template>
 
-                        <div class="grid gap-3 lg:grid-cols-[1fr_0.95fr]">
-                            <div>
-                                <x-input-label :value="__('Live Camera Registration')" />
-                                <div class="mt-2 overflow-hidden rounded-md bg-slate-950">
-                                    <div class="relative aspect-video">
-                                        <video x-ref="registrationVideo" x-show="registrationCameraOpen && ! liveCapture" class="h-full w-full object-cover" autoplay playsinline muted></video>
-                                        <img x-show="liveCapture" :src="liveCapture" alt="Captured live face registration" class="h-full w-full object-cover" x-cloak>
-                                        <div x-show="! registrationCameraOpen && ! liveCapture" class="absolute inset-0 flex items-center justify-center px-4 text-center text-sm font-semibold text-white">
-                                            Camera preview
-                                        </div>
-                                        <div x-show="registrationCameraOpen && ! liveCapture" x-cloak class="pointer-events-none absolute inset-0 flex items-center justify-center">
-                                            <div class="relative h-[76%] w-[48%] min-w-32 max-w-52 rounded-[50%] border-2 border-white/90 shadow-[0_0_0_999px_rgba(15,23,42,0.35)]">
-                                                <span class="absolute left-1/2 top-[32%] h-2 w-2 -translate-x-1/2 rounded-full bg-white/90"></span>
-                                                <span class="absolute left-[32%] top-[38%] h-2 w-2 rounded-full bg-white/90"></span>
-                                                <span class="absolute right-[32%] top-[38%] h-2 w-2 rounded-full bg-white/90"></span>
-                                                <span class="absolute bottom-[28%] left-1/2 h-1.5 w-10 -translate-x-1/2 rounded-full bg-white/90"></span>
+                        <div class="rounded-md border border-teal-100 bg-teal-50/70 p-3 sm:p-4">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div class="flex min-w-0 items-start gap-3">
+                                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-teal-700 ring-1 ring-teal-100">
+                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M5 5h4M15 5h4M5 5v4M19 5v4M5 15v4M5 19h4M19 15v4M15 19h4M9.5 12a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                    </span>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-semibold text-teal-900" x-text="registrationStatusTitle()"></p>
+                                        <p class="mt-1 text-xs leading-5 text-slate-600" x-text="registrationStatusMessage()"></p>
+                                        <p class="mt-2 text-xs font-semibold" x-show="descriptorMessage && ! descriptorError" x-cloak :class="liveDescriptor ? 'text-emerald-700' : 'text-teal-700'" x-text="descriptorMessage"></p>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-teal-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-teal-300" x-on:click="openRegistrationModal()" x-bind:disabled="liveProcessing">
+                                    <span x-text="registrationActionLabel()"></span>
+                                </button>
+                            </div>
+
+                            <div class="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700" x-show="descriptorError" x-cloak>
+                                <span x-text="descriptorError"></span>
+                            </div>
+                            <x-input-error class="mt-2" :messages="$errors->get('face_registration_capture')" />
+                            <x-input-error class="mt-2" :messages="$errors->get('face_liveness_confirmed')" />
+                            @foreach ($errors->get('face_descriptors.*') as $messages)
+                                <x-input-error :messages="$messages" class="mt-2" />
+                            @endforeach
+                        </div>
+
+                        <div x-show="registrationModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[85] flex items-stretch justify-center overflow-hidden bg-slate-950/60 p-0 sm:items-center sm:px-4 sm:py-6" x-on:click.self="closeRegistrationModal()" x-on:keydown.escape.window="registrationModalOpen && closeRegistrationModal()">
+                            <section class="flex h-[100svh] max-h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-h-[92vh] sm:max-w-3xl sm:rounded-lg">
+                                <div class="flex shrink-0 items-start justify-between gap-4 border-b border-teal-100 px-4 py-4 sm:px-5">
+                                    <div>
+                                        <p class="text-xs font-semibold uppercase tracking-wide text-teal-700">Face Registration</p>
+                                        <h3 class="text-lg font-semibold text-blue-950">Register Guard Face</h3>
+                                        <p class="mt-1 text-sm text-slate-500">Complete the face guide and random challenge before saving.</p>
+                                    </div>
+                                    <button type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-teal-100 bg-white text-slate-700 hover:bg-teal-50" x-on:click="closeRegistrationModal()" aria-label="Close face registration">
+                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div class="mobile-scroll-area flex-1 overflow-y-auto bg-gradient-to-br from-teal-50 via-white to-emerald-50 p-4 sm:p-5">
+                                    <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(17rem,0.9fr)] lg:items-center">
+                                        <div class="rounded-md border border-teal-100 bg-white/85 p-4 shadow-sm">
+                                            <div class="mx-auto face-verification-circle">
+                                                <div class="relative aspect-square">
+                                                    <span x-show="registrationCameraOpen && ! liveCapture && ! livenessPassed" x-cloak class="face-auto-scan-ring opacity-80"></span>
+                                                    <div class="absolute inset-0 z-10 overflow-hidden rounded-full border-[6px] border-teal-600 bg-gradient-to-b from-teal-100 via-sky-50 to-emerald-50 shadow-[0_16px_45px_rgba(13,148,136,0.20)]">
+                                                        <video x-ref="registrationVideo" x-show="registrationCameraOpen && ! liveCapture" class="camera-unmirrored h-full w-full object-cover" autoplay playsinline muted></video>
+                                                        <img x-show="liveCapture" :src="liveCapture" alt="Captured live face registration" class="camera-unmirrored h-full w-full object-cover" x-cloak>
+                                                        <div x-show="! registrationCameraOpen && ! liveCapture" class="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-teal-800">
+                                                            <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                                <path d="M5 5h4M15 5h4M5 5v4M19 5v4M5 15v4M5 19h4M19 15v4M15 19h4M9.5 12a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                                            </svg>
+                                                            <span class="mt-3 text-sm font-semibold">Ready for face registration</span>
+                                                        </div>
+                                                    </div>
+                                                    <div x-show="liveProcessing" x-cloak x-transition.opacity.duration.150ms class="absolute inset-0 z-20 flex items-center justify-center rounded-full bg-white/85 p-4 text-center text-teal-900 backdrop-blur-sm">
+                                                        <div>
+                                                            <svg class="mx-auto h-7 w-7 animate-spin text-teal-700" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                                <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                                                            </svg>
+                                                            <p class="mt-2 text-xs font-semibold">Processing face data...</p>
+                                                        </div>
+                                                    </div>
+                                                    <div x-show="registrationCameraOpen && ! liveCapture" x-cloak class="absolute left-1/2 top-3 z-20 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-semibold shadow-sm ring-1" :class="livenessPassed ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-white/90 text-teal-800 ring-teal-100'">
+                                                        <span x-text="livenessChallengeBadge()"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <canvas x-ref="registrationCanvas" class="hidden"></canvas>
+                                            <input x-ref="registrationPhotoInput" type="file" accept="image/*" capture="user" class="sr-only" x-on:change="useRegistrationCaptureFile($event)">
+
+                                            <div x-show="registrationCameraOpen && ! liveCapture" x-cloak class="mx-auto mt-5 max-w-64">
+                                                <div class="h-1.5 overflow-hidden rounded-full bg-teal-100">
+                                                    <div class="h-full rounded-full bg-teal-600 transition-all duration-150" :style="`width: ${livenessPassed ? 100 : (livenessStatus === 'align' ? 25 : 65)}%`"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-4 rounded-md border border-teal-100 bg-teal-50 px-3 py-2 text-sm text-teal-800" x-show="descriptorMessage && ! descriptorError" x-cloak>
+                                                <span x-text="descriptorMessage"></span>
                                             </div>
                                         </div>
-                                        <div x-show="registrationCameraOpen && ! liveCapture" x-cloak class="absolute left-3 top-3 rounded-full px-3 py-1 text-xs font-semibold ring-1" :class="livenessPassed ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-white/90 text-blue-800 ring-white/70'">
-                                            <span x-text="livenessChallengeBadge()"></span>
+
+                                        <div class="flex flex-col justify-between gap-3">
+                                            <div class="rounded-md border border-teal-100 bg-white px-3 py-3 text-xs text-teal-800 shadow-sm">
+                                                <p class="font-semibold">Live Face Reference</p>
+                                                <p class="mt-1 text-slate-600">Center the guard face, complete the random action, then capture the reference.</p>
+                                                <p class="mt-1.5 text-[0.68rem] font-semibold text-teal-700">Challenge: smile or turn head slightly.</p>
+                                            </div>
+
+                                            <div class="grid gap-2 text-xs">
+                                                <div class="flex items-center gap-2 rounded-md border border-teal-100 bg-white px-3 py-2 shadow-sm">
+                                                    <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[0.68rem] font-bold ring-1" :class="['face', 'blink', 'smile', 'turn', 'complete'].includes(livenessStatus) ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-500 ring-slate-200'">1</span>
+                                                    <span class="font-medium text-slate-700">Face inside guide</span>
+                                                </div>
+                                                <div class="flex items-center gap-2 rounded-md border border-teal-100 bg-white px-3 py-2 shadow-sm">
+                                                    <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[0.68rem] font-bold ring-1" :class="livenessPassed ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-500 ring-slate-200'">2</span>
+                                                    <span class="font-medium text-slate-700" x-text="livenessPassed ? livenessChallengeLabel() : (registrationCameraOpen ? livenessChallengeLabel() : 'Complete random challenge')"></span>
+                                                </div>
+                                                <div class="flex items-center gap-2 rounded-md border border-teal-100 bg-white px-3 py-2 shadow-sm">
+                                                    <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[0.68rem] font-bold ring-1" :class="liveDescriptor ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-500 ring-slate-200'">3</span>
+                                                    <span class="font-medium text-slate-700">Capture reference</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="grid gap-2">
+                                                <button x-ref="registrationPrimaryAction" type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-teal-200 bg-white px-3 text-xs font-semibold text-teal-700 shadow-sm transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60" x-on:click="openRegistrationCamera()" x-bind:disabled="liveProcessing">
+                                                    Open Camera
+                                                </button>
+                                                <button type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-teal-200 bg-white px-3 text-xs font-semibold text-teal-700 shadow-sm transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60" x-on:click="openRegistrationPhotoCapture()" x-bind:disabled="liveProcessing">
+                                                    Take Photo
+                                                </button>
+                                                <button type="button" class="inline-flex h-10 items-center justify-center rounded-md bg-teal-700 px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-teal-300" x-on:click="captureRegistrationFace()" x-bind:disabled="! registrationCameraOpen || ! livenessPassed || liveProcessing">
+                                                    <span x-text="liveProcessing ? 'Processing...' : 'Capture Face'"></span>
+                                                </button>
+                                                <button type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-teal-200 bg-white px-3 text-xs font-semibold text-teal-700 shadow-sm transition hover:bg-teal-50" x-show="liveCapture" x-cloak x-on:click="retakeRegistrationFace()">
+                                                    Retake
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <canvas x-ref="registrationCanvas" class="hidden"></canvas>
-                                <input x-ref="registrationPhotoInput" type="file" accept="image/*" capture="user" class="sr-only" x-on:change="useRegistrationCaptureFile($event)">
-                            </div>
 
-                            <div class="flex flex-col justify-between gap-3">
-                                <div class="rounded-md border border-blue-100 bg-white px-3 py-2 text-xs text-blue-800">
-                                    <p class="font-semibold">Liveness Check</p>
-                                    <p class="mt-1 text-slate-600">Face guide and random action challenge before saving.</p>
-                                    <p class="mt-1.5 text-[0.68rem] font-semibold text-blue-700">Random action challenge: smile or turn head slightly.</p>
-                                </div>
-
-                                <div class="grid gap-2 text-xs">
-                                    <div class="flex items-center gap-2 rounded-md border border-blue-100 bg-white px-3 py-2">
-                                        <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[0.68rem] font-bold ring-1" :class="['face', 'blink', 'smile', 'turn', 'complete'].includes(livenessStatus) ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-500 ring-slate-200'">1</span>
-                                        <span class="font-medium text-slate-700">Face inside guide</span>
+                                    <div class="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700" x-show="descriptorError" x-cloak>
+                                        <span x-text="descriptorError"></span>
                                     </div>
-                                    <div class="flex items-center gap-2 rounded-md border border-blue-100 bg-white px-3 py-2">
-                                        <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[0.68rem] font-bold ring-1" :class="livenessPassed ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-500 ring-slate-200'">2</span>
-                                        <span class="font-medium text-slate-700" x-text="livenessPassed ? livenessChallengeLabel() : (registrationCameraOpen ? livenessChallengeLabel() : 'Complete random challenge')"></span>
-                                    </div>
-                                    <div class="flex items-center gap-2 rounded-md border border-blue-100 bg-white px-3 py-2">
-                                        <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[0.68rem] font-bold ring-1" :class="liveDescriptor ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-500 ring-slate-200'">3</span>
-                                        <span class="font-medium text-slate-700">Capture reference</span>
-                                    </div>
+                                    <x-input-error class="mt-2" :messages="$errors->get('face_registration_capture')" />
+                                    <x-input-error class="mt-2" :messages="$errors->get('face_liveness_confirmed')" />
+                                    @foreach ($errors->get('face_descriptors.*') as $messages)
+                                        <x-input-error :messages="$messages" class="mt-2" />
+                                    @endforeach
                                 </div>
-
-                                <div class="grid gap-2">
-                                    <button type="button" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-xs font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" x-on:click="openRegistrationCamera()" x-bind:disabled="liveProcessing">
-                                        Open Camera
-                                    </button>
-                                    <button type="button" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-xs font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" x-on:click="openRegistrationPhotoCapture()" x-bind:disabled="liveProcessing">
-                                        Take Photo
-                                    </button>
-                                    <button type="button" class="inline-flex h-9 items-center justify-center rounded-md bg-blue-700 px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300" x-on:click="captureRegistrationFace()" x-bind:disabled="! registrationCameraOpen || ! livenessPassed || liveProcessing">
-                                        <span x-text="liveProcessing ? 'Processing...' : 'Capture Face'"></span>
-                                    </button>
-                                    <button type="button" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-xs font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50" x-show="liveCapture" x-cloak x-on:click="retakeRegistrationFace()">
-                                        Retake
-                                    </button>
-                                </div>
-                            </div>
+                            </section>
                         </div>
-
-                        <div class="mt-3 rounded-md border border-blue-100 bg-white px-3 py-2 text-sm text-blue-800" x-show="descriptorMessage" x-cloak>
-                            <span x-text="descriptorMessage"></span>
-                        </div>
-                        <div class="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700" x-show="descriptorError" x-cloak>
-                            <span x-text="descriptorError"></span>
-                        </div>
-                        <x-input-error class="mt-2" :messages="$errors->get('face_registration_capture')" />
-                        <x-input-error class="mt-2" :messages="$errors->get('face_liveness_confirmed')" />
-                        @foreach ($errors->get('face_descriptors.*') as $messages)
-                            <x-input-error :messages="$messages" class="mt-2" />
-                        @endforeach
                     </div>
                 @else
                     <div class="mt-4 rounded-md border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">

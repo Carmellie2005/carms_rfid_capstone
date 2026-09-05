@@ -15,6 +15,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $defaultPassword = 'password123';
+
         $supervisor = User::where('email', 'security.supervisor@campuspatrol.local')->first()
             ?? User::where('email', 'supervisor@campusrfid.test')->first()
             ?? User::where('name', 'Security Admin')->where('role', 'admin')->first()
@@ -24,7 +26,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Security Supervisor',
             'username' => 'supervisor',
             'email' => 'security.supervisor@campuspatrol.local',
-            'password' => Hash::make('password'),
+            'password' => Hash::make($defaultPassword),
             'role' => 'admin',
         ])->save();
 
@@ -37,7 +39,7 @@ class DatabaseSeeder extends Seeder
                 'employee_no' => 'TEST-01',
                 'name' => 'Carmela Bihay Hernandez',
                 'username' => 'carmela.bihay.hernandez',
-                'password' => 'password',
+                'password' => $defaultPassword,
                 'email' => 'carmela.bihay.hernandez@guard.local',
                 'phone' => '09773209561',
                 'rfid_uid' => 'F33C8D37',
@@ -49,7 +51,7 @@ class DatabaseSeeder extends Seeder
                 'employee_no' => 'SG-DEMO',
                 'name' => 'Demo Guard',
                 'username' => 'guard.demo',
-                'password' => 'password',
+                'password' => $defaultPassword,
                 'email' => 'guard.demo@example.com',
                 'phone' => '0917-000-1000',
                 'rfid_uid' => 'RFID-DEMO',
@@ -61,7 +63,7 @@ class DatabaseSeeder extends Seeder
                 'employee_no' => 'SG-001',
                 'name' => 'Juan Dela Cruz',
                 'username' => 'juan.guard',
-                'password' => 'password',
+                'password' => $defaultPassword,
                 'email' => 'juan.guard@example.com',
                 'phone' => '0917-000-1001',
                 'rfid_uid' => 'RFID-001',
@@ -73,7 +75,7 @@ class DatabaseSeeder extends Seeder
                 'employee_no' => 'SG-002',
                 'name' => 'Maria Santos',
                 'username' => 'maria.guard',
-                'password' => 'password',
+                'password' => $defaultPassword,
                 'email' => 'maria.guard@example.com',
                 'phone' => '0917-000-1002',
                 'rfid_uid' => 'RFID-002',

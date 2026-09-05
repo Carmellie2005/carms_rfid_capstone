@@ -541,6 +541,7 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
 
 Alpine.data('guardFaceForm', (config = {}) => ({
     liveRegistration: Boolean(config.liveRegistration),
+    registrationModalOpen: Boolean(config.openRegistration),
     liveCapture: '',
     liveDescriptor: null,
     liveProcessing: false,
@@ -565,7 +566,69 @@ Alpine.data('guardFaceForm', (config = {}) => ({
     boot() {
         if (this.liveRegistration) {
             this.descriptorMessage = 'Open the camera when the guard is ready to register.';
+
+            if (this.registrationModalOpen) {
+                this.$nextTick(() => this.$refs.registrationPrimaryAction?.focus());
+            }
         }
+    },
+
+    registrationStatusTitle() {
+        if (this.liveProcessing) {
+            return 'Processing face data';
+        }
+
+        if (this.liveDescriptor) {
+            return 'Face data ready';
+        }
+
+        if (this.registrationCameraOpen) {
+            return 'Camera active';
+        }
+
+        return 'Face registration required';
+    },
+
+    registrationStatusMessage() {
+        if (this.liveDescriptor) {
+            return 'Save Changes to finish the face registration.';
+        }
+
+        if (this.liveProcessing) {
+            return 'Please wait while the face reference is prepared.';
+        }
+
+        return 'Register the guard face once before checkpoint verification.';
+    },
+
+    registrationActionLabel() {
+        if (this.liveDescriptor) {
+            return 'Review Face Capture';
+        }
+
+        if (this.liveProcessing) {
+            return 'Processing...';
+        }
+
+        return 'Register Face';
+    },
+
+    openRegistrationModal() {
+        if (this.liveProcessing) {
+            return;
+        }
+
+        this.registrationModalOpen = true;
+        this.$nextTick(() => this.$refs.registrationPrimaryAction?.focus());
+    },
+
+    closeRegistrationModal() {
+        if (this.liveProcessing) {
+            return;
+        }
+
+        this.stopRegistrationCamera();
+        this.registrationModalOpen = false;
     },
 
     descriptorPayload(descriptor) {
@@ -597,6 +660,7 @@ Alpine.data('guardFaceForm', (config = {}) => ({
     },
 
     async openRegistrationCamera() {
+        this.registrationModalOpen = true;
         this.stopRegistrationCamera();
         this.descriptorError = '';
         this.liveCapture = '';
@@ -655,6 +719,7 @@ Alpine.data('guardFaceForm', (config = {}) => ({
             const image = await imageFromDataUrl(this.liveCapture);
             this.liveDescriptor = await descriptorFromImage(image);
             this.descriptorMessage = 'Live face data is ready. Save Changes to finish registration.';
+            this.registrationModalOpen = false;
         } catch (error) {
             this.descriptorError = error.message || 'Live face data could not be generated.';
         } finally {
@@ -697,6 +762,7 @@ Alpine.data('guardFaceForm', (config = {}) => ({
             const image = await imageFromDataUrl(this.liveCapture);
             this.liveDescriptor = await descriptorFromImage(image);
             this.descriptorMessage = 'Face data is ready. Save Changes to finish registration.';
+            this.registrationModalOpen = false;
         } catch (error) {
             this.liveCapture = '';
             this.liveDescriptor = null;
@@ -969,6 +1035,7 @@ Alpine.data('patrolScan', (config = {}) => ({
     incident: config.incident || false,
     incidentImageCount: 0,
     incidentImageError: '',
+    incidentFormError: '',
     incidentImagePreviews: [],
     pendingScan: config.pendingScan || null,
     pendingScanUrl: config.pendingScanUrl,
@@ -984,7 +1051,8 @@ Alpine.data('patrolScan', (config = {}) => ({
     pollingTimer: null,
     faceModalOpen: false,
     checklistModalOpen: config.openChecklist || false,
-    faceVerified: config.faceVerified || config.openChecklist || false,
+    incidentModalOpen: config.openIncident || false,
+    faceVerified: config.faceVerified || config.openChecklist || config.openIncident || false,
     cameraOpen: false,
     cameraStream: null,
     faceCapture: config.faceCapture || '',
@@ -1012,7 +1080,10 @@ Alpine.data('patrolScan', (config = {}) => ({
             return;
         }
 
-        if (this.pendingScan && this.faceVerified) {
+        if (this.incidentModalOpen) {
+            this.checklistModalOpen = false;
+            this.$nextTick(() => this.focusIncidentForm());
+        } else if (this.pendingScan && this.faceVerified) {
             this.scanMessage = 'Face verified successfully. Complete the checklist.';
             this.$nextTick(() => document.getElementById('area_secure')?.focus());
         } else if (this.pendingScan) {
@@ -1090,7 +1161,15 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.faceGuideState = 'idle';
         this.faceScanProgress = 0;
         this.stableFaceFrames = 0;
-        this.verificationMessage = 'Tap Allow Camera Access, then center your face inside the guide.';
+        this.verificationMessage = 'Starting face verification...';
+
+        this.$nextTick(() => {
+            if (canUseLiveCameraPreview()) {
+                this.beginAutomaticFaceVerification();
+            } else {
+                this.verificationMessage = 'Start face verification with a clear front-facing photo.';
+            }
+        });
     },
 
     async beginAutomaticFaceVerification() {
@@ -1106,7 +1185,7 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.retakeFace();
         this.cameraError = '';
         this.faceGuideState = 'loading';
-        this.verificationMessage = 'Preparing camera verification...';
+        this.verificationMessage = 'Preparing face verification...';
 
         if (! canUseLiveCameraPreview()) {
             this.verificationMessage = 'Opening the phone camera capture. Submit a clear front-facing photo.';
@@ -1118,7 +1197,7 @@ Alpine.data('patrolScan', (config = {}) => ({
 
         try {
             await loadFaceModels();
-            this.verificationMessage = 'Requesting camera permission...';
+            this.verificationMessage = 'Starting camera verification...';
             await this.openCamera();
         } catch (error) {
             this.faceGuideState = 'error';
@@ -1363,7 +1442,7 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.faceGuideState = 'idle';
         this.faceScanProgress = 0;
         this.stableFaceFrames = 0;
-        this.verificationMessage = 'Tap Allow Camera Access, then center your face inside the guide.';
+        this.verificationMessage = 'Start face verification, then center your face inside the guide.';
 
         if (this.$refs.faceCaptureInput) {
             this.$refs.faceCaptureInput.value = '';
@@ -1381,7 +1460,106 @@ Alpine.data('patrolScan', (config = {}) => ({
         }
 
         this.checklistModalOpen = true;
+        this.incidentModalOpen = false;
         this.$nextTick(() => document.getElementById('area_secure')?.focus());
+    },
+
+    focusIncidentForm() {
+        if (this.$refs.incidentDescription && ! this.$refs.incidentDescription.value.trim()) {
+            this.$refs.incidentDescription.focus();
+            return;
+        }
+
+        this.$refs.incidentCategory?.focus();
+    },
+
+    openIncidentModal() {
+        if (this.submittingPatrol) {
+            return;
+        }
+
+        this.incident = true;
+        this.incidentModalOpen = true;
+        this.checklistModalOpen = false;
+        this.$nextTick(() => this.focusIncidentForm());
+    },
+
+    closeIncidentModal() {
+        if (this.submittingPatrol) {
+            return;
+        }
+
+        this.incidentModalOpen = false;
+        this.checklistModalOpen = true;
+        this.$nextTick(() => document.getElementById('area_secure')?.focus());
+    },
+
+    handleIncidentToggle(event) {
+        if (event?.target?.checked) {
+            this.openIncidentModal();
+            return;
+        }
+
+        this.clearIncidentReport();
+    },
+
+    clearIncidentReport() {
+        this.incident = false;
+        this.incidentModalOpen = false;
+        this.incidentFormError = '';
+        this.incidentImageError = '';
+        this.incidentImageCount = 0;
+        this.clearIncidentImagePreviews();
+
+        if (this.$refs.incidentUploadImages) {
+            this.$refs.incidentUploadImages.value = '';
+        }
+
+        if (this.$refs.incidentCameraImages) {
+            this.$refs.incidentCameraImages.value = '';
+        }
+
+        if (this.$refs.incidentDescription) {
+            this.$refs.incidentDescription.value = '';
+        }
+
+        if (this.$refs.incidentCategory) {
+            this.$refs.incidentCategory.selectedIndex = 0;
+        }
+
+        if (this.$refs.incidentPriority) {
+            this.$refs.incidentPriority.value = 'normal';
+        }
+    },
+
+    incidentSummary() {
+        if (! this.incident) {
+            return 'No incident report will be attached.';
+        }
+
+        if (this.incidentImageCount > 0) {
+            return `${this.incidentImageCount} image${this.incidentImageCount === 1 ? '' : 's'} selected for the incident report.`;
+        }
+
+        return 'Incident details are started. Add the required image before submitting.';
+    },
+
+    incidentDetailsComplete() {
+        if (! this.incident) {
+            this.incidentFormError = '';
+            return true;
+        }
+
+        const category = this.$refs.incidentCategory?.value || '';
+        const description = this.$refs.incidentDescription?.value?.trim() || '';
+
+        if (! category || ! description) {
+            this.incidentFormError = 'Complete the incident category and description before submitting.';
+            return false;
+        }
+
+        this.incidentFormError = '';
+        return true;
     },
 
     incidentFileCount(refName) {
@@ -1437,6 +1615,7 @@ Alpine.data('patrolScan', (config = {}) => ({
 
         this.incidentImageCount = total;
         this.refreshIncidentImagePreviews();
+        this.incidentFormError = '';
 
         if (this.incident && total === 0) {
             this.incidentImageError = 'Attach at least one incident image before submitting.';
@@ -1622,18 +1801,23 @@ Alpine.data('patrolScan', (config = {}) => ({
             return;
         }
 
-        if (this.incident && ! this.updateIncidentImageCount()) {
-            event.preventDefault();
-            this.checklistModalOpen = true;
-            return;
-        }
-
         if (! this.patrolLogId || ! this.faceVerified) {
             event.preventDefault();
             this.verificationMessage = this.patrolLogId
                 ? 'Verify the guard face before submitting.'
                 : 'Wait for an RFID scan before submitting.';
             return;
+        }
+
+        if (this.incident) {
+            const incidentDetailsComplete = this.incidentDetailsComplete();
+            const incidentImagesValid = this.updateIncidentImageCount();
+
+            if (! incidentDetailsComplete || ! incidentImagesValid) {
+                event.preventDefault();
+                this.openIncidentModal();
+                return;
+            }
         }
 
         this.submittingPatrol = true;

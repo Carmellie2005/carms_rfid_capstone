@@ -7,7 +7,16 @@
         $guardEmployeeNo = $guardProfile?->employee_no ?? 'Account only';
         $pendingFaceVerified = (bool) ($pendingFaceVerified ?? false);
         $pendingFaceMatchDistance = $pendingFaceMatchDistance ?? null;
-        $openChecklist = ($errors->any() && old('patrol_log_id')) || $pendingFaceVerified;
+        $incidentFormHasErrors = $errors->has('incident_category')
+            || $errors->has('incident_priority')
+            || $errors->has('incident_description')
+            || $errors->has('incident_image')
+            || $errors->has('incident_images')
+            || $errors->has('incident_images.*')
+            || $errors->has('incident_camera_images')
+            || $errors->has('incident_camera_images.*');
+        $openIncident = $incidentDefault && old('patrol_log_id') && $incidentFormHasErrors;
+        $openChecklist = ((($errors->any() && old('patrol_log_id')) || $pendingFaceVerified) && ! $openIncident);
         $faceRegistrationComplete = (bool) ($faceRegistrationComplete ?? false);
         $patrolScheduleOpen = (bool) ($patrolScheduleOpen ?? true);
         $patrolScheduleTestingMode = (bool) ($patrolScheduleTestingMode ?? false);
@@ -111,6 +120,7 @@
                     patrolScheduleMessage: @js($patrolScheduleMessage),
                     patrolTestingNotice: @js($patrolTestingNotice),
                     openChecklist: @js((bool) $openChecklist),
+                    openIncident: @js((bool) $openIncident),
                     faceVerified: @js((bool) $pendingFaceVerified),
                     faceCapture: @js(old('face_capture', '')),
                     capturedDescriptor: @js(old('captured_descriptor', '')),
@@ -310,8 +320,8 @@
                                                 <path d="M4 19c1.6-3 4.3-4.5 8-4.5S18.4 16 20 19M5 5h3M16 5h3M5 5v3M19 5v3M5 16v3M5 19h3M19 16v3M16 19h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                                             </svg>
                                         </span>
-                                        <p class="mt-4 text-sm font-semibold">Allow camera access</p>
-                                        <p class="mt-1 text-xs leading-5 text-blue-700/80 dark:text-blue-200">Your camera preview will stay inside this circle.</p>
+                                        <p class="mt-4 text-sm font-semibold">Start face verification</p>
+                                        <p class="mt-1 text-xs leading-5 text-blue-700/80 dark:text-blue-200">Your face preview will stay inside this circle.</p>
                                     </div>
                                 </div>
 
@@ -319,7 +329,7 @@
                                     <x-brand-spinner>
                                         <span x-text="faceModelLoading ? 'Loading face model...' : (cameraOpening ? 'Opening camera...' : (capturingFace ? 'Capturing face...' : 'Verifying face...'))"></span>
                                         <x-slot name="description">
-                                            <span x-text="faceModelLoading ? 'Preparing the face matcher.' : (cameraOpening ? 'Requesting camera access.' : 'This step will continue automatically.')"></span>
+                                            <span x-text="faceModelLoading ? 'Preparing the face matcher.' : (cameraOpening ? 'Starting camera.' : 'This step will continue automatically.')"></span>
                                         </x-slot>
                                     </x-brand-spinner>
                                 </div>
@@ -370,7 +380,7 @@
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
                                     </svg>
-                                    <span x-text="faceModelLoading ? 'Preparing...' : (cameraOpening ? 'Opening...' : 'Allow Camera Access')"></span>
+                                    <span x-text="faceModelLoading ? 'Preparing...' : (cameraOpening ? 'Opening...' : 'Start Face Verification')"></span>
                                 </button>
 
                                 <button x-show="cameraError && ! cameraOpening && ! faceModelLoading && ! verificationBusy && ! capturingFace" x-cloak type="button" class="mt-2 inline-flex h-10 w-full items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-slate-800" @click="restartFaceVerification()" :disabled="submittingPatrol">
@@ -382,7 +392,7 @@
                 </div>
 
                 <div x-show="checklistModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[80] flex items-stretch justify-center overflow-hidden bg-slate-950/55 p-0 sm:items-center sm:px-4 sm:py-6">
-                    <section class="mobile-scroll-area h-[100dvh] w-full overflow-y-auto bg-white shadow-2xl sm:h-auto sm:min-h-0 sm:max-h-[92vh] sm:max-w-5xl sm:rounded-lg">
+                    <section class="flex h-[100svh] max-h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:min-h-0 sm:max-h-[92vh] sm:max-w-5xl sm:rounded-lg">
                         <div class="flex items-start justify-between gap-4 border-b border-blue-100 px-4 py-4 sm:px-5">
                             <div>
                                 <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Step 3</p>
@@ -396,7 +406,7 @@
                             </button>
                         </div>
 
-                        <div class="grid gap-5 p-4 sm:p-5 lg:grid-cols-[1fr_0.95fr]">
+                        <div class="mobile-scroll-area grid flex-1 gap-5 overflow-y-auto p-4 sm:p-5 lg:grid-cols-[1fr_0.95fr]">
                             <div>
                                 <h4 class="text-base font-semibold text-blue-950">Checkpoint Checklist</h4>
                                 <div class="mt-4 grid gap-3 sm:grid-cols-2">
@@ -418,75 +428,38 @@
                                 <div class="flex flex-col gap-4 border-b border-blue-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
                                     <div>
                                         <h4 class="text-base font-semibold text-blue-950">Incident Report</h4>
-                                        <p class="mt-1 text-sm text-slate-500">Fill this only when something happened.</p>
+                                        <p class="mt-1 text-sm text-slate-500">Open a separate form only when something happened.</p>
                                     </div>
                                     <label class="inline-flex w-fit items-center gap-2 rounded-full border border-blue-100 bg-white px-3 py-2 text-sm font-semibold text-blue-800">
-                                        <input type="checkbox" name="has_incident" value="1" x-model="incident" class="rounded border-slate-300 text-blue-700 focus:ring-blue-500" @checked($incidentDefault)>
+                                        <input type="checkbox" name="has_incident" value="1" x-model="incident" class="rounded border-slate-300 text-blue-700 focus:ring-blue-500" @checked($incidentDefault) @change="handleIncidentToggle($event)">
                                         Incident observed
                                     </label>
                                 </div>
 
-                                <div class="mt-5 grid gap-4" x-show="incident" x-cloak x-transition.opacity.duration.200ms>
-                                    <div>
-                                        <label for="incident_category" class="block text-sm font-medium text-slate-700">Category</label>
-                                        <select id="incident_category" name="incident_category" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" :required="incident">
-                                            @foreach ($incidentCategories as $category)
-                                                <option value="{{ $category }}" @selected(old('incident_category') === $category)>{{ $category }}</option>
-                                            @endforeach
-                                        </select>
-                                        <x-input-error :messages="$errors->get('incident_category')" class="mt-2" />
-                                    </div>
-                                    <div>
-                                        <label for="incident_priority" class="block text-sm font-medium text-slate-700">Priority</label>
-                                        <select id="incident_priority" name="incident_priority" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                            @foreach (['low' => 'Low', 'normal' => 'Normal', 'high' => 'High', 'critical' => 'Critical'] as $value => $label)
-                                                <option value="{{ $value }}" @selected(old('incident_priority', 'normal') === $value)>{{ $label }}</option>
-                                            @endforeach
-                                        </select>
-                                        <x-input-error :messages="$errors->get('incident_priority')" class="mt-2" />
-                                    </div>
-                                    <div>
-                                        <label for="incident_description" class="block text-sm font-medium text-slate-700">Description</label>
-                                        <textarea id="incident_description" name="incident_description" rows="4" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" :required="incident">{{ old('incident_description') }}</textarea>
-                                        <x-input-error :messages="$errors->get('incident_description')" class="mt-2" />
-                                    </div>
-                                    <div>
-                                        <span class="block text-sm font-medium text-slate-700">
-                                            Incident Images <span class="text-red-600">*</span>
+                                <div class="mt-4 rounded-md border border-blue-100 bg-white p-3">
+                                    <div class="flex items-start gap-3">
+                                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full" :class="incident ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-200' : 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'">
+                                            <svg x-show="! incident" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                            <svg x-show="incident" x-cloak class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                <path d="M12 9v4m0 4h.01M10.3 4.2 2.7 17.4A2 2 0 0 0 4.4 20h15.2a2 2 0 0 0 1.7-2.6L13.7 4.2a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
                                         </span>
-                                        <div class="mt-1 rounded-md border border-dashed border-blue-200 bg-white p-3">
-                                            <div class="grid gap-2 sm:grid-cols-2">
-                                                <label for="incident_images" class="inline-flex h-10 cursor-pointer items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50">
-                                                    Upload Images
-                                                    <input x-ref="incidentUploadImages" id="incident_images" name="incident_images[]" type="file" accept="image/*" multiple class="sr-only" @change="updateIncidentImageCount($event)">
-                                                </label>
-                                                <button type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50" @click="$refs.incidentCameraImages?.click()">
-                                                    Take Photo
-                                                </button>
-                                                <input x-ref="incidentCameraImages" id="incident_camera_images" name="incident_camera_images[]" type="file" accept="image/*" capture="environment" class="sr-only" @change="updateIncidentImageCount($event)">
-                                            </div>
-                                            <p class="mt-2 text-xs text-slate-500">
-                                                Required when an incident is observed. Upload 2 to 3 images, or take one photo using the camera. Maximum 3 images total.
-                                            </p>
-                                            <div x-show="incidentImagePreviews.length" x-cloak class="mt-3">
-                                                <p class="text-xs font-semibold text-slate-700">Selected image previews</p>
-                                                <div class="mt-2 grid grid-cols-3 gap-2">
-                                                    <template x-for="preview in incidentImagePreviews" :key="preview.id">
-                                                        <figure class="min-w-0 overflow-hidden rounded-md border border-blue-100 bg-blue-50">
-                                                            <img :src="preview.url" :alt="preview.name" class="h-20 w-full object-cover sm:h-24">
-                                                            <figcaption class="truncate px-2 py-1 text-[0.65rem] font-medium text-slate-600" x-text="preview.name"></figcaption>
-                                                        </figure>
-                                                    </template>
-                                                </div>
-                                            </div>
-                                            <p x-show="incidentImageCount > 0 && ! incidentImageError" x-cloak class="mt-2 text-xs font-semibold text-blue-700" x-text="`${incidentImageCount} image${incidentImageCount === 1 ? '' : 's'} selected`"></p>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-sm font-semibold" :class="incident ? 'text-amber-800' : 'text-emerald-800'" x-text="incident ? 'Incident report attached' : 'No incident observed'"></p>
+                                            <p class="mt-1 text-sm text-slate-500" x-text="incidentSummary()"></p>
+                                            <p x-show="incidentFormError" x-cloak class="mt-2 text-xs font-semibold text-red-700" x-text="incidentFormError"></p>
                                             <p x-show="incidentImageError" x-cloak class="mt-2 text-xs font-semibold text-red-700" x-text="incidentImageError"></p>
+                                            <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+                                                <button type="button" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300" @click="openIncidentModal()" :disabled="submittingPatrol">
+                                                    <span x-text="incident ? 'Edit Incident Report' : 'Add Incident Report'"></span>
+                                                </button>
+                                                <button type="button" x-show="incident" x-cloak class="inline-flex h-10 items-center justify-center rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60" @click="clearIncidentReport()" :disabled="submittingPatrol">
+                                                    Remove Incident
+                                                </button>
+                                            </div>
                                         </div>
-                                        <x-input-error :messages="$errors->get('incident_image')" class="mt-2" />
-                                        <x-input-error :messages="$errors->get('incident_images')" class="mt-2" />
-                                        <x-input-error :messages="$errors->get('incident_images.*')" class="mt-2" />
-                                        <x-input-error :messages="$errors->get('incident_camera_images')" class="mt-2" />
-                                        <x-input-error :messages="$errors->get('incident_camera_images.*')" class="mt-2" />
                                     </div>
                                 </div>
                             </div>
@@ -512,7 +485,116 @@
                     </section>
                 </div>
 
-                <div x-show="submittingPatrol" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/50 p-4">
+                <div x-show="incidentModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[85] flex items-stretch justify-center overflow-hidden bg-slate-950/60 p-0 sm:items-center sm:px-4 sm:py-6" x-on:keydown.escape.window="incidentModalOpen && closeIncidentModal()">
+                    <section class="flex h-[100svh] max-h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-h-[92vh] sm:max-w-xl sm:rounded-lg">
+                        <div class="flex shrink-0 items-start justify-between gap-4 border-b border-blue-100 px-4 py-4 sm:px-5">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-amber-700">Incident Report</p>
+                                <h3 class="text-lg font-semibold text-blue-950">Report Observed Incident</h3>
+                                <p class="mt-1 text-sm text-slate-500">This submits together with the completed checklist.</p>
+                            </div>
+                            <button type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-100 bg-white text-slate-700 hover:bg-blue-50" @click="closeIncidentModal()" aria-label="Back to checklist">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="mobile-scroll-area flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
+                            <p x-show="incidentFormError" x-cloak class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700" x-text="incidentFormError"></p>
+
+                            <div>
+                                <label for="incident_category" class="block text-sm font-medium text-slate-700">Category</label>
+                                <select x-ref="incidentCategory" id="incident_category" name="incident_category" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" :required="incident && incidentModalOpen" @change="incidentFormError = ''">
+                                    @foreach ($incidentCategories as $category)
+                                        <option value="{{ $category }}" @selected(old('incident_category') === $category)>{{ $category }}</option>
+                                    @endforeach
+                                </select>
+                                <x-input-error :messages="$errors->get('incident_category')" class="mt-2" />
+                            </div>
+
+                            <div>
+                                <label for="incident_priority" class="block text-sm font-medium text-slate-700">Priority</label>
+                                <select x-ref="incidentPriority" id="incident_priority" name="incident_priority" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    @foreach (['low' => 'Low', 'normal' => 'Normal', 'high' => 'High', 'critical' => 'Critical'] as $value => $label)
+                                        <option value="{{ $value }}" @selected(old('incident_priority', 'normal') === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                <x-input-error :messages="$errors->get('incident_priority')" class="mt-2" />
+                            </div>
+
+                            <div>
+                                <label for="incident_description" class="block text-sm font-medium text-slate-700">Description</label>
+                                <textarea x-ref="incidentDescription" id="incident_description" name="incident_description" rows="4" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" :required="incident && incidentModalOpen" @input="incidentFormError = ''">{{ old('incident_description') }}</textarea>
+                                <x-input-error :messages="$errors->get('incident_description')" class="mt-2" />
+                            </div>
+
+                            <div>
+                                <span class="block text-sm font-medium text-slate-700">
+                                    Incident Images <span class="text-red-600">*</span>
+                                </span>
+                                <div class="mt-1 rounded-md border border-dashed border-blue-200 bg-blue-50/60 p-3">
+                                    <div class="grid gap-2 sm:grid-cols-2">
+                                        <label for="incident_images" class="inline-flex h-11 cursor-pointer items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50">
+                                            <svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                <path d="M12 5v14m7-7H5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                            </svg>
+                                            Upload Images
+                                            <input x-ref="incidentUploadImages" id="incident_images" name="incident_images[]" type="file" accept="image/*" multiple class="sr-only" @change="updateIncidentImageCount($event)">
+                                        </label>
+                                        <button type="button" class="inline-flex h-11 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50" @click="$refs.incidentCameraImages?.click()">
+                                            <svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                <path d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                                                <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
+                                            </svg>
+                                            Take Photo
+                                        </button>
+                                        <input x-ref="incidentCameraImages" id="incident_camera_images" name="incident_camera_images[]" type="file" accept="image/*" capture="environment" class="sr-only" @change="updateIncidentImageCount($event)">
+                                    </div>
+
+                                    <p class="mt-2 text-xs text-slate-500">
+                                        Upload 2 to 3 images, or take one photo using the camera. Maximum 3 images total.
+                                    </p>
+
+                                    <div x-show="incidentImagePreviews.length" x-cloak class="mt-3">
+                                        <p class="text-xs font-semibold text-slate-700">Selected image previews</p>
+                                        <div class="mt-2 grid grid-cols-3 gap-2">
+                                            <template x-for="preview in incidentImagePreviews" :key="preview.id">
+                                                <figure class="min-w-0 overflow-hidden rounded-md border border-blue-100 bg-white">
+                                                    <img :src="preview.url" :alt="preview.name" class="h-20 w-full object-cover sm:h-24">
+                                                    <figcaption class="truncate px-2 py-1 text-[0.65rem] font-medium text-slate-600" x-text="preview.name"></figcaption>
+                                                </figure>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <p x-show="incidentImageCount > 0 && ! incidentImageError" x-cloak class="mt-2 text-xs font-semibold text-blue-700" x-text="`${incidentImageCount} image${incidentImageCount === 1 ? '' : 's'} selected`"></p>
+                                    <p x-show="incidentImageError" x-cloak class="mt-2 text-xs font-semibold text-red-700" x-text="incidentImageError"></p>
+                                </div>
+                                <x-input-error :messages="$errors->get('incident_image')" class="mt-2" />
+                                <x-input-error :messages="$errors->get('incident_images')" class="mt-2" />
+                                <x-input-error :messages="$errors->get('incident_images.*')" class="mt-2" />
+                                <x-input-error :messages="$errors->get('incident_camera_images')" class="mt-2" />
+                                <x-input-error :messages="$errors->get('incident_camera_images.*')" class="mt-2" />
+                            </div>
+                        </div>
+
+                        <div class="flex shrink-0 flex-col gap-2 border-t border-blue-100 px-4 py-4 sm:flex-row sm:justify-end sm:px-5">
+                            <button type="button" class="inline-flex h-11 items-center justify-center rounded-md border border-blue-200 bg-white px-5 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="closeIncidentModal()" :disabled="submittingPatrol">
+                                Back to Checklist
+                            </button>
+                            <button type="submit" class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" :disabled="! patrolLogId || ! faceVerified || submittingPatrol">
+                                <svg x-show="submittingPatrol" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                                </svg>
+                                <span x-text="submittingPatrol ? 'Submitting...' : 'Submit Patrol Record'"></span>
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                <div x-show="submittingPatrol" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[95] flex items-center justify-center bg-slate-950/50 p-4">
                     <x-brand-spinner class="w-full max-w-sm rounded-lg bg-white p-6 text-blue-950 shadow-2xl dark:bg-slate-900 dark:text-blue-100">
                         Submitting patrol record
                         <x-slot name="description">Please wait while the checkpoint visit is saved.</x-slot>
