@@ -114,7 +114,7 @@
                     guardName: @js($guardName),
                     guardEmployeeNo: @js($guardEmployeeNo),
                     patrolLogId: @js(old('patrol_log_id', $pendingPatrol?->id)),
-                    scanMessage: @js($pendingFaceVerified ? 'Face verified successfully. Complete the checklist.' : ($pendingScan ? 'RFID scan received successfully. Continue to face verification.' : ($patrolScheduleOpen ? $scanWaitingMessage : $patrolScheduleMessage))),
+                    scanMessage: @js($pendingFaceVerified ? 'Face verified successfully. Complete the checklist.' : ($pendingScan ? 'RFID accepted. Face verification starts in 2 seconds.' : ($patrolScheduleOpen ? $scanWaitingMessage : $patrolScheduleMessage))),
                     patrolScheduleOpen: @js($patrolScheduleOpen),
                     patrolScheduleTestingMode: @js($patrolScheduleTestingMode),
                     patrolScheduleMessage: @js($patrolScheduleMessage),
@@ -128,7 +128,7 @@
                 })"
                 x-init="boot()"
                 x-on:submit="handleSubmit($event)"
-                x-on:beforeunload.window="stopCamera(); if (pollingTimer) clearInterval(pollingTimer)"
+                x-on:beforeunload.window="stopCamera(); if (pollingTimer) clearInterval(pollingTimer); if (faceVerificationDelayTimer) clearTimeout(faceVerificationDelayTimer)"
             >
                 @csrf
 
@@ -207,12 +207,13 @@
                                 <div class="rounded-md border border-emerald-100 bg-white p-3">
                                     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                         <div>
-                                            <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-emerald-700">Step 1 complete</p>
+                                            <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-emerald-700">RFID accepted</p>
                                             <h3 class="mt-0.5 text-base font-semibold text-blue-950" x-text="pendingScan?.checkpoint?.name || 'Checkpoint'"></h3>
                                             <p class="mt-1 text-sm text-slate-500" x-text="pendingScan?.scanned_at || ''"></p>
+                                            <p class="mt-1 text-sm font-semibold text-emerald-700" x-text="scanMessage"></p>
                                         </div>
                                         <button type="button" class="inline-flex w-fit rounded-md bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-200 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openFaceModal()">
-                                            Face required
+                                            Start now
                                         </button>
                                     </div>
                                 </div>

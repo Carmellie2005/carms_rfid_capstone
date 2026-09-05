@@ -20,6 +20,7 @@ const TURN_HEAD_THRESHOLD = 0.16;
 const LIVENESS_SCAN_DELAY = 120;
 const PWA_LAUNCH_SPLASH_MS = 1400;
 const PWA_LAUNCH_SPLASH_STORAGE_KEY = 'slsu-pwa-launch-splash-shown';
+const RFID_FACE_VERIFICATION_DELAY_MS = 2000;
 const LOCALHOST_HOSTNAMES = ['localhost', '127.0.0.1', '[::1]', '::1'];
 let faceModelPromise = null;
 
@@ -1049,6 +1050,7 @@ Alpine.data('patrolScan', (config = {}) => ({
     patrolScheduleMessage: config.patrolScheduleMessage || 'Guard patrol scanning is currently closed.',
     patrolTestingNotice: config.patrolTestingNotice || '',
     pollingTimer: null,
+    faceVerificationDelayTimer: null,
     faceModalOpen: false,
     checklistModalOpen: config.openChecklist || false,
     incidentModalOpen: config.openIncident || false,
@@ -1072,7 +1074,7 @@ Alpine.data('patrolScan', (config = {}) => ({
     requiredStableFaceFrames: 6,
 
     boot() {
-        this.verificationMessage = 'Allow camera access to start automatic face verification.';
+        this.verificationMessage = 'Start face verification to continue the checkpoint scan.';
 
         if (! this.patrolScheduleOpen) {
             this.scanMessage = this.patrolScheduleMessage;
@@ -1087,7 +1089,7 @@ Alpine.data('patrolScan', (config = {}) => ({
             this.scanMessage = 'Face verified successfully. Complete the checklist.';
             this.$nextTick(() => document.getElementById('area_secure')?.focus());
         } else if (this.pendingScan) {
-            this.$nextTick(() => this.openFaceModal());
+            this.scheduleFaceVerification();
         } else if (! this.pendingScan) {
             this.startPolling();
         }
@@ -1128,14 +1130,14 @@ Alpine.data('patrolScan', (config = {}) => ({
                 this.matchDistance = data.patrol_log.match_distance || null;
                 this.scanMessage = this.faceVerified
                     ? 'Face verified successfully. Complete the checklist.'
-                    : 'RFID scan received successfully. Continue to face verification.';
+                    : 'RFID accepted. Face verification starts in 2 seconds.';
                 clearInterval(this.pollingTimer);
 
                 if (this.faceVerified) {
                     this.checklistModalOpen = true;
                     this.$nextTick(() => document.getElementById('area_secure')?.focus());
                 } else {
-                    this.$nextTick(() => this.openFaceModal());
+                    this.scheduleFaceVerification();
                 }
             } else if (data.message) {
                 this.scanMessage = data.message;
@@ -1143,6 +1145,25 @@ Alpine.data('patrolScan', (config = {}) => ({
         } catch (error) {
             this.scanMessage = 'Waiting for RFID scan. Check Wi-Fi if this takes too long.';
         }
+    },
+
+    scheduleFaceVerification(delay = RFID_FACE_VERIFICATION_DELAY_MS) {
+        if (! this.patrolScheduleOpen || ! this.pendingScan || this.faceVerified || this.faceModalOpen || this.submittingPatrol) {
+            return;
+        }
+
+        if (this.faceVerificationDelayTimer) {
+            clearTimeout(this.faceVerificationDelayTimer);
+        }
+
+        this.scanMessage = 'RFID accepted. Face verification starts in 2 seconds.';
+        this.faceVerificationDelayTimer = setTimeout(() => {
+            this.faceVerificationDelayTimer = null;
+
+            if (this.pendingScan && ! this.faceVerified && ! this.faceModalOpen && this.patrolScheduleOpen) {
+                this.openFaceModal();
+            }
+        }, delay);
     },
 
     async openFaceModal() {
@@ -1154,6 +1175,11 @@ Alpine.data('patrolScan', (config = {}) => ({
         if (! this.pendingScan) {
             this.scanMessage = 'Scan your RFID card at the checkpoint reader first.';
             return;
+        }
+
+        if (this.faceVerificationDelayTimer) {
+            clearTimeout(this.faceVerificationDelayTimer);
+            this.faceVerificationDelayTimer = null;
         }
 
         this.faceModalOpen = true;
