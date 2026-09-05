@@ -34,6 +34,26 @@ class DatabaseSeeder extends Seeder
             ->where('id', '!=', $supervisor->id)
             ->delete();
 
+        $removedGuardEmployeeNos = ['SG-DEMO', 'SG-001', 'SG-002'];
+        $removedGuardUsernames = ['guard.demo', 'juan.guard', 'maria.guard'];
+
+        Guard::whereIn('employee_no', $removedGuardEmployeeNos)
+            ->with('user')
+            ->get()
+            ->each(function (Guard $guard): void {
+                $user = $guard->user;
+
+                $guard->delete();
+
+                if ($user && $user->role === 'guard') {
+                    $user->delete();
+                }
+            });
+
+        User::whereIn('username', $removedGuardUsernames)
+            ->where('role', 'guard')
+            ->delete();
+
         $guards = [
             [
                 'employee_no' => 'TEST-01',
@@ -45,42 +65,6 @@ class DatabaseSeeder extends Seeder
                 'rfid_uid' => 'F33C8D37',
                 'face_reference' => null,
                 'shift' => 'Night Shift',
-                'status' => 'active',
-            ],
-            [
-                'employee_no' => 'SG-DEMO',
-                'name' => 'Demo Guard',
-                'username' => 'guard.demo',
-                'password' => $defaultPassword,
-                'email' => 'guard.demo@example.com',
-                'phone' => '0917-000-1000',
-                'rfid_uid' => 'RFID-DEMO',
-                'face_reference' => 'demo-guard',
-                'shift' => 'Demo Shift',
-                'status' => 'active',
-            ],
-            [
-                'employee_no' => 'SG-001',
-                'name' => 'Juan Dela Cruz',
-                'username' => 'juan.guard',
-                'password' => $defaultPassword,
-                'email' => 'juan.guard@example.com',
-                'phone' => '0917-000-1001',
-                'rfid_uid' => 'RFID-001',
-                'face_reference' => 'juan-dela-cruz',
-                'shift' => 'Night Shift',
-                'status' => 'active',
-            ],
-            [
-                'employee_no' => 'SG-002',
-                'name' => 'Maria Santos',
-                'username' => 'maria.guard',
-                'password' => $defaultPassword,
-                'email' => 'maria.guard@example.com',
-                'phone' => '0917-000-1002',
-                'rfid_uid' => 'RFID-002',
-                'face_reference' => 'maria-santos',
-                'shift' => 'Day Shift',
                 'status' => 'active',
             ],
         ];
