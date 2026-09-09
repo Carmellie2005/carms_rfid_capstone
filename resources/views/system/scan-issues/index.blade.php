@@ -7,6 +7,7 @@
     </x-slot>
 
     @php
+        $faceVerificationEnabled = \App\Support\FaceVerification::enabled();
         $statusClasses = [
             'invalid' => 'bg-red-50 text-red-700 ring-red-200',
             'suspicious' => 'bg-amber-50 text-amber-700 ring-amber-200',
@@ -26,7 +27,7 @@
             ['label' => 'Total Issues', 'value' => $summary['total'], 'cardClass' => 'border-blue-100 bg-white', 'labelClass' => 'text-blue-700', 'valueClass' => 'text-blue-950'],
             ['label' => 'Unregistered RFID', 'value' => $summary['unregistered'], 'cardClass' => 'border-red-100 bg-red-50/60', 'labelClass' => 'text-red-700', 'valueClass' => 'text-red-900'],
             ['label' => 'Invalid Scans', 'value' => $summary['invalid'], 'cardClass' => 'border-amber-100 bg-amber-50/60', 'labelClass' => 'text-amber-700', 'valueClass' => 'text-amber-900'],
-            ['label' => 'Face Review', 'value' => $summary['needsFace'], 'cardClass' => 'border-violet-100 bg-violet-50/60', 'labelClass' => 'text-violet-700', 'valueClass' => 'text-violet-900'],
+            ['label' => $faceVerificationEnabled ? 'Face Review' : 'Needs Review', 'value' => $summary['needsFace'], 'cardClass' => 'border-violet-100 bg-violet-50/60', 'labelClass' => 'text-violet-700', 'valueClass' => 'text-violet-900'],
         ];
     @endphp
 

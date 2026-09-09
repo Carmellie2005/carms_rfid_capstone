@@ -58,6 +58,7 @@ class PatrolLogController extends Controller
             'suspicious' => $logs->where('status', 'suspicious')->count(),
             'invalid' => $logs->where('status', 'invalid')->count(),
             'pending_face' => $logs->where('status', 'pending_face')->count(),
+            'pending_checklist' => $logs->where('status', 'pending_checklist')->count(),
             'profile_incomplete' => $logs->where('status', 'profile_incomplete')->count(),
             'outside_schedule' => $logs->where('status', 'outside_schedule')->count(),
             'expired' => $logs->where('status', 'expired')->count(),

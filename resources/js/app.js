@@ -1333,6 +1333,7 @@ Alpine.data('patrolScan', (config = {}) => ({
     faceModalOpen: false,
     checklistModalOpen: config.openChecklist || false,
     incidentModalOpen: config.openIncident || false,
+    faceVerificationEnabled: config.faceVerificationEnabled ?? true,
     faceVerified: config.faceVerified || config.openChecklist || config.openIncident || false,
     cameraOpen: false,
     cameraStream: null,
@@ -1365,7 +1366,9 @@ Alpine.data('patrolScan', (config = {}) => ({
     requiredStableFaceFrames: 6,
 
     boot() {
-        this.verificationMessage = 'Start face verification to continue the checkpoint scan.';
+        this.verificationMessage = this.faceVerificationEnabled
+            ? 'Start face verification to continue the checkpoint scan.'
+            : 'Scan RFID, then complete the patrol checklist.';
 
         if (! this.patrolScheduleOpen) {
             this.scanMessage = this.patrolScheduleMessage;
@@ -1376,9 +1379,13 @@ Alpine.data('patrolScan', (config = {}) => ({
         if (this.incidentModalOpen) {
             this.checklistModalOpen = false;
             this.$nextTick(() => this.focusIncidentForm());
-        } else if (this.pendingScan && this.faceVerified) {
-            this.scanMessage = 'Face verified successfully. Complete the checklist.';
-            this.$nextTick(() => document.getElementById('area_secure')?.focus());
+        } else if (this.pendingScan && (! this.faceVerificationEnabled || this.faceVerified)) {
+            this.faceVerified = true;
+            this.checklistModalOpen = true;
+            this.scanMessage = this.faceVerificationEnabled
+                ? 'Face verified successfully. Complete the checklist.'
+                : 'RFID accepted. Complete the checklist.';
+            this.$nextTick(() => document.getElementById('doors_locked_normal')?.focus());
         } else if (this.pendingScan) {
             this.scheduleFaceVerification();
         } else if (! this.pendingScan) {
@@ -1489,7 +1496,7 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     async fetchPendingScan() {
-        if (this.pendingScan || this.faceVerified) {
+        if (this.pendingScan || (this.faceVerificationEnabled && this.faceVerified)) {
             return;
         }
 
@@ -1508,22 +1515,27 @@ Alpine.data('patrolScan', (config = {}) => ({
             const data = await response.json();
 
             if (data.pending && data.patrol_log) {
+                const requiresFace = data.patrol_log.face_verification_enabled ?? this.faceVerificationEnabled;
+
                 this.pendingScan = data.patrol_log;
                 this.patrolLogId = data.patrol_log.id;
-                this.faceVerified = Boolean(data.patrol_log.face_verified);
+                this.faceVerificationEnabled = Boolean(requiresFace);
+                this.faceVerified = this.faceVerificationEnabled ? Boolean(data.patrol_log.face_verified) : true;
                 this.matchDistance = data.patrol_log.match_distance || null;
-                this.faceLivenessChallenge = isPatrolLivenessChallenge(data.patrol_log.face_liveness_challenge)
-                    ? data.patrol_log.face_liveness_challenge
-                    : (isPatrolLivenessChallenge(this.faceLivenessChallenge) ? this.faceLivenessChallenge : randomPatrolLivenessChallenge());
+                this.faceLivenessChallenge = this.faceVerificationEnabled
+                    ? (isPatrolLivenessChallenge(data.patrol_log.face_liveness_challenge)
+                        ? data.patrol_log.face_liveness_challenge
+                        : (isPatrolLivenessChallenge(this.faceLivenessChallenge) ? this.faceLivenessChallenge : randomPatrolLivenessChallenge()))
+                    : '';
                 this.resetFaceLivenessState(false);
                 this.scanMessage = this.faceVerified
-                    ? 'Face verified successfully. Complete the checklist.'
+                    ? (this.faceVerificationEnabled ? 'Face verified successfully. Complete the checklist.' : 'RFID accepted. Complete the checklist.')
                     : 'RFID accepted. Face verification starts in 2 seconds.';
                 clearInterval(this.pollingTimer);
 
                 if (this.faceVerified) {
                     this.checklistModalOpen = true;
-                    this.$nextTick(() => document.getElementById('area_secure')?.focus());
+                    this.$nextTick(() => document.getElementById('doors_locked_normal')?.focus());
                 } else {
                     this.scheduleFaceVerification();
                 }
@@ -1536,7 +1548,7 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     scheduleFaceVerification(delay = RFID_FACE_VERIFICATION_DELAY_MS) {
-        if (! this.patrolScheduleOpen || ! this.pendingScan || this.faceVerified || this.faceModalOpen || this.submittingPatrol) {
+        if (! this.faceVerificationEnabled || ! this.patrolScheduleOpen || ! this.pendingScan || this.faceVerified || this.faceModalOpen || this.submittingPatrol) {
             return;
         }
 
@@ -1555,6 +1567,21 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     async openFaceModal() {
+        if (! this.faceVerificationEnabled) {
+            this.faceModalOpen = false;
+            this.faceVerified = Boolean(this.pendingScan);
+            this.scanMessage = this.pendingScan
+                ? 'RFID accepted. Complete the checklist.'
+                : 'Scan your RFID card at the checkpoint reader first.';
+
+            if (this.pendingScan) {
+                this.checklistModalOpen = true;
+                this.$nextTick(() => document.getElementById('doors_locked_normal')?.focus());
+            }
+
+            return;
+        }
+
         if (! this.patrolScheduleOpen) {
             this.scanMessage = this.patrolScheduleMessage;
             return;
@@ -1591,6 +1618,11 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     async beginAutomaticFaceVerification() {
+        if (! this.faceVerificationEnabled) {
+            this.continueToChecklist();
+            return;
+        }
+
         if (this.faceModelLoading || this.cameraOpening || this.capturingFace || this.verificationBusy || this.submittingPatrol) {
             return;
         }
@@ -1628,6 +1660,11 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     async verifyCapturedFace() {
+        if (! this.faceVerificationEnabled) {
+            this.continueToChecklist();
+            return;
+        }
+
         if (! this.faceLivenessPassed || ! this.faceLivenessChallenge) {
             this.cameraError = 'Complete the random liveness challenge before face verification.';
             return;
@@ -1871,10 +1908,11 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     continueToChecklist() {
-        if (! this.faceVerified || this.submittingPatrol) {
+        if ((this.faceVerificationEnabled && ! this.faceVerified) || this.submittingPatrol) {
             return;
         }
 
+        this.faceVerified = Boolean(this.pendingScan);
         this.checklistModalOpen = true;
         this.incidentModalOpen = false;
         this.$nextTick(() => document.getElementById('doors_locked_normal')?.focus());
@@ -2425,7 +2463,7 @@ Alpine.data('patrolScan', (config = {}) => ({
             return;
         }
 
-        if (! this.patrolLogId || ! this.faceVerified) {
+        if (! this.patrolLogId || (this.faceVerificationEnabled && ! this.faceVerified)) {
             event.preventDefault();
             this.verificationMessage = this.patrolLogId
                 ? 'Verify the guard face before submitting.'
@@ -2557,7 +2595,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
             return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
         }
 
-        if (['pending', 'pending_face', 'open', 'in_progress'].includes(status)) {
+        if (['pending', 'pending_face', 'pending_checklist', 'open', 'in_progress'].includes(status)) {
             return 'bg-blue-50 text-blue-700 ring-blue-200';
         }
 

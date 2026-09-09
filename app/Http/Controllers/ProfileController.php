@@ -43,8 +43,11 @@ class ProfileController extends Controller
         $profilePhotoRemoved = false;
         $faceRegistrationCaptures = $request->input('face_registration_captures', []);
         $faceRegistrationDescriptors = $request->input('face_descriptors', []);
-        $wantsFaceRegistration = collect($faceRegistrationCaptures)->filter(fn ($value) => filled($value))->isNotEmpty()
-            || collect($faceRegistrationDescriptors)->filter(fn ($value) => filled($value))->isNotEmpty();
+        $wantsFaceRegistration = FaceVerification::enabled()
+            && (
+                collect($faceRegistrationCaptures)->filter(fn ($value) => filled($value))->isNotEmpty()
+                || collect($faceRegistrationDescriptors)->filter(fn ($value) => filled($value))->isNotEmpty()
+            );
         $faceRegistration = $wantsFaceRegistration
             ? $this->validatedGuardFaceRegistration(
                 $user,

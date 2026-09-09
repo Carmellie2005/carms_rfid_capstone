@@ -31,16 +31,16 @@ class GuardPatrolController extends Controller
     {
         $guardProfile = auth()->user()?->guardProfile;
         $patrolScheduleOpen = PatrolSchedule::isOpen();
+        $faceVerificationEnabled = FaceVerification::enabled();
         $pendingPatrol = $guardProfile && $patrolScheduleOpen
             ? $this->latestPendingPatrolFor($guardProfile)
             : null;
-        $pendingFaceAttempt = $pendingPatrol
+        $pendingFaceAttempt = $faceVerificationEnabled && $pendingPatrol
             ? $this->latestVerifiedFaceAttemptFor($pendingPatrol)
             : null;
-        $faceRegistrationComplete = $guardProfile
-            ? $this->hasCompletedFaceRegistration($guardProfile)
-            : false;
-        $pendingFaceLivenessChallenge = $pendingPatrol
+        $faceRegistrationComplete = ! $faceVerificationEnabled
+            || ($guardProfile ? $this->hasCompletedFaceRegistration($guardProfile) : false);
+        $pendingFaceLivenessChallenge = $faceVerificationEnabled && $pendingPatrol
             ? $this->livenessChallengeFor($pendingPatrol)
             : null;
 
@@ -48,9 +48,10 @@ class GuardPatrolController extends Controller
             'checkpoints' => Checkpoint::where('status', 'active')->orderBy('name')->get(),
             'guardProfile' => $guardProfile,
             'pendingPatrol' => $pendingPatrol,
-            'pendingFaceVerified' => (bool) $pendingFaceAttempt,
+            'pendingFaceVerified' => $pendingPatrol ? (! $faceVerificationEnabled || (bool) $pendingFaceAttempt) : false,
             'pendingFaceMatchDistance' => $pendingFaceAttempt?->match_distance,
             'pendingFaceLivenessChallenge' => $pendingFaceLivenessChallenge,
+            'faceVerificationEnabled' => $faceVerificationEnabled,
             'faceRegistrationComplete' => $faceRegistrationComplete,
             'patrolScheduleOpen' => $patrolScheduleOpen,
             'patrolScheduleTestingMode' => PatrolSchedule::isTestingMode(),
@@ -95,6 +96,13 @@ class GuardPatrolController extends Controller
 
     public function verifyFace(Request $request): JsonResponse
     {
+        if (! FaceVerification::enabled()) {
+            return response()->json([
+                'verified' => false,
+                'message' => 'Face verification is currently disabled for patrols.',
+            ], 409);
+        }
+
         $data = $request->validate([
             'patrol_log_id' => ['required', 'integer', 'exists:patrol_logs,id'],
             'face_capture' => ['required', 'string'],
@@ -175,6 +183,8 @@ class GuardPatrolController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $faceVerificationEnabled = FaceVerification::enabled();
+
         $data = $request->validate([
             'patrol_log_id' => ['required', 'integer', 'exists:patrol_logs,id'],
             'face_capture' => ['nullable', 'string'],
@@ -212,16 +222,23 @@ class GuardPatrolController extends Controller
             ->whereKey($data['patrol_log_id'])
             ->where('guard_id', $guard->id)
             ->where('rfid_status', 'valid')
-            ->where('facial_status', 'pending')
-            ->where('status', 'pending_face')
+            ->when(
+                $faceVerificationEnabled,
+                fn ($query) => $query->where('facial_status', 'pending')->where('status', 'pending_face'),
+                fn ($query) => $query
+                    ->whereIn('facial_status', ['pending', 'not_required'])
+                    ->whereIn('status', ['pending_face', 'pending_checklist']),
+            )
             ->first();
 
         if (! $patrolLog) {
             return back()->with('warning', 'No pending RFID scan is available for this guard. Please scan your card at the checkpoint again.');
         }
 
-        $verifiedFaceAttempt = $this->latestVerifiedFaceAttemptFor($patrolLog);
-        $faceResult = $verifiedFaceAttempt
+        $verifiedFaceAttempt = $faceVerificationEnabled
+            ? $this->latestVerifiedFaceAttemptFor($patrolLog)
+            : null;
+        $faceResult = $faceVerificationEnabled && $verifiedFaceAttempt
             ? [
                 'processable' => true,
                 'verified' => true,
@@ -234,19 +251,32 @@ class GuardPatrolController extends Controller
             ]
             : null;
 
-        if (! $verifiedFaceAttempt && ! $this->livenessChallengeMatches($patrolLog, $data['face_liveness_challenge'] ?? null)) {
+        if ($faceVerificationEnabled && ! $verifiedFaceAttempt && ! $this->livenessChallengeMatches($patrolLog, $data['face_liveness_challenge'] ?? null)) {
             return back()
                 ->withInput()
                 ->with('warning', 'Complete the current random liveness challenge before submitting patrol verification.');
         }
 
-        $faceResult ??= $this->evaluateFaceVerification(
-            $guard,
-            $data['captured_descriptor'] ?? null,
-            $data['face_capture'] ?? null,
-            $request->boolean('face_liveness_confirmed'),
-            $data['face_liveness_challenge'] ?? null,
-        );
+        if ($faceVerificationEnabled) {
+            $faceResult ??= $this->evaluateFaceVerification(
+                $guard,
+                $data['captured_descriptor'] ?? null,
+                $data['face_capture'] ?? null,
+                $request->boolean('face_liveness_confirmed'),
+                $data['face_liveness_challenge'] ?? null,
+            );
+        } else {
+            $faceResult = [
+                'processable' => true,
+                'verified' => true,
+                'message' => 'Face verification is disabled. Continue to the patrol checklist.',
+                'captured_descriptor' => null,
+                'captured_image' => null,
+                'match_distance' => null,
+                'liveness_confirmed' => false,
+                'liveness_challenge' => null,
+            ];
+        }
 
         if (! $faceResult['processable']) {
             return back()
@@ -257,8 +287,8 @@ class GuardPatrolController extends Controller
         $capturedDescriptor = $faceResult['captured_descriptor'];
         $capturedImage = $faceResult['captured_image'];
         $matchDistance = $faceResult['match_distance'];
-        $facialStatus = $faceResult['verified'] ? 'verified' : 'failed';
-        $patrolStatus = $facialStatus === 'verified' ? 'valid' : 'suspicious';
+        $facialStatus = $faceVerificationEnabled ? ($faceResult['verified'] ? 'verified' : 'failed') : 'not_required';
+        $patrolStatus = $facialStatus === 'failed' ? 'suspicious' : 'valid';
         $checkpoint = $patrolLog->checkpoint;
         $checklistProofPhotoFiles = $this->checklistProofPhotoFiles($request);
         $incidentImageFiles = $this->incidentImageFiles($request);
@@ -279,7 +309,7 @@ class GuardPatrolController extends Controller
                 ->withErrors(['incident_images' => $incidentImageError]);
         }
 
-        DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $facialStatus, $patrolStatus, $capturedDescriptor, $capturedImage, $matchDistance, $checklistProofPhotoFiles, $incidentImageFiles, $submittedAt, $verifiedFaceAttempt, $faceResult, &$incidentReport) {
+        DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $facialStatus, $patrolStatus, $capturedDescriptor, $capturedImage, $matchDistance, $checklistProofPhotoFiles, $incidentImageFiles, $submittedAt, $verifiedFaceAttempt, $faceResult, $faceVerificationEnabled, &$incidentReport) {
             $patrolLog->update([
                 'facial_status' => $facialStatus,
                 'status' => $patrolStatus,
@@ -288,7 +318,7 @@ class GuardPatrolController extends Controller
 
             $this->expireOtherPendingPatrols($guard, $patrolLog);
 
-            if (! $verifiedFaceAttempt) {
+            if ($faceVerificationEnabled && ! $verifiedFaceAttempt) {
                 $this->recordFaceVerificationAttempt($patrolLog, $guard, [
                     'verified' => $facialStatus === 'verified',
                     'captured_descriptor' => $capturedDescriptor,
@@ -337,11 +367,13 @@ class GuardPatrolController extends Controller
             }
         });
 
-        $this->forgetLivenessChallengeFor($patrolLog);
+        if ($faceVerificationEnabled) {
+            $this->forgetLivenessChallengeFor($patrolLog);
+        }
 
         AuditLogger::record(
-            $facialStatus === 'verified' ? 'patrol_completed' : 'patrol_marked_suspicious',
-            $facialStatus === 'verified' ? 'Checkpoint visit recorded successfully.' : 'Face verification failed after RFID scan.',
+            $facialStatus === 'failed' ? 'patrol_marked_suspicious' : 'patrol_completed',
+            $facialStatus === 'failed' ? 'Face verification failed after RFID scan.' : 'Checkpoint visit recorded successfully.',
             $patrolLog,
             [
                 'guard_id' => $guard->id,
@@ -377,15 +409,21 @@ class GuardPatrolController extends Controller
             ->latest('id')
             ->first();
 
-        if (! $latestPatrolLog || ! $this->isPendingFacePatrol($latestPatrolLog)) {
+        if (! $latestPatrolLog || ! $this->isPendingPatrol($latestPatrolLog)) {
             return null;
         }
 
         return $latestPatrolLog;
     }
 
-    private function isPendingFacePatrol(PatrolLog $patrolLog): bool
+    private function isPendingPatrol(PatrolLog $patrolLog): bool
     {
+        if (! FaceVerification::enabled()) {
+            return $patrolLog->rfid_status === 'valid'
+                && in_array($patrolLog->facial_status, ['pending', 'not_required'], true)
+                && in_array($patrolLog->status, ['pending_face', 'pending_checklist'], true);
+        }
+
         return $patrolLog->rfid_status === 'valid'
             && $patrolLog->facial_status === 'pending'
             && $patrolLog->status === 'pending_face';
@@ -396,19 +434,24 @@ class GuardPatrolController extends Controller
         PatrolLog::where('guard_id', $guard->id)
             ->whereKeyNot($completedPatrolLog->id)
             ->where('rfid_status', 'valid')
-            ->where('facial_status', 'pending')
-            ->where('status', 'pending_face')
+            ->whereIn('facial_status', ['pending', 'not_required'])
+            ->whereIn('status', ['pending_face', 'pending_checklist'])
             ->update([
                 'facial_status' => 'expired',
                 'status' => 'expired',
-                'notes' => 'This pending face verification was replaced by a newer completed patrol scan.',
+                'notes' => 'This pending checkpoint scan was replaced by a newer completed patrol scan.',
             ]);
     }
 
     private function patrolLogPayload(PatrolLog $patrolLog): array
     {
-        $verifiedFaceAttempt = $this->latestVerifiedFaceAttemptFor($patrolLog);
-        $livenessChallenge = $this->livenessChallengeFor($patrolLog);
+        $faceVerificationEnabled = FaceVerification::enabled();
+        $verifiedFaceAttempt = $faceVerificationEnabled
+            ? $this->latestVerifiedFaceAttemptFor($patrolLog)
+            : null;
+        $livenessChallenge = $faceVerificationEnabled
+            ? $this->livenessChallengeFor($patrolLog)
+            : null;
 
         return [
             'id' => $patrolLog->id,
@@ -416,7 +459,8 @@ class GuardPatrolController extends Controller
             'checkpoint_code' => $patrolLog->checkpoint_code,
             'status' => $patrolLog->status,
             'facial_status' => $patrolLog->facial_status,
-            'face_verified' => (bool) $verifiedFaceAttempt,
+            'face_verified' => ! $faceVerificationEnabled || (bool) $verifiedFaceAttempt,
+            'face_verification_enabled' => $faceVerificationEnabled,
             'match_distance' => $verifiedFaceAttempt?->match_distance,
             'face_liveness_challenge' => $livenessChallenge,
             'face_liveness_label' => FaceVerification::livenessLabel($livenessChallenge),
@@ -683,7 +727,7 @@ class GuardPatrolController extends Controller
 
     private function checklistProofPhotoError(Request $request, string $facialStatus, array $checklistProofPhotoFiles): ?string
     {
-        if ($facialStatus !== 'verified') {
+        if (! in_array($facialStatus, ['verified', 'not_required'], true)) {
             return null;
         }
 

@@ -2,6 +2,7 @@
     $isSupervisor = $user->role === 'admin';
     $isGuard = $user->role === 'guard';
     $guardProfile = $isGuard ? $user->guardProfile : null;
+    $faceVerificationEnabled = \App\Support\FaceVerification::enabled();
     $hasFaceRegistration = $guardProfile?->faceDescriptors?->isNotEmpty() ?? false;
     $requiredFaceSampleCount = \App\Support\FaceVerification::requiredRegistrationSampleCount();
     $processedFaceSampleCount = $guardProfile?->faceDescriptors
@@ -33,7 +34,10 @@
 
     if ($isGuard) {
         $profileCompletionItems[] = (bool) $guardProfile;
-        $profileCompletionItems[] = $hasProcessedFaceRegistration;
+
+        if ($faceVerificationEnabled) {
+            $profileCompletionItems[] = $hasProcessedFaceRegistration;
+        }
     }
 
     $profileCompletionPercent = count($profileCompletionItems) > 0
@@ -42,11 +46,12 @@
     $faceDataLabel = $hasProcessedFaceRegistration
         ? '5 Face Samples Processed'
         : ($hasFaceRegistration ? "{$processedFaceSampleCount}/{$requiredFaceSampleCount} Face Samples Ready" : 'Face Data Missing');
-    $faceRegistrationHasErrors = $errors->has('face_registration_capture')
-        || $errors->has('face_registration_captures')
-        || count($errors->get('face_registration_captures.*')) > 0
-        || $errors->has('face_liveness_confirmed')
-        || count($errors->get('face_descriptors.*')) > 0;
+    $faceRegistrationHasErrors = $faceVerificationEnabled
+        && ($errors->has('face_registration_capture')
+            || $errors->has('face_registration_captures')
+            || count($errors->get('face_registration_captures.*')) > 0
+            || $errors->has('face_liveness_confirmed')
+            || count($errors->get('face_descriptors.*')) > 0);
 @endphp
 
 <section>
@@ -60,7 +65,7 @@
         </p>
 
         @if ($isGuard)
-            <div class="mt-3 grid gap-3 border-y border-blue-100 py-2 sm:grid-cols-2">
+            <div class="mt-3 grid gap-3 border-y border-blue-100 py-2 {{ $faceVerificationEnabled ? 'sm:grid-cols-2' : '' }}">
                 <div>
                     <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Profile Completion</p>
                     <p class="mt-0.5 text-lg font-bold text-blue-950">{{ $profileCompletionPercent }}%</p>
@@ -68,10 +73,12 @@
                         {{ $profileCompletionPercent === 100 ? 'Complete' : 'Needs updates' }}
                     </p>
                 </div>
+                @if ($faceVerificationEnabled)
                 <div>
                     <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Face Registration</p>
                     <p class="mt-1 text-xs font-semibold {{ $hasProcessedFaceRegistration ? 'text-emerald-700' : 'text-amber-700' }}">{{ $faceDataLabel }}</p>
                 </div>
+                @endif
             </div>
         @endif
     </header>
@@ -89,7 +96,7 @@
             faceSamples: [],
             registrationSampleTypes: @js(\App\Support\FaceVerification::registrationSampleTypes()),
             requiredFaceSampleCount: @js($requiredFaceSampleCount),
-            liveRegistration: @js($isGuard && $guardProfile && ! $hasProcessedFaceRegistration),
+            liveRegistration: @js($faceVerificationEnabled && $isGuard && $guardProfile && ! $hasProcessedFaceRegistration),
             openRegistration: @js($faceRegistrationHasErrors),
         })"
         x-init="boot()"
@@ -119,7 +126,7 @@
             </div>
         </div>
 
-        @if ($isGuard)
+        @if ($faceVerificationEnabled && $isGuard)
             <div class="border-t border-blue-100 pt-4">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
@@ -410,14 +417,16 @@
                         <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Account Status</dt>
                         <dd class="mt-1 text-sm font-semibold {{ $guardProfile->status === 'active' ? 'text-emerald-700' : 'text-slate-600' }}">{{ ucfirst($guardProfile->status) }}</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-2 md:border-b-0 md:pb-0">
-                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Face Reference</dt>
-                        <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $guardProfile->face_reference ?: 'Not set' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Live Face Registration</dt>
-                        <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $hasProcessedFaceRegistration ? 'Completed' : 'Not registered' }}</dd>
-                    </div>
+                    @if ($faceVerificationEnabled)
+                        <div class="border-b border-blue-100 pb-2 md:border-b-0 md:pb-0">
+                            <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Face Reference</dt>
+                            <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $guardProfile->face_reference ?: 'Not set' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Live Face Registration</dt>
+                            <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $hasProcessedFaceRegistration ? 'Completed' : 'Not registered' }}</dd>
+                        </div>
+                    @endif
                 </dl>
             </div>
         @elseif ($isGuard)

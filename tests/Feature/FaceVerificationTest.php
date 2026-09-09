@@ -20,6 +20,13 @@ class FaceVerificationTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config(['features.face_verification' => true]);
+    }
+
     protected function tearDown(): void
     {
         Carbon::setTestNow();
@@ -113,6 +120,72 @@ class FaceVerificationTest extends TestCase
         $this->assertSame($guard->id, $patrolLog->guard_id);
         $this->assertDatabaseCount('checklist_responses', 0);
         $this->assertDatabaseCount('checklist_proof_photos', 0);
+    }
+
+    public function test_guard_can_complete_patrol_without_face_when_face_verification_is_disabled(): void
+    {
+        config(['features.face_verification' => false]);
+        Storage::fake('public');
+        $this->travelToPatrolWindow();
+
+        $user = User::factory()->create([
+            'role' => 'guard',
+            'username' => 'checklist.only',
+        ]);
+
+        $guard = Guard::create([
+            'user_id' => $user->id,
+            'employee_no' => 'SG-CHECKLIST',
+            'name' => 'Checklist Only Guard',
+            'rfid_uid' => 'RFID-CHECKLIST',
+            'shift' => 'Night Shift',
+            'status' => 'active',
+        ]);
+
+        $checkpoint = Checkpoint::create([
+            'code' => 'CP-CHECKLIST',
+            'name' => 'Checklist Checkpoint',
+            'location' => 'Main Gate',
+            'device_uid' => 'ESP32-CHECKLIST',
+            'status' => 'active',
+        ]);
+
+        $patrolLog = PatrolLog::create([
+            'guard_id' => $guard->id,
+            'checkpoint_id' => $checkpoint->id,
+            'rfid_uid' => 'RFID-CHECKLIST',
+            'checkpoint_code' => 'CP-CHECKLIST',
+            'rfid_status' => 'valid',
+            'facial_status' => 'not_required',
+            'status' => 'pending_checklist',
+            'scanned_at' => now(),
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->from(route('patrol.scan'))
+            ->post(route('patrol.store'), [
+                'patrol_log_id' => $patrolLog->id,
+                ...$this->normalChecklistStatuses(),
+                ...$this->checklistProofPhotos('doors_locked'),
+            ]);
+
+        $response
+            ->assertRedirect(route('patrol.scan'))
+            ->assertSessionHas('status');
+
+        $this->assertDatabaseHas('patrol_logs', [
+            'id' => $patrolLog->id,
+            'guard_id' => $guard->id,
+            'facial_status' => 'not_required',
+            'status' => 'valid',
+        ]);
+
+        $this->assertDatabaseHas('checklist_responses', [
+            'patrol_log_id' => $patrolLog->id,
+        ]);
+        $this->assertDatabaseCount('face_verification_attempts', 0);
+        $this->assertDatabaseCount('checklist_proof_photos', 1);
     }
 
     public function test_issue_found_checklist_item_requires_its_own_proof_photo(): void
@@ -766,6 +839,56 @@ class FaceVerificationTest extends TestCase
             'rfid_status' => 'valid',
             'facial_status' => 'not_started',
             'status' => 'profile_incomplete',
+        ]);
+    }
+
+    public function test_rfid_scan_goes_directly_to_checklist_when_face_verification_is_disabled(): void
+    {
+        config(['features.face_verification' => false]);
+        $this->travelToPatrolWindow();
+
+        $user = User::factory()->create([
+            'role' => 'guard',
+            'username' => 'no.face.checklist',
+        ]);
+
+        $guard = Guard::create([
+            'user_id' => $user->id,
+            'employee_no' => 'SG-NOFACE-CHECKLIST',
+            'name' => 'No Face Checklist Guard',
+            'rfid_uid' => 'RFID-NOFACE-CHECKLIST',
+            'shift' => 'Night Shift',
+            'status' => 'active',
+        ]);
+
+        $checkpoint = Checkpoint::create([
+            'code' => 'CP-NOFACE-CHECKLIST',
+            'name' => 'No Face Checklist Checkpoint',
+            'location' => 'Main Gate',
+            'device_uid' => 'ESP32-NOFACE-CHECKLIST',
+            'status' => 'active',
+        ]);
+
+        $response = $this->postJson(route('api.rfid-scan'), [
+            'rfid_uid' => 'RFID-NOFACE-CHECKLIST',
+            'device_uid' => 'ESP32-NOFACE-CHECKLIST',
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson([
+                'message' => 'RFID scan accepted. Complete the patrol checklist.',
+                'status' => 'pending_checklist',
+            ]);
+
+        $this->assertDatabaseHas('patrol_logs', [
+            'guard_id' => $guard->id,
+            'checkpoint_id' => $checkpoint->id,
+            'rfid_uid' => 'RFID-NOFACE-CHECKLIST',
+            'checkpoint_code' => 'CP-NOFACE-CHECKLIST',
+            'rfid_status' => 'valid',
+            'facial_status' => 'not_required',
+            'status' => 'pending_checklist',
         ]);
     }
 

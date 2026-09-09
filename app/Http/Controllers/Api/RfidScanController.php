@@ -59,11 +59,13 @@ class RfidScanController extends Controller
         })->first();
         $checkpoint = $matchedCheckpoint?->status === 'active' ? $matchedCheckpoint : null;
 
-        $isProfileIncomplete = $guard
+        $faceVerificationEnabled = FaceVerification::enabled();
+        $isProfileIncomplete = $faceVerificationEnabled
+            && $guard
             && $checkpoint
             && ! $this->hasCompletedFaceRegistration($guard);
         $isValid = $guard && $checkpoint && ! $isProfileIncomplete;
-        $diagnostic = $this->scanDiagnostic($matchedGuard, $guard, $matchedCheckpoint, $checkpoint, $isProfileIncomplete, $isValid);
+        $diagnostic = $this->scanDiagnostic($matchedGuard, $guard, $matchedCheckpoint, $checkpoint, $isProfileIncomplete, $isValid, $faceVerificationEnabled);
 
         if (! PatrolSchedule::isOpen()) {
             $scheduleMessage = PatrolSchedule::closedMessage();
@@ -109,12 +111,12 @@ class RfidScanController extends Controller
         if ($isValid) {
             PatrolLog::where('guard_id', $guard->id)
                 ->where('rfid_status', 'valid')
-                ->where('facial_status', 'pending')
-                ->where('status', 'pending_face')
+                ->whereIn('facial_status', ['pending', 'not_required'])
+                ->whereIn('status', ['pending_face', 'pending_checklist'])
                 ->update([
                     'facial_status' => 'expired',
                     'status' => 'expired',
-                    'notes' => 'This pending face verification was replaced by a newer RFID checkpoint scan.',
+                    'notes' => 'This pending checkpoint scan was replaced by a newer RFID checkpoint scan.',
                 ]);
         }
 
@@ -124,9 +126,9 @@ class RfidScanController extends Controller
             'rfid_uid' => $rfidUid,
             'checkpoint_code' => $matchedCheckpoint?->code ?? $checkpointToken,
             'rfid_status' => ($isValid || $isProfileIncomplete) ? 'valid' : 'invalid',
-            'facial_status' => $isValid ? 'pending' : 'not_started',
+            'facial_status' => $isValid ? ($faceVerificationEnabled ? 'pending' : 'not_required') : 'not_started',
             'status' => match (true) {
-                $isValid => 'pending_face',
+                $isValid => $faceVerificationEnabled ? 'pending_face' : 'pending_checklist',
                 $isProfileIncomplete => 'profile_incomplete',
                 default => 'invalid',
             },
@@ -150,7 +152,9 @@ class RfidScanController extends Controller
 
         return response()->json([
             'message' => match (true) {
-                $isValid => 'RFID scan accepted. Facial verification required.',
+                $isValid => $faceVerificationEnabled
+                    ? 'RFID scan accepted. Facial verification required.'
+                    : 'RFID scan accepted. Complete the patrol checklist.',
                 $isProfileIncomplete => 'Face registration is required before patrol verification.',
                 default => 'RFID scan recorded as invalid.',
             },
@@ -209,10 +213,12 @@ class RfidScanController extends Controller
         return null;
     }
 
-    private function scanDiagnostic(?Guard $matchedGuard, ?Guard $guard, ?Checkpoint $matchedCheckpoint, ?Checkpoint $checkpoint, bool $isProfileIncomplete, bool $isValid): string
+    private function scanDiagnostic(?Guard $matchedGuard, ?Guard $guard, ?Checkpoint $matchedCheckpoint, ?Checkpoint $checkpoint, bool $isProfileIncomplete, bool $isValid, bool $faceVerificationEnabled): string
     {
         if ($isValid) {
-            return 'RFID accepted by hardware API; awaiting facial verification.';
+            return $faceVerificationEnabled
+                ? 'RFID accepted by hardware API; awaiting facial verification.'
+                : 'RFID accepted by hardware API; awaiting patrol checklist.';
         }
 
         if (! $matchedGuard) {

@@ -193,7 +193,7 @@
                         <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 sm:text-sm dark:text-emerald-300">System Flow</p>
                         <h2 class="mt-2 text-2xl font-bold tracking-tight text-blue-950 sm:mt-3 sm:text-3xl dark:text-white">From guard setup to verified patrol records</h2>
                         <p class="mt-3 text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7 dark:text-slate-300">
-                            This system is for the patrol and incident monitoring needs of Southern Leyte State University - Bontoc Campus, handled by the Security and Safety Services Office. It connects guard profiles, RFID checkpoint scans, live face verification, checklist responses, and incident reports in one place.
+                            This system is for the patrol and incident monitoring needs of Southern Leyte State University - Bontoc Campus, handled by the Security and Safety Services Office. It connects guard profiles, RFID checkpoint scans, checklist photo proof, checklist responses, and incident reports in one place.
                         </p>
                         <div class="mt-4 rounded-md border border-blue-100 bg-blue-50/70 p-3 text-xs font-semibold leading-5 text-blue-950 sm:mt-5 sm:p-4 sm:text-sm sm:leading-6 dark:border-slate-800 dark:bg-slate-900 dark:text-blue-100">
                             Built for SLSU Bontoc Campus operations and managed by the Security and Safety Services Office.
@@ -228,8 +228,8 @@
                                     <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
                                 </svg>
                             </div>
-                            <h3 class="mt-3 text-sm font-bold text-slate-950 sm:mt-4 sm:text-lg dark:text-white">Verify Guard</h3>
-                            <p class="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6 dark:text-slate-300">Live face registration helps confirm the guard completing the patrol scan.</p>
+                            <h3 class="mt-3 text-sm font-bold text-slate-950 sm:mt-4 sm:text-lg dark:text-white">Photo Proof</h3>
+                            <p class="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6 dark:text-slate-300">Checklist photos help confirm that the guard reached and inspected the checkpoint area.</p>
                         </article>
 
                         <article class="rounded-md border border-amber-100 bg-amber-50/70 p-3 dark:border-amber-900 dark:bg-amber-950/30 sm:p-5">
@@ -254,7 +254,7 @@
                         <ul class="mt-4 space-y-2 text-xs leading-5 text-slate-600 sm:mt-5 sm:space-y-3 sm:text-sm sm:leading-6 dark:text-slate-300">
                             <li class="flex gap-3">
                                 <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500"></span>
-                                Create guard accounts with employee number, contact details, shift assignment, RFID UID, active status, and live face reference.
+                                Create guard accounts with employee number, contact details, shift assignment, RFID UID, and active status.
                             </li>
                             <li class="flex gap-3">
                                 <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-sky-500"></span>
@@ -273,11 +273,11 @@
                         <ul class="mt-4 space-y-2 text-xs leading-5 text-slate-600 sm:mt-5 sm:space-y-3 sm:text-sm sm:leading-6 dark:text-slate-300">
                             <li class="flex gap-3">
                                 <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500"></span>
-                                Keep profile information complete, including contact details, assigned shift, profile photo, and one-time live face registration.
+                                Keep profile information complete, including contact details, assigned shift, and profile photo.
                             </li>
                             <li class="flex gap-3">
                                 <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-sky-500"></span>
-                                Scan checkpoints, pass live face verification, answer checklist items, and submit valid patrol entries.
+                                Scan checkpoints, answer checklist items, take proof photos, and submit valid patrol entries.
                             </li>
                             <li class="flex gap-3">
                                 <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-rose-500"></span>
@@ -302,7 +302,7 @@
                         <div class="grid grid-cols-2 gap-2 sm:gap-4">
                             <article class="rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-950">
                                 <h3 class="text-sm font-bold text-blue-950 sm:text-base dark:text-white">Profile Completion</h3>
-                                <p class="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6 dark:text-slate-300">Shows account details, photo status, active status, and face registration readiness.</p>
+                                <p class="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6 dark:text-slate-300">Shows account details, profile photo status, assigned RFID card, and active status.</p>
                             </article>
 
                             <article class="rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-950">
@@ -312,7 +312,7 @@
 
                             <article class="rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-950">
                                 <h3 class="text-sm font-bold text-blue-950 sm:text-base dark:text-white">Patrol Logs</h3>
-                                <p class="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6 dark:text-slate-300">Stores guard identity, checkpoint, scan time, verification status, and checklist answers.</p>
+                                <p class="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6 dark:text-slate-300">Stores guard identity, checkpoint, scan time, checklist answers, and proof photo records.</p>
                             </article>
 
                             <article class="rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-950">

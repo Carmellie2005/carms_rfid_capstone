@@ -17,6 +17,13 @@ class GuardManagementTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config(['features.face_verification' => true]);
+    }
+
     public function test_supervisor_can_create_guard_without_face_upload(): void
     {
         $supervisor = User::factory()->create([

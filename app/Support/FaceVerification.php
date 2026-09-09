@@ -18,6 +18,11 @@ class FaceVerification
         'turn-right',
     ];
 
+    public static function enabled(): bool
+    {
+        return (bool) config('features.face_verification', false);
+    }
+
     public static function matchThreshold(): float
     {
         return self::MATCH_THRESHOLD;

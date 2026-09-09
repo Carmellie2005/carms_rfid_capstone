@@ -5,7 +5,7 @@
                 <h2 class="text-xl font-semibold leading-tight text-blue-950">
                     Welcome, {{ auth()->user()->name }}
                 </h2>
-                <p class="mt-1 text-sm text-blue-600">RFID patrol monitoring, verification, and incident reporting</p>
+                <p class="mt-1 text-sm text-blue-600">RFID patrol monitoring, checklist proof, and incident reporting</p>
             </div>
         </div>
     </x-slot>
@@ -16,10 +16,12 @@
             'suspicious' => 'bg-amber-50 text-amber-700 ring-amber-200',
             'invalid' => 'bg-red-50 text-red-700 ring-red-200',
             'pending_face' => 'bg-blue-50 text-blue-700 ring-blue-200',
+            'pending_checklist' => 'bg-blue-50 text-blue-700 ring-blue-200',
             'profile_incomplete' => 'bg-violet-50 text-violet-700 ring-violet-200',
             'outside_schedule' => 'bg-amber-50 text-amber-700 ring-amber-200',
             'expired' => 'bg-slate-50 text-slate-700 ring-slate-200',
             'pending' => 'bg-slate-50 text-slate-700 ring-slate-200',
+            'not_required' => 'bg-slate-50 text-slate-700 ring-slate-200',
         ];
 
         $priorityClasses = [

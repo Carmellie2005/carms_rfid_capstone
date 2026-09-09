@@ -3,7 +3,7 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-blue-950">{{ $isSupervisor ? __('Patrol Logs') : __('My Patrol Logs') }}</h2>
-                <p class="mt-1 text-sm text-blue-600">RFID scans, facial verification results, and checklist records</p>
+                <p class="mt-1 text-sm text-blue-600">{{ \App\Support\FaceVerification::enabled() ? 'RFID scans, facial verification results, and checklist records' : 'RFID scans, checklist records, and incident reports' }}</p>
             </div>
             @unless ($isSupervisor)
                 <a href="{{ route('patrol.scan') }}" class="inline-flex w-full items-center justify-center rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">
@@ -14,14 +14,17 @@
     </x-slot>
 
     @php
+        $faceVerificationEnabled = \App\Support\FaceVerification::enabled();
         $statusClasses = [
             'valid' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
             'suspicious' => 'bg-amber-50 text-amber-700 ring-amber-200',
             'invalid' => 'bg-red-50 text-red-700 ring-red-200',
             'pending_face' => 'bg-blue-50 text-blue-700 ring-blue-200',
+            'pending_checklist' => 'bg-blue-50 text-blue-700 ring-blue-200',
             'profile_incomplete' => 'bg-violet-50 text-violet-700 ring-violet-200',
             'outside_schedule' => 'bg-amber-50 text-amber-700 ring-amber-200',
             'expired' => 'bg-slate-50 text-slate-700 ring-slate-200',
+            'not_required' => 'bg-slate-50 text-slate-700 ring-slate-200',
         ];
     @endphp
 
@@ -50,7 +53,7 @@
                     <label for="status" class="block text-xs font-semibold uppercase text-blue-800">Status</label>
                     <select id="status" name="status" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="">All</option>
-                        @foreach (['valid' => 'Valid', 'suspicious' => 'Suspicious', 'invalid' => 'Invalid', 'pending_face' => 'Pending Face', 'profile_incomplete' => 'Profile Incomplete', 'outside_schedule' => 'Outside Schedule', 'expired' => 'Expired'] as $value => $label)
+                        @foreach (['valid' => 'Valid', 'suspicious' => 'Suspicious', 'invalid' => 'Invalid', 'pending_checklist' => 'Pending Checklist', 'pending_face' => 'Pending Face', 'profile_incomplete' => 'Profile Incomplete', 'outside_schedule' => 'Outside Schedule', 'expired' => 'Expired'] as $value => $label)
                             <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
@@ -153,10 +156,12 @@
                                     <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 sm:text-xs">RFID</dt>
                                     <dd class="mt-1 truncate font-mono">{{ $log->rfid_uid }}</dd>
                                 </div>
+                                @if ($faceVerificationEnabled)
                                 <div class="min-w-0">
                                     <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 sm:text-xs">Face</dt>
                                     <dd class="mt-1 truncate">{{ str($log->facial_status)->replace('_', ' ')->title() }}</dd>
                                 </div>
+                                @endif
                             </div>
                         </dl>
 
@@ -215,7 +220,9 @@
                                 <th class="px-5 py-3">Guard</th>
                                 <th class="px-5 py-3">Checkpoint</th>
                                 <th class="px-5 py-3">RFID</th>
-                                <th class="px-5 py-3">Face</th>
+                                @if ($faceVerificationEnabled)
+                                    <th class="px-5 py-3">Face</th>
+                                @endif
                                 <th class="px-5 py-3">Status</th>
                                 <th class="px-5 py-3">Checklist</th>
                                 <th class="px-5 py-3">Incident</th>
@@ -240,7 +247,9 @@
                                         <div class="text-xs font-mono text-slate-500">{{ $log->checkpoint_code }}</div>
                                     </td>
                                     <td class="px-5 py-4 font-mono text-slate-700">{{ $log->rfid_uid }}</td>
-                                    <td class="px-5 py-4 text-slate-600">{{ str($log->facial_status)->replace('_', ' ')->title() }}</td>
+                                    @if ($faceVerificationEnabled)
+                                        <td class="px-5 py-4 text-slate-600">{{ str($log->facial_status)->replace('_', ' ')->title() }}</td>
+                                    @endif
                                     <td class="px-5 py-4">
                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
                                             {{ str($log->status)->replace('_', ' ')->title() }}
@@ -292,7 +301,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="px-5 py-8 text-center text-slate-500">No patrol logs found.</td>
+                                    <td colspan="{{ $faceVerificationEnabled ? 8 : 7 }}" class="px-5 py-8 text-center text-slate-500">No patrol logs found.</td>
                                 </tr>
                             @endforelse
                         </tbody>

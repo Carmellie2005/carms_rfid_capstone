@@ -1,9 +1,13 @@
 <x-app-layout>
+    @php
+        $faceVerificationEnabled = \App\Support\FaceVerification::enabled();
+    @endphp
+
     <x-slot name="header">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-blue-950">{{ __('Guard Management') }}</h2>
-                <p class="mt-1 text-sm text-blue-600">Registered guards, RFID cards, and live face registration status</p>
+                <p class="mt-1 text-sm text-blue-600">{{ $faceVerificationEnabled ? 'Registered guards, RFID cards, and live face registration status' : 'Registered guards, RFID cards, shifts, and login accounts' }}</p>
             </div>
             <button
                 type="button"
@@ -60,10 +64,12 @@
                                 <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">RFID UID</dt>
                                 <dd class="mt-1 truncate font-mono">{{ $guard->rfid_uid }}</dd>
                             </div>
+                            @if ($faceVerificationEnabled)
                             <div>
                                 <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Face Registration</dt>
                                 <dd class="mt-1 whitespace-nowrap">{{ $hasLiveFaceRegistration ? 'Registered' : 'Not registered' }}</dd>
                             </div>
+                            @endif
                             <div class="min-w-0">
                                 <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Contact</dt>
                                 <dd class="mt-1 truncate">{{ $guard->email ?? 'No email' }}</dd>
@@ -98,7 +104,9 @@
                                 <th class="px-5 py-3">Contact</th>
                                 <th class="px-5 py-3">Account</th>
                                 <th class="px-5 py-3">RFID UID</th>
-                                <th class="px-5 py-3">Face Registration</th>
+                                @if ($faceVerificationEnabled)
+                                    <th class="px-5 py-3">Face Registration</th>
+                                @endif
                                 <th class="px-5 py-3">Shift</th>
                                 <th class="px-5 py-3">Status</th>
                                 <th class="px-5 py-3 text-right">Actions</th>
@@ -130,7 +138,9 @@
                                         <div class="text-xs text-slate-500">{{ $guard->user?->role ? ucfirst($guard->user->role) : '' }}</div>
                                     </td>
                                     <td class="px-5 py-4 font-mono text-slate-700">{{ $guard->rfid_uid }}</td>
-                                    <td class="px-5 py-4 text-slate-600">{{ $hasLiveFaceRegistration ? 'Registered' : 'Not registered' }}</td>
+                                    @if ($faceVerificationEnabled)
+                                        <td class="px-5 py-4 text-slate-600">{{ $hasLiveFaceRegistration ? 'Registered' : 'Not registered' }}</td>
+                                    @endif
                                     <td class="px-5 py-4 text-slate-600">{{ $guard->shift ?? 'Unassigned' }}</td>
                                     <td class="px-5 py-4">
                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $guard->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-600 ring-slate-200' }}">
@@ -150,7 +160,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="px-5 py-8 text-center text-slate-500">No guards registered.</td>
+                                    <td colspan="{{ $faceVerificationEnabled ? 8 : 7 }}" class="px-5 py-8 text-center text-slate-500">No guards registered.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -219,11 +229,13 @@
                                     <input id="create_rfid_uid" name="rfid_uid" value="{{ old('rfid_uid', $newGuard->rfid_uid) }}" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                                     <x-input-error :messages="$errors->get('rfid_uid')" class="mt-2" />
                                 </div>
+                                @if ($faceVerificationEnabled)
                                 <div>
                                     <label for="create_face_reference" class="block text-sm font-medium text-slate-700">Face Reference</label>
                                     <input id="create_face_reference" name="face_reference" value="{{ old('face_reference', $newGuard->face_reference) }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <x-input-error :messages="$errors->get('face_reference')" class="mt-2" />
                                 </div>
+                                @endif
                                 <div>
                                     <label for="create_shift" class="block text-sm font-medium text-slate-700">Shift</label>
                                     <input id="create_shift" name="shift" value="{{ old('shift', $newGuard->shift) }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -371,10 +383,12 @@
                                         <dd class="mt-1 font-mono font-semibold text-blue-900" x-text="selectedGuard?.username || 'No account'"></dd>
                                         <dd class="text-xs text-slate-500" x-text="selectedGuard?.role ? selectedGuard.role.charAt(0).toUpperCase() + selectedGuard.role.slice(1) : ''"></dd>
                                     </div>
+                                    @if ($faceVerificationEnabled)
                                     <div>
                                         <dt class="text-xs font-semibold uppercase tracking-wide text-blue-800">Face Registration</dt>
                                         <dd class="mt-1 text-slate-700" x-text="selectedGuard?.face_registration || 'Not registered'"></dd>
                                     </div>
+                                    @endif
                                     <div>
                                         <dt class="text-xs font-semibold uppercase tracking-wide text-blue-800">Shift / Status</dt>
                                         <dd class="mt-1 text-slate-700" x-text="selectedGuard?.shift || 'Unassigned'"></dd>
@@ -405,7 +419,9 @@
                             <section>
                                 <div class="mb-3 flex items-center justify-between gap-3">
                                     <h4 class="text-sm font-semibold uppercase tracking-wide text-blue-800">Recent Patrol Scans</h4>
+                                    @if ($faceVerificationEnabled)
                                     <span class="text-xs text-slate-500" x-text="`${recordStats.failed_face_attempts ?? 0} failed face attempt${(recordStats.failed_face_attempts ?? 0) === 1 ? '' : 's'}`"></span>
+                                    @endif
                                 </div>
                                 <template x-if="recordPatrols.length === 0">
                                     <p class="rounded-md border border-blue-100 px-4 py-5 text-center text-sm text-slate-500">No patrol records yet.</p>
@@ -417,7 +433,9 @@
                                                 <th class="px-4 py-3">Date / Time</th>
                                                 <th class="px-4 py-3">Checkpoint</th>
                                                 <th class="px-4 py-3">RFID</th>
+                                                @if ($faceVerificationEnabled)
                                                 <th class="px-4 py-3">Face</th>
+                                                @endif
                                                 <th class="px-4 py-3">Status</th>
                                             </tr>
                                         </thead>
@@ -432,9 +450,11 @@
                                                     <td class="px-4 py-3">
                                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(patrol.rfid_status)" x-text="patrol.rfid_status_label"></span>
                                                     </td>
+                                                    @if ($faceVerificationEnabled)
                                                     <td class="px-4 py-3">
                                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(patrol.facial_status)" x-text="patrol.facial_status_label"></span>
                                                     </td>
+                                                    @endif
                                                     <td class="px-4 py-3">
                                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(patrol.status)" x-text="patrol.status_label"></span>
                                                     </td>
@@ -466,6 +486,7 @@
                                 </div>
                             </section>
 
+                            @if ($faceVerificationEnabled)
                             <section>
                                 <h4 class="mb-3 text-sm font-semibold uppercase tracking-wide text-blue-800">Recent Face Verification Attempts</h4>
                                 <template x-if="recordFaceAttempts.length === 0">
@@ -484,6 +505,7 @@
                                     </template>
                                 </div>
                             </section>
+                            @endif
                         </div>
                     </div>
                 </section>

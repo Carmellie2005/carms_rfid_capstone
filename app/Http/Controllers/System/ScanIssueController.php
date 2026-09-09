@@ -4,6 +4,7 @@ namespace App\Http\Controllers\System;
 
 use App\Http\Controllers\Controller;
 use App\Models\PatrolLog;
+use App\Support\FaceVerification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -124,11 +125,15 @@ class ScanIssueController extends Controller
         }
 
         if ($log->status === 'profile_incomplete') {
-            return 'Open the guard profile and complete live face registration.';
+            return FaceVerification::enabled()
+                ? 'Open the guard profile and complete live face registration.'
+                : 'This scan used an older face requirement. Ask the guard to scan again and complete the checklist.';
         }
 
         if ($log->status === 'pending_face') {
-            return 'Ask the guard to open Scan Checkpoint and finish face verification.';
+            return FaceVerification::enabled()
+                ? 'Ask the guard to open Scan Checkpoint and finish face verification.'
+                : 'Ask the guard to open Scan Checkpoint and complete the checklist.';
         }
 
         if ($log->status === 'outside_schedule') {
@@ -136,11 +141,13 @@ class ScanIssueController extends Controller
         }
 
         if ($log->status === 'expired') {
-            return 'A newer RFID scan replaced this pending face verification.';
+            return 'A newer RFID scan replaced this pending checkpoint scan.';
         }
 
         if ($log->status === 'suspicious') {
-            return 'Review the face verification attempt and patrol details.';
+            return FaceVerification::enabled()
+                ? 'Review the face verification attempt and patrol details.'
+                : 'Review the patrol details and checklist proof.';
         }
 
         return 'Review the guard RFID UID, checkpoint code, and reader device UID.';

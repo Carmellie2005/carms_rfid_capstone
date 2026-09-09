@@ -55,6 +55,7 @@ class ReportController extends Controller
                 'valid' => (int) ($patrolStatusCounts['valid'] ?? 0),
                 'suspicious' => (int) ($patrolStatusCounts['suspicious'] ?? 0),
                 'invalid' => (int) ($patrolStatusCounts['invalid'] ?? 0),
+                'pendingChecklist' => (int) ($patrolStatusCounts['pending_checklist'] ?? 0),
                 'profileIncomplete' => (int) ($patrolStatusCounts['profile_incomplete'] ?? 0),
                 'outsideSchedule' => (int) ($patrolStatusCounts['outside_schedule'] ?? 0),
                 'incidents' => (clone $incidentQuery)->count(),

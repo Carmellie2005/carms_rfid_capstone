@@ -15,6 +15,7 @@
 
     @php
         $passwordRequired = ! $guard->exists || ! $guard->user_id;
+        $faceVerificationEnabled = \App\Support\FaceVerification::enabled();
     @endphp
 
     <div class="py-5 sm:py-8">
@@ -55,11 +56,13 @@
                         <input id="rfid_uid" name="rfid_uid" value="{{ old('rfid_uid', $guard->rfid_uid) }}" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                         <x-input-error :messages="$errors->get('rfid_uid')" class="mt-2" />
                     </div>
+                    @if ($faceVerificationEnabled)
                     <div>
                         <label for="face_reference" class="block text-sm font-medium text-slate-700">Face Reference</label>
                         <input id="face_reference" name="face_reference" value="{{ old('face_reference', $guard->face_reference) }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <x-input-error :messages="$errors->get('face_reference')" class="mt-2" />
                     </div>
+                    @endif
                     <div>
                         <label for="shift" class="block text-sm font-medium text-slate-700">Shift</label>
                         <input id="shift" name="shift" value="{{ old('shift', $guard->shift) }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">

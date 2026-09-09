@@ -3,7 +3,7 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-blue-950">{{ __('Reports') }}</h2>
-                <p class="mt-1 text-sm text-blue-600">Patrol summaries, verification results, and incident documentation</p>
+                <p class="mt-1 text-sm text-blue-600">Patrol summaries, checklist proof, and incident documentation</p>
             </div>
             <button onclick="window.print()" class="inline-flex w-full items-center justify-center rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto print:hidden" type="button">
                 Print Report
@@ -12,6 +12,7 @@
     </x-slot>
 
     @php
+        $faceVerificationEnabled = \App\Support\FaceVerification::enabled();
         $statusClasses = [
             'valid' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
             'verified' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
@@ -20,6 +21,7 @@
             'profile_incomplete' => 'bg-violet-50 text-violet-700 ring-violet-200',
             'outside_schedule' => 'bg-amber-50 text-amber-700 ring-amber-200',
             'pending_face' => 'bg-blue-50 text-blue-700 ring-blue-200',
+            'pending_checklist' => 'bg-blue-50 text-blue-700 ring-blue-200',
             'submitted' => 'bg-blue-50 text-blue-700 ring-blue-200',
             'under_review' => 'bg-amber-50 text-amber-700 ring-amber-200',
             'invalid' => 'bg-red-50 text-red-700 ring-red-200',
@@ -39,7 +41,9 @@
             ['label' => 'Valid Patrols', 'value' => $summary['valid'], 'cardClass' => 'border-emerald-100 bg-emerald-50/60', 'labelClass' => 'text-emerald-700', 'valueClass' => 'text-emerald-900'],
             ['label' => 'Suspicious', 'value' => $summary['suspicious'], 'cardClass' => 'border-amber-100 bg-amber-50/60', 'labelClass' => 'text-amber-700', 'valueClass' => 'text-amber-900'],
             ['label' => 'Invalid Scans', 'value' => $summary['invalid'], 'cardClass' => 'border-red-100 bg-red-50/60', 'labelClass' => 'text-red-700', 'valueClass' => 'text-red-900'],
-            ['label' => 'Profile Incomplete', 'value' => $summary['profileIncomplete'], 'cardClass' => 'border-violet-100 bg-violet-50/60', 'labelClass' => 'text-violet-700', 'valueClass' => 'text-violet-900'],
+            $faceVerificationEnabled
+                ? ['label' => 'Profile Incomplete', 'value' => $summary['profileIncomplete'], 'cardClass' => 'border-violet-100 bg-violet-50/60', 'labelClass' => 'text-violet-700', 'valueClass' => 'text-violet-900']
+                : ['label' => 'Pending Checklist', 'value' => $summary['pendingChecklist'], 'cardClass' => 'border-blue-100 bg-blue-50/60', 'labelClass' => 'text-blue-700', 'valueClass' => 'text-blue-950'],
             ['label' => 'Outside Schedule', 'value' => $summary['outsideSchedule'], 'cardClass' => 'border-orange-100 bg-orange-50/60', 'labelClass' => 'text-orange-700', 'valueClass' => 'text-orange-900'],
             ['label' => 'Incidents', 'value' => $summary['incidents'], 'cardClass' => 'border-blue-100 bg-white', 'labelClass' => 'text-blue-700', 'valueClass' => 'text-blue-950'],
         ];
@@ -118,9 +122,11 @@
                                 <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClasses[$patrol->rfid_status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
                                     RFID: {{ str($patrol->rfid_status)->replace('_', ' ')->title() }}
                                 </span>
-                                <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClasses[$patrol->facial_status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
-                                    Face: {{ str($patrol->facial_status)->replace('_', ' ')->title() }}
-                                </span>
+                                @if ($faceVerificationEnabled)
+                                    <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClasses[$patrol->facial_status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
+                                        Face: {{ str($patrol->facial_status)->replace('_', ' ')->title() }}
+                                    </span>
+                                @endif
                             </div>
                         </article>
                     @empty
@@ -136,7 +142,9 @@
                                 <th class="whitespace-nowrap px-5 py-3">Guard</th>
                                 <th class="whitespace-nowrap px-5 py-3">Checkpoint</th>
                                 <th class="whitespace-nowrap px-5 py-3">RFID</th>
-                                <th class="whitespace-nowrap px-5 py-3">Face</th>
+                                @if ($faceVerificationEnabled)
+                                    <th class="whitespace-nowrap px-5 py-3">Face</th>
+                                @endif
                                 <th class="whitespace-nowrap px-5 py-3">Status</th>
                             </tr>
                         </thead>
@@ -154,11 +162,13 @@
                                             {{ str($patrol->rfid_status)->replace('_', ' ')->title() }}
                                         </span>
                                     </td>
+                                    @if ($faceVerificationEnabled)
                                     <td class="px-5 py-4">
                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClasses[$patrol->facial_status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
                                             {{ str($patrol->facial_status)->replace('_', ' ')->title() }}
                                         </span>
                                     </td>
+                                    @endif
                                     <td class="px-5 py-4">
                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClasses[$patrol->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
                                             {{ str($patrol->status)->replace('_', ' ')->title() }}
@@ -167,7 +177,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-5 py-8 text-center text-slate-500">No patrol records for this period.</td>
+                                    <td colspan="{{ $faceVerificationEnabled ? 6 : 5 }}" class="px-5 py-8 text-center text-slate-500">No patrol records for this period.</td>
                                 </tr>
                             @endforelse
                         </tbody>
