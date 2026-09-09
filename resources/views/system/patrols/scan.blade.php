@@ -313,7 +313,7 @@
                         </div>
 
                         <div class="mt-6">
-                            <div class="face-verification-circle relative mx-auto aspect-square">
+                            <div class="face-verification-circle relative mx-auto aspect-square" :class="faceLightAssist ? 'camera-light-assist-on' : ''">
                                 <span x-show="cameraOpen && ! faceCapture" x-cloak class="face-auto-scan-ring" :class="faceGuideState === 'centered' ? 'opacity-100' : 'opacity-70'"></span>
 
                                 <div class="absolute inset-0 overflow-hidden rounded-full border-[6px] border-blue-700 bg-gradient-to-b from-sky-100 via-blue-50 to-emerald-50 shadow-[0_16px_45px_rgba(37,99,235,0.18)] dark:border-blue-500 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800">
@@ -375,6 +375,7 @@
 
                             <p x-show="cameraError" x-text="cameraError" class="mt-4 text-sm font-semibold text-red-700"></p>
                             <p x-show="verificationMessage && (! cameraOpen || faceCapture)" x-text="verificationMessage" class="mt-3 text-sm font-semibold leading-5 text-blue-800 dark:text-blue-200"></p>
+                            <p x-show="faceLightMessage && cameraOpen && ! faceCapture" x-cloak x-text="faceLightMessage" class="mt-3 text-xs font-semibold text-amber-700 dark:text-amber-300"></p>
                             <p class="mt-2 text-xs font-semibold text-blue-700 dark:text-blue-300" x-show="matchDistance !== null" x-text="`Match distance: ${matchDistance}`"></p>
 
                             <div x-show="cameraOpen && ! faceCapture && ! cameraError" x-cloak class="mx-auto mt-5 inline-flex items-center gap-2 rounded-md bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950 dark:text-emerald-200 dark:ring-emerald-900">
@@ -391,6 +392,13 @@
                                         <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
                                     </svg>
                                     <span x-text="faceModelLoading ? 'Preparing...' : (cameraOpening ? 'Opening...' : 'Start Face Verification')"></span>
+                                </button>
+
+                                <button type="button" class="mt-2 inline-flex h-10 w-full items-center justify-center rounded-md border px-4 text-sm font-semibold shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-offset-slate-900" :class="faceLightAssist ? 'border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200 dark:hover:bg-amber-900' : 'border-blue-200 bg-white text-blue-700 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-slate-800'" @click="toggleFaceLightAssist()" :disabled="faceModelLoading || cameraOpening || capturingFace || verificationBusy || submittingPatrol" :aria-pressed="faceLightAssist.toString()">
+                                    <svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    </svg>
+                                    <span x-text="faceLightAssistLabel()">Light Assist</span>
                                 </button>
 
                                 <button x-show="cameraError && ! cameraOpening && ! faceModelLoading && ! verificationBusy && ! capturingFace" x-cloak type="button" class="mt-2 inline-flex h-10 w-full items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-slate-800" @click="restartFaceVerification()" :disabled="submittingPatrol">

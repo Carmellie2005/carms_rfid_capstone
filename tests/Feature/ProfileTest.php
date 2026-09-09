@@ -158,11 +158,12 @@ class ProfileTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Live Camera Registration')
-            ->assertSee('Liveness Check')
-            ->assertSee('Random action challenge')
-            ->assertSee('smile or turn head slightly')
+            ->assertSee('Register Guard Face')
+            ->assertSee('Live Face Reference')
+            ->assertSee('Complete the face guide and random challenge before saving.')
+            ->assertSee('Challenge: smile or turn head slightly.')
             ->assertSee('Complete random challenge')
+            ->assertSee('Light Assist')
             ->assertSee('Take Photo')
             ->assertSee('Capture reference')
             ->assertDontSee('face_registration_image');

@@ -179,7 +179,7 @@
                                 <div class="mobile-scroll-area flex-1 overflow-y-auto bg-gradient-to-br from-teal-50 via-white to-emerald-50 p-4 sm:p-5">
                                     <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(17rem,0.9fr)] lg:items-center">
                                         <div class="rounded-md border border-teal-100 bg-white/85 p-4 shadow-sm">
-                                            <div class="mx-auto face-verification-circle">
+                                            <div class="mx-auto face-verification-circle" :class="registrationLightAssist ? 'camera-light-assist-on' : ''">
                                                 <div class="relative aspect-square">
                                                     <span x-show="registrationCameraOpen && ! liveCapture && ! livenessPassed" x-cloak class="face-auto-scan-ring opacity-80"></span>
                                                     <div class="absolute inset-0 z-10 overflow-hidden rounded-full border-[6px] border-teal-600 bg-gradient-to-b from-teal-100 via-sky-50 to-emerald-50 shadow-[0_16px_45px_rgba(13,148,136,0.20)]">
@@ -219,6 +219,7 @@
                                             <div class="mt-4 rounded-md border border-teal-100 bg-teal-50 px-3 py-2 text-sm text-teal-800" x-show="descriptorMessage && ! descriptorError" x-cloak>
                                                 <span x-text="descriptorMessage"></span>
                                             </div>
+                                            <p x-show="registrationLightMessage && registrationCameraOpen && ! liveCapture" x-cloak x-text="registrationLightMessage" class="mt-2 text-xs font-semibold text-amber-700"></p>
                                         </div>
 
                                         <div class="flex flex-col justify-between gap-3">
@@ -246,6 +247,12 @@
                                             <div class="grid gap-2">
                                                 <button x-ref="registrationPrimaryAction" type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-teal-200 bg-white px-3 text-xs font-semibold text-teal-700 shadow-sm transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60" x-on:click="openRegistrationCamera()" x-bind:disabled="liveProcessing">
                                                     Open Camera
+                                                </button>
+                                                <button type="button" class="inline-flex h-10 items-center justify-center rounded-md border px-3 text-xs font-semibold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60" :class="registrationLightAssist ? 'border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100' : 'border-teal-200 bg-white text-teal-700 hover:bg-teal-50'" x-on:click="toggleRegistrationLightAssist()" x-bind:disabled="liveProcessing" x-bind:aria-pressed="registrationLightAssist.toString()">
+                                                    <svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                        <path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                                    </svg>
+                                                    <span x-text="registrationLightAssistLabel()">Light Assist</span>
                                                 </button>
                                                 <button type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-teal-200 bg-white px-3 text-xs font-semibold text-teal-700 shadow-sm transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60" x-on:click="openRegistrationPhotoCapture()" x-bind:disabled="liveProcessing">
                                                     Take Photo

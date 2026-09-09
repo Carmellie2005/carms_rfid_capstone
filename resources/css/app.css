@@ -98,6 +98,23 @@
         max-width: 17rem;
     }
 
+    .camera-light-assist-on {
+        border-radius: 9999px;
+        box-shadow:
+            0 0 0 clamp(3rem, 36vw, 12rem) rgb(255 255 255 / 0.76),
+            0 0 4rem rgb(255 255 255 / 0.95);
+    }
+
+    .camera-light-assist-on video {
+        filter: brightness(1.1) contrast(1.03);
+    }
+
+    .dark .camera-light-assist-on {
+        box-shadow:
+            0 0 0 clamp(3rem, 36vw, 12rem) rgb(255 255 255 / 0.82),
+            0 0 4rem rgb(255 255 255 / 0.98);
+    }
+
     .camera-unmirrored {
         transform: scaleX(-1);
     }

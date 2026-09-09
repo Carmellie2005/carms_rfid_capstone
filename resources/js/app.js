@@ -109,6 +109,29 @@ function cameraAccessMessage(error = null, insecureFallbackMessage = null, permi
     return error?.message || 'Camera permission was denied or unavailable.';
 }
 
+function cameraTorchCapable(stream) {
+    const [track] = stream?.getVideoTracks?.() || [];
+    const capabilities = track?.getCapabilities?.() || {};
+
+    return Boolean(capabilities.torch);
+}
+
+async function setCameraTorch(stream, enabled) {
+    const [track] = stream?.getVideoTracks?.() || [];
+
+    if (! track || typeof track.applyConstraints !== 'function' || ! cameraTorchCapable(stream)) {
+        return false;
+    }
+
+    try {
+        await track.applyConstraints({ advanced: [{ torch: Boolean(enabled) }] });
+
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
 async function dataUrlFromImageFile(file, options = {}) {
     const { maxSize = 1280, quality = 0.82 } = options;
 
@@ -563,6 +586,10 @@ Alpine.data('guardFaceForm', (config = {}) => ({
     liveProcessing: false,
     registrationCameraOpen: false,
     registrationCameraStream: null,
+    registrationLightAssist: false,
+    registrationTorchSupported: false,
+    registrationTorchActive: false,
+    registrationLightMessage: '',
     livenessPassed: false,
     livenessChecking: false,
     livenessStatus: 'idle',
@@ -675,6 +702,44 @@ Alpine.data('guardFaceForm', (config = {}) => ({
         return this.livenessChallengeLabel();
     },
 
+    registrationLightAssistLabel() {
+        return this.registrationLightAssist ? 'Light Assist On' : 'Light Assist';
+    },
+
+    async toggleRegistrationLightAssist() {
+        if (this.liveProcessing) {
+            return;
+        }
+
+        this.registrationLightAssist = ! this.registrationLightAssist;
+        await this.syncRegistrationLightAssist();
+    },
+
+    async syncRegistrationLightAssist() {
+        const stream = this.registrationCameraStream;
+
+        if (! stream) {
+            this.registrationTorchSupported = false;
+            this.registrationTorchActive = false;
+            this.registrationLightMessage = this.registrationLightAssist ? 'Screen light is ready.' : '';
+            return;
+        }
+
+        this.registrationTorchSupported = cameraTorchCapable(stream);
+
+        if (! this.registrationLightAssist) {
+            await setCameraTorch(stream, false);
+            this.registrationTorchActive = false;
+            this.registrationLightMessage = '';
+            return;
+        }
+
+        this.registrationTorchActive = await setCameraTorch(stream, true);
+        this.registrationLightMessage = this.registrationTorchActive
+            ? 'Screen light and torch are on.'
+            : 'Screen light is on.';
+    },
+
     async openRegistrationCamera() {
         this.registrationModalOpen = true;
         this.stopRegistrationCamera();
@@ -696,6 +761,7 @@ Alpine.data('guardFaceForm', (config = {}) => ({
             });
             this.$refs.registrationVideo.srcObject = this.registrationCameraStream;
             this.registrationCameraOpen = true;
+            await this.syncRegistrationLightAssist();
             this.descriptorMessage = 'Loading liveness check...';
             await loadFaceModels();
             this.startRegistrationLivenessCheck();
@@ -1017,10 +1083,12 @@ Alpine.data('guardFaceForm', (config = {}) => ({
         this.stopRegistrationLivenessCheck();
 
         if (this.registrationCameraStream) {
+            void setCameraTorch(this.registrationCameraStream, false);
             this.registrationCameraStream.getTracks().forEach((track) => track.stop());
             this.registrationCameraStream = null;
         }
 
+        this.registrationTorchActive = false;
         this.registrationCameraOpen = false;
     },
 
@@ -1072,6 +1140,10 @@ Alpine.data('patrolScan', (config = {}) => ({
     faceVerified: config.faceVerified || config.openChecklist || config.openIncident || false,
     cameraOpen: false,
     cameraStream: null,
+    faceLightAssist: false,
+    faceTorchSupported: false,
+    faceTorchActive: false,
+    faceLightMessage: '',
     faceCapture: config.faceCapture || '',
     capturedDescriptor: config.capturedDescriptor || '',
     faceLivenessChallenge: config.faceLivenessChallenge || config.pendingScan?.face_liveness_challenge || '',
@@ -1146,6 +1218,44 @@ Alpine.data('patrolScan', (config = {}) => ({
         }
 
         return this.faceLivenessChallengeLabel();
+    },
+
+    faceLightAssistLabel() {
+        return this.faceLightAssist ? 'Light Assist On' : 'Light Assist';
+    },
+
+    async toggleFaceLightAssist() {
+        if (this.faceModelLoading || this.cameraOpening || this.capturingFace || this.verificationBusy || this.submittingPatrol) {
+            return;
+        }
+
+        this.faceLightAssist = ! this.faceLightAssist;
+        await this.syncFaceLightAssist();
+    },
+
+    async syncFaceLightAssist() {
+        const stream = this.cameraStream;
+
+        if (! stream) {
+            this.faceTorchSupported = false;
+            this.faceTorchActive = false;
+            this.faceLightMessage = this.faceLightAssist ? 'Screen light is ready.' : '';
+            return;
+        }
+
+        this.faceTorchSupported = cameraTorchCapable(stream);
+
+        if (! this.faceLightAssist) {
+            await setCameraTorch(stream, false);
+            this.faceTorchActive = false;
+            this.faceLightMessage = '';
+            return;
+        }
+
+        this.faceTorchActive = await setCameraTorch(stream, true);
+        this.faceLightMessage = this.faceTorchActive
+            ? 'Screen light and torch are on.'
+            : 'Screen light is on.';
     },
 
     prepareFaceLivenessChallenge() {
@@ -1466,6 +1576,7 @@ Alpine.data('patrolScan', (config = {}) => ({
             this.$refs.faceVideo.srcObject = this.cameraStream;
             await this.$refs.faceVideo.play().catch(() => null);
             this.cameraOpen = true;
+            await this.syncFaceLightAssist();
             this.faceGuideState = 'scanning';
             this.faceLivenessStatus = 'align';
             this.verificationMessage = 'Position your face inside the guide for the random challenge.';
@@ -1733,10 +1844,12 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.stopAutoFaceScan();
 
         if (this.cameraStream) {
+            void setCameraTorch(this.cameraStream, false);
             this.cameraStream.getTracks().forEach((track) => track.stop());
             this.cameraStream = null;
         }
 
+        this.faceTorchActive = false;
         this.cameraOpen = false;
     },
 

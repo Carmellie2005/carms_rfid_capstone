@@ -98,6 +98,7 @@ class FaceVerificationTest extends TestCase
             ->assertSee('Alarm or CCTV Issue')
             ->assertSee('Selected image previews')
             ->assertSee('Start Face Verification')
+            ->assertSee('Light Assist')
             ->assertSee('Position your face inside the circle')
             ->assertSee('faceLivenessChallengeInstruction()', false)
             ->assertSee('Verifying live challenge...', false)
