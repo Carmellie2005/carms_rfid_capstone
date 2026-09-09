@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\User;
 use App\Support\AuditLogger;
+use App\Support\FaceVerification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,13 +41,15 @@ class ProfileController extends Controller
         $removeProfilePhoto = $request->boolean('remove_profile_photo');
         $profilePhotoChanged = false;
         $profilePhotoRemoved = false;
-        $wantsFaceRegistration = filled($request->input('face_registration_capture'))
-            || filled($request->input('face_descriptors.0'));
+        $faceRegistrationCaptures = $request->input('face_registration_captures', []);
+        $faceRegistrationDescriptors = $request->input('face_descriptors', []);
+        $wantsFaceRegistration = collect($faceRegistrationCaptures)->filter(fn ($value) => filled($value))->isNotEmpty()
+            || collect($faceRegistrationDescriptors)->filter(fn ($value) => filled($value))->isNotEmpty();
         $faceRegistration = $wantsFaceRegistration
             ? $this->validatedGuardFaceRegistration(
                 $user,
-                $request->input('face_descriptors.0'),
-                $request->input('face_registration_capture'),
+                is_array($faceRegistrationDescriptors) ? $faceRegistrationDescriptors : [],
+                is_array($faceRegistrationCaptures) ? $faceRegistrationCaptures : [],
                 $request->boolean('face_liveness_confirmed'),
             )
             : null;
@@ -55,6 +58,7 @@ class ProfileController extends Controller
             $data['profile_photo'],
             $data['remove_profile_photo'],
             $data['face_registration_capture'],
+            $data['face_registration_captures'],
             $data['face_liveness_confirmed'],
             $data['face_descriptors'],
         );
@@ -146,25 +150,28 @@ class ProfileController extends Controller
     private function storeGuardFaceRegistration(array $faceRegistration): void
     {
         $guard = $faceRegistration['guard'];
-        $image = $faceRegistration['image'];
         $this->deleteIncompleteFaceDescriptors($guard);
 
-        $path = 'guard-faces/'.$guard->id.'/live-registration-'.Str::uuid().'.'.$image['extension'];
-        Storage::disk('public')->put($path, $image['contents']);
+        foreach ($faceRegistration['samples'] as $sample) {
+            $image = $sample['image'];
+            $path = 'guard-faces/'.$guard->id.'/'.$sample['type'].'-'.Str::uuid().'.'.$image['extension'];
+            Storage::disk('public')->put($path, $image['contents']);
 
-        $guard->faceDescriptors()->create([
-            'descriptor' => $faceRegistration['descriptor'],
-            'model_name' => 'face-api.js',
-            'image_path' => $path,
-            'is_primary' => true,
-        ]);
+            $guard->faceDescriptors()->create([
+                'descriptor' => $sample['descriptor'],
+                'model_name' => 'face-api.js',
+                'image_path' => $path,
+                'capture_type' => $sample['type'],
+                'is_primary' => $sample['is_primary'],
+            ]);
+        }
     }
 
-    private function validatedGuardFaceRegistration(User $user, ?string $descriptorJson, ?string $captureDataUrl, bool $livenessConfirmed): array
+    private function validatedGuardFaceRegistration(User $user, array $descriptorInputs, array $captureInputs, bool $livenessConfirmed): array
     {
         if ($user->role !== 'guard' || ! $user->guardProfile) {
             throw ValidationException::withMessages([
-                'face_registration_capture' => 'Face registration is only available for linked guard accounts.',
+                'face_registration_captures' => 'Face registration is only available for linked guard accounts.',
             ]);
         }
 
@@ -172,51 +179,63 @@ class ProfileController extends Controller
 
         if ($this->hasProcessedFaceRegistration($guard)) {
             throw ValidationException::withMessages([
-                'face_registration_capture' => 'Face registration has already been completed for this guard.',
+                'face_registration_captures' => 'Face registration has already been completed for this guard.',
             ]);
         }
 
         if (! $livenessConfirmed) {
             throw ValidationException::withMessages([
-                'face_liveness_confirmed' => 'Complete the random liveness challenge before saving face registration.',
+                'face_liveness_confirmed' => 'Complete all five live face registration samples before saving.',
             ]);
         }
 
-        $image = $this->imageFromCaptureDataUrl($captureDataUrl);
+        $samples = [];
+        $errors = [];
 
-        if (! $image) {
-            throw ValidationException::withMessages([
-                'face_registration_capture' => 'Open the camera and capture a live face before saving.',
-            ]);
+        foreach (FaceVerification::registrationSampleTypes() as $type => $label) {
+            $image = $this->imageFromCaptureDataUrl($captureInputs[$type] ?? null);
+            $descriptor = $this->descriptorFromJson($descriptorInputs[$type] ?? null);
+
+            if (! $image) {
+                $errors["face_registration_captures.{$type}"] = "Capture the {$label} live face sample.";
+            }
+
+            if (! $descriptor) {
+                $errors["face_descriptors.{$type}"] = "Face data is not ready for the {$label} sample.";
+            }
+
+            if ($image && $descriptor) {
+                $samples[] = [
+                    'type' => $type,
+                    'label' => $label,
+                    'descriptor' => $descriptor,
+                    'image' => $image,
+                    'is_primary' => $type === array_key_first(FaceVerification::registrationSampleTypes()),
+                ];
+            }
         }
 
-        $descriptor = $this->descriptorFromJson($descriptorJson);
-
-        if (! $descriptor) {
-            throw ValidationException::withMessages([
-                'face_registration_capture' => 'Face data is not ready. Capture a clear front-facing face and wait for processing to finish.',
+        if ($errors !== [] || count($samples) !== FaceVerification::requiredRegistrationSampleCount()) {
+            throw ValidationException::withMessages($errors ?: [
+                'face_registration_captures' => 'Complete all five live face registration samples before saving.',
             ]);
         }
 
         return [
             'guard' => $guard,
-            'descriptor' => $descriptor,
-            'image' => $image,
+            'samples' => $samples,
         ];
     }
 
     private function hasProcessedFaceRegistration($guard): bool
     {
-        return $guard->faceDescriptors()
-            ->get()
-            ->contains(fn ($sample) => is_array($sample->descriptor) && count($sample->descriptor) === 128);
+        return FaceVerification::hasCompleteRegistration($guard->faceDescriptors()->get(['descriptor', 'capture_type']));
     }
 
     private function deleteIncompleteFaceDescriptors($guard): void
     {
         $guard->faceDescriptors()
             ->get()
-            ->reject(fn ($sample) => is_array($sample->descriptor) && count($sample->descriptor) === 128)
             ->each(function ($sample) {
                 if ($sample->image_path) {
                     Storage::disk('public')->delete($sample->image_path);

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Guard;
 use App\Models\User;
+use App\Support\FaceVerification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -46,12 +47,7 @@ class ProfileTest extends TestCase
             'status' => 'active',
         ]);
 
-        $guard->faceDescriptors()->create([
-            'image_path' => 'guard-faces/1/test-guard.jpg',
-            'descriptor' => array_fill(0, 128, 0.1),
-            'model_name' => 'face-api.js',
-            'is_primary' => true,
-        ]);
+        $this->completeFaceRegistration($guard);
 
         $response = $this
             ->actingAs($user)
@@ -117,12 +113,7 @@ class ProfileTest extends TestCase
             'status' => 'active',
         ]);
 
-        $guard->faceDescriptors()->create([
-            'image_path' => 'guard-faces/1/complete-guard.jpg',
-            'descriptor' => array_fill(0, 128, 0.1),
-            'model_name' => 'face-api.js',
-            'is_primary' => true,
-        ]);
+        $this->completeFaceRegistration($guard);
 
         $response = $this
             ->actingAs($user)
@@ -133,7 +124,7 @@ class ProfileTest extends TestCase
             ->assertSee('100%')
             ->assertSee('Complete')
             ->assertSee('Face Registration')
-            ->assertSee('Face Data Processed');
+            ->assertSee('5 Face Samples Processed');
     }
 
     public function test_guard_profile_page_displays_live_liveness_registration_when_face_is_missing(): void
@@ -158,14 +149,18 @@ class ProfileTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Register Guard Face')
-            ->assertSee('Live Face Reference')
-            ->assertSee('Complete the face guide and random challenge before saving.')
-            ->assertSee('Challenge: smile or turn head slightly.')
-            ->assertSee('Complete random challenge')
+            ->assertSee('Capture 5 Live Face Samples')
+            ->assertSee('Front neutral')
+            ->assertSee('Front smile')
+            ->assertSee('Slight left turn')
+            ->assertSee('Slight right turn')
+            ->assertSee('Normal or low-light')
+            ->assertSee('Complete guided action')
             ->assertSee('Light Assist')
-            ->assertSee('Take Photo')
-            ->assertSee('Capture reference')
+            ->assertSee('Capture sample')
+            ->assertSee('face_registration_captures', false)
+            ->assertDontSee('Take Photo')
+            ->assertDontSee('registrationPhotoInput')
             ->assertDontSee('face_registration_image');
     }
 
@@ -278,23 +273,27 @@ class ProfileTest extends TestCase
                 'name' => $user->name,
                 'username' => $user->username,
                 'email' => $user->email,
-                'face_registration_capture' => $this->liveFaceCapture(),
                 'face_liveness_confirmed' => '1',
-                'face_descriptors' => [
-                    json_encode(array_fill(0, 128, 0.2)),
-                ],
+                ...$this->faceRegistrationPayload(),
             ]);
 
         $response
             ->assertSessionHasNoErrors()
             ->assertRedirect('/profile');
 
-        $this->assertSame(1, $guard->faceDescriptors()->count());
+        $this->assertSame(FaceVerification::requiredRegistrationSampleCount(), $guard->faceDescriptors()->count());
 
-        $faceRegistration = $guard->faceDescriptors()->first();
+        $faceRegistration = $guard->faceDescriptors()->where('capture_type', 'front_neutral')->first();
         $this->assertTrue($faceRegistration->is_primary);
         $this->assertSame(array_fill(0, 128, 0.2), $faceRegistration->descriptor);
         Storage::disk('public')->assertExists($faceRegistration->image_path);
+
+        foreach (array_keys(FaceVerification::registrationSampleTypes()) as $type) {
+            $this->assertDatabaseHas('guard_face_descriptors', [
+                'guard_id' => $guard->id,
+                'capture_type' => $type,
+            ]);
+        }
     }
 
     public function test_guard_cannot_complete_face_registration_without_liveness_check(): void
@@ -322,10 +321,7 @@ class ProfileTest extends TestCase
                 'name' => $user->name,
                 'username' => $user->username,
                 'email' => $user->email,
-                'face_registration_capture' => $this->liveFaceCapture(),
-                'face_descriptors' => [
-                    json_encode(array_fill(0, 128, 0.2)),
-                ],
+                ...$this->faceRegistrationPayload(),
             ]);
 
         $response
@@ -361,13 +357,11 @@ class ProfileTest extends TestCase
                 'username' => $user->username,
                 'email' => $user->email,
                 'face_liveness_confirmed' => '1',
-                'face_descriptors' => [
-                    json_encode(array_fill(0, 128, 0.2)),
-                ],
+                'face_descriptors' => $this->faceRegistrationDescriptors(),
             ]);
 
         $response
-            ->assertSessionHasErrors('face_registration_capture')
+            ->assertSessionHasErrors('face_registration_captures.front_neutral')
             ->assertRedirect('/profile');
 
         $this->assertSame(0, $guard->faceDescriptors()->count());
@@ -391,12 +385,7 @@ class ProfileTest extends TestCase
             'status' => 'active',
         ]);
 
-        $guard->faceDescriptors()->create([
-            'image_path' => 'guard-faces/1/locked.jpg',
-            'descriptor' => array_fill(0, 128, 0.1),
-            'model_name' => 'face-api.js',
-            'is_primary' => true,
-        ]);
+        $this->completeFaceRegistration($guard);
 
         $response = $this
             ->actingAs($user)
@@ -405,18 +394,15 @@ class ProfileTest extends TestCase
                 'name' => $user->name,
                 'username' => $user->username,
                 'email' => $user->email,
-                'face_registration_capture' => $this->liveFaceCapture(),
                 'face_liveness_confirmed' => '1',
-                'face_descriptors' => [
-                    json_encode(array_fill(0, 128, 0.3)),
-                ],
+                ...$this->faceRegistrationPayload(0.3),
             ]);
 
         $response
-            ->assertSessionHasErrors('face_registration_capture')
+            ->assertSessionHasErrors('face_registration_captures')
             ->assertRedirect('/profile');
 
-        $this->assertSame(1, $guard->faceDescriptors()->count());
+        $this->assertSame(FaceVerification::requiredRegistrationSampleCount(), $guard->faceDescriptors()->count());
     }
 
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
@@ -471,6 +457,36 @@ class ProfileTest extends TestCase
             ->assertRedirect('/profile');
 
         $this->assertNotNull($user->fresh());
+    }
+
+    private function completeFaceRegistration(Guard $guard, float $descriptorValue = 0.1): void
+    {
+        foreach (array_keys(FaceVerification::registrationSampleTypes()) as $index => $type) {
+            $guard->faceDescriptors()->create([
+                'image_path' => "guard-faces/{$guard->id}/{$type}.jpg",
+                'descriptor' => array_fill(0, 128, $descriptorValue),
+                'model_name' => 'face-api.js',
+                'capture_type' => $type,
+                'is_primary' => $index === 0,
+            ]);
+        }
+    }
+
+    private function faceRegistrationPayload(float $descriptorValue = 0.2): array
+    {
+        return [
+            'face_registration_captures' => collect(FaceVerification::registrationSampleTypes())
+                ->mapWithKeys(fn ($label, $type) => [$type => $this->liveFaceCapture()])
+                ->all(),
+            'face_descriptors' => $this->faceRegistrationDescriptors($descriptorValue),
+        ];
+    }
+
+    private function faceRegistrationDescriptors(float $descriptorValue = 0.2): array
+    {
+        return collect(FaceVerification::registrationSampleTypes())
+            ->mapWithKeys(fn ($label, $type) => [$type => json_encode(array_fill(0, 128, $descriptorValue))])
+            ->all();
     }
 
     private function liveFaceCapture(): string

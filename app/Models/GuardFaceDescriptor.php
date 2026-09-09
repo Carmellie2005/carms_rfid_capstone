@@ -15,6 +15,7 @@ class GuardFaceDescriptor extends Model
         'descriptor',
         'model_name',
         'image_path',
+        'capture_type',
         'is_primary',
     ];
 

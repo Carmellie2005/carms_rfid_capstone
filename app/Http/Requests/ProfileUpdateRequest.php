@@ -24,8 +24,10 @@ class ProfileUpdateRequest extends FormRequest
             'profile_photo' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'remove_profile_photo' => ['sometimes', 'boolean'],
             'face_registration_capture' => ['sometimes', 'nullable', 'string'],
+            'face_registration_captures' => ['sometimes', 'nullable', 'array', 'size:5'],
+            'face_registration_captures.*' => ['nullable', 'string'],
             'face_liveness_confirmed' => ['sometimes', 'nullable', 'boolean'],
-            'face_descriptors' => ['sometimes', 'nullable', 'array', 'max:1'],
+            'face_descriptors' => ['sometimes', 'nullable', 'array', 'size:5'],
             'face_descriptors.*' => ['nullable', 'string'],
         ];
     }

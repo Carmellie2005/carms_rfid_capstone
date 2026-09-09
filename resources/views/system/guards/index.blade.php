@@ -31,7 +31,7 @@
             <div class="grid grid-cols-2 gap-3 lg:hidden">
                 @forelse ($guards as $guard)
                     @php
-                        $hasLiveFaceRegistration = $guard->faceDescriptors->contains(fn ($sample) => is_array($sample->descriptor) && count($sample->descriptor) === 128);
+                        $hasLiveFaceRegistration = \App\Support\FaceVerification::hasCompleteRegistration($guard->faceDescriptors);
                     @endphp
                     <article class="min-w-0 rounded-md border border-blue-100 bg-white p-3 shadow-sm">
                         <div class="flex items-start justify-between gap-2">
@@ -107,7 +107,7 @@
                         <tbody class="divide-y divide-blue-50">
                             @forelse ($guards as $guard)
                                 @php
-                                    $hasLiveFaceRegistration = $guard->faceDescriptors->contains(fn ($sample) => is_array($sample->descriptor) && count($sample->descriptor) === 128);
+                                    $hasLiveFaceRegistration = \App\Support\FaceVerification::hasCompleteRegistration($guard->faceDescriptors);
                                 @endphp
                                 <tr>
                                     <td class="px-5 py-4">

@@ -26,7 +26,7 @@ class GuardController extends Controller
     {
         return view('system.guards.index', [
             'guards' => Guard::with('user')
-                ->with('faceDescriptors:id,guard_id,descriptor')
+                ->with('faceDescriptors:id,guard_id,descriptor,capture_type')
                 ->withCount('faceDescriptors')
                 ->where('employee_no', '!=', 'UNKNOWN')
                 ->latest()
@@ -299,9 +299,7 @@ class GuardController extends Controller
 
     private function hasCompletedFaceRegistration(Guard $guard): bool
     {
-        return $guard->faceDescriptors()
-            ->get(['descriptor'])
-            ->contains(fn ($sample) => is_array($sample->descriptor) && count($sample->descriptor) === 128);
+        return FaceVerification::hasCompleteRegistration($guard->faceDescriptors()->get(['descriptor', 'capture_type']));
     }
 
     private function labelFor(?string $value): string

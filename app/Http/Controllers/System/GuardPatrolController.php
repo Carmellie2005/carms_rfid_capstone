@@ -467,6 +467,19 @@ class GuardPatrolController extends Controller
 
     private function evaluateFaceVerification(Guard $guard, ?string $descriptorJson, ?string $captureDataUrl, bool $livenessConfirmed = false, ?string $livenessChallenge = null): array
     {
+        if (! $this->hasCompletedFaceRegistration($guard)) {
+            return [
+                'processable' => false,
+                'verified' => false,
+                'message' => 'Live face registration is not ready for this guard. Open Profile Settings and complete all five samples first.',
+                'captured_descriptor' => null,
+                'captured_image' => null,
+                'match_distance' => null,
+                'liveness_confirmed' => false,
+                'liveness_challenge' => $livenessChallenge,
+            ];
+        }
+
         $storedDescriptors = $this->storedFaceDescriptors($guard);
 
         if ($storedDescriptors === []) {
@@ -612,7 +625,7 @@ class GuardPatrolController extends Controller
 
     private function hasCompletedFaceRegistration(Guard $guard): bool
     {
-        return $this->storedFaceDescriptors($guard) !== [];
+        return FaceVerification::hasCompleteRegistration($guard->faceDescriptors()->get(['descriptor', 'capture_type']));
     }
 
     private function imageFromCaptureDataUrl(?string $captureDataUrl): ?array

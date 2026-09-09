@@ -11,8 +11,39 @@ window.Chart = Chart;
 window.faceapi = faceapi;
 
 const FACE_MODEL_URL = '/models/face-api';
-const REGISTRATION_LIVENESS_CHALLENGES = ['smile', 'turn'];
 const PATROL_LIVENESS_CHALLENGES = ['smile', 'turn-left', 'turn-right'];
+const REGISTRATION_FACE_SAMPLE_GUIDES = [
+    {
+        key: 'front_neutral',
+        label: 'Front neutral',
+        challenge: 'center',
+        instruction: 'Look straight at the camera with a relaxed face.',
+    },
+    {
+        key: 'front_smile',
+        label: 'Front smile',
+        challenge: 'smile',
+        instruction: 'Look straight at the camera and smile.',
+    },
+    {
+        key: 'slight_left',
+        label: 'Slight left turn',
+        challenge: 'turn-left',
+        instruction: 'Turn your head slightly to the left.',
+    },
+    {
+        key: 'slight_right',
+        label: 'Slight right turn',
+        challenge: 'turn-right',
+        instruction: 'Turn your head slightly to the right.',
+    },
+    {
+        key: 'low_light',
+        label: 'Normal or low-light',
+        challenge: 'center',
+        instruction: 'Use the lighting normally used during patrol, then look straight at the camera.',
+    },
+];
 const SMILE_RATIO_THRESHOLD = 0.38;
 const SMILE_RATIO_DELTA = 0.035;
 const TURN_HEAD_THRESHOLD = 0.16;
@@ -145,11 +176,11 @@ function cameraAccessMessage(error = null, insecureFallbackMessage = null, permi
     const name = error?.name || '';
 
     if (! canUseLiveCameraPreview()) {
-        return insecureFallbackMessage || 'Live camera preview needs HTTPS on phones. Tap Take Photo to use the phone camera.';
+        return insecureFallbackMessage || 'Live camera preview needs HTTPS on phones. Open this system through HTTPS and try again.';
     }
 
     if (['NotAllowedError', 'PermissionDeniedError', 'SecurityError'].includes(name)) {
-        return permissionFallbackMessage || 'Camera permission was blocked. Allow camera access in the browser, or use Take Photo.';
+        return permissionFallbackMessage || 'Camera permission was blocked. Allow camera access in the browser settings, then try again.';
     }
 
     if (['NotFoundError', 'DevicesNotFoundError'].includes(name)) {
@@ -265,7 +296,7 @@ function headTurnRatio(landmarks) {
     return (noseTipX - faceCenterX) / faceWidth;
 }
 
-function randomLivenessChallenge(challenges = REGISTRATION_LIVENESS_CHALLENGES) {
+function randomLivenessChallenge(challenges = PATROL_LIVENESS_CHALLENGES) {
     return challenges[Math.floor(Math.random() * challenges.length)];
 }
 
@@ -279,11 +310,21 @@ function isPatrolLivenessChallenge(challenge) {
 
 function livenessLabelFor(challenge) {
     return {
+        center: 'Face centered',
         smile: 'Smile',
         turn: 'Turn head slightly',
         'turn-left': 'Turn head left',
         'turn-right': 'Turn head right',
     }[challenge] || 'Complete random challenge';
+}
+
+function registrationFaceSamples(labels = {}) {
+    return REGISTRATION_FACE_SAMPLE_GUIDES.map((sample) => ({
+        ...sample,
+        label: labels[sample.key] || sample.label,
+        capture: '',
+        descriptor: null,
+    }));
 }
 
 let deferredPwaInstallPrompt = null;
@@ -611,6 +652,9 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
 Alpine.data('guardFaceForm', (config = {}) => ({
     liveRegistration: Boolean(config.liveRegistration),
     registrationModalOpen: Boolean(config.openRegistration),
+    faceSamples: registrationFaceSamples(config.registrationSampleTypes),
+    requiredFaceSampleCount: Number(config.requiredFaceSampleCount) || REGISTRATION_FACE_SAMPLE_GUIDES.length,
+    currentSampleIndex: 0,
     liveCapture: '',
     liveDescriptor: null,
     liveProcessing: false,
@@ -623,18 +667,21 @@ Alpine.data('guardFaceForm', (config = {}) => ({
     livenessPassed: false,
     livenessChecking: false,
     livenessStatus: 'idle',
-    livenessChallenge: '',
+    livenessChallenge: 'center',
     livenessMessage: '',
     livenessCheckTimer: null,
     livenessSmileBaseline: null,
     livenessSmileFrames: 0,
     livenessTurnFrames: 0,
+    stableRegistrationFaceFrames: 0,
+    requiredStableRegistrationFaceFrames: 4,
     descriptorMessage: '',
     descriptorError: '',
 
     boot() {
         if (this.liveRegistration) {
-            this.descriptorMessage = 'Open the camera when the guard is ready to register.';
+            this.syncCurrentSampleState();
+            this.descriptorMessage = `Capture ${this.requiredFaceSampleCount} live face samples before saving.`;
 
             if (this.registrationModalOpen) {
                 this.$nextTick(() => this.$refs.registrationPrimaryAction?.focus());
@@ -642,44 +689,93 @@ Alpine.data('guardFaceForm', (config = {}) => ({
         }
     },
 
+    currentFaceSample() {
+        return this.faceSamples[this.currentSampleIndex] || this.faceSamples[0] || null;
+    },
+
+    sampleReady(sample) {
+        return Boolean(sample?.capture && Array.isArray(sample?.descriptor));
+    },
+
+    currentSampleReady() {
+        return this.sampleReady(this.currentFaceSample());
+    },
+
+    completedFaceSamples() {
+        return this.faceSamples.filter((sample) => this.sampleReady(sample));
+    },
+
+    completedFaceSampleCount() {
+        return this.completedFaceSamples().length;
+    },
+
+    allFaceSamplesReady() {
+        return this.faceSamples.length >= this.requiredFaceSampleCount
+            && this.faceSamples.every((sample) => this.sampleReady(sample));
+    },
+
+    hasAnyFaceSample() {
+        return this.faceSamples.some((sample) => sample.capture || Array.isArray(sample.descriptor));
+    },
+
+    currentSampleTitle() {
+        const sample = this.currentFaceSample();
+
+        return sample
+            ? `${this.currentSampleIndex + 1} of ${this.requiredFaceSampleCount}: ${sample.label}`
+            : 'Live Face Sample';
+    },
+
+    currentSampleInstruction() {
+        return this.currentFaceSample()?.instruction || 'Center the guard face, then capture the sample.';
+    },
+
     registrationStatusTitle() {
         if (this.liveProcessing) {
-            return 'Processing face data';
+            return 'Processing face sample';
         }
 
-        if (this.liveDescriptor) {
-            return 'Face data ready';
+        if (this.allFaceSamplesReady()) {
+            return 'Five face samples ready';
         }
 
         if (this.registrationCameraOpen) {
-            return 'Camera active';
+            return this.currentSampleTitle();
         }
 
         return 'Face registration required';
     },
 
     registrationStatusMessage() {
-        if (this.liveDescriptor) {
+        if (this.allFaceSamplesReady()) {
             return 'Save Changes to finish the face registration.';
         }
 
         if (this.liveProcessing) {
-            return 'Please wait while the face reference is prepared.';
+            return 'Please wait while the face sample is prepared.';
         }
 
-        return 'Register the guard face once before checkpoint verification.';
+        return `${this.completedFaceSampleCount()} of ${this.requiredFaceSampleCount} live face samples are ready.`;
     },
 
     registrationActionLabel() {
-        if (this.liveDescriptor) {
-            return 'Review Face Capture';
+        if (this.allFaceSamplesReady()) {
+            return 'Review Samples';
         }
 
         if (this.liveProcessing) {
             return 'Processing...';
         }
 
-        return 'Register Face';
+        return this.hasAnyFaceSample() ? 'Continue Registration' : 'Register Face';
+    },
+
+    registrationCameraActionLabel() {
+        if (this.registrationCameraOpen) {
+            return 'Camera Open';
+        }
+
+        return this.currentSampleReady() ? 'Retake Current Sample' : 'Open Camera';
     },
 
     openRegistrationModal() {
@@ -688,6 +784,7 @@ Alpine.data('guardFaceForm', (config = {}) => ({
         }
 
         this.registrationModalOpen = true;
+        this.syncCurrentSampleState();
         this.$nextTick(() => this.$refs.registrationPrimaryAction?.focus());
     },
 
@@ -697,7 +794,56 @@ Alpine.data('guardFaceForm', (config = {}) => ({
         }
 
         this.stopRegistrationCamera();
+        this.syncCurrentSampleState();
         this.registrationModalOpen = false;
+    },
+
+    selectRegistrationSample(index) {
+        if (this.liveProcessing || index === this.currentSampleIndex || ! this.faceSamples[index]) {
+            return;
+        }
+
+        this.stopRegistrationCamera();
+        this.currentSampleIndex = index;
+        this.syncCurrentSampleState();
+        this.descriptorError = '';
+        this.descriptorMessage = this.currentSampleReady()
+            ? `${this.currentFaceSample().label} sample is ready.`
+            : this.currentSampleInstruction();
+    },
+
+    nextIncompleteSampleIndex() {
+        const afterCurrent = this.faceSamples.findIndex((sample, index) => index > this.currentSampleIndex && ! this.sampleReady(sample));
+
+        if (afterCurrent !== -1) {
+            return afterCurrent;
+        }
+
+        const firstMissing = this.faceSamples.findIndex((sample) => ! this.sampleReady(sample));
+
+        return firstMissing === -1 ? null : firstMissing;
+    },
+
+    selectNextIncompleteSample() {
+        const nextIndex = this.nextIncompleteSampleIndex();
+
+        if (nextIndex !== null) {
+            this.selectRegistrationSample(nextIndex);
+        }
+    },
+
+    syncCurrentSampleState() {
+        const sample = this.currentFaceSample();
+
+        this.liveCapture = sample?.capture || '';
+        this.liveDescriptor = sample?.descriptor || null;
+        this.stopRegistrationLivenessCheck();
+        this.livenessChallenge = sample?.challenge || 'center';
+        this.livenessPassed = this.sampleReady(sample);
+        this.livenessStatus = this.livenessPassed ? 'complete' : 'idle';
+        this.livenessMessage = '';
+        this.stableRegistrationFaceFrames = 0;
+        this.resetLivenessActionState();
     },
 
     descriptorPayload(descriptor) {
@@ -705,16 +851,12 @@ Alpine.data('guardFaceForm', (config = {}) => ({
     },
 
     livenessChallengeLabel() {
-        return {
-            photo: 'Phone camera photo',
-            smile: 'Smile',
-            turn: 'Turn head slightly',
-        }[this.livenessChallenge] || 'Smile';
+        return livenessLabelFor(this.livenessChallenge);
     },
 
     livenessChallengeBadge() {
         if (this.livenessPassed) {
-            return 'Liveness confirmed';
+            return 'Guide confirmed';
         }
 
         if (this.livenessStatus === 'align') {
@@ -767,41 +909,70 @@ Alpine.data('guardFaceForm', (config = {}) => ({
     },
 
     async openRegistrationCamera() {
+        const sample = this.currentFaceSample();
+
+        if (! sample || this.liveProcessing) {
+            return;
+        }
+
         this.registrationModalOpen = true;
         this.stopRegistrationCamera();
         this.descriptorError = '';
-        this.liveCapture = '';
-        this.liveDescriptor = null;
         this.resetRegistrationLiveness();
 
-        if (! canUseLiveCameraPreview() || ! navigator.mediaDevices || ! navigator.mediaDevices.getUserMedia) {
-            this.descriptorMessage = 'Live preview is blocked on this connection. Taking a phone camera photo instead.';
-            this.$refs.registrationPhotoInput?.click();
+        if (! canUseLiveCameraPreview()) {
+            this.descriptorError = cameraAccessMessage(
+                null,
+                'Live face registration needs HTTPS on phones. Open this system through HTTPS and try again.',
+            );
+            return;
+        }
+
+        if (! navigator.mediaDevices || ! navigator.mediaDevices.getUserMedia) {
+            this.descriptorError = 'Live camera preview is not available in this browser.';
             return;
         }
 
         try {
             this.registrationCameraStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'user' },
+                video: {
+                    facingMode: 'user',
+                    width: { ideal: 720 },
+                    height: { ideal: 960 },
+                    aspectRatio: { ideal: 0.75 },
+                },
                 audio: false,
             });
+            this.clearCurrentFaceSample();
+            this.resetRegistrationLiveness();
             this.$refs.registrationVideo.srcObject = this.registrationCameraStream;
+            await this.$refs.registrationVideo.play().catch(() => null);
             this.registrationCameraOpen = true;
             await this.syncRegistrationLightAssist();
-            this.descriptorMessage = 'Loading liveness check...';
+            this.descriptorMessage = 'Loading face guide...';
             await loadFaceModels();
             this.startRegistrationLivenessCheck();
         } catch (error) {
-            this.descriptorError = cameraAccessMessage(error, 'Live face registration needs HTTPS on phones. Use Take Photo, or open the system through HTTPS.');
+            this.descriptorError = cameraAccessMessage(
+                error,
+                'Live face registration needs HTTPS on phones. Open this system through HTTPS and try again.',
+                'Camera permission was blocked. Allow camera access in the browser settings, then try again.',
+            );
         }
     },
 
     async captureRegistrationFace() {
+        const sample = this.currentFaceSample();
         const video = this.$refs.registrationVideo;
         const canvas = this.$refs.registrationCanvas;
 
+        if (! sample) {
+            this.descriptorError = 'Choose a face sample before capturing.';
+            return;
+        }
+
         if (! this.livenessPassed) {
-            this.descriptorError = 'Complete the random liveness challenge before capturing.';
+            this.descriptorError = 'Complete the guided live action before capturing.';
             return;
         }
 
@@ -814,92 +985,79 @@ Alpine.data('guardFaceForm', (config = {}) => ({
         canvas.height = video.videoHeight;
         canvas.getContext('2d').drawImage(video, 0, 0);
 
-        this.liveCapture = canvas.toDataURL('image/jpeg', 0.85);
+        const capture = canvas.toDataURL('image/jpeg', 0.82);
+        this.liveCapture = capture;
         this.liveDescriptor = null;
         this.liveProcessing = true;
         this.descriptorError = '';
-        this.descriptorMessage = 'Processing live face capture...';
+        this.descriptorMessage = 'Processing live face sample...';
         this.stopRegistrationCamera();
 
         try {
             await loadFaceModels();
 
-            const image = await imageFromDataUrl(this.liveCapture);
-            this.liveDescriptor = await descriptorFromImage(image);
-            this.descriptorMessage = 'Live face data is ready. Save Changes to finish registration.';
-            this.registrationModalOpen = false;
+            const image = await imageFromDataUrl(capture);
+            const descriptor = await descriptorFromImage(image);
+            const savedLabel = sample.label;
+
+            sample.capture = capture;
+            sample.descriptor = descriptor;
+            this.liveDescriptor = descriptor;
+
+            if (this.allFaceSamplesReady()) {
+                this.descriptorMessage = 'All five live face samples are ready. Save Changes to finish registration.';
+                this.registrationModalOpen = false;
+                return;
+            }
+
+            const nextIndex = this.nextIncompleteSampleIndex();
+
+            if (nextIndex !== null) {
+                this.currentSampleIndex = nextIndex;
+                this.syncCurrentSampleState();
+                this.descriptorMessage = `${savedLabel} saved. Continue with ${this.currentFaceSample().label}.`;
+            }
         } catch (error) {
-            this.descriptorError = error.message || 'Live face data could not be generated.';
-        } finally {
-            this.liveProcessing = false;
-        }
-    },
-
-    openRegistrationPhotoCapture() {
-        if (this.liveProcessing) {
-            return;
-        }
-
-        this.stopRegistrationCamera();
-        this.descriptorError = '';
-        this.$refs.registrationPhotoInput?.click();
-    },
-
-    async useRegistrationCaptureFile(event) {
-        const file = event.target.files?.[0];
-
-        if (! file || this.liveProcessing) {
-            return;
-        }
-
-        this.stopRegistrationCamera();
-        this.liveCapture = '';
-        this.liveDescriptor = null;
-        this.liveProcessing = true;
-        this.descriptorError = '';
-        this.resetRegistrationLiveness();
-        this.livenessPassed = true;
-        this.livenessStatus = 'complete';
-        this.livenessChallenge = 'photo';
-        this.descriptorMessage = 'Processing phone camera face photo...';
-
-        try {
-            this.liveCapture = await dataUrlFromImageFile(file, { maxSize: 1280, quality: 0.85 });
-            await loadFaceModels();
-
-            const image = await imageFromDataUrl(this.liveCapture);
-            this.liveDescriptor = await descriptorFromImage(image);
-            this.descriptorMessage = 'Face data is ready. Save Changes to finish registration.';
-            this.registrationModalOpen = false;
-        } catch (error) {
+            sample.capture = '';
+            sample.descriptor = null;
             this.liveCapture = '';
             this.liveDescriptor = null;
             this.resetRegistrationLiveness();
-            this.descriptorError = error.message || 'Face data could not be generated from the photo.';
-            this.descriptorMessage = 'Take a clear front-facing photo and try again.';
+            this.descriptorError = error.message || 'Live face data could not be generated.';
+            this.descriptorMessage = this.currentSampleInstruction();
         } finally {
             this.liveProcessing = false;
-
-            if (event.target) {
-                event.target.value = '';
-            }
         }
     },
 
-    retakeRegistrationFace() {
+    clearCurrentFaceSample() {
+        const sample = this.currentFaceSample();
+
+        if (! sample) {
+            return;
+        }
+
+        sample.capture = '';
+        sample.descriptor = null;
         this.liveCapture = '';
         this.liveDescriptor = null;
+    },
+
+    retakeRegistrationFace() {
+        this.stopRegistrationCamera();
+        this.clearCurrentFaceSample();
         this.descriptorError = '';
         this.resetRegistrationLiveness();
-        this.descriptorMessage = 'Open the camera when the guard is ready to register.';
+        this.descriptorMessage = this.currentSampleInstruction();
     },
 
     resetRegistrationLiveness() {
         this.stopRegistrationLivenessCheck();
         this.livenessPassed = false;
         this.livenessStatus = 'idle';
-        this.livenessChallenge = '';
+        this.livenessChallenge = this.currentFaceSample()?.challenge || 'center';
         this.livenessMessage = '';
+        this.stableRegistrationFaceFrames = 0;
         this.resetLivenessActionState();
     },
 
@@ -911,11 +1069,12 @@ Alpine.data('guardFaceForm', (config = {}) => ({
 
     startRegistrationLivenessCheck() {
         this.stopRegistrationLivenessCheck();
-        this.livenessChallenge = randomLivenessChallenge();
+        this.livenessChallenge = this.currentFaceSample()?.challenge || 'center';
         this.resetLivenessActionState();
+        this.stableRegistrationFaceFrames = 0;
         this.livenessChecking = true;
         this.livenessStatus = 'align';
-        this.livenessMessage = 'Position your face inside the guide for the random challenge.';
+        this.livenessMessage = this.currentSampleInstruction();
         this.descriptorMessage = this.livenessMessage;
         this.runRegistrationLivenessCheck();
     },
@@ -928,7 +1087,7 @@ Alpine.data('guardFaceForm', (config = {}) => ({
 
         const video = this.$refs.registrationVideo;
 
-        if (! video || ! video.videoWidth) {
+        if (! video || ! video.videoWidth || ! video.videoHeight) {
             this.scheduleRegistrationLivenessCheck();
             return;
         }
@@ -940,16 +1099,39 @@ Alpine.data('guardFaceForm', (config = {}) => ({
 
             if (! detection) {
                 this.livenessStatus = 'align';
-                this.livenessMessage = 'Position your face inside the guide for the random challenge.';
+                this.livenessMessage = 'Position your face inside the guide.';
                 this.descriptorMessage = this.livenessMessage;
+                this.stableRegistrationFaceFrames = 0;
                 this.resetLivenessActionState();
                 return;
             }
 
-            this.runSelectedLivenessChallenge(detection.landmarks);
+            const guide = this.registrationFacePositionGuide(detection.detection.box, video);
+
+            if (! guide.ready) {
+                this.livenessStatus = 'align';
+                this.livenessMessage = guide.message;
+                this.descriptorMessage = this.livenessMessage;
+                this.stableRegistrationFaceFrames = 0;
+                this.resetLivenessActionState();
+                return;
+            }
+
+            this.stableRegistrationFaceFrames += 1;
+
+            if (this.stableRegistrationFaceFrames < this.requiredStableRegistrationFaceFrames) {
+                this.livenessStatus = 'face';
+                this.livenessMessage = 'Face detected. Hold still for the guided action.';
+                this.descriptorMessage = this.livenessMessage;
+                return;
+            }
+
+            if (this.runSelectedLivenessChallenge(detection.landmarks)) {
+                this.markRegistrationLivenessPassed();
+            }
         } catch (error) {
             this.livenessStatus = 'align';
-            this.livenessMessage = 'Liveness check is still scanning.';
+            this.livenessMessage = 'Face guide is still scanning.';
             this.descriptorMessage = this.livenessMessage;
         } finally {
             if (this.registrationCameraOpen && ! this.liveCapture && ! this.livenessPassed) {
@@ -958,13 +1140,48 @@ Alpine.data('guardFaceForm', (config = {}) => ({
         }
     },
 
-    runSelectedLivenessChallenge(landmarks) {
-        if (this.livenessChallenge === 'turn') {
-            this.runTurnChallenge(landmarks);
-            return;
+    registrationFacePositionGuide(box, video) {
+        const videoWidth = video.videoWidth || 1;
+        const videoHeight = video.videoHeight || 1;
+        const centerX = Number(box.x) + (Number(box.width) / 2);
+        const centerY = Number(box.y) + (Number(box.height) / 2);
+        const horizontalOffset = (centerX - (videoWidth / 2)) / videoWidth;
+        const verticalOffset = (centerY - (videoHeight / 2)) / videoHeight;
+        const faceWidthRatio = Number(box.width) / videoWidth;
+        const faceHeightRatio = Number(box.height) / videoHeight;
+
+        if (faceWidthRatio < 0.22 || faceHeightRatio < 0.24) {
+            return { ready: false, message: 'Move closer to the camera.' };
         }
 
-        this.runSmileChallenge(landmarks);
+        if (faceWidthRatio > 0.72 || faceHeightRatio > 0.86) {
+            return { ready: false, message: 'Move slightly farther from the camera.' };
+        }
+
+        if (Math.abs(horizontalOffset) > 0.18) {
+            return { ready: false, message: horizontalOffset > 0 ? 'Move slightly left.' : 'Move slightly right.' };
+        }
+
+        if (Math.abs(verticalOffset) > 0.18) {
+            return { ready: false, message: verticalOffset > 0 ? 'Raise the phone slightly.' : 'Lower the phone slightly.' };
+        }
+
+        return { ready: true, message: 'Face centered.' };
+    },
+
+    runSelectedLivenessChallenge(landmarks) {
+        if (this.livenessChallenge === 'center') {
+            this.livenessStatus = 'center';
+            this.livenessMessage = 'Face centered. Capture is unlocked.';
+            this.descriptorMessage = this.livenessMessage;
+            return true;
+        }
+
+        if (this.livenessChallenge === 'turn-left' || this.livenessChallenge === 'turn-right' || this.livenessChallenge === 'turn') {
+            return this.runTurnChallenge(landmarks);
+        }
+
+        return this.runSmileChallenge(landmarks);
     },
 
     runSmileChallenge(landmarks) {
@@ -974,7 +1191,7 @@ Alpine.data('guardFaceForm', (config = {}) => ({
             this.livenessStatus = 'face';
             this.livenessMessage = 'Keep your mouth visible to the camera.';
             this.descriptorMessage = this.livenessMessage;
-            return;
+            return false;
         }
 
         this.livenessSmileBaseline = this.livenessSmileBaseline === null
@@ -988,8 +1205,7 @@ Alpine.data('guardFaceForm', (config = {}) => ({
             this.livenessSmileFrames += 1;
 
             if (this.livenessSmileFrames >= 2) {
-                this.markRegistrationLivenessPassed();
-                return;
+                return true;
             }
         } else {
             this.livenessSmileFrames = 0;
@@ -998,6 +1214,8 @@ Alpine.data('guardFaceForm', (config = {}) => ({
         this.livenessStatus = 'smile';
         this.livenessMessage = 'Challenge: smile.';
         this.descriptorMessage = this.livenessMessage;
+
+        return false;
     },
 
     runTurnChallenge(landmarks) {
@@ -1007,23 +1225,30 @@ Alpine.data('guardFaceForm', (config = {}) => ({
             this.livenessStatus = 'face';
             this.livenessMessage = 'Keep your whole face visible to the camera.';
             this.descriptorMessage = this.livenessMessage;
-            return;
+            return false;
         }
 
-        if (Math.abs(ratio) >= TURN_HEAD_THRESHOLD) {
+        const turned = this.livenessChallenge === 'turn-left'
+            ? ratio <= -TURN_HEAD_THRESHOLD
+            : (this.livenessChallenge === 'turn-right'
+                ? ratio >= TURN_HEAD_THRESHOLD
+                : Math.abs(ratio) >= TURN_HEAD_THRESHOLD);
+
+        if (turned) {
             this.livenessTurnFrames += 1;
 
             if (this.livenessTurnFrames >= 2) {
-                this.markRegistrationLivenessPassed();
-                return;
+                return true;
             }
         } else {
             this.livenessTurnFrames = 0;
         }
 
-        this.livenessStatus = 'turn';
-        this.livenessMessage = 'Challenge: turn your head slightly left or right.';
+        this.livenessStatus = this.livenessChallenge;
+        this.livenessMessage = `Challenge: ${this.livenessChallengeLabel()}.`;
         this.descriptorMessage = this.livenessMessage;
+
+        return false;
     },
 
     scheduleRegistrationLivenessCheck() {
@@ -1065,19 +1290,14 @@ Alpine.data('guardFaceForm', (config = {}) => ({
     handleSubmit(event) {
         if (this.liveProcessing) {
             event.preventDefault();
-            this.descriptorError = 'Please wait until face data processing is finished.';
+            this.descriptorError = 'Please wait until face sample processing is finished.';
             return;
         }
 
-        if (this.liveCapture && ! this.livenessPassed) {
+        if (this.liveRegistration && this.hasAnyFaceSample() && ! this.allFaceSamplesReady()) {
             event.preventDefault();
-            this.descriptorError = 'Complete the random liveness challenge before saving face registration.';
-            return;
-        }
-
-        if (this.liveCapture && ! Array.isArray(this.liveDescriptor)) {
-            event.preventDefault();
-            this.descriptorError = 'Face data is not ready. Capture a clear face and wait for processing to finish.';
+            this.registrationModalOpen = true;
+            this.descriptorError = 'Complete all five live face samples before saving face registration.';
             return;
         }
 

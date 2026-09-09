@@ -765,12 +765,7 @@ class FaceVerificationTest extends TestCase
             'status' => 'active',
         ]);
 
-        $guard->faceDescriptors()->create([
-            'descriptor' => array_fill(0, 128, 0.15),
-            'model_name' => 'face-api.js',
-            'image_path' => 'guard-faces/day-scan.jpg',
-            'is_primary' => true,
-        ]);
+        $this->completeFaceRegistration($guard, array_fill(0, 128, 0.15));
 
         $response = $this->postJson(route('api.rfid-scan'), [
             'rfid_uid' => 'RFID-DAY',
@@ -869,12 +864,7 @@ class FaceVerificationTest extends TestCase
 
         $descriptor = array_fill(0, 128, 0.15);
 
-        $guard->faceDescriptors()->create([
-            'descriptor' => $descriptor,
-            'model_name' => 'face-api.js',
-            'image_path' => 'guard-faces/1/cherry-ann.jpg',
-            'is_primary' => true,
-        ]);
+        $this->completeFaceRegistration($guard, $descriptor);
 
         $patrolLog = PatrolLog::create([
             'guard_id' => $guard->id,
@@ -888,6 +878,19 @@ class FaceVerificationTest extends TestCase
         ]);
 
         return [$user, $guard, $patrolLog, $descriptor];
+    }
+
+    private function completeFaceRegistration(Guard $guard, array $descriptor): void
+    {
+        foreach (array_keys(FaceVerification::registrationSampleTypes()) as $index => $type) {
+            $guard->faceDescriptors()->create([
+                'descriptor' => $descriptor,
+                'model_name' => 'face-api.js',
+                'image_path' => "guard-faces/{$guard->id}/{$type}.jpg",
+                'capture_type' => $type,
+                'is_primary' => $index === 0,
+            ]);
+        }
     }
 
     private function travelToPatrolWindow(): void

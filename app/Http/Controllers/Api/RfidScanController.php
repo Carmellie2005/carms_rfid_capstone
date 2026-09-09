@@ -7,6 +7,7 @@ use App\Models\Checkpoint;
 use App\Models\Guard;
 use App\Models\PatrolLog;
 use App\Support\AuditLogger;
+use App\Support\FaceVerification;
 use App\Support\PatrolSchedule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -253,9 +254,7 @@ class RfidScanController extends Controller
 
     private function hasCompletedFaceRegistration(Guard $guard): bool
     {
-        return $guard->faceDescriptors->contains(
-            fn ($sample) => is_array($sample->descriptor) && count($sample->descriptor) === 128
-        );
+        return FaceVerification::hasCompleteRegistration($guard->faceDescriptors);
     }
 
     private function unknownGuard(): Guard

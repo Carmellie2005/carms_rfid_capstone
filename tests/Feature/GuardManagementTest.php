@@ -9,6 +9,7 @@ use App\Models\GuardFaceDescriptor;
 use App\Models\IncidentReport;
 use App\Models\PatrolLog;
 use App\Models\User;
+use App\Support\FaceVerification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -184,12 +185,15 @@ class GuardManagementTest extends TestCase
             'status' => 'active',
         ]);
 
-        GuardFaceDescriptor::create([
-            'guard_id' => $guard->id,
-            'descriptor' => array_fill(0, 128, 0.12),
-            'model_name' => 'face-api.js',
-            'is_primary' => true,
-        ]);
+        foreach (array_keys(FaceVerification::registrationSampleTypes()) as $index => $type) {
+            GuardFaceDescriptor::create([
+                'guard_id' => $guard->id,
+                'descriptor' => array_fill(0, 128, 0.12),
+                'model_name' => 'face-api.js',
+                'capture_type' => $type,
+                'is_primary' => $index === 0,
+            ]);
+        }
 
         $checkpoint = Checkpoint::create([
             'code' => 'CP-MODAL',
