@@ -7,6 +7,7 @@ use App\Models\Guard;
 use App\Models\User;
 use App\Rules\UsernameOrEmail;
 use App\Support\AuditLogger;
+use App\Support\FaceVerification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -63,7 +64,7 @@ class GuardController extends Controller
         $faceAttempts = $guard->faceVerificationAttempts()
             ->latest()
             ->limit(5)
-            ->get(['id', 'status', 'match_distance', 'match_threshold', 'verified_at', 'created_at']);
+            ->get(['id', 'status', 'match_distance', 'match_threshold', 'liveness_challenge', 'liveness_confirmed_at', 'verified_at', 'created_at']);
 
         return response()->json([
             'guard' => [
@@ -120,6 +121,9 @@ class GuardController extends Controller
                 'status_label' => $this->labelFor($attempt->status),
                 'match_distance' => $attempt->match_distance,
                 'match_threshold' => $attempt->match_threshold,
+                'liveness_challenge' => $attempt->liveness_challenge,
+                'liveness_label' => FaceVerification::livenessLabel($attempt->liveness_challenge),
+                'liveness_confirmed_at' => $this->formatDate($attempt->liveness_confirmed_at),
                 'verified_at' => $this->formatDate($attempt->verified_at),
                 'created_at' => $this->formatDate($attempt->created_at),
             ]),

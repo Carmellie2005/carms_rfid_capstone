@@ -17,6 +17,8 @@ class FaceVerificationAttempt extends Model
         'match_distance',
         'match_threshold',
         'model_name',
+        'liveness_challenge',
+        'liveness_confirmed_at',
         'captured_image_path',
         'captured_descriptor',
         'notes',
@@ -27,6 +29,7 @@ class FaceVerificationAttempt extends Model
         'captured_descriptor' => 'array',
         'match_distance' => 'decimal:6',
         'match_threshold' => 'decimal:6',
+        'liveness_confirmed_at' => 'datetime',
         'verified_at' => 'datetime',
     ];
 

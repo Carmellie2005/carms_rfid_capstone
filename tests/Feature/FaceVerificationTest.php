@@ -7,6 +7,7 @@ use App\Models\Guard;
 use App\Models\IncidentReport;
 use App\Models\PatrolLog;
 use App\Models\User;
+use App\Support\FaceVerification;
 use App\Support\PatrolSchedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -35,6 +36,7 @@ class FaceVerificationTest extends TestCase
             ->post(route('patrol.store'), [
                 'patrol_log_id' => $patrolLog->id,
                 'facial_status' => 'verified',
+                ...$this->livenessPayload($patrolLog),
                 'captured_descriptor' => json_encode($this->nearMatchingDescriptor($descriptor)),
                 'face_capture' => $this->validFaceCapture(),
                 'area_secure' => '1',
@@ -61,7 +63,10 @@ class FaceVerificationTest extends TestCase
             'patrol_log_id' => $patrolLog->id,
             'guard_id' => $guard->id,
             'status' => 'verified',
+            'liveness_challenge' => 'blink',
         ]);
+
+        $this->assertNotNull($patrolLog->faceVerificationAttempts()->first()?->liveness_confirmed_at);
 
         $this->assertDatabaseHas('checklist_responses', [
             'patrol_log_id' => $patrolLog->id,
@@ -92,10 +97,10 @@ class FaceVerificationTest extends TestCase
             ->assertSee('Medical Emergency')
             ->assertSee('Alarm or CCTV Issue')
             ->assertSee('Selected image previews')
-            ->assertSee('Allow Camera Access')
+            ->assertSee('Start Face Verification')
             ->assertSee('Position your face inside the circle')
-            ->assertSee('Keep still while scanning')
-            ->assertSee('Verifying automatically...')
+            ->assertSee('faceLivenessChallengeInstruction()', false)
+            ->assertSee('Verifying live challenge...', false)
             ->assertSee('face-verification-circle')
             ->assertSee('face-auto-scan-ring')
             ->assertSee('camera-unmirrored')
@@ -119,6 +124,7 @@ class FaceVerificationTest extends TestCase
             ->actingAs($user)
             ->postJson(route('patrol.verify-face'), [
                 'patrol_log_id' => $patrolLog->id,
+                ...$this->livenessPayload($patrolLog),
                 'captured_descriptor' => json_encode($this->nearMatchingDescriptor($descriptor)),
                 'face_capture' => $this->validFaceCapture(),
             ]);
@@ -142,7 +148,60 @@ class FaceVerificationTest extends TestCase
             'patrol_log_id' => $patrolLog->id,
             'guard_id' => $guard->id,
             'status' => 'verified',
+            'liveness_challenge' => 'blink',
         ]);
+    }
+
+    public function test_server_face_verification_endpoint_rejects_descriptor_without_liveness_challenge(): void
+    {
+        [$user, $guard, $patrolLog, $descriptor] = $this->pendingPatrolWithFaceDescriptor();
+
+        $response = $this
+            ->actingAs($user)
+            ->postJson(route('patrol.verify-face'), [
+                'patrol_log_id' => $patrolLog->id,
+                'captured_descriptor' => json_encode($this->nearMatchingDescriptor($descriptor)),
+                'face_capture' => $this->validFaceCapture(),
+            ]);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['face_liveness_confirmed', 'face_liveness_challenge']);
+
+        $this->assertSame($guard->id, $patrolLog->guard_id);
+        $this->assertSame(0, $patrolLog->faceVerificationAttempts()->count());
+    }
+
+    public function test_server_face_verification_endpoint_rejects_expired_liveness_challenge(): void
+    {
+        [$user, $guard, $patrolLog, $descriptor] = $this->pendingPatrolWithFaceDescriptor();
+
+        $this->withSession([
+            'patrol_face_liveness_challenges' => [
+                $patrolLog->id => 'blink',
+            ],
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->postJson(route('patrol.verify-face'), [
+                'patrol_log_id' => $patrolLog->id,
+                'face_liveness_confirmed' => '1',
+                'face_liveness_challenge' => 'smile',
+                'captured_descriptor' => json_encode($this->nearMatchingDescriptor($descriptor)),
+                'face_capture' => $this->validFaceCapture(),
+            ]);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJson([
+                'verified' => false,
+                'status' => 'failed',
+                'message' => 'The face liveness challenge expired. Restart face verification after the RFID scan.',
+            ]);
+
+        $this->assertSame($guard->id, $patrolLog->guard_id);
+        $this->assertSame(0, $patrolLog->faceVerificationAttempts()->count());
     }
 
     public function test_guard_can_refresh_after_face_verification_and_submit_checklist_without_reverification(): void
@@ -153,6 +212,7 @@ class FaceVerificationTest extends TestCase
             ->actingAs($user)
             ->postJson(route('patrol.verify-face'), [
                 'patrol_log_id' => $patrolLog->id,
+                ...$this->livenessPayload($patrolLog),
                 'captured_descriptor' => json_encode($this->nearMatchingDescriptor($descriptor)),
                 'face_capture' => $this->validFaceCapture(),
             ])
@@ -221,6 +281,7 @@ class FaceVerificationTest extends TestCase
             ->post(route('patrol.store'), [
                 'patrol_log_id' => $patrolLog->id,
                 'facial_status' => 'verified',
+                ...$this->livenessPayload($patrolLog),
                 'captured_descriptor' => json_encode($descriptor),
                 'face_capture' => $this->validFaceCapture(),
                 'area_secure' => '1',
@@ -256,6 +317,7 @@ class FaceVerificationTest extends TestCase
             ->post(route('patrol.store'), [
                 'patrol_log_id' => $patrolLog->id,
                 'facial_status' => 'verified',
+                ...$this->livenessPayload($patrolLog),
                 'captured_descriptor' => json_encode($differentDescriptor),
                 'face_capture' => $this->validFaceCapture(),
                 'area_secure' => '1',
@@ -290,6 +352,7 @@ class FaceVerificationTest extends TestCase
             ->post(route('patrol.store'), [
                 'patrol_log_id' => $patrolLog->id,
                 'facial_status' => 'verified',
+                ...$this->livenessPayload($patrolLog),
                 'captured_descriptor' => json_encode($nearWrongDescriptor),
                 'face_capture' => $this->validFaceCapture(),
                 'area_secure' => '1',
@@ -327,6 +390,7 @@ class FaceVerificationTest extends TestCase
             ->post(route('patrol.store'), [
                 'patrol_log_id' => $patrolLog->id,
                 'facial_status' => 'verified',
+                ...$this->livenessPayload($patrolLog),
                 'captured_descriptor' => json_encode($this->nearMatchingDescriptor($descriptor)),
                 'face_capture' => $this->validFaceCapture(),
                 'area_secure' => '1',
@@ -374,6 +438,7 @@ class FaceVerificationTest extends TestCase
             ->post(route('patrol.store'), [
                 'patrol_log_id' => $patrolLog->id,
                 'facial_status' => 'verified',
+                ...$this->livenessPayload($patrolLog),
                 'captured_descriptor' => json_encode($this->nearMatchingDescriptor($descriptor)),
                 'face_capture' => $this->validFaceCapture(),
                 'area_secure' => '1',
@@ -411,6 +476,7 @@ class FaceVerificationTest extends TestCase
             ->post(route('patrol.store'), [
                 'patrol_log_id' => $patrolLog->id,
                 'facial_status' => 'verified',
+                ...$this->livenessPayload($patrolLog),
                 'captured_descriptor' => json_encode($this->nearMatchingDescriptor($descriptor)),
                 'face_capture' => $this->validFaceCapture(),
                 'area_secure' => '1',
@@ -453,6 +519,26 @@ class FaceVerificationTest extends TestCase
                 'pending' => false,
                 'patrol_log' => null,
             ]);
+    }
+
+    public function test_pending_scan_payload_includes_liveness_challenge(): void
+    {
+        [$user] = $this->pendingPatrolWithFaceDescriptor();
+
+        $response = $this
+            ->actingAs($user)
+            ->getJson(route('patrol.pending-scan'));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('pending', true);
+
+        $this->assertContains(
+            $response->json('patrol_log.face_liveness_challenge'),
+            FaceVerification::livenessChallenges(),
+        );
+
+        $this->assertNotEmpty($response->json('patrol_log.face_liveness_label'));
     }
 
     public function test_new_rfid_scan_expires_existing_pending_scan_for_same_guard(): void
@@ -650,6 +736,20 @@ class FaceVerificationTest extends TestCase
         $file = UploadedFile::fake()->image('face-capture.jpg', 20, 20);
 
         return 'data:image/jpeg;base64,'.base64_encode(file_get_contents($file->getRealPath()));
+    }
+
+    private function livenessPayload(PatrolLog $patrolLog, string $challenge = 'blink'): array
+    {
+        $this->withSession([
+            'patrol_face_liveness_challenges' => [
+                $patrolLog->id => $challenge,
+            ],
+        ]);
+
+        return [
+            'face_liveness_confirmed' => '1',
+            'face_liveness_challenge' => $challenge,
+        ];
     }
 
     private function nearMatchingDescriptor(array $descriptor): array

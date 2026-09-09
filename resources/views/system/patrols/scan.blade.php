@@ -7,6 +7,7 @@
         $guardEmployeeNo = $guardProfile?->employee_no ?? 'Account only';
         $pendingFaceVerified = (bool) ($pendingFaceVerified ?? false);
         $pendingFaceMatchDistance = $pendingFaceMatchDistance ?? null;
+        $pendingFaceLivenessChallenge = $pendingFaceLivenessChallenge ?? null;
         $incidentFormHasErrors = $errors->has('incident_category')
             || $errors->has('incident_priority')
             || $errors->has('incident_description')
@@ -33,6 +34,8 @@
             'facial_status' => $pendingPatrol->facial_status,
             'face_verified' => $pendingFaceVerified,
             'match_distance' => $pendingFaceMatchDistance,
+            'face_liveness_challenge' => $pendingFaceLivenessChallenge,
+            'face_liveness_label' => \App\Support\FaceVerification::livenessLabel($pendingFaceLivenessChallenge),
             'scanned_at' => $pendingPatrol->scanned_at?->timezone('Asia/Manila')->format('M d, Y h:i A'),
             'guard' => [
                 'name' => $pendingPatrol->securityGuard?->name,
@@ -124,6 +127,7 @@
                     faceVerified: @js((bool) $pendingFaceVerified),
                     faceCapture: @js(old('face_capture', '')),
                     capturedDescriptor: @js(old('captured_descriptor', '')),
+                    faceLivenessChallenge: @js($pendingFaceLivenessChallenge),
                     matchDistance: @js($pendingFaceMatchDistance),
                 })"
                 x-init="boot()"
@@ -135,6 +139,8 @@
                 <input type="hidden" name="patrol_log_id" :value="patrolLogId">
                 <input type="hidden" name="face_capture" :value="faceCapture">
                 <input type="hidden" name="captured_descriptor" :value="capturedDescriptor">
+                <input type="hidden" name="face_liveness_confirmed" :value="faceLivenessPassed ? '1' : ''">
+                <input type="hidden" name="face_liveness_challenge" :value="faceLivenessChallenge">
 
                 <section class="rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-4">
                     <div class="space-y-3">
@@ -326,6 +332,10 @@
                                     </div>
                                 </div>
 
+                                <div x-show="cameraOpen && ! faceCapture" x-cloak class="absolute left-1/2 top-3 z-20 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-semibold shadow-sm ring-1" :class="faceLivenessPassed ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-white/90 text-blue-800 ring-blue-100'">
+                                    <span x-text="faceLivenessChallengeBadge()"></span>
+                                </div>
+
                                 <div x-show="faceModelLoading || cameraOpening || capturingFace || verificationBusy" x-cloak x-transition.opacity.duration.150ms class="absolute inset-0 flex items-center justify-center rounded-full bg-white/85 p-4 text-blue-950 backdrop-blur-sm dark:bg-slate-950/80 dark:text-blue-100">
                                     <x-brand-spinner>
                                         <span x-text="faceModelLoading ? 'Loading face model...' : (cameraOpening ? 'Opening camera...' : (capturingFace ? 'Capturing face...' : 'Verifying face...'))"></span>
@@ -336,7 +346,6 @@
                                 </div>
                             </div>
                             <canvas x-ref="faceCanvas" class="hidden"></canvas>
-                            <input x-ref="faceCaptureInput" type="file" accept="image/*" capture="user" class="sr-only" @change="useFaceCaptureFile($event)">
 
                             <div class="mt-6 space-y-3 text-left">
                                 <div class="flex items-center gap-3">
@@ -348,13 +357,13 @@
                                     <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">Position your face inside the circle</p>
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950 dark:text-emerald-200 dark:ring-emerald-900">
+                                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-1 dark:bg-emerald-950 dark:text-emerald-200 dark:ring-emerald-900" :class="faceLivenessPassed ? 'bg-emerald-50 text-emerald-700 ring-emerald-100' : 'bg-blue-50 text-blue-700 ring-blue-100'">
                                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                             <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" stroke="currentColor" stroke-width="2" />
                                             <path d="m7.8 12.2 2.5 2.5 5.9-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                     </span>
-                                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">Keep still while scanning</p>
+                                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-100" x-text="faceLivenessPassed ? 'Random challenge confirmed' : faceLivenessChallengeInstruction()"></p>
                                 </div>
                             </div>
 
@@ -372,7 +381,7 @@
                                 <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                     <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
-                                <span x-text="verificationBusy ? 'Checking face...' : 'Verifying automatically...'"></span>
+                                <span x-text="verificationBusy ? 'Checking face...' : (faceLivenessPassed ? 'Verifying face...' : 'Verifying live challenge...')"></span>
                             </div>
 
                             <div class="mt-3">

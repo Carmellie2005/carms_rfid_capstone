@@ -11,7 +11,8 @@ window.Chart = Chart;
 window.faceapi = faceapi;
 
 const FACE_MODEL_URL = '/models/face-api';
-const LIVENESS_CHALLENGES = ['smile', 'turn'];
+const REGISTRATION_LIVENESS_CHALLENGES = ['smile', 'turn'];
+const PATROL_LIVENESS_CHALLENGES = ['blink', 'smile', 'turn-left', 'turn-right'];
 const BLINK_OPEN_THRESHOLD = 0.28;
 const BLINK_CLOSED_THRESHOLD = 0.22;
 const SMILE_RATIO_THRESHOLD = 0.38;
@@ -214,8 +215,22 @@ function headTurnRatio(landmarks) {
     return (noseTipX - faceCenterX) / faceWidth;
 }
 
-function randomLivenessChallenge() {
-    return LIVENESS_CHALLENGES[Math.floor(Math.random() * LIVENESS_CHALLENGES.length)];
+function randomLivenessChallenge(challenges = REGISTRATION_LIVENESS_CHALLENGES) {
+    return challenges[Math.floor(Math.random() * challenges.length)];
+}
+
+function randomPatrolLivenessChallenge() {
+    return randomLivenessChallenge(PATROL_LIVENESS_CHALLENGES);
+}
+
+function livenessLabelFor(challenge) {
+    return {
+        blink: 'Blink once',
+        smile: 'Smile',
+        turn: 'Turn head slightly',
+        'turn-left': 'Turn head left',
+        'turn-right': 'Turn head right',
+    }[challenge] || 'Complete random challenge';
 }
 
 let deferredPwaInstallPrompt = null;
@@ -1059,6 +1074,16 @@ Alpine.data('patrolScan', (config = {}) => ({
     cameraStream: null,
     faceCapture: config.faceCapture || '',
     capturedDescriptor: config.capturedDescriptor || '',
+    faceLivenessChallenge: config.faceLivenessChallenge || config.pendingScan?.face_liveness_challenge || '',
+    faceLivenessPassed: false,
+    faceLivenessStatus: 'idle',
+    faceLivenessBlinkReady: false,
+    faceLivenessBlinkClosed: false,
+    faceLivenessOpenFrames: 0,
+    faceLivenessClosedFrames: 0,
+    faceLivenessSmileBaseline: null,
+    faceLivenessSmileFrames: 0,
+    faceLivenessTurnFrames: 0,
     cameraError: '',
     cameraOpening: false,
     capturingFace: false,
@@ -1095,6 +1120,60 @@ Alpine.data('patrolScan', (config = {}) => ({
         }
     },
 
+    faceLivenessChallengeLabel() {
+        return livenessLabelFor(this.faceLivenessChallenge);
+    },
+
+    faceLivenessChallengeInstruction() {
+        if (this.faceLivenessStatus === 'align' || ! this.faceLivenessChallenge) {
+            return 'Complete the random liveness challenge';
+        }
+
+        return `Challenge: ${this.faceLivenessChallengeLabel()}`;
+    },
+
+    faceLivenessChallengeBadge() {
+        if (this.faceLivenessPassed) {
+            return 'Liveness confirmed';
+        }
+
+        if (this.faceLivenessStatus === 'align') {
+            return 'Align face';
+        }
+
+        if (this.faceLivenessStatus === 'face') {
+            return 'Face detected';
+        }
+
+        return this.faceLivenessChallengeLabel();
+    },
+
+    prepareFaceLivenessChallenge() {
+        const serverChallenge = this.pendingScan?.face_liveness_challenge || '';
+
+        this.faceLivenessChallenge = serverChallenge || this.faceLivenessChallenge || randomPatrolLivenessChallenge();
+    },
+
+    resetFaceLivenessState(clearChallenge = false) {
+        this.faceLivenessPassed = false;
+        this.faceLivenessStatus = 'idle';
+        this.resetFaceLivenessActionState();
+
+        if (clearChallenge) {
+            this.faceLivenessChallenge = '';
+        }
+    },
+
+    resetFaceLivenessActionState() {
+        this.faceLivenessBlinkReady = false;
+        this.faceLivenessBlinkClosed = false;
+        this.faceLivenessOpenFrames = 0;
+        this.faceLivenessClosedFrames = 0;
+        this.faceLivenessSmileBaseline = null;
+        this.faceLivenessSmileFrames = 0;
+        this.faceLivenessTurnFrames = 0;
+    },
+
     startPolling() {
         if (! this.patrolScheduleOpen) {
             return;
@@ -1128,6 +1207,8 @@ Alpine.data('patrolScan', (config = {}) => ({
                 this.patrolLogId = data.patrol_log.id;
                 this.faceVerified = Boolean(data.patrol_log.face_verified);
                 this.matchDistance = data.patrol_log.match_distance || null;
+                this.faceLivenessChallenge = data.patrol_log.face_liveness_challenge || this.faceLivenessChallenge || randomPatrolLivenessChallenge();
+                this.resetFaceLivenessState(false);
                 this.scanMessage = this.faceVerified
                     ? 'Face verified successfully. Complete the checklist.'
                     : 'RFID accepted. Face verification starts in 2 seconds.';
@@ -1187,13 +1268,17 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.faceGuideState = 'idle';
         this.faceScanProgress = 0;
         this.stableFaceFrames = 0;
+        this.prepareFaceLivenessChallenge();
+        this.resetFaceLivenessState(false);
         this.verificationMessage = 'Starting face verification...';
 
         this.$nextTick(() => {
             if (canUseLiveCameraPreview()) {
                 this.beginAutomaticFaceVerification();
             } else {
-                this.verificationMessage = 'Start face verification with a clear front-facing photo.';
+                this.faceGuideState = 'error';
+                this.cameraError = 'Live liveness verification needs HTTPS on phones. Open this system through HTTPS and try again.';
+                this.verificationMessage = 'Live camera is required for face liveness verification.';
             }
         });
     },
@@ -1208,14 +1293,16 @@ Alpine.data('patrolScan', (config = {}) => ({
             return;
         }
 
+        this.prepareFaceLivenessChallenge();
         this.retakeFace();
         this.cameraError = '';
         this.faceGuideState = 'loading';
         this.verificationMessage = 'Preparing face verification...';
 
         if (! canUseLiveCameraPreview()) {
-            this.verificationMessage = 'Opening the phone camera capture. Submit a clear front-facing photo.';
-            this.$refs.faceCaptureInput?.click();
+            this.faceGuideState = 'error';
+            this.cameraError = 'Live liveness verification needs HTTPS on phones. Open this system through HTTPS and try again.';
+            this.verificationMessage = 'Live camera is required for face liveness verification.';
             return;
         }
 
@@ -1234,6 +1321,11 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     async verifyCapturedFace() {
+        if (! this.faceLivenessPassed || ! this.faceLivenessChallenge) {
+            this.cameraError = 'Complete the random liveness challenge before face verification.';
+            return;
+        }
+
         if (! this.faceCapture) {
             this.cameraError = 'Capture the guard face before verifying.';
             return;
@@ -1274,6 +1366,8 @@ Alpine.data('patrolScan', (config = {}) => ({
                     patrol_log_id: this.patrolLogId,
                     face_capture: this.faceCapture,
                     captured_descriptor: this.capturedDescriptor,
+                    face_liveness_confirmed: this.faceLivenessPassed ? '1' : '',
+                    face_liveness_challenge: this.faceLivenessChallenge,
                 }),
             });
 
@@ -1321,47 +1415,16 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     openFacePhotoCapture() {
-        if (this.faceModelLoading || this.cameraOpening || this.capturingFace || this.verificationBusy || this.submittingPatrol) {
-            return;
-        }
-
-        this.stopCamera();
-        this.cameraError = '';
-        this.$refs.faceCaptureInput?.click();
+        this.cameraError = 'Live camera is required for patrol face verification.';
+        this.verificationMessage = 'Use the live camera and complete the random challenge.';
     },
 
     async useFaceCaptureFile(event) {
-        const file = event.target.files?.[0];
-
-        if (! file || this.capturingFace || this.verificationBusy) {
-            return;
+        if (event?.target) {
+            event.target.value = '';
         }
 
-        this.capturingFace = true;
-        this.cameraError = '';
-        this.verificationMessage = 'Preparing phone camera photo...';
-
-        try {
-            this.stopCamera();
-
-            const dataUrl = await dataUrlFromImageFile(file, { maxSize: 1280, quality: 0.82 });
-            this.setFaceCapture(
-                dataUrl,
-                'Face photo captured successfully. Verifying automatically...',
-            );
-            this.capturingFace = false;
-            await this.verifyCapturedFace();
-        } catch (error) {
-            this.faceGuideState = 'error';
-            this.cameraError = error.message || 'Face photo could not be prepared.';
-            this.verificationMessage = 'Retake the photo and try again.';
-        } finally {
-            this.capturingFace = false;
-
-            if (event.target) {
-                event.target.value = '';
-            }
-        }
+        this.openFacePhotoCapture();
     },
 
     async openCamera() {
@@ -1378,9 +1441,8 @@ Alpine.data('patrolScan', (config = {}) => ({
                 null,
                 'Live camera preview needs HTTPS on phones. Open this system through HTTPS and try again.',
             );
-            this.verificationMessage = 'Opening phone camera capture...';
+            this.verificationMessage = 'Live camera is required for face liveness verification.';
             this.cameraOpening = false;
-            this.$refs.faceCaptureInput?.click();
             return;
         }
 
@@ -1405,7 +1467,8 @@ Alpine.data('patrolScan', (config = {}) => ({
             await this.$refs.faceVideo.play().catch(() => null);
             this.cameraOpen = true;
             this.faceGuideState = 'scanning';
-            this.verificationMessage = 'Position your face inside the guide.';
+            this.faceLivenessStatus = 'align';
+            this.verificationMessage = 'Position your face inside the guide for the random challenge.';
             this.startAutoFaceScan();
         } catch (error) {
             this.faceGuideState = 'error';
@@ -1430,6 +1493,11 @@ Alpine.data('patrolScan', (config = {}) => ({
 
     captureFace() {
         if (this.capturingFace || this.verificationBusy) {
+            return;
+        }
+
+        if (! this.faceLivenessPassed) {
+            this.cameraError = 'Complete the random liveness challenge before face verification.';
             return;
         }
 
@@ -1468,7 +1536,8 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.faceGuideState = 'idle';
         this.faceScanProgress = 0;
         this.stableFaceFrames = 0;
-        this.verificationMessage = 'Start face verification, then center your face inside the guide.';
+        this.resetFaceLivenessState(false);
+        this.verificationMessage = 'Start face verification, then center your face for the random challenge.';
 
         if (this.$refs.faceCaptureInput) {
             this.$refs.faceCaptureInput.value = '';
@@ -1673,6 +1742,8 @@ Alpine.data('patrolScan', (config = {}) => ({
 
     startAutoFaceScan() {
         this.stopAutoFaceScan();
+        this.prepareFaceLivenessChallenge();
+        this.resetFaceLivenessState(false);
         this.faceGuideState = 'scanning';
         this.faceScanProgress = 0;
         this.stableFaceFrames = 0;
@@ -1715,7 +1786,9 @@ Alpine.data('patrolScan', (config = {}) => ({
                 this.stableFaceFrames = 0;
                 this.faceScanProgress = 0;
                 this.faceGuideState = 'scanning';
-                this.verificationMessage = 'Position your face inside the guide.';
+                this.faceLivenessStatus = 'align';
+                this.resetFaceLivenessActionState();
+                this.verificationMessage = 'Position your face inside the guide for the random challenge.';
                 this.scheduleAutoFaceScan(180);
                 return;
             }
@@ -1726,6 +1799,8 @@ Alpine.data('patrolScan', (config = {}) => ({
                 this.stableFaceFrames = 0;
                 this.faceScanProgress = 0;
                 this.faceGuideState = 'scanning';
+                this.faceLivenessStatus = 'align';
+                this.resetFaceLivenessActionState();
                 this.verificationMessage = guide.message;
                 this.scheduleAutoFaceScan(180);
                 return;
@@ -1733,12 +1808,17 @@ Alpine.data('patrolScan', (config = {}) => ({
 
             this.stableFaceFrames += 1;
             this.faceGuideState = 'centered';
-            this.faceScanProgress = Math.min(100, Math.round((this.stableFaceFrames / this.requiredStableFaceFrames) * 100));
-            this.verificationMessage = this.faceScanProgress >= 70
-                ? 'Hold still. Verifying automatically...'
-                : 'Face detected. Keep still inside the guide.';
+            this.faceScanProgress = Math.min(40, Math.round((this.stableFaceFrames / this.requiredStableFaceFrames) * 40));
 
-            if (this.stableFaceFrames >= this.requiredStableFaceFrames) {
+            if (this.stableFaceFrames < this.requiredStableFaceFrames) {
+                this.faceLivenessStatus = 'face';
+                this.verificationMessage = 'Face detected. Hold still for the random challenge.';
+                this.scheduleAutoFaceScan(180);
+                return;
+            }
+
+            if (this.runSelectedFaceLivenessChallenge(detection.landmarks)) {
+                this.markFaceLivenessPassed();
                 await this.captureAndVerifyFace();
                 return;
             }
@@ -1746,10 +1826,152 @@ Alpine.data('patrolScan', (config = {}) => ({
             this.stableFaceFrames = 0;
             this.faceScanProgress = 0;
             this.faceGuideState = 'scanning';
+            this.faceLivenessStatus = 'align';
             this.verificationMessage = 'Scanning face position...';
         }
 
         this.scheduleAutoFaceScan(180);
+    },
+
+    runSelectedFaceLivenessChallenge(landmarks) {
+        if (this.faceLivenessChallenge === 'blink') {
+            return this.runFaceBlinkChallenge(landmarks);
+        }
+
+        if (this.faceLivenessChallenge === 'turn-left' || this.faceLivenessChallenge === 'turn-right') {
+            return this.runFaceTurnChallenge(landmarks);
+        }
+
+        return this.runFaceSmileChallenge(landmarks);
+    },
+
+    runFaceBlinkChallenge(landmarks) {
+        const eyeRatio = averageEyeAspectRatio(landmarks);
+
+        if (eyeRatio === null) {
+            this.faceLivenessStatus = 'face';
+            this.verificationMessage = 'Keep your eyes visible to the camera.';
+            this.faceScanProgress = 45;
+            return false;
+        }
+
+        if (eyeRatio >= BLINK_OPEN_THRESHOLD) {
+            this.faceLivenessOpenFrames += 1;
+            this.faceLivenessClosedFrames = 0;
+
+            if (this.faceLivenessBlinkClosed) {
+                return true;
+            }
+
+            if (this.faceLivenessOpenFrames >= 2) {
+                this.faceLivenessBlinkReady = true;
+                this.faceLivenessStatus = 'blink';
+                this.verificationMessage = 'Challenge: blink once.';
+                this.faceScanProgress = 60;
+                return false;
+            }
+
+            this.faceLivenessStatus = 'face';
+            this.verificationMessage = 'Face detected. Keep looking at the camera.';
+            this.faceScanProgress = 45;
+            return false;
+        }
+
+        if (eyeRatio <= BLINK_CLOSED_THRESHOLD && this.faceLivenessBlinkReady) {
+            this.faceLivenessClosedFrames += 1;
+
+            if (this.faceLivenessClosedFrames >= 1) {
+                this.faceLivenessBlinkClosed = true;
+                this.faceLivenessStatus = 'blink';
+                this.verificationMessage = 'Blink detected. Open your eyes.';
+                this.faceScanProgress = 82;
+                return false;
+            }
+        }
+
+        this.faceLivenessStatus = this.faceLivenessBlinkReady ? 'blink' : 'face';
+        this.verificationMessage = this.faceLivenessBlinkReady
+            ? 'Challenge: blink once.'
+            : 'Face detected. Keep looking at the camera.';
+        this.faceScanProgress = this.faceLivenessBlinkReady ? 60 : 45;
+
+        return false;
+    },
+
+    runFaceSmileChallenge(landmarks) {
+        const ratio = mouthWidthRatio(landmarks);
+
+        if (ratio === null) {
+            this.faceLivenessStatus = 'face';
+            this.verificationMessage = 'Keep your mouth visible to the camera.';
+            this.faceScanProgress = 45;
+            return false;
+        }
+
+        this.faceLivenessSmileBaseline = this.faceLivenessSmileBaseline === null
+            ? ratio
+            : Math.min(this.faceLivenessSmileBaseline, ratio);
+
+        const smiled = ratio >= SMILE_RATIO_THRESHOLD
+            || ratio >= this.faceLivenessSmileBaseline + SMILE_RATIO_DELTA;
+
+        if (smiled) {
+            this.faceLivenessSmileFrames += 1;
+            this.faceScanProgress = this.faceLivenessSmileFrames >= 2 ? 92 : 76;
+
+            if (this.faceLivenessSmileFrames >= 2) {
+                return true;
+            }
+        } else {
+            this.faceLivenessSmileFrames = 0;
+            this.faceScanProgress = 60;
+        }
+
+        this.faceLivenessStatus = 'smile';
+        this.verificationMessage = 'Challenge: smile.';
+
+        return false;
+    },
+
+    runFaceTurnChallenge(landmarks) {
+        const ratio = headTurnRatio(landmarks);
+
+        if (ratio === null) {
+            this.faceLivenessStatus = 'face';
+            this.verificationMessage = 'Keep your whole face visible to the camera.';
+            this.faceScanProgress = 45;
+            return false;
+        }
+
+        const shouldTurnLeft = this.faceLivenessChallenge === 'turn-left';
+        const turned = shouldTurnLeft
+            ? ratio <= -TURN_HEAD_THRESHOLD
+            : ratio >= TURN_HEAD_THRESHOLD;
+
+        if (turned) {
+            this.faceLivenessTurnFrames += 1;
+            this.faceScanProgress = this.faceLivenessTurnFrames >= 2 ? 92 : 76;
+
+            if (this.faceLivenessTurnFrames >= 2) {
+                return true;
+            }
+        } else {
+            this.faceLivenessTurnFrames = 0;
+            this.faceScanProgress = 60;
+        }
+
+        this.faceLivenessStatus = this.faceLivenessChallenge;
+        this.verificationMessage = `Challenge: ${this.faceLivenessChallengeLabel()}.`;
+
+        return false;
+    },
+
+    markFaceLivenessPassed() {
+        this.faceLivenessPassed = true;
+        this.faceLivenessStatus = 'complete';
+        this.faceGuideState = 'centered';
+        this.faceScanProgress = 100;
+        this.verificationMessage = `${this.faceLivenessChallengeLabel()} confirmed. Capturing face...`;
     },
 
     facePositionGuide(box, video) {
@@ -1790,6 +2012,11 @@ Alpine.data('patrolScan', (config = {}) => ({
             return;
         }
 
+        if (! this.faceLivenessPassed) {
+            this.cameraError = 'Complete the random liveness challenge before face verification.';
+            return;
+        }
+
         const video = this.$refs.faceVideo;
         const canvas = this.$refs.faceCanvas;
 
@@ -1802,7 +2029,7 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.capturingFace = true;
         this.faceGuideState = 'verifying';
         this.cameraError = '';
-        this.verificationMessage = 'Face centered. Verifying automatically...';
+        this.verificationMessage = 'Liveness confirmed. Verifying automatically...';
 
         try {
             canvas.width = video.videoWidth;

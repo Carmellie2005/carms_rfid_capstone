@@ -24,6 +24,8 @@ use Illuminate\View\View;
 
 class GuardPatrolController extends Controller
 {
+    private const FACE_LIVENESS_SESSION_KEY = 'patrol_face_liveness_challenges';
+
     public function create(): View
     {
         $guardProfile = auth()->user()?->guardProfile;
@@ -37,6 +39,9 @@ class GuardPatrolController extends Controller
         $faceRegistrationComplete = $guardProfile
             ? $this->hasCompletedFaceRegistration($guardProfile)
             : false;
+        $pendingFaceLivenessChallenge = $pendingPatrol
+            ? $this->livenessChallengeFor($pendingPatrol)
+            : null;
 
         return view('system.patrols.scan', [
             'checkpoints' => Checkpoint::where('status', 'active')->orderBy('name')->get(),
@@ -44,6 +49,7 @@ class GuardPatrolController extends Controller
             'pendingPatrol' => $pendingPatrol,
             'pendingFaceVerified' => (bool) $pendingFaceAttempt,
             'pendingFaceMatchDistance' => $pendingFaceAttempt?->match_distance,
+            'pendingFaceLivenessChallenge' => $pendingFaceLivenessChallenge,
             'faceRegistrationComplete' => $faceRegistrationComplete,
             'patrolScheduleOpen' => $patrolScheduleOpen,
             'patrolScheduleTestingMode' => PatrolSchedule::isTestingMode(),
@@ -92,6 +98,8 @@ class GuardPatrolController extends Controller
             'patrol_log_id' => ['required', 'integer', 'exists:patrol_logs,id'],
             'face_capture' => ['required', 'string'],
             'captured_descriptor' => ['required', 'string'],
+            'face_liveness_confirmed' => ['accepted'],
+            'face_liveness_challenge' => ['required', 'string', Rule::in(FaceVerification::livenessChallenges())],
         ]);
 
         $guard = $request->user()?->guardProfile;
@@ -125,10 +133,22 @@ class GuardPatrolController extends Controller
             ], 409);
         }
 
+        if (! $this->livenessChallengeMatches($patrolLog, $data['face_liveness_challenge'])) {
+            return response()->json([
+                'verified' => false,
+                'status' => 'failed',
+                'message' => 'The face liveness challenge expired. Restart face verification after the RFID scan.',
+                'match_distance' => null,
+                'match_threshold' => FaceVerification::matchThreshold(),
+            ], 422);
+        }
+
         $faceResult = $this->evaluateFaceVerification(
             $guard,
             $data['captured_descriptor'],
             $data['face_capture'],
+            true,
+            $data['face_liveness_challenge'],
         );
 
         if (! $faceResult['processable']) {
@@ -158,6 +178,8 @@ class GuardPatrolController extends Controller
             'patrol_log_id' => ['required', 'integer', 'exists:patrol_logs,id'],
             'face_capture' => ['nullable', 'string'],
             'captured_descriptor' => ['nullable', 'string'],
+            'face_liveness_confirmed' => ['nullable', 'boolean'],
+            'face_liveness_challenge' => ['nullable', 'string', Rule::in(FaceVerification::livenessChallenges())],
             ...PatrolChecklist::validationRules(),
             'remarks' => ['nullable', 'string', 'max:2000'],
             'has_incident' => ['nullable', 'boolean'],
@@ -204,12 +226,24 @@ class GuardPatrolController extends Controller
                 'captured_descriptor' => $verifiedFaceAttempt->captured_descriptor,
                 'captured_image' => null,
                 'match_distance' => $verifiedFaceAttempt->match_distance === null ? null : (float) $verifiedFaceAttempt->match_distance,
+                'liveness_confirmed' => (bool) $verifiedFaceAttempt->liveness_confirmed_at,
+                'liveness_challenge' => $verifiedFaceAttempt->liveness_challenge,
             ]
-            : $this->evaluateFaceVerification(
-                $guard,
-                $data['captured_descriptor'] ?? null,
-                $data['face_capture'] ?? null,
-            );
+            : null;
+
+        if (! $verifiedFaceAttempt && ! $this->livenessChallengeMatches($patrolLog, $data['face_liveness_challenge'] ?? null)) {
+            return back()
+                ->withInput()
+                ->with('warning', 'Complete the current random liveness challenge before submitting patrol verification.');
+        }
+
+        $faceResult ??= $this->evaluateFaceVerification(
+            $guard,
+            $data['captured_descriptor'] ?? null,
+            $data['face_capture'] ?? null,
+            $request->boolean('face_liveness_confirmed'),
+            $data['face_liveness_challenge'] ?? null,
+        );
 
         if (! $faceResult['processable']) {
             return back()
@@ -234,7 +268,7 @@ class GuardPatrolController extends Controller
                 ->withErrors(['incident_images' => $incidentImageError]);
         }
 
-        DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $facialStatus, $patrolStatus, $capturedDescriptor, $capturedImage, $matchDistance, $incidentImageFiles, $submittedAt, $verifiedFaceAttempt, &$incidentReport) {
+        DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $facialStatus, $patrolStatus, $capturedDescriptor, $capturedImage, $matchDistance, $incidentImageFiles, $submittedAt, $verifiedFaceAttempt, $faceResult, &$incidentReport) {
             $patrolLog->update([
                 'facial_status' => $facialStatus,
                 'status' => $patrolStatus,
@@ -249,6 +283,8 @@ class GuardPatrolController extends Controller
                     'captured_descriptor' => $capturedDescriptor,
                     'captured_image' => $capturedImage,
                     'match_distance' => $matchDistance,
+                    'liveness_confirmed' => $faceResult['liveness_confirmed'] ?? false,
+                    'liveness_challenge' => $faceResult['liveness_challenge'] ?? null,
                 ], $submittedAt);
             }
 
@@ -286,6 +322,8 @@ class GuardPatrolController extends Controller
                 }
             }
         });
+
+        $this->forgetLivenessChallengeFor($patrolLog);
 
         AuditLogger::record(
             $facialStatus === 'verified' ? 'patrol_completed' : 'patrol_marked_suspicious',
@@ -356,6 +394,7 @@ class GuardPatrolController extends Controller
     private function patrolLogPayload(PatrolLog $patrolLog): array
     {
         $verifiedFaceAttempt = $this->latestVerifiedFaceAttemptFor($patrolLog);
+        $livenessChallenge = $this->livenessChallengeFor($patrolLog);
 
         return [
             'id' => $patrolLog->id,
@@ -365,6 +404,8 @@ class GuardPatrolController extends Controller
             'facial_status' => $patrolLog->facial_status,
             'face_verified' => (bool) $verifiedFaceAttempt,
             'match_distance' => $verifiedFaceAttempt?->match_distance,
+            'face_liveness_challenge' => $livenessChallenge,
+            'face_liveness_label' => FaceVerification::livenessLabel($livenessChallenge),
             'scanned_at' => $patrolLog->scanned_at?->timezone('Asia/Manila')->format('M d, Y h:i A'),
             'guard' => [
                 'name' => $patrolLog->securityGuard?->name,
@@ -392,23 +433,26 @@ class GuardPatrolController extends Controller
     {
         $facialStatus = ($faceResult['verified'] ?? false) ? 'verified' : 'failed';
         $capturedImagePath = $this->storeFaceCapture($faceResult['captured_image'] ?? null, $guard);
+        $verifiedAt ??= now(config('app.timezone'));
 
         return $patrolLog->faceVerificationAttempts()->create([
             'guard_id' => $guard->id,
             'status' => $facialStatus,
             'match_distance' => $faceResult['match_distance'] ?? null,
             'match_threshold' => FaceVerification::matchThreshold(),
+            'liveness_challenge' => $faceResult['liveness_challenge'] ?? null,
+            'liveness_confirmed_at' => ($faceResult['liveness_confirmed'] ?? false) ? $verifiedAt : null,
             'captured_image_path' => $capturedImagePath,
             'captured_descriptor' => $faceResult['captured_descriptor'] ?? null,
             'notes' => match (true) {
                 $facialStatus === 'verified' => 'Face matched the guard pre-registered face reference for ESP32 RFID scan.',
                 default => 'Face did not match the guard pre-registered face reference after ESP32 RFID scan.',
             },
-            'verified_at' => $verifiedAt ?? now(config('app.timezone')),
+            'verified_at' => $verifiedAt,
         ]);
     }
 
-    private function evaluateFaceVerification(Guard $guard, ?string $descriptorJson, ?string $captureDataUrl): array
+    private function evaluateFaceVerification(Guard $guard, ?string $descriptorJson, ?string $captureDataUrl, bool $livenessConfirmed = false, ?string $livenessChallenge = null): array
     {
         $storedDescriptors = $this->storedFaceDescriptors($guard);
 
@@ -420,6 +464,21 @@ class GuardPatrolController extends Controller
                 'captured_descriptor' => null,
                 'captured_image' => null,
                 'match_distance' => null,
+                'liveness_confirmed' => false,
+                'liveness_challenge' => $livenessChallenge,
+            ];
+        }
+
+        if (! $livenessConfirmed || ! FaceVerification::isLivenessChallenge($livenessChallenge)) {
+            return [
+                'processable' => false,
+                'verified' => false,
+                'message' => 'Complete the random liveness challenge before face verification.',
+                'captured_descriptor' => null,
+                'captured_image' => null,
+                'match_distance' => null,
+                'liveness_confirmed' => false,
+                'liveness_challenge' => $livenessChallenge,
             ];
         }
 
@@ -433,6 +492,8 @@ class GuardPatrolController extends Controller
                 'captured_descriptor' => null,
                 'captured_image' => null,
                 'match_distance' => null,
+                'liveness_confirmed' => true,
+                'liveness_challenge' => $livenessChallenge,
             ];
         }
 
@@ -446,6 +507,8 @@ class GuardPatrolController extends Controller
                 'captured_descriptor' => null,
                 'captured_image' => null,
                 'match_distance' => null,
+                'liveness_confirmed' => true,
+                'liveness_challenge' => $livenessChallenge,
             ];
         }
 
@@ -457,6 +520,8 @@ class GuardPatrolController extends Controller
                 'captured_descriptor' => $capturedDescriptor,
                 'captured_image' => $capturedImage,
                 'match_distance' => 0.0,
+                'liveness_confirmed' => true,
+                'liveness_challenge' => $livenessChallenge,
             ];
         }
 
@@ -472,7 +537,53 @@ class GuardPatrolController extends Controller
             'captured_descriptor' => $capturedDescriptor,
             'captured_image' => $capturedImage,
             'match_distance' => $matchDistance,
+            'liveness_confirmed' => true,
+            'liveness_challenge' => $livenessChallenge,
         ];
+    }
+
+    private function livenessChallengeFor(PatrolLog $patrolLog): string
+    {
+        $challengesByPatrol = session(self::FACE_LIVENESS_SESSION_KEY, []);
+
+        if (! is_array($challengesByPatrol)) {
+            $challengesByPatrol = [];
+        }
+
+        $challenge = $challengesByPatrol[$patrolLog->id] ?? null;
+
+        if (! FaceVerification::isLivenessChallenge($challenge)) {
+            $pool = FaceVerification::livenessChallenges();
+            $challenge = $pool[array_rand($pool)];
+            $challengesByPatrol[$patrolLog->id] = $challenge;
+            session([self::FACE_LIVENESS_SESSION_KEY => $challengesByPatrol]);
+        }
+
+        return $challenge;
+    }
+
+    private function livenessChallengeMatches(PatrolLog $patrolLog, ?string $challenge): bool
+    {
+        if (! FaceVerification::isLivenessChallenge($challenge)) {
+            return false;
+        }
+
+        $challengesByPatrol = session(self::FACE_LIVENESS_SESSION_KEY, []);
+
+        return is_array($challengesByPatrol)
+            && ($challengesByPatrol[$patrolLog->id] ?? null) === $challenge;
+    }
+
+    private function forgetLivenessChallengeFor(PatrolLog $patrolLog): void
+    {
+        $challengesByPatrol = session(self::FACE_LIVENESS_SESSION_KEY, []);
+
+        if (! is_array($challengesByPatrol)) {
+            return;
+        }
+
+        unset($challengesByPatrol[$patrolLog->id]);
+        session([self::FACE_LIVENESS_SESSION_KEY => $challengesByPatrol]);
     }
 
     private function storedFaceDescriptors(Guard $guard): array

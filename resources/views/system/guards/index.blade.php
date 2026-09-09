@@ -477,6 +477,7 @@
                                             <div>
                                                 <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(attempt.status)" x-text="attempt.status_label"></span>
                                                 <span class="ml-2 text-slate-500" x-text="attempt.verified_at || attempt.created_at || 'No date'"></span>
+                                                <p class="mt-1 text-xs text-slate-500" x-show="attempt.liveness_label" x-text="`Liveness: ${attempt.liveness_label}`"></p>
                                             </div>
                                             <p class="text-xs text-slate-500" x-show="attempt.match_distance" x-text="`Distance ${attempt.match_distance} / threshold ${attempt.match_threshold}`"></p>
                                         </div>
