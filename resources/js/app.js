@@ -82,7 +82,63 @@ function canUseLiveCameraPreview() {
 }
 
 function csrfToken() {
-    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+        || document.querySelector('input[name="_token"]')?.value
+        || '';
+}
+
+function updateCsrfToken(token) {
+    if (! token) {
+        return;
+    }
+
+    document.querySelector('meta[name="csrf-token"]')?.setAttribute('content', token);
+    document.querySelectorAll('input[name="_token"]').forEach((input) => {
+        input.value = token;
+    });
+}
+
+async function refreshCsrfToken(refreshUrl = '/csrf-token') {
+    let response;
+
+    try {
+        response = await fetch(refreshUrl, {
+            method: 'GET',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+    } catch (error) {
+        return false;
+    }
+
+    const data = await response.json().catch(() => ({}));
+
+    if (! response.ok || ! data.token) {
+        return false;
+    }
+
+    updateCsrfToken(data.token);
+
+    return true;
+}
+
+function csrfJsonHeaders() {
+    const headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+    };
+    const token = csrfToken();
+
+    if (token) {
+        headers['X-CSRF-TOKEN'] = token;
+    }
+
+    return headers;
 }
 
 function cameraAccessMessage(error = null, insecureFallbackMessage = null, permissionFallbackMessage = null) {
@@ -1042,6 +1098,7 @@ Alpine.data('patrolScan', (config = {}) => ({
     pendingScan: config.pendingScan || null,
     pendingScanUrl: config.pendingScanUrl,
     faceVerifyUrl: config.faceVerifyUrl,
+    csrfRefreshUrl: config.csrfRefreshUrl || '/csrf-token',
     guardName: config.guardName || '',
     guardEmployeeNo: config.guardEmployeeNo || '',
     patrolLogId: config.patrolLogId || '',
@@ -1383,34 +1440,37 @@ Alpine.data('patrolScan', (config = {}) => ({
             this.capturedDescriptor = descriptorToJson(descriptor);
             this.verificationMessage = 'Checking face with server...';
 
-            const response = await fetch(this.faceVerifyUrl, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken(),
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: JSON.stringify({
-                    patrol_log_id: this.patrolLogId,
-                    face_capture: this.faceCapture,
-                    captured_descriptor: this.capturedDescriptor,
-                    face_liveness_confirmed: this.faceLivenessPassed ? '1' : '',
-                    face_liveness_challenge: this.faceLivenessChallenge,
-                }),
-            });
+            const payload = {
+                patrol_log_id: this.patrolLogId,
+                face_capture: this.faceCapture,
+                captured_descriptor: this.capturedDescriptor,
+                face_liveness_confirmed: this.faceLivenessPassed ? '1' : '',
+                face_liveness_challenge: this.faceLivenessChallenge,
+            };
+            let response = await this.postFaceVerification(payload);
+            let data = await response.json().catch(() => ({}));
 
-            const data = await response.json().catch(() => ({}));
+            if (response.status === 419 && await refreshCsrfToken(this.csrfRefreshUrl)) {
+                response = await this.postFaceVerification(payload);
+                data = await response.json().catch(() => ({}));
+            }
+
             const distance = Number(data.match_distance);
 
             this.matchDistance = Number.isFinite(distance) ? Number(distance.toFixed(6)) : null;
 
             if (! response.ok || ! data.verified) {
+                const csrfExpired = response.status === 419;
+
                 this.faceVerified = false;
                 this.faceGuideState = 'error';
                 this.stopAutoFaceScan();
-                this.cameraError = data.message || 'Face verification failed.';
-                this.verificationMessage = 'Verification failed. Retake the photo and try again.';
+                this.cameraError = csrfExpired
+                    ? 'Your secure session expired. Refresh the scan page and try again.'
+                    : (data.message || 'Face verification failed.');
+                this.verificationMessage = csrfExpired
+                    ? 'Session expired. Refresh the scan page.'
+                    : 'Verification failed. Retake the photo and try again.';
                 return;
             }
 
@@ -1435,6 +1495,16 @@ Alpine.data('patrolScan', (config = {}) => ({
         } finally {
             this.verificationBusy = false;
         }
+    },
+
+    postFaceVerification(payload) {
+        return fetch(this.faceVerifyUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: csrfJsonHeaders(),
+            body: JSON.stringify(payload),
+        });
     },
 
     closeFaceModal() {

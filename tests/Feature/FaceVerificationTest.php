@@ -135,6 +135,8 @@ class FaceVerificationTest extends TestCase
             ->assertSee('Selected image previews')
             ->assertSee('Start Face Verification')
             ->assertSee('Light Assist')
+            ->assertSee('csrfRefreshUrl', false)
+            ->assertSee('/csrf-token', false)
             ->assertSee('checklist_photos[area_secure]', false)
             ->assertSee('checklistPhotoModalOpen', false)
             ->assertSee('openChecklistPhotoPreview', false)
@@ -153,6 +155,21 @@ class FaceVerificationTest extends TestCase
             ->assertDontSee('Allow camera access, then keep your face inside the guide.')
             ->assertDontSee('Submit Incident')
             ->assertDontSee('Use this card at the checkpoint reader');
+    }
+
+    public function test_authenticated_guard_can_refresh_csrf_token_for_face_verification(): void
+    {
+        [$user] = $this->pendingPatrolWithFaceDescriptor();
+
+        $response = $this
+            ->actingAs($user)
+            ->getJson(route('csrf.refresh'));
+
+        $response
+            ->assertOk()
+            ->assertJsonStructure(['token']);
+
+        $this->assertNotEmpty($response->json('token'));
     }
 
     public function test_server_face_verification_endpoint_accepts_matching_face_without_exposing_saved_descriptor(): void

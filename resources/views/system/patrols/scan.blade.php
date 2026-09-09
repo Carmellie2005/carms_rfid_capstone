@@ -112,8 +112,9 @@
                 x-data="patrolScan({
                     incident: @js((bool) $incidentDefault),
                     pendingScan: @js($pendingScan),
-                    pendingScanUrl: @js(route('patrol.pending-scan')),
-                    faceVerifyUrl: @js(route('patrol.verify-face')),
+                    pendingScanUrl: @js(route('patrol.pending-scan', [], false)),
+                    faceVerifyUrl: @js(route('patrol.verify-face', [], false)),
+                    csrfRefreshUrl: @js(route('csrf.refresh', [], false)),
                     guardName: @js($guardName),
                     guardEmployeeNo: @js($guardEmployeeNo),
                     patrolLogId: @js(old('patrol_log_id', $pendingPatrol?->id)),
