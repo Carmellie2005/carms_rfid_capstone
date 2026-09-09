@@ -63,7 +63,7 @@ class FaceVerificationTest extends TestCase
             'patrol_log_id' => $patrolLog->id,
             'guard_id' => $guard->id,
             'status' => 'verified',
-            'liveness_challenge' => 'blink',
+            'liveness_challenge' => 'smile',
         ]);
 
         $this->assertNotNull($patrolLog->faceVerificationAttempts()->first()?->liveness_confirmed_at);
@@ -149,7 +149,7 @@ class FaceVerificationTest extends TestCase
             'patrol_log_id' => $patrolLog->id,
             'guard_id' => $guard->id,
             'status' => 'verified',
-            'liveness_challenge' => 'blink',
+            'liveness_challenge' => 'smile',
         ]);
     }
 
@@ -179,7 +179,7 @@ class FaceVerificationTest extends TestCase
 
         $this->withSession([
             'patrol_face_liveness_challenges' => [
-                $patrolLog->id => 'blink',
+                $patrolLog->id => 'turn-left',
             ],
         ]);
 
@@ -538,6 +538,7 @@ class FaceVerificationTest extends TestCase
             $response->json('patrol_log.face_liveness_challenge'),
             FaceVerification::livenessChallenges(),
         );
+        $this->assertNotContains('blink', FaceVerification::livenessChallenges());
 
         $this->assertNotEmpty($response->json('patrol_log.face_liveness_label'));
     }
@@ -739,7 +740,7 @@ class FaceVerificationTest extends TestCase
         return 'data:image/jpeg;base64,'.base64_encode(file_get_contents($file->getRealPath()));
     }
 
-    private function livenessPayload(PatrolLog $patrolLog, string $challenge = 'blink'): array
+    private function livenessPayload(PatrolLog $patrolLog, string $challenge = 'smile'): array
     {
         $this->withSession([
             'patrol_face_liveness_challenges' => [

@@ -12,9 +12,7 @@ window.faceapi = faceapi;
 
 const FACE_MODEL_URL = '/models/face-api';
 const REGISTRATION_LIVENESS_CHALLENGES = ['smile', 'turn'];
-const PATROL_LIVENESS_CHALLENGES = ['blink', 'smile', 'turn-left', 'turn-right'];
-const BLINK_OPEN_THRESHOLD = 0.28;
-const BLINK_CLOSED_THRESHOLD = 0.22;
+const PATROL_LIVENESS_CHALLENGES = ['smile', 'turn-left', 'turn-right'];
 const SMILE_RATIO_THRESHOLD = 0.38;
 const SMILE_RATIO_DELTA = 0.035;
 const TURN_HEAD_THRESHOLD = 0.16;
@@ -174,33 +172,6 @@ function pointDistance(first, second) {
     return Math.sqrt((x * x) + (y * y));
 }
 
-function eyeAspectRatio(eye) {
-    if (! Array.isArray(eye) || eye.length < 6) {
-        return null;
-    }
-
-    const horizontal = pointDistance(eye[0], eye[3]);
-
-    if (horizontal === 0) {
-        return null;
-    }
-
-    const vertical = pointDistance(eye[1], eye[5]) + pointDistance(eye[2], eye[4]);
-
-    return vertical / (2 * horizontal);
-}
-
-function averageEyeAspectRatio(landmarks) {
-    const leftEyeRatio = eyeAspectRatio(landmarks.getLeftEye());
-    const rightEyeRatio = eyeAspectRatio(landmarks.getRightEye());
-
-    if (leftEyeRatio === null || rightEyeRatio === null) {
-        return null;
-    }
-
-    return (leftEyeRatio + rightEyeRatio) / 2;
-}
-
 function mouthWidthRatio(landmarks) {
     const mouth = landmarks.getMouth();
     const jaw = landmarks.getJawOutline();
@@ -246,9 +217,12 @@ function randomPatrolLivenessChallenge() {
     return randomLivenessChallenge(PATROL_LIVENESS_CHALLENGES);
 }
 
+function isPatrolLivenessChallenge(challenge) {
+    return PATROL_LIVENESS_CHALLENGES.includes(challenge);
+}
+
 function livenessLabelFor(challenge) {
     return {
-        blink: 'Blink once',
         smile: 'Smile',
         turn: 'Turn head slightly',
         'turn-left': 'Turn head left',
@@ -596,10 +570,6 @@ Alpine.data('guardFaceForm', (config = {}) => ({
     livenessChallenge: '',
     livenessMessage: '',
     livenessCheckTimer: null,
-    livenessBlinkReady: false,
-    livenessBlinkClosed: false,
-    livenessOpenFrames: 0,
-    livenessClosedFrames: 0,
     livenessSmileBaseline: null,
     livenessSmileFrames: 0,
     livenessTurnFrames: 0,
@@ -878,10 +848,6 @@ Alpine.data('guardFaceForm', (config = {}) => ({
     },
 
     resetLivenessActionState() {
-        this.livenessBlinkReady = false;
-        this.livenessBlinkClosed = false;
-        this.livenessOpenFrames = 0;
-        this.livenessClosedFrames = 0;
         this.livenessSmileBaseline = null;
         this.livenessSmileFrames = 0;
         this.livenessTurnFrames = 0;
@@ -943,58 +909,6 @@ Alpine.data('guardFaceForm', (config = {}) => ({
         }
 
         this.runSmileChallenge(landmarks);
-    },
-
-    runBlinkChallenge(landmarks) {
-        const eyeRatio = averageEyeAspectRatio(landmarks);
-
-        if (eyeRatio === null) {
-            this.livenessStatus = 'face';
-            this.livenessMessage = 'Keep your eyes visible to the camera.';
-            this.descriptorMessage = this.livenessMessage;
-            return;
-        }
-
-        if (eyeRatio >= BLINK_OPEN_THRESHOLD) {
-            this.livenessOpenFrames += 1;
-            this.livenessClosedFrames = 0;
-
-            if (this.livenessBlinkClosed) {
-                this.markRegistrationLivenessPassed();
-                return;
-            }
-
-            if (this.livenessOpenFrames >= 2) {
-                this.livenessBlinkReady = true;
-                this.livenessStatus = 'blink';
-                this.livenessMessage = 'Challenge: blink once.';
-                this.descriptorMessage = this.livenessMessage;
-                return;
-            }
-
-            this.livenessStatus = 'face';
-            this.livenessMessage = 'Face detected. Keep looking at the camera.';
-            this.descriptorMessage = this.livenessMessage;
-            return;
-        }
-
-        if (eyeRatio <= BLINK_CLOSED_THRESHOLD && this.livenessBlinkReady) {
-            this.livenessClosedFrames += 1;
-
-            if (this.livenessClosedFrames >= 1) {
-                this.livenessBlinkClosed = true;
-                this.livenessStatus = 'blink';
-                this.livenessMessage = 'Blink detected. Open your eyes.';
-                this.descriptorMessage = this.livenessMessage;
-                return;
-            }
-        }
-
-        this.livenessStatus = this.livenessBlinkReady ? 'blink' : 'face';
-        this.livenessMessage = this.livenessBlinkReady
-            ? 'Challenge: blink once.'
-            : 'Face detected. Keep looking at the camera.';
-        this.descriptorMessage = this.livenessMessage;
     },
 
     runSmileChallenge(landmarks) {
@@ -1146,13 +1060,11 @@ Alpine.data('patrolScan', (config = {}) => ({
     faceLightMessage: '',
     faceCapture: config.faceCapture || '',
     capturedDescriptor: config.capturedDescriptor || '',
-    faceLivenessChallenge: config.faceLivenessChallenge || config.pendingScan?.face_liveness_challenge || '',
+    faceLivenessChallenge: isPatrolLivenessChallenge(config.faceLivenessChallenge)
+        ? config.faceLivenessChallenge
+        : (isPatrolLivenessChallenge(config.pendingScan?.face_liveness_challenge) ? config.pendingScan.face_liveness_challenge : ''),
     faceLivenessPassed: false,
     faceLivenessStatus: 'idle',
-    faceLivenessBlinkReady: false,
-    faceLivenessBlinkClosed: false,
-    faceLivenessOpenFrames: 0,
-    faceLivenessClosedFrames: 0,
     faceLivenessSmileBaseline: null,
     faceLivenessSmileFrames: 0,
     faceLivenessTurnFrames: 0,
@@ -1259,9 +1171,14 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     prepareFaceLivenessChallenge() {
-        const serverChallenge = this.pendingScan?.face_liveness_challenge || '';
+        const serverChallenge = isPatrolLivenessChallenge(this.pendingScan?.face_liveness_challenge)
+            ? this.pendingScan.face_liveness_challenge
+            : '';
+        const currentChallenge = isPatrolLivenessChallenge(this.faceLivenessChallenge)
+            ? this.faceLivenessChallenge
+            : '';
 
-        this.faceLivenessChallenge = serverChallenge || this.faceLivenessChallenge || randomPatrolLivenessChallenge();
+        this.faceLivenessChallenge = serverChallenge || currentChallenge || randomPatrolLivenessChallenge();
     },
 
     resetFaceLivenessState(clearChallenge = false) {
@@ -1275,10 +1192,6 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     resetFaceLivenessActionState() {
-        this.faceLivenessBlinkReady = false;
-        this.faceLivenessBlinkClosed = false;
-        this.faceLivenessOpenFrames = 0;
-        this.faceLivenessClosedFrames = 0;
         this.faceLivenessSmileBaseline = null;
         this.faceLivenessSmileFrames = 0;
         this.faceLivenessTurnFrames = 0;
@@ -1317,7 +1230,9 @@ Alpine.data('patrolScan', (config = {}) => ({
                 this.patrolLogId = data.patrol_log.id;
                 this.faceVerified = Boolean(data.patrol_log.face_verified);
                 this.matchDistance = data.patrol_log.match_distance || null;
-                this.faceLivenessChallenge = data.patrol_log.face_liveness_challenge || this.faceLivenessChallenge || randomPatrolLivenessChallenge();
+                this.faceLivenessChallenge = isPatrolLivenessChallenge(data.patrol_log.face_liveness_challenge)
+                    ? data.patrol_log.face_liveness_challenge
+                    : (isPatrolLivenessChallenge(this.faceLivenessChallenge) ? this.faceLivenessChallenge : randomPatrolLivenessChallenge());
                 this.resetFaceLivenessState(false);
                 this.scanMessage = this.faceVerified
                     ? 'Face verified successfully. Complete the checklist.'
@@ -1947,68 +1862,11 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     runSelectedFaceLivenessChallenge(landmarks) {
-        if (this.faceLivenessChallenge === 'blink') {
-            return this.runFaceBlinkChallenge(landmarks);
-        }
-
         if (this.faceLivenessChallenge === 'turn-left' || this.faceLivenessChallenge === 'turn-right') {
             return this.runFaceTurnChallenge(landmarks);
         }
 
         return this.runFaceSmileChallenge(landmarks);
-    },
-
-    runFaceBlinkChallenge(landmarks) {
-        const eyeRatio = averageEyeAspectRatio(landmarks);
-
-        if (eyeRatio === null) {
-            this.faceLivenessStatus = 'face';
-            this.verificationMessage = 'Keep your eyes visible to the camera.';
-            this.faceScanProgress = 45;
-            return false;
-        }
-
-        if (eyeRatio >= BLINK_OPEN_THRESHOLD) {
-            this.faceLivenessOpenFrames += 1;
-            this.faceLivenessClosedFrames = 0;
-
-            if (this.faceLivenessBlinkClosed) {
-                return true;
-            }
-
-            if (this.faceLivenessOpenFrames >= 2) {
-                this.faceLivenessBlinkReady = true;
-                this.faceLivenessStatus = 'blink';
-                this.verificationMessage = 'Challenge: blink once.';
-                this.faceScanProgress = 60;
-                return false;
-            }
-
-            this.faceLivenessStatus = 'face';
-            this.verificationMessage = 'Face detected. Keep looking at the camera.';
-            this.faceScanProgress = 45;
-            return false;
-        }
-
-        if (eyeRatio <= BLINK_CLOSED_THRESHOLD && this.faceLivenessBlinkReady) {
-            this.faceLivenessClosedFrames += 1;
-
-            if (this.faceLivenessClosedFrames >= 1) {
-                this.faceLivenessBlinkClosed = true;
-                this.faceLivenessStatus = 'blink';
-                this.verificationMessage = 'Blink detected. Open your eyes.';
-                this.faceScanProgress = 82;
-                return false;
-            }
-        }
-
-        this.faceLivenessStatus = this.faceLivenessBlinkReady ? 'blink' : 'face';
-        this.verificationMessage = this.faceLivenessBlinkReady
-            ? 'Challenge: blink once.'
-            : 'Face detected. Keep looking at the camera.';
-        this.faceScanProgress = this.faceLivenessBlinkReady ? 60 : 45;
-
-        return false;
     },
 
     runFaceSmileChallenge(landmarks) {

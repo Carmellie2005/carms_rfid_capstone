@@ -231,7 +231,7 @@
 
                                             <div class="grid gap-2 text-xs">
                                                 <div class="flex items-center gap-2 rounded-md border border-teal-100 bg-white px-3 py-2 shadow-sm">
-                                                    <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[0.68rem] font-bold ring-1" :class="['face', 'blink', 'smile', 'turn', 'complete'].includes(livenessStatus) ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-500 ring-slate-200'">1</span>
+                                                    <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[0.68rem] font-bold ring-1" :class="['face', 'smile', 'turn', 'complete'].includes(livenessStatus) ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-500 ring-slate-200'">1</span>
                                                     <span class="font-medium text-slate-700">Face inside guide</span>
                                                 </div>
                                                 <div class="flex items-center gap-2 rounded-md border border-teal-100 bg-white px-3 py-2 shadow-sm">

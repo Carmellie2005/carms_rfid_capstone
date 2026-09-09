@@ -6,7 +6,6 @@ class FaceVerification
 {
     public const MATCH_THRESHOLD = 0.42;
     public const LIVENESS_CHALLENGES = [
-        'blink',
         'smile',
         'turn-left',
         'turn-right',
@@ -30,7 +29,6 @@ class FaceVerification
     public static function livenessLabel(?string $challenge): ?string
     {
         return match ($challenge) {
-            'blink' => 'Blink once',
             'smile' => 'Smile',
             'turn-left' => 'Turn head left',
             'turn-right' => 'Turn head right',
