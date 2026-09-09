@@ -1035,6 +1035,10 @@ Alpine.data('patrolScan', (config = {}) => ({
     incidentImageError: '',
     incidentFormError: '',
     incidentImagePreviews: [],
+    checklistPhotoError: '',
+    checklistPhotoPreviews: {},
+    checklistPhotoModalOpen: false,
+    selectedChecklistPhoto: null,
     pendingScan: config.pendingScan || null,
     pendingScanUrl: config.pendingScanUrl,
     faceVerifyUrl: config.faceVerifyUrl,
@@ -1585,6 +1589,98 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.$nextTick(() => document.getElementById('area_secure')?.focus());
     },
 
+    checklistPhotoCount() {
+        return Object.keys(this.checklistPhotoPreviews).length;
+    },
+
+    checklistPhotoInput(field) {
+        return this.$refs[`checklistPhoto_${field}`];
+    },
+
+    takeChecklistPhoto(field) {
+        if (this.submittingPatrol) {
+            return;
+        }
+
+        this.checklistPhotoInput(field)?.click();
+    },
+
+    updateChecklistPhoto(field, event) {
+        const file = event.target.files?.[0];
+
+        if (! file) {
+            return;
+        }
+
+        if (file.type && ! file.type.startsWith('image/')) {
+            event.target.value = '';
+            this.checklistPhotoError = 'Choose a valid checklist proof photo.';
+            return;
+        }
+
+        this.removeChecklistPhoto(field, false);
+
+        this.checklistPhotoPreviews = {
+            ...this.checklistPhotoPreviews,
+            [field]: {
+                field,
+                name: file.name || 'Checklist proof photo',
+                url: URL.createObjectURL(file),
+            },
+        };
+        this.checklistPhotoError = '';
+    },
+
+    removeChecklistPhoto(field, clearInput = true) {
+        const preview = this.checklistPhotoPreviews[field];
+
+        if (preview?.url) {
+            URL.revokeObjectURL(preview.url);
+        }
+
+        const nextPreviews = { ...this.checklistPhotoPreviews };
+        delete nextPreviews[field];
+        this.checklistPhotoPreviews = nextPreviews;
+
+        if (this.selectedChecklistPhoto?.field === field) {
+            this.closeChecklistPhotoPreview();
+        }
+
+        if (clearInput) {
+            const input = this.checklistPhotoInput(field);
+
+            if (input) {
+                input.value = '';
+            }
+        }
+    },
+
+    openChecklistPhotoPreview(field) {
+        const preview = this.checklistPhotoPreviews[field];
+
+        if (! preview) {
+            return;
+        }
+
+        this.selectedChecklistPhoto = preview;
+        this.checklistPhotoModalOpen = true;
+    },
+
+    closeChecklistPhotoPreview() {
+        this.checklistPhotoModalOpen = false;
+        this.selectedChecklistPhoto = null;
+    },
+
+    validateChecklistPhotos() {
+        if (this.checklistPhotoCount() > 0) {
+            this.checklistPhotoError = '';
+            return true;
+        }
+
+        this.checklistPhotoError = 'Take at least one checklist proof photo before submitting.';
+        return false;
+    },
+
     focusIncidentForm() {
         if (this.$refs.incidentDescription && ! this.$refs.incidentDescription.value.trim()) {
             this.$refs.incidentDescription.focus();
@@ -2030,6 +2126,12 @@ Alpine.data('patrolScan', (config = {}) => ({
             this.verificationMessage = this.patrolLogId
                 ? 'Verify the guard face before submitting.'
                 : 'Wait for an RFID scan before submitting.';
+            return;
+        }
+
+        if (! this.validateChecklistPhotos()) {
+            event.preventDefault();
+            this.checklistModalOpen = true;
             return;
         }
 

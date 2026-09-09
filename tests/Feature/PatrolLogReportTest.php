@@ -45,6 +45,42 @@ class PatrolLogReportTest extends TestCase
             ->assertSee('Print PDF');
     }
 
+    public function test_patrol_logs_page_shows_clickable_checklist_proof_thumbnail(): void
+    {
+        $guard = $this->createGuard('SG-PROOF', 'RFID-PROOF');
+        $patrolLog = $this->createPatrolLog($guard);
+        $checklist = $patrolLog->checklistResponse()->create([
+            'area_secure' => true,
+        ]);
+        $proofPhoto = $checklist->proofPhotos()->create([
+            'patrol_log_id' => $patrolLog->id,
+            'item_key' => 'area_secure',
+            'item_label' => 'Area secure',
+            'image_path' => 'checklist-proof-photos/missing.jpg',
+            'mime_type' => 'image/jpeg',
+            'image_data' => base64_encode('proof-photo'),
+            'sort_order' => 1,
+        ]);
+        $proofPhotoUrl = route('patrol-logs.proof-photos.show', [$patrolLog, $proofPhoto]);
+
+        $response = $this
+            ->actingAs($guard->user)
+            ->get(route('patrol-logs.index'));
+
+        $response
+            ->assertOk()
+            ->assertSee('Proof Photos')
+            ->assertSee($proofPhotoUrl, false)
+            ->assertSee('openProofPhoto', false);
+
+        $this
+            ->actingAs($guard->user)
+            ->get($proofPhotoUrl)
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/jpeg')
+            ->assertContent('proof-photo');
+    }
+
     public function test_guard_pdf_export_only_includes_own_patrol_logs(): void
     {
         $guard = $this->createGuard('SG-OWN', 'RFID-OWN');

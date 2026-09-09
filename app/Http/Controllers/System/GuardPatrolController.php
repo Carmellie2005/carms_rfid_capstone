@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\System;
 
 use App\Http\Controllers\Controller;
+use App\Models\ChecklistResponse;
 use App\Models\Checkpoint;
 use App\Models\FaceVerificationAttempt;
 use App\Models\Guard;
@@ -181,6 +182,8 @@ class GuardPatrolController extends Controller
             'face_liveness_confirmed' => ['nullable', 'boolean'],
             'face_liveness_challenge' => ['nullable', 'string', Rule::in(FaceVerification::livenessChallenges())],
             ...PatrolChecklist::validationRules(),
+            'checklist_photos' => ['nullable', 'array', 'max:'.count(PatrolChecklist::fields())],
+            'checklist_photos.*' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'remarks' => ['nullable', 'string', 'max:2000'],
             'has_incident' => ['nullable', 'boolean'],
             'incident_category' => ['nullable', 'required_if:has_incident,1', 'string', 'max:100', Rule::in(PatrolChecklist::incidentCategories())],
@@ -257,10 +260,18 @@ class GuardPatrolController extends Controller
         $facialStatus = $faceResult['verified'] ? 'verified' : 'failed';
         $patrolStatus = $facialStatus === 'verified' ? 'valid' : 'suspicious';
         $checkpoint = $patrolLog->checkpoint;
+        $checklistProofPhotoFiles = $this->checklistProofPhotoFiles($request);
         $incidentImageFiles = $this->incidentImageFiles($request);
+        $checklistProofPhotoError = $this->checklistProofPhotoError($facialStatus, $checklistProofPhotoFiles);
         $incidentImageError = $this->incidentImageError($request, $incidentImageFiles);
         $incidentReport = null;
         $submittedAt = now(config('app.timezone'));
+
+        if ($checklistProofPhotoError) {
+            return back()
+                ->withInput()
+                ->withErrors(['checklist_photos' => $checklistProofPhotoError]);
+        }
 
         if ($incidentImageError) {
             return back()
@@ -268,7 +279,7 @@ class GuardPatrolController extends Controller
                 ->withErrors(['incident_images' => $incidentImageError]);
         }
 
-        DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $facialStatus, $patrolStatus, $capturedDescriptor, $capturedImage, $matchDistance, $incidentImageFiles, $submittedAt, $verifiedFaceAttempt, $faceResult, &$incidentReport) {
+        DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $facialStatus, $patrolStatus, $capturedDescriptor, $capturedImage, $matchDistance, $checklistProofPhotoFiles, $incidentImageFiles, $submittedAt, $verifiedFaceAttempt, $faceResult, &$incidentReport) {
             $patrolLog->update([
                 'facial_status' => $facialStatus,
                 'status' => $patrolStatus,
@@ -292,10 +303,12 @@ class GuardPatrolController extends Controller
                 return;
             }
 
-            $patrolLog->checklistResponse()->create([
+            $checklistResponse = $patrolLog->checklistResponse()->create([
                 ...PatrolChecklist::valuesFromRequest($request),
                 'remarks' => $data['remarks'] ?? null,
             ]);
+
+            $this->storeChecklistProofPhotos($checklistResponse, $checklistProofPhotoFiles);
 
             if ($request->boolean('has_incident')) {
                 $incidentReport = IncidentReport::create([
@@ -652,6 +665,58 @@ class GuardPatrolController extends Controller
         Storage::disk('public')->put($path, $image['contents']);
 
         return $path;
+    }
+
+    private function checklistProofPhotoError(string $facialStatus, array $checklistProofPhotoFiles): ?string
+    {
+        if ($facialStatus !== 'verified') {
+            return null;
+        }
+
+        if ($checklistProofPhotoFiles === []) {
+            return 'Take at least one checklist proof photo before submitting the patrol record.';
+        }
+
+        return null;
+    }
+
+    private function checklistProofPhotoFiles(Request $request): array
+    {
+        $files = $request->file('checklist_photos', []);
+
+        if (! is_array($files)) {
+            return [];
+        }
+
+        return collect(PatrolChecklist::fields())
+            ->filter(fn (string $field) => ($files[$field] ?? null) instanceof UploadedFile && $files[$field]->isValid())
+            ->map(fn (string $field) => [
+                'field' => $field,
+                'file' => $files[$field],
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function storeChecklistProofPhotos(ChecklistResponse $checklistResponse, array $checklistProofPhotoFiles): void
+    {
+        foreach ($checklistProofPhotoFiles as $index => $item) {
+            $file = $item['file'];
+            $path = $file->store('checklist-proof-photos', 'public');
+            $contents = file_get_contents($file->getRealPath());
+            $field = $item['field'];
+
+            $checklistResponse->proofPhotos()->create([
+                'patrol_log_id' => $checklistResponse->patrol_log_id,
+                'item_key' => $field,
+                'item_label' => PatrolChecklist::label($field) ?? Str::of($field)->replace('_', ' ')->title()->toString(),
+                'image_path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType() ?: 'image/jpeg',
+                'image_data' => $contents === false ? null : base64_encode($contents),
+                'sort_order' => $index + 1,
+            ]);
+        }
     }
 
     private function incidentImageError(Request $request, array $incidentImageFiles): ?string

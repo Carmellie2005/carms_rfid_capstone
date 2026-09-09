@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/patrol/scan', [GuardPatrolController::class, 'store'])->name('patrol.store');
     Route::get('/incidents/{incidentReport}/images/{incidentReportImage}', [IncidentReportController::class, 'image'])->name('incidents.images.show');
     Route::get('/patrol-logs/pdf', [PatrolLogController::class, 'downloadPdf'])->name('patrol-logs.pdf');
+    Route::get('/patrol-logs/{patrolLog}/proof-photos/{checklistProofPhoto}', [PatrolLogController::class, 'proofPhoto'])->name('patrol-logs.proof-photos.show');
     Route::get('/patrol-logs', [PatrolLogController::class, 'index'])->name('patrol-logs.index');
     Route::get('/incidents/{incidentReport}/pdf', [IncidentReportController::class, 'downloadPdf'])->name('incidents.pdf');
     Route::get('/notifications', NotificationController::class)->name('notifications.index');

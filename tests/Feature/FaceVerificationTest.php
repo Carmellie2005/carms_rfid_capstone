@@ -28,6 +28,8 @@ class FaceVerificationTest extends TestCase
 
     public function test_guard_patrol_is_valid_when_captured_face_descriptor_matches_registered_face(): void
     {
+        Storage::fake('public');
+
         [$user, $guard, $patrolLog, $descriptor] = $this->pendingPatrolWithFaceDescriptor();
 
         $response = $this
@@ -46,6 +48,7 @@ class FaceVerificationTest extends TestCase
                 'fire_exits_clear' => '1',
                 'emergency_equipment_accessible' => '1',
                 'no_unauthorized_person' => '1',
+                ...$this->checklistProofPhotos(),
             ]);
 
         $response
@@ -78,6 +81,39 @@ class FaceVerificationTest extends TestCase
             'emergency_equipment_accessible' => 1,
             'no_unauthorized_person' => 1,
         ]);
+
+        $proofPhoto = $patrolLog->fresh()->checklistProofPhotos()->first();
+
+        $this->assertNotNull($proofPhoto);
+        $this->assertSame('area_secure', $proofPhoto->item_key);
+        $this->assertSame('Area secure', $proofPhoto->item_label);
+        $this->assertNotNull($proofPhoto->image_data);
+        Storage::disk('public')->assertExists($proofPhoto->image_path);
+    }
+
+    public function test_guard_patrol_requires_checklist_proof_photo_when_face_is_verified(): void
+    {
+        [$user, $guard, $patrolLog, $descriptor] = $this->pendingPatrolWithFaceDescriptor();
+
+        $response = $this
+            ->actingAs($user)
+            ->from(route('patrol.scan'))
+            ->post(route('patrol.store'), [
+                'patrol_log_id' => $patrolLog->id,
+                'facial_status' => 'verified',
+                ...$this->livenessPayload($patrolLog),
+                'captured_descriptor' => json_encode($this->nearMatchingDescriptor($descriptor)),
+                'face_capture' => $this->validFaceCapture(),
+                'area_secure' => '1',
+            ]);
+
+        $response
+            ->assertRedirect(route('patrol.scan'))
+            ->assertSessionHasErrors('checklist_photos');
+
+        $this->assertSame($guard->id, $patrolLog->guard_id);
+        $this->assertDatabaseCount('checklist_responses', 0);
+        $this->assertDatabaseCount('checklist_proof_photos', 0);
     }
 
     public function test_patrol_scan_form_shows_expanded_checklist_and_incident_categories(): void
@@ -99,6 +135,9 @@ class FaceVerificationTest extends TestCase
             ->assertSee('Selected image previews')
             ->assertSee('Start Face Verification')
             ->assertSee('Light Assist')
+            ->assertSee('checklist_photos[area_secure]', false)
+            ->assertSee('checklistPhotoModalOpen', false)
+            ->assertSee('openChecklistPhotoPreview', false)
             ->assertSee('Position your face inside the circle')
             ->assertSee('faceLivenessChallengeInstruction()', false)
             ->assertSee('Verifying live challenge...', false)
@@ -110,7 +149,6 @@ class FaceVerificationTest extends TestCase
             ->assertSee('Himo C.')
             ->assertSee('UID')
             ->assertDontSee('Open Camera')
-            ->assertDontSee('Retake')
             ->assertDontSee('Start Step 2')
             ->assertDontSee('Allow camera access, then keep your face inside the guide.')
             ->assertDontSee('Submit Incident')
@@ -207,6 +245,8 @@ class FaceVerificationTest extends TestCase
 
     public function test_guard_can_refresh_after_face_verification_and_submit_checklist_without_reverification(): void
     {
+        Storage::fake('public');
+
         [$user, $guard, $patrolLog, $descriptor] = $this->pendingPatrolWithFaceDescriptor();
 
         $this
@@ -245,6 +285,7 @@ class FaceVerificationTest extends TestCase
                 'fire_exits_clear' => '1',
                 'emergency_equipment_accessible' => '1',
                 'no_unauthorized_person' => '1',
+                ...$this->checklistProofPhotos(),
             ]);
 
         $response
@@ -269,6 +310,10 @@ class FaceVerificationTest extends TestCase
             'fire_exits_clear' => 1,
             'emergency_equipment_accessible' => 1,
             'no_unauthorized_person' => 1,
+        ]);
+        $this->assertDatabaseHas('checklist_proof_photos', [
+            'patrol_log_id' => $patrolLog->id,
+            'item_key' => 'area_secure',
         ]);
     }
 
@@ -395,6 +440,7 @@ class FaceVerificationTest extends TestCase
                 'captured_descriptor' => json_encode($this->nearMatchingDescriptor($descriptor)),
                 'face_capture' => $this->validFaceCapture(),
                 'area_secure' => '1',
+                ...$this->checklistProofPhotos(),
                 'has_incident' => '1',
                 'incident_category' => 'Theft or Robbery',
                 'incident_priority' => 'high',
@@ -425,6 +471,11 @@ class FaceVerificationTest extends TestCase
         $this->assertStringStartsWith('image/', $incident->images->first()->mime_type);
 
         $incident->images->each(fn ($image) => Storage::disk('public')->assertExists($image->image_path));
+
+        $this->assertDatabaseHas('checklist_proof_photos', [
+            'patrol_log_id' => $patrolLog->id,
+            'item_key' => 'area_secure',
+        ]);
     }
 
     public function test_guard_incident_rejects_more_than_three_images(): void
@@ -443,6 +494,7 @@ class FaceVerificationTest extends TestCase
                 'captured_descriptor' => json_encode($this->nearMatchingDescriptor($descriptor)),
                 'face_capture' => $this->validFaceCapture(),
                 'area_secure' => '1',
+                ...$this->checklistProofPhotos(),
                 'has_incident' => '1',
                 'incident_category' => 'Suspicious Activity',
                 'incident_priority' => 'high',
@@ -481,6 +533,7 @@ class FaceVerificationTest extends TestCase
                 'captured_descriptor' => json_encode($this->nearMatchingDescriptor($descriptor)),
                 'face_capture' => $this->validFaceCapture(),
                 'area_secure' => '1',
+                ...$this->checklistProofPhotos(),
                 'has_incident' => '1',
                 'incident_category' => 'Suspicious Activity',
                 'incident_priority' => 'high',
@@ -738,6 +791,15 @@ class FaceVerificationTest extends TestCase
         $file = UploadedFile::fake()->image('face-capture.jpg', 20, 20);
 
         return 'data:image/jpeg;base64,'.base64_encode(file_get_contents($file->getRealPath()));
+    }
+
+    private function checklistProofPhotos(string $field = 'area_secure'): array
+    {
+        return [
+            'checklist_photos' => [
+                $field => UploadedFile::fake()->image("proof-{$field}.jpg", 24, 24),
+            ],
+        ];
     }
 
     private function livenessPayload(PatrolLog $patrolLog, string $challenge = 'smile'): array

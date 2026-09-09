@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ChecklistResponse extends Model
 {
@@ -45,5 +46,10 @@ class ChecklistResponse extends Model
     public function patrolLog(): BelongsTo
     {
         return $this->belongsTo(PatrolLog::class);
+    }
+
+    public function proofPhotos(): HasMany
+    {
+        return $this->hasMany(ChecklistProofPhoto::class)->orderBy('sort_order');
     }
 }

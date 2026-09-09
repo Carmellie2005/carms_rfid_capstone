@@ -50,6 +50,11 @@ class PatrolChecklist
         return array_keys(self::ITEMS);
     }
 
+    public static function label(string $field): ?string
+    {
+        return self::ITEMS[$field] ?? null;
+    }
+
     public static function incidentCategories(): array
     {
         return self::INCIDENT_CATEGORIES;

@@ -44,6 +44,11 @@ class PatrolLog extends Model
         return $this->hasOne(ChecklistResponse::class);
     }
 
+    public function checklistProofPhotos(): HasMany
+    {
+        return $this->hasMany(ChecklistProofPhoto::class)->orderBy('sort_order');
+    }
+
     public function faceVerificationAttempts(): HasMany
     {
         return $this->hasMany(FaceVerificationAttempt::class);

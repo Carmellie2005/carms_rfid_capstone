@@ -25,7 +25,21 @@
         ];
     @endphp
 
-    <div class="py-5 sm:py-8">
+    <div class="py-5 sm:py-8" x-data="{
+        proofPhotoOpen: false,
+        proofPhotoSrc: '',
+        proofPhotoTitle: '',
+        openProofPhoto(src, title) {
+            this.proofPhotoSrc = src;
+            this.proofPhotoTitle = title || 'Checklist proof photo';
+            this.proofPhotoOpen = true;
+        },
+        closeProofPhoto() {
+            this.proofPhotoOpen = false;
+            this.proofPhotoSrc = '';
+            this.proofPhotoTitle = '';
+        },
+    }">
         <div class="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
             @php
                 $exportQuery = request()->only(['status', 'guard_id', 'checkpoint_id', 'date']);
@@ -149,6 +163,7 @@
                         @if ($log->checklistResponse)
                             @php
                                 $mobileFlags = \App\Support\PatrolChecklist::checkedLabels($log->checklistResponse);
+                                $mobileProofPhotos = $log->checklistResponse->proofPhotos;
                             @endphp
                             <div class="mt-3 flex flex-wrap gap-1">
                                 @forelse ($mobileFlags as $label)
@@ -157,6 +172,21 @@
                                     <span class="text-xs text-slate-500">No checked checklist items</span>
                                 @endforelse
                             </div>
+                            @if ($mobileProofPhotos->isNotEmpty())
+                                <div class="mt-3">
+                                    <p class="text-[0.65rem] font-semibold uppercase text-blue-800 sm:text-xs">Proof Photos</p>
+                                    <div class="mt-2 flex flex-wrap gap-2">
+                                        @foreach ($mobileProofPhotos as $photo)
+                                            @php
+                                                $photoUrl = route('patrol-logs.proof-photos.show', [$log, $photo]);
+                                            @endphp
+                                            <button type="button" class="h-14 w-14 overflow-hidden rounded-md border border-blue-100 bg-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openProofPhoto(@js($photoUrl), @js($photo->item_label))" aria-label="Open {{ $photo->item_label }} proof photo">
+                                                <img src="{{ $photoUrl }}" alt="{{ $photo->item_label }} proof thumbnail" class="h-full w-full object-cover" loading="lazy">
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
                         @endif
 
                         <div class="mt-3 rounded-md bg-slate-50 p-2 text-xs text-slate-600 sm:p-3 sm:text-sm">
@@ -223,6 +253,7 @@
                                         @if ($log->checklistResponse)
                                             @php
                                                 $flags = \App\Support\PatrolChecklist::checkedLabels($log->checklistResponse);
+                                                $proofPhotos = $log->checklistResponse->proofPhotos;
                                             @endphp
                                             <div class="flex max-w-xs flex-wrap gap-1">
                                                 @forelse ($flags as $label)
@@ -231,6 +262,18 @@
                                                     <span class="text-xs text-slate-500">No checked items</span>
                                                 @endforelse
                                             </div>
+                                            @if ($proofPhotos->isNotEmpty())
+                                                <div class="mt-3 flex max-w-xs flex-wrap gap-2">
+                                                    @foreach ($proofPhotos as $photo)
+                                                        @php
+                                                            $photoUrl = route('patrol-logs.proof-photos.show', [$log, $photo]);
+                                                        @endphp
+                                                        <button type="button" class="h-12 w-12 overflow-hidden rounded-md border border-blue-100 bg-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openProofPhoto(@js($photoUrl), @js($photo->item_label))" aria-label="Open {{ $photo->item_label }} proof photo">
+                                                            <img src="{{ $photoUrl }}" alt="{{ $photo->item_label }} proof thumbnail" class="h-full w-full object-cover" loading="lazy">
+                                                        </button>
+                                                    @endforeach
+                                                </div>
+                                            @endif
                                         @else
                                             <span class="text-xs text-slate-500">No checklist</span>
                                         @endif
@@ -260,6 +303,22 @@
             <div class="rounded-md border border-blue-100 bg-white px-5 py-4 shadow-sm">
                 {{ $logs->links() }}
             </div>
+        </div>
+
+        <div x-show="proofPhotoOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[95] flex items-center justify-center bg-slate-950/70 p-3 sm:p-6" x-on:click.self="closeProofPhoto()" x-on:keydown.escape.window="proofPhotoOpen && closeProofPhoto()">
+            <section class="w-full max-w-2xl overflow-hidden rounded-md bg-white shadow-2xl">
+                <div class="flex items-center justify-between gap-3 border-b border-blue-100 px-4 py-3">
+                    <p class="min-w-0 truncate text-sm font-semibold text-blue-950" x-text="proofPhotoTitle"></p>
+                    <button type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-100 bg-white text-slate-700 hover:bg-blue-50" @click="closeProofPhoto()" aria-label="Close proof photo preview">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="bg-slate-950 p-2 sm:p-3">
+                    <img x-show="proofPhotoSrc" :src="proofPhotoSrc" alt="Checklist proof photo" class="max-h-[78dvh] w-full rounded object-contain">
+                </div>
+            </section>
         </div>
     </div>
 </x-app-layout>
