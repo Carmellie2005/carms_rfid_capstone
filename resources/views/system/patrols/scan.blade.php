@@ -432,21 +432,27 @@
                                 <div class="mt-4 grid gap-3 sm:grid-cols-2">
                                     @foreach ($checkpointChecklistItems as $field => $label)
                                         <div class="min-h-28 rounded-md border border-blue-100 bg-white p-3 text-sm text-slate-700 shadow-sm transition hover:bg-blue-50/70">
-                                            <label for="{{ $field }}" class="flex items-start gap-3 font-medium">
-                                                <input id="{{ $field }}" type="checkbox" name="{{ $field }}" value="1" class="mt-0.5 rounded border-slate-300 text-blue-700 focus:ring-blue-500" @checked(old($field))>
-                                                <span>{{ $label }}</span>
-                                            </label>
+                                            <div class="flex items-start justify-between gap-3">
+                                                <label for="{{ $field }}" class="flex min-w-0 items-start gap-3 font-medium">
+                                                    <input id="{{ $field }}" type="checkbox" name="{{ $field }}" value="1" class="mt-0.5 rounded border-slate-300 text-blue-700 focus:ring-blue-500" @checked(old($field))>
+                                                    <span>{{ $label }}</span>
+                                                </label>
 
-                                            <div class="mt-3 flex items-center gap-2">
-                                                <button type="button" class="inline-flex h-9 min-w-0 flex-1 items-center justify-center rounded-md border border-blue-200 bg-white px-2 text-xs font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="takeChecklistPhoto('{{ $field }}')" :disabled="submittingPatrol">
-                                                    <svg class="mr-1.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                <button type="button" class="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60" :class="checklistPhotoPreviews['{{ $field }}'] ? 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'border-blue-200 bg-white text-blue-700 hover:bg-blue-50'" @click="takeChecklistPhoto('{{ $field }}')" :disabled="submittingPatrol" :aria-label="(checklistPhotoPreviews['{{ $field }}'] ? 'Retake proof photo for ' : 'Take proof photo for ') + @js($label)" :title="(checklistPhotoPreviews['{{ $field }}'] ? 'Retake proof photo for ' : 'Take proof photo for ') + @js($label)">
+                                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                                         <path d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
                                                         <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
                                                     </svg>
-                                                    <span x-text="checklistPhotoPreviews['{{ $field }}'] ? 'Retake' : 'Take Photo'">Take Photo</span>
+                                                    <span x-show="checklistPhotoPreviews['{{ $field }}']" x-cloak class="absolute -right-1 -top-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600 text-white">
+                                                        <svg class="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                            <path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                                        </svg>
+                                                    </span>
                                                 </button>
-                                                <input x-ref="checklistPhoto_{{ $field }}" id="checklist_photo_{{ $field }}" name="checklist_photos[{{ $field }}]" type="file" accept="image/*" capture="environment" class="sr-only" @change="updateChecklistPhoto('{{ $field }}', $event)">
+                                            </div>
+                                            <input x-ref="checklistPhoto_{{ $field }}" id="checklist_photo_{{ $field }}" name="checklist_photos[{{ $field }}]" type="file" accept="image/*" capture="environment" class="sr-only" @change="updateChecklistPhoto('{{ $field }}', $event)">
 
+                                            <div x-show="checklistPhotoPreviews['{{ $field }}']" x-cloak class="mt-3 flex items-center gap-2">
                                                 <button type="button" x-show="checklistPhotoPreviews['{{ $field }}']" x-cloak class="h-12 w-12 shrink-0 overflow-hidden rounded-md border border-blue-100 bg-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openChecklistPhotoPreview('{{ $field }}')" aria-label="Preview {{ $label }} proof photo">
                                                     <img :src="checklistPhotoPreviews['{{ $field }}']?.url" alt="{{ $label }} proof photo thumbnail" class="h-full w-full object-cover">
                                                 </button>
