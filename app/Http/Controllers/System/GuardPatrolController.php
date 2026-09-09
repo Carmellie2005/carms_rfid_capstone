@@ -262,7 +262,7 @@ class GuardPatrolController extends Controller
         $checkpoint = $patrolLog->checkpoint;
         $checklistProofPhotoFiles = $this->checklistProofPhotoFiles($request);
         $incidentImageFiles = $this->incidentImageFiles($request);
-        $checklistProofPhotoError = $this->checklistProofPhotoError($facialStatus, $checklistProofPhotoFiles);
+        $checklistProofPhotoError = $this->checklistProofPhotoError($request, $facialStatus, $checklistProofPhotoFiles);
         $incidentImageError = $this->incidentImageError($request, $incidentImageFiles);
         $incidentReport = null;
         $submittedAt = now(config('app.timezone'));
@@ -305,6 +305,7 @@ class GuardPatrolController extends Controller
 
             $checklistResponse = $patrolLog->checklistResponse()->create([
                 ...PatrolChecklist::valuesFromRequest($request),
+                'item_statuses' => PatrolChecklist::statusesFromRequest($request),
                 'remarks' => $data['remarks'] ?? null,
             ]);
 
@@ -680,14 +681,25 @@ class GuardPatrolController extends Controller
         return $path;
     }
 
-    private function checklistProofPhotoError(string $facialStatus, array $checklistProofPhotoFiles): ?string
+    private function checklistProofPhotoError(Request $request, string $facialStatus, array $checklistProofPhotoFiles): ?string
     {
         if ($facialStatus !== 'verified') {
             return null;
         }
 
         if ($checklistProofPhotoFiles === []) {
-            return 'Take at least one checklist proof photo before submitting the patrol record.';
+            return 'Take at least one checkpoint proof photo before submitting the patrol record.';
+        }
+
+        $photoFields = collect($checklistProofPhotoFiles)->pluck('field');
+        $missingIssuePhotoLabels = PatrolChecklist::issueFieldsFromRequest($request)
+            ->reject(fn (string $field) => $photoFields->contains($field))
+            ->map(fn (string $field) => PatrolChecklist::label($field))
+            ->filter()
+            ->values();
+
+        if ($missingIssuePhotoLabels->isNotEmpty()) {
+            return 'Take a proof photo for each checklist item marked Issue Found: '.$missingIssuePhotoLabels->implode(', ').'.';
         }
 
         return null;

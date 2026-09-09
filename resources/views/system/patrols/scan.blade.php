@@ -2,6 +2,7 @@
     @php
         $incidentDefault = (bool) old('has_incident');
         $checkpointChecklistItems = \App\Support\PatrolChecklist::items();
+        $checklistStatusOptions = \App\Support\PatrolChecklist::statusOptions();
         $incidentCategories = \App\Support\PatrolChecklist::incidentCategories();
         $guardName = $guardProfile?->name ?? Auth::user()->name;
         $guardEmployeeNo = $guardProfile?->employee_no ?? 'Account only';
@@ -130,6 +131,7 @@
                     capturedDescriptor: @js(old('captured_descriptor', '')),
                     faceLivenessChallenge: @js($pendingFaceLivenessChallenge),
                     matchDistance: @js($pendingFaceMatchDistance),
+                    checklistItems: @js(collect($checkpointChecklistItems)->map(fn ($label, $field) => ['field' => $field, 'label' => $label])->values()),
                 })"
                 x-init="boot()"
                 x-on:submit="handleSubmit($event)"
@@ -432,12 +434,24 @@
                                 <x-input-error :messages="$errors->get('checklist_photos')" class="mt-3" />
                                 <div class="mt-4 grid gap-3 sm:grid-cols-2">
                                     @foreach ($checkpointChecklistItems as $field => $label)
-                                        <div class="min-h-28 rounded-md border border-blue-100 bg-white p-3 text-sm text-slate-700 shadow-sm transition hover:bg-blue-50/70">
+                                        @php
+                                            $selectedChecklistStatus = old("checklist_statuses.{$field}", \App\Support\PatrolChecklist::STATUS_NORMAL);
+                                        @endphp
+                                        <div class="min-h-36 rounded-md border border-blue-100 bg-white p-3 text-sm text-slate-700 shadow-sm transition hover:bg-blue-50/70">
                                             <div class="flex items-start justify-between gap-3">
-                                                <label for="{{ $field }}" class="flex min-w-0 items-start gap-3 font-medium">
-                                                    <input id="{{ $field }}" type="checkbox" name="{{ $field }}" value="1" class="mt-0.5 rounded border-slate-300 text-blue-700 focus:ring-blue-500" @checked(old($field))>
-                                                    <span>{{ $label }}</span>
-                                                </label>
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="font-semibold text-slate-800">{{ $label }}</p>
+                                                    <div class="mt-3 grid grid-cols-3 gap-1.5">
+                                                        @foreach ($checklistStatusOptions as $statusValue => $statusLabel)
+                                                            <label for="{{ $field }}_{{ $statusValue }}" class="cursor-pointer">
+                                                                <input id="{{ $field }}_{{ $statusValue }}" type="radio" name="checklist_statuses[{{ $field }}]" value="{{ $statusValue }}" class="peer sr-only" required @checked($selectedChecklistStatus === $statusValue) @change="checklistPhotoError = ''">
+                                                                <span class="flex min-h-9 items-center justify-center rounded-md border border-slate-200 bg-white px-1.5 text-center text-[0.65rem] font-semibold leading-tight text-slate-600 transition peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-800 peer-focus:ring-2 peer-focus:ring-blue-500 peer-focus:ring-offset-1 sm:text-xs">
+                                                                    {{ $statusLabel }}
+                                                                </span>
+                                                            </label>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
 
                                                 <button type="button" class="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60" :class="checklistPhotoPreviews['{{ $field }}'] ? 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'border-blue-200 bg-white text-blue-700 hover:bg-blue-50'" @click="takeChecklistPhoto('{{ $field }}')" :disabled="submittingPatrol" :aria-label="(checklistPhotoPreviews['{{ $field }}'] ? 'Retake proof photo for ' : 'Take proof photo for ') + @js($label)" :title="(checklistPhotoPreviews['{{ $field }}'] ? 'Retake proof photo for ' : 'Take proof photo for ') + @js($label)">
                                                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -465,6 +479,7 @@
                                             </div>
 
                                             <x-input-error :messages="$errors->get('checklist_photos.'.$field)" class="mt-2" />
+                                            <x-input-error :messages="$errors->get('checklist_statuses.'.$field)" class="mt-2" />
                                         </div>
                                     @endforeach
                                 </div>

@@ -55,7 +55,7 @@ class PatrolLogReportTest extends TestCase
         $proofPhoto = $checklist->proofPhotos()->create([
             'patrol_log_id' => $patrolLog->id,
             'item_key' => 'area_secure',
-            'item_label' => 'Area secure',
+            'item_label' => 'Area condition recorded with photo proof',
             'image_path' => 'checklist-proof-photos/missing.jpg',
             'mime_type' => 'image/jpeg',
             'image_data' => base64_encode('proof-photo'),

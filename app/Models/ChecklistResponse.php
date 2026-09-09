@@ -25,6 +25,7 @@ class ChecklistResponse extends Model
         'fire_exits_clear',
         'emergency_equipment_accessible',
         'no_unauthorized_person',
+        'item_statuses',
         'remarks',
     ];
 
@@ -41,6 +42,7 @@ class ChecklistResponse extends Model
         'fire_exits_clear' => 'boolean',
         'emergency_equipment_accessible' => 'boolean',
         'no_unauthorized_person' => 'boolean',
+        'item_statuses' => 'array',
     ];
 
     public function patrolLog(): BelongsTo

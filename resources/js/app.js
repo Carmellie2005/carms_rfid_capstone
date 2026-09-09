@@ -1313,6 +1313,7 @@ Alpine.data('patrolScan', (config = {}) => ({
     incidentImagePreviews: [],
     checklistPhotoError: '',
     checklistPhotoPreviews: {},
+    checklistItems: config.checklistItems || [],
     checklistPhotoModalOpen: false,
     selectedChecklistPhoto: null,
     pendingScan: config.pendingScan || null,
@@ -1876,7 +1877,7 @@ Alpine.data('patrolScan', (config = {}) => ({
 
         this.checklistModalOpen = true;
         this.incidentModalOpen = false;
-        this.$nextTick(() => document.getElementById('area_secure')?.focus());
+        this.$nextTick(() => document.getElementById('doors_locked_normal')?.focus());
     },
 
     checklistPhotoCount() {
@@ -1962,13 +1963,26 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     validateChecklistPhotos() {
-        if (this.checklistPhotoCount() > 0) {
-            this.checklistPhotoError = '';
-            return true;
+        if (this.checklistPhotoCount() === 0) {
+            this.checklistPhotoError = 'Take at least one checkpoint proof photo before submitting.';
+            return false;
         }
 
-        this.checklistPhotoError = 'Take at least one checklist proof photo before submitting.';
-        return false;
+        const missingIssuePhotos = this.checklistItems
+            .filter((item) => {
+                const selected = document.querySelector(`input[name="checklist_statuses[${item.field}]"]:checked`);
+
+                return selected?.value === 'issue' && ! this.checklistPhotoPreviews[item.field];
+            })
+            .map((item) => item.label);
+
+        if (missingIssuePhotos.length > 0) {
+            this.checklistPhotoError = `Take a proof photo for each Issue Found item: ${missingIssuePhotos.join(', ')}.`;
+            return false;
+        }
+
+        this.checklistPhotoError = '';
+        return true;
     },
 
     focusIncidentForm() {

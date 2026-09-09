@@ -162,14 +162,14 @@
 
                         @if ($log->checklistResponse)
                             @php
-                                $mobileFlags = \App\Support\PatrolChecklist::checkedLabels($log->checklistResponse);
+                                $mobileFlags = \App\Support\PatrolChecklist::statusSummaries($log->checklistResponse);
                                 $mobileProofPhotos = $log->checklistResponse->proofPhotos;
                             @endphp
                             <div class="mt-3 flex flex-wrap gap-1">
-                                @forelse ($mobileFlags as $label)
-                                    <span class="rounded-md bg-blue-50 px-2 py-1 text-[0.65rem] text-blue-700 sm:text-xs">{{ $label }}</span>
+                                @forelse ($mobileFlags as $item)
+                                    <span class="rounded-md px-2 py-1 text-[0.65rem] ring-1 sm:text-xs {{ \App\Support\PatrolChecklist::statusBadgeClasses($item['status']) }}">{{ $item['label'] }}: {{ $item['status_label'] }}</span>
                                 @empty
-                                    <span class="text-xs text-slate-500">No checked checklist items</span>
+                                    <span class="text-xs text-slate-500">No checklist status recorded</span>
                                 @endforelse
                             </div>
                             @if ($mobileProofPhotos->isNotEmpty())
@@ -252,14 +252,14 @@
                                     <td class="px-5 py-4 text-slate-600">
                                         @if ($log->checklistResponse)
                                             @php
-                                                $flags = \App\Support\PatrolChecklist::checkedLabels($log->checklistResponse);
+                                                $flags = \App\Support\PatrolChecklist::statusSummaries($log->checklistResponse);
                                                 $proofPhotos = $log->checklistResponse->proofPhotos;
                                             @endphp
                                             <div class="flex max-w-xs flex-wrap gap-1">
-                                                @forelse ($flags as $label)
-                                                    <span class="rounded bg-blue-50 px-2 py-1 text-xs text-blue-700">{{ $label }}</span>
+                                                @forelse ($flags as $item)
+                                                    <span class="rounded px-2 py-1 text-xs ring-1 {{ \App\Support\PatrolChecklist::statusBadgeClasses($item['status']) }}">{{ $item['label'] }}: {{ $item['status_label'] }}</span>
                                                 @empty
-                                                    <span class="text-xs text-slate-500">No checked items</span>
+                                                    <span class="text-xs text-slate-500">No checklist status recorded</span>
                                                 @endforelse
                                             </div>
                                             @if ($proofPhotos->isNotEmpty())
