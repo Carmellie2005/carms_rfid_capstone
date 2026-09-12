@@ -153,9 +153,11 @@ class PatrolAreaSelfieTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('Area Selfie')
-            ->assertSee('Take a selfie at the checkpoint area')
-            ->assertSee('The proof photo will include guard, location, time, and GPS stamp.')
+            ->assertSee('Take Photo')
+            ->assertSee('Take a photo at the checkpoint area')
+            ->assertSee('Retake Photo')
             ->assertSee('area_selfie_capture', false)
+            ->assertSee('areaSelfieCameraOpen', false)
             ->assertSee('openAreaSelfieCamera()', false)
             ->assertSee('captureAreaSelfie()', false)
             ->assertSee('checklist_statuses[doors_locked]', false)

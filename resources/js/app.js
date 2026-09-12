@@ -1321,6 +1321,7 @@ Alpine.data('patrolScan', (config = {}) => ({
     areaSelfieError: '',
     areaSelfieMessage: '',
     areaSelfieLocationBusy: false,
+    areaSelfieCameraOpen: false,
     pollingTimer: null,
     checklistModalOpen: config.openChecklist || false,
     incidentModalOpen: config.openIncident || false,
@@ -1448,6 +1449,7 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.areaSelfieError = '';
         this.cameraError = '';
         this.cameraOpening = true;
+        this.areaSelfieCameraOpen = true;
         this.areaSelfieMessage = 'Opening camera...';
 
         try {
@@ -1456,11 +1458,13 @@ Alpine.data('patrolScan', (config = {}) => ({
                 video: {
                     facingMode: 'user',
                     width: { ideal: 1280 },
-                    height: { ideal: 960 },
+                    height: { ideal: 1280 },
                 },
                 audio: false,
             });
+            this.cameraOpen = true;
 
+            await new Promise((resolve) => this.$nextTick(resolve));
             const video = this.$refs.areaSelfieVideo;
 
             if (video) {
@@ -1468,7 +1472,6 @@ Alpine.data('patrolScan', (config = {}) => ({
                 await video.play().catch(() => null);
             }
 
-            this.cameraOpen = true;
             this.areaSelfieMessage = 'Camera ready. Include your face and checkpoint area in the frame.';
         } catch (error) {
             this.cameraError = cameraAccessMessage(
@@ -1477,9 +1480,19 @@ Alpine.data('patrolScan', (config = {}) => ({
                 'Camera permission was blocked. Allow camera access in the browser settings, then try again.',
             );
             this.areaSelfieMessage = '';
+            this.areaSelfieCameraOpen = false;
         } finally {
             this.cameraOpening = false;
         }
+    },
+
+    closeAreaSelfieCamera() {
+        if (this.cameraOpening || this.areaSelfieLocationBusy) {
+            return;
+        }
+
+        this.areaSelfieCameraOpen = false;
+        this.stopCamera();
     },
 
     getAreaSelfiePosition() {
@@ -1542,6 +1555,7 @@ Alpine.data('patrolScan', (config = {}) => ({
                 : '';
             this.areaSelfieMessage = 'Area selfie captured. Continue to checklist.';
             this.scanMessage = 'Area selfie captured. Complete the checklist.';
+            this.areaSelfieCameraOpen = false;
             this.stopCamera();
         } catch (error) {
             this.areaSelfieError = error?.message || 'GPS is required before capturing the area selfie.';
@@ -1604,6 +1618,7 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.scanMessage = this.pendingScan
             ? 'RFID accepted. Take the required area selfie.'
             : 'Waiting for your ESP32 checkpoint scan.';
+        this.areaSelfieCameraOpen = false;
         this.stopCamera();
     },
 

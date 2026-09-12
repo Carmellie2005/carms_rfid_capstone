@@ -205,97 +205,70 @@
                                 </div>
                             </div>
 
-                            <div x-show="pendingScan && ! areaSelfieComplete()" x-cloak x-transition.opacity.duration.200ms class="space-y-3">
-                                <div class="rounded-md border border-emerald-100 bg-white p-3">
-                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                                        <div>
-                                            <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-emerald-700">RFID accepted</p>
-                                            <h3 class="mt-0.5 text-base font-semibold text-blue-950" x-text="pendingScan?.checkpoint?.name || 'Checkpoint'"></h3>
-                                            <p class="mt-1 text-sm text-slate-500" x-text="pendingScan?.scanned_at || ''"></p>
-                                            <p class="mt-1 text-sm font-semibold text-emerald-700" x-text="scanMessage"></p>
+                            <div x-show="pendingScan && ! areaSelfieComplete()" x-cloak x-transition.opacity.duration.200ms class="mx-auto max-w-2xl space-y-3">
+                                <div class="rounded-md border border-emerald-100 bg-emerald-50 px-4 py-3">
+                                    <div class="flex items-start gap-3">
+                                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-emerald-700 ring-1 ring-emerald-100">
+                                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </span>
+                                        <div class="min-w-0">
+                                            <p class="text-sm font-semibold text-emerald-800">RFID scan accepted</p>
+                                            <p class="mt-0.5 truncate text-xs text-emerald-700" x-text="pendingScan?.checkpoint?.name || 'Checkpoint'"></p>
                                         </div>
-                                        <button type="button" class="inline-flex w-fit rounded-md bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-200 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60" @click="openAreaSelfieCamera()" :disabled="cameraOpening || submittingPatrol">
-                                            <span x-text="cameraOpen ? 'Camera open' : 'Take selfie'"></span>
-                                        </button>
                                     </div>
                                 </div>
 
-                                <div class="grid gap-3 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
+                                <div class="rounded-md border border-blue-100 bg-white p-4 text-center shadow-sm sm:p-5">
+                                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-blue-700 ring-1 ring-blue-100">
+                                        <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                                            <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
+                                        </svg>
+                                    </div>
+                                    <p class="mt-4 text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">Step 2</p>
+                                    <h3 class="mt-1 text-lg font-semibold text-blue-950">Area Selfie</h3>
+                                    <p class="mx-auto mt-1 max-w-sm text-sm leading-5 text-slate-500">Take a photo at the checkpoint area. The saved photo includes guard, location, time, and GPS stamp.</p>
+                                    <button type="button" class="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-blue-700 px-5 text-base font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300 sm:w-auto sm:min-w-56" @click="openAreaSelfieCamera()" :disabled="cameraOpening || submittingPatrol">
+                                        <svg x-show="! cameraOpening" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                                            <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
+                                        </svg>
+                                        <svg x-show="cameraOpening" x-cloak class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                                        </svg>
+                                        <span x-text="cameraOpening ? 'Opening...' : 'Take Photo'"></span>
+                                    </button>
+                                    <p x-show="areaSelfieMessage && ! areaSelfieCameraOpen" x-cloak class="mt-3 text-sm font-semibold text-blue-800" x-text="areaSelfieMessage"></p>
+                                    <p x-show="cameraError || areaSelfieError" x-cloak class="mt-3 text-sm font-semibold text-red-700" x-text="cameraError || areaSelfieError"></p>
+                                    <x-input-error :messages="$errors->get('area_selfie_capture')" class="mt-2" />
+                                    <x-input-error :messages="$errors->get('area_selfie_latitude')" class="mt-2" />
+                                    <x-input-error :messages="$errors->get('area_selfie_longitude')" class="mt-2" />
+                                </div>
+
+                                <dl class="grid gap-2 sm:grid-cols-3">
                                     <div class="rounded-md border border-blue-100 bg-white p-3">
-                                        <div class="relative aspect-[4/3] overflow-hidden rounded-md border border-blue-100 bg-slate-950">
-                                            <video x-ref="areaSelfieVideo" x-show="cameraOpen && ! areaSelfieCapture" x-cloak class="h-full w-full object-cover" autoplay playsinline muted></video>
-                                            <img x-show="areaSelfieCapture" x-cloak :src="areaSelfieCapture" alt="Captured area selfie" class="h-full w-full object-cover">
-                                            <div x-show="! cameraOpen && ! areaSelfieCapture" class="absolute inset-0 flex flex-col items-center justify-center bg-blue-50 px-6 text-center text-blue-800">
-                                                <span class="flex h-14 w-14 items-center justify-center rounded-full bg-white text-blue-700 shadow-sm ring-1 ring-blue-100">
-                                                    <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                        <path d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                                                        <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
-                                                    </svg>
-                                                </span>
-                                                <p class="mt-4 text-sm font-semibold">Take a selfie at the checkpoint area</p>
-                                                <p class="mt-1 text-xs leading-5 text-blue-700/80">The proof photo will include guard, location, time, and GPS stamp.</p>
-                                            </div>
-                                            <div x-show="cameraOpen && ! areaSelfieCapture" x-cloak class="absolute inset-x-3 bottom-3 rounded-md bg-slate-950/70 px-3 py-2 text-xs font-semibold leading-5 text-white">
-                                                <p x-text="areaSelfieStampPreview()"></p>
-                                            </div>
-                                        </div>
-                                        <canvas x-ref="areaSelfieCanvas" class="hidden"></canvas>
-
-                                        <div class="mt-3 flex flex-col gap-2 sm:flex-row">
-                                            <button x-show="! cameraOpen && ! areaSelfieCapture" type="button" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="openAreaSelfieCamera()" :disabled="cameraOpening || submittingPatrol">
-                                                <svg x-show="cameraOpening" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                    <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
-                                                </svg>
-                                                <span x-text="cameraOpening ? 'Opening...' : 'Open Camera'"></span>
-                                            </button>
-                                            <button x-show="cameraOpen && ! areaSelfieCapture" x-cloak type="button" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="captureAreaSelfie()" :disabled="areaSelfieLocationBusy || submittingPatrol">
-                                                <svg x-show="areaSelfieLocationBusy" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                    <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
-                                                </svg>
-                                                <span x-text="areaSelfieLocationBusy ? 'Getting GPS...' : 'Capture Selfie'"></span>
-                                            </button>
-                                            <button x-show="areaSelfieCapture" x-cloak type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="clearAreaSelfie()" :disabled="submittingPatrol">
-                                                Retake
-                                            </button>
-                                        </div>
-
-                                        <p x-show="areaSelfieMessage" x-cloak class="mt-3 text-sm font-semibold text-blue-800" x-text="areaSelfieMessage"></p>
-                                        <p x-show="cameraError || areaSelfieError" x-cloak class="mt-3 text-sm font-semibold text-red-700" x-text="cameraError || areaSelfieError"></p>
-                                        <x-input-error :messages="$errors->get('area_selfie_capture')" class="mt-2" />
-                                        <x-input-error :messages="$errors->get('area_selfie_latitude')" class="mt-2" />
-                                        <x-input-error :messages="$errors->get('area_selfie_longitude')" class="mt-2" />
+                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Guard</dt>
+                                        <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="pendingScan?.guard?.name || guardName"></dd>
+                                        <dd class="text-xs text-slate-500" x-text="pendingScan?.guard?.employee_no || guardEmployeeNo"></dd>
                                     </div>
-
-                                    <div class="space-y-3">
-                                        <dl class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
-                                            <div class="rounded-md border border-blue-100 bg-white p-2.5">
-                                                <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Guard</dt>
-                                                <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="pendingScan?.guard?.name || guardName"></dd>
-                                                <dd class="text-xs text-slate-500" x-text="pendingScan?.guard?.employee_no || guardEmployeeNo"></dd>
-                                            </div>
-                                            <div class="rounded-md border border-blue-100 bg-white p-2.5">
-                                                <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Location</dt>
-                                                <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="areaSelfieLocationLabel()"></dd>
-                                                <dd class="text-xs text-slate-500" x-text="pendingScan?.checkpoint?.code || pendingScan?.checkpoint_code || ''"></dd>
-                                            </div>
-                                            <div class="rounded-md border border-blue-100 bg-white p-2.5">
-                                                <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">RFID UID</dt>
-                                                <dd class="mt-1 truncate font-mono text-sm text-slate-900" x-text="pendingScan?.rfid_uid || ''"></dd>
-                                            </div>
-                                        </dl>
-
-                                        <button type="button" class="inline-flex h-10 w-full items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="continueToChecklist()" :disabled="! areaSelfieComplete() || submittingPatrol">
-                                            Continue to Checklist
-                                        </button>
+                                    <div class="rounded-md border border-blue-100 bg-white p-3">
+                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Location</dt>
+                                        <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="areaSelfieLocationLabel()"></dd>
+                                        <dd class="text-xs text-slate-500" x-text="pendingScan?.checkpoint?.code || pendingScan?.checkpoint_code || ''"></dd>
                                     </div>
-                                </div>
+                                    <div class="rounded-md border border-blue-100 bg-white p-3">
+                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">RFID UID</dt>
+                                        <dd class="mt-1 truncate font-mono text-sm text-slate-900" x-text="pendingScan?.rfid_uid || ''"></dd>
+                                    </div>
+                                </dl>
 
                                 <x-input-error :messages="$errors->get('patrol_log_id')" class="mt-2" />
                             </div>
 
-                            <div x-show="pendingScan && areaSelfieComplete()" x-cloak x-transition.opacity.duration.200ms class="space-y-3">
+                            <div x-show="pendingScan && areaSelfieComplete()" x-cloak x-transition.opacity.duration.200ms class="mx-auto max-w-3xl space-y-3">
                                 <div class="rounded-md border border-emerald-100 bg-emerald-50 px-4 py-3">
                                     <div class="flex items-center gap-3">
                                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-emerald-700 ring-1 ring-emerald-100">
@@ -310,43 +283,87 @@
                                     </div>
                                 </div>
 
-                                <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.9fr)]">
-                                    <div class="overflow-hidden rounded-md border border-blue-100 bg-white">
-                                        <div class="aspect-[4/3] bg-slate-950">
-                                            <img :src="areaSelfieCapture" alt="Captured area selfie proof" class="h-full w-full object-cover">
-                                        </div>
+                                <div class="rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-4">
+                                    <div class="flex min-h-[16rem] max-h-[65dvh] items-center justify-center overflow-hidden rounded-md bg-slate-950">
+                                        <img :src="areaSelfieCapture" alt="Captured area selfie proof" class="max-h-[65dvh] w-full object-contain" style="transform: none;">
                                     </div>
-                                    <div class="space-y-3">
-                                        <dl class="grid gap-2">
-                                            <div class="rounded-md border border-blue-100 bg-white p-2.5">
-                                                <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Guard</dt>
-                                                <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="pendingScan?.guard?.name || guardName"></dd>
-                                                <dd class="text-xs text-slate-500" x-text="pendingScan?.guard?.employee_no || guardEmployeeNo"></dd>
-                                            </div>
-                                            <div class="rounded-md border border-blue-100 bg-white p-2.5">
-                                                <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Location</dt>
-                                                <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="areaSelfieLocationLabel()"></dd>
-                                                <dd class="text-xs text-slate-500" x-text="areaSelfieGpsLabel()"></dd>
-                                            </div>
-                                            <div class="rounded-md border border-blue-100 bg-white p-2.5">
-                                                <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Captured</dt>
-                                                <dd class="mt-1 text-sm font-semibold text-slate-900" x-text="areaSelfieCapturedLabel()"></dd>
-                                            </div>
-                                        </dl>
-                                        <div class="flex flex-col gap-2 sm:flex-row lg:flex-col">
-                                            <button type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="clearAreaSelfie()" :disabled="submittingPatrol">
-                                                Retake Selfie
-                                            </button>
-                                            <button type="button" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="continueToChecklist()" :disabled="submittingPatrol">
-                                                Open Checklist
-                                            </button>
+                                    <dl class="mt-3 grid gap-2 sm:grid-cols-3">
+                                        <div class="rounded-md border border-blue-100 bg-blue-50/40 p-3">
+                                            <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Guard</dt>
+                                            <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="pendingScan?.guard?.name || guardName"></dd>
+                                            <dd class="text-xs text-slate-500" x-text="pendingScan?.guard?.employee_no || guardEmployeeNo"></dd>
                                         </div>
+                                        <div class="rounded-md border border-blue-100 bg-blue-50/40 p-3">
+                                            <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Location</dt>
+                                            <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="areaSelfieLocationLabel()"></dd>
+                                            <dd class="text-xs text-slate-500" x-text="areaSelfieGpsLabel()"></dd>
+                                        </div>
+                                        <div class="rounded-md border border-blue-100 bg-blue-50/40 p-3">
+                                            <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Captured</dt>
+                                            <dd class="mt-1 text-sm font-semibold text-slate-900" x-text="areaSelfieCapturedLabel()"></dd>
+                                        </div>
+                                    </dl>
+                                    <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                                        <button type="button" class="inline-flex h-11 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="clearAreaSelfie()" :disabled="submittingPatrol">
+                                            Retake Photo
+                                        </button>
+                                        <button type="button" class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="continueToChecklist()" :disabled="submittingPatrol">
+                                            Continue to Checklist
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
+
+                <div x-show="areaSelfieCameraOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[90] flex bg-slate-950 text-white" x-on:keydown.escape.window="areaSelfieCameraOpen && closeAreaSelfieCamera()">
+                    <section class="flex h-[100svh] max-h-[100dvh] w-full flex-col overflow-hidden">
+                        <div class="flex h-14 shrink-0 items-center justify-between gap-3 bg-slate-950/95 px-4">
+                            <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/60 disabled:cursor-not-allowed disabled:opacity-50" @click="closeAreaSelfieCamera()" :disabled="cameraOpening || areaSelfieLocationBusy" aria-label="Close camera">
+                                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                </svg>
+                            </button>
+                            <div class="min-w-0 text-center">
+                                <p class="truncate text-sm font-semibold">Take Photo</p>
+                                <p class="truncate text-[0.68rem] text-white/65" x-text="areaSelfieLocationLabel()"></p>
+                            </div>
+                            <span class="h-10 w-10" aria-hidden="true"></span>
+                        </div>
+
+                        <div class="relative flex min-h-0 flex-1 items-center justify-center bg-black">
+                            <video x-ref="areaSelfieVideo" x-show="cameraOpen" x-cloak class="max-h-full max-w-full object-contain" style="transform: none;" autoplay playsinline muted></video>
+                            <div x-show="! cameraOpen" class="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+                                <svg x-show="cameraOpening" class="h-10 w-10 animate-spin text-white/80" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                                </svg>
+                                <p class="mt-3 text-sm font-semibold text-white/80" x-text="cameraOpening ? 'Opening camera...' : 'Camera is not open'"></p>
+                            </div>
+                            <div x-show="cameraOpen && ! areaSelfieLocationBusy" x-cloak class="absolute inset-x-3 bottom-3 rounded-md bg-slate-950/75 px-3 py-2 text-xs font-semibold leading-5 text-white shadow-lg">
+                                <p x-text="areaSelfieStampPreview()"></p>
+                            </div>
+                        </div>
+
+                        <div class="shrink-0 space-y-3 bg-slate-950 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
+                            <p x-show="areaSelfieMessage" x-cloak class="text-center text-xs font-semibold text-white/75" x-text="areaSelfieMessage"></p>
+                            <p x-show="cameraError || areaSelfieError" x-cloak class="rounded-md bg-red-500/15 px-3 py-2 text-center text-xs font-semibold text-red-100 ring-1 ring-red-400/30" x-text="cameraError || areaSelfieError"></p>
+                            <div class="flex items-center justify-center">
+                                <button type="button" class="inline-flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-white shadow-lg transition hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:cursor-not-allowed disabled:opacity-60" @click="captureAreaSelfie()" :disabled="! cameraOpen || areaSelfieLocationBusy || submittingPatrol" aria-label="Capture area selfie">
+                                    <span class="h-11 w-11 rounded-full bg-white ring-2 ring-slate-950/80" x-show="! areaSelfieLocationBusy"></span>
+                                    <svg x-show="areaSelfieLocationBusy" x-cloak class="h-7 w-7 animate-spin text-blue-700" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <p class="text-center text-[0.68rem] font-semibold uppercase tracking-wide text-white/50" x-text="areaSelfieLocationBusy ? 'Getting GPS' : 'Photo'"></p>
+                        </div>
+
+                        <canvas x-ref="areaSelfieCanvas" class="hidden"></canvas>
+                    </section>
+                </div>
 
                 <div x-show="checklistModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[80] flex items-stretch justify-center overflow-hidden bg-slate-950/55 p-0 sm:items-center sm:px-4 sm:py-6">
                     <section class="flex h-[100svh] max-h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:min-h-0 sm:max-h-[92vh] sm:max-w-5xl sm:rounded-lg">
