@@ -1322,6 +1322,8 @@ Alpine.data('patrolScan', (config = {}) => ({
     areaSelfieMessage: '',
     areaSelfieLocationBusy: false,
     areaSelfieCameraOpen: false,
+    areaSelfieLastPosition: null,
+    areaSelfieUnmirrorFrontCamera: true,
     pollingTimer: null,
     checklistModalOpen: config.openChecklist || false,
     incidentModalOpen: config.openIncident || false,
@@ -1449,10 +1451,17 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.areaSelfieError = '';
         this.cameraError = '';
         this.cameraOpening = true;
-        this.areaSelfieCameraOpen = true;
-        this.areaSelfieMessage = 'Opening camera...';
+        this.areaSelfieLocationBusy = true;
+        this.areaSelfieMessage = 'Allow location access so GPS can be stamped on the photo.';
 
         try {
+            this.areaSelfieLastPosition = await this.getAreaSelfiePosition({
+                maximumAge: 30000,
+                timeout: 10000,
+            });
+            this.areaSelfieLocationBusy = false;
+            this.areaSelfieCameraOpen = true;
+            this.areaSelfieMessage = 'Opening camera...';
             this.stopCamera();
             this.cameraStream = await navigator.mediaDevices.getUserMedia({
                 video: {
@@ -1474,15 +1483,19 @@ Alpine.data('patrolScan', (config = {}) => ({
 
             this.areaSelfieMessage = 'Camera ready. Include your face and checkpoint area in the frame.';
         } catch (error) {
-            this.cameraError = cameraAccessMessage(
-                error,
-                'Live camera preview needs HTTPS on phones. Open this system through HTTPS and try again.',
-                'Camera permission was blocked. Allow camera access in the browser settings, then try again.',
-            );
+            this.cameraError = error?.code
+                ? ''
+                : cameraAccessMessage(
+                    error,
+                    'Live camera preview needs HTTPS on phones. Open this system through HTTPS and try again.',
+                    'Camera permission was blocked. Allow camera access in the browser settings, then try again.',
+                );
+            this.areaSelfieError = error?.code ? this.areaSelfieLocationErrorMessage(error) : '';
             this.areaSelfieMessage = '';
             this.areaSelfieCameraOpen = false;
         } finally {
             this.cameraOpening = false;
+            this.areaSelfieLocationBusy = false;
         }
     },
 
@@ -1495,7 +1508,7 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.stopCamera();
     },
 
-    getAreaSelfiePosition() {
+    getAreaSelfiePosition(options = {}) {
         return new Promise((resolve, reject) => {
             if (! navigator.geolocation) {
                 reject(new Error('GPS location is not available in this browser.'));
@@ -1506,8 +1519,25 @@ Alpine.data('patrolScan', (config = {}) => ({
                 enableHighAccuracy: true,
                 timeout: 12000,
                 maximumAge: 0,
+                ...options,
             });
         });
+    },
+
+    areaSelfieLocationErrorMessage(error) {
+        if (error?.code === 1) {
+            return 'Location permission was denied. Tap the lock or site settings icon in your browser, allow Location for this site, then press Take Photo again.';
+        }
+
+        if (error?.code === 2) {
+            return 'GPS location is unavailable. Turn on phone location services, then press Take Photo again.';
+        }
+
+        if (error?.code === 3) {
+            return 'GPS took too long to respond. Move where the phone can detect location, then try again.';
+        }
+
+        return error?.message || 'GPS is required before capturing the area selfie.';
     },
 
     async captureAreaSelfie() {
@@ -1529,7 +1559,17 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.areaSelfieMessage = 'Getting GPS before stamping the photo...';
 
         try {
-            const position = await this.getAreaSelfiePosition();
+            const position = await this.getAreaSelfiePosition({
+                maximumAge: 15000,
+                timeout: 10000,
+            }).catch((error) => {
+                if (this.areaSelfieLastPosition) {
+                    return this.areaSelfieLastPosition;
+                }
+
+                throw error;
+            });
+            this.areaSelfieLastPosition = position;
             const capturedAt = new Date();
             const maxWidth = 1024;
             const scale = Math.min(1, maxWidth / video.videoWidth);
@@ -1543,7 +1583,14 @@ Alpine.data('patrolScan', (config = {}) => ({
 
             canvas.width = width;
             canvas.height = height;
+
+            if (this.areaSelfieUnmirrorFrontCamera) {
+                context.translate(width, 0);
+                context.scale(-1, 1);
+            }
+
             context.drawImage(video, 0, 0, width, height);
+            context.setTransform(1, 0, 0, 1, 0, 0);
             this.drawAreaSelfieStamp(context, width, height, capturedAt, position.coords);
 
             this.areaSelfieCapture = canvas.toDataURL('image/jpeg', 0.76);
@@ -1558,7 +1605,7 @@ Alpine.data('patrolScan', (config = {}) => ({
             this.areaSelfieCameraOpen = false;
             this.stopCamera();
         } catch (error) {
-            this.areaSelfieError = error?.message || 'GPS is required before capturing the area selfie.';
+            this.areaSelfieError = this.areaSelfieLocationErrorMessage(error);
             this.areaSelfieMessage = '';
         } finally {
             this.areaSelfieLocationBusy = false;
@@ -1615,6 +1662,7 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.areaSelfieAccuracy = '';
         this.areaSelfieError = '';
         this.areaSelfieMessage = '';
+        this.areaSelfieLastPosition = null;
         this.scanMessage = this.pendingScan
             ? 'RFID accepted. Take the required area selfie.'
             : 'Waiting for your ESP32 checkpoint scan.';

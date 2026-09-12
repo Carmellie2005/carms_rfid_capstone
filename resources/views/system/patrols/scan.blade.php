@@ -229,7 +229,7 @@
                                     </div>
                                     <p class="mt-4 text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">Step 2</p>
                                     <h3 class="mt-1 text-lg font-semibold text-blue-950">Area Selfie</h3>
-                                    <p class="mx-auto mt-1 max-w-sm text-sm leading-5 text-slate-500">Take a photo at the checkpoint area. The saved photo includes guard, location, time, and GPS stamp.</p>
+                                    <p class="mx-auto mt-1 max-w-sm text-sm leading-5 text-slate-500">Take a photo at the checkpoint area. Allow location when asked so GPS can be stamped on the saved photo.</p>
                                     <button type="button" class="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-blue-700 px-5 text-base font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300 sm:w-auto sm:min-w-56" @click="openAreaSelfieCamera()" :disabled="cameraOpening || submittingPatrol">
                                         <svg x-show="! cameraOpening" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                             <path d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
@@ -333,7 +333,7 @@
                         </div>
 
                         <div class="relative flex min-h-0 flex-1 items-center justify-center bg-black">
-                            <video x-ref="areaSelfieVideo" x-show="cameraOpen" x-cloak class="max-h-full max-w-full object-contain" style="transform: none;" autoplay playsinline muted></video>
+                            <video x-ref="areaSelfieVideo" x-show="cameraOpen" x-cloak class="camera-unmirrored max-h-full max-w-full object-contain" autoplay playsinline muted></video>
                             <div x-show="! cameraOpen" class="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
                                 <svg x-show="cameraOpening" class="h-10 w-10 animate-spin text-white/80" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
