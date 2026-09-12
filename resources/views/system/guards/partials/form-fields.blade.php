@@ -35,7 +35,7 @@
 
     <div>
         <label for="{{ $fieldPrefix }}_email" class="sr-only">Email</label>
-        <input id="{{ $fieldPrefix }}_email" name="email" type="email" value="{{ $valueFor('email', $guard->email) }}" placeholder="name@guard.local" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <input id="{{ $fieldPrefix }}_email" name="email" type="email" value="{{ $valueFor('email', $guard->email) }}" placeholder="first.last@localguard.com" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
         <x-input-error :messages="$errorFor('email')" class="mt-2" />
     </div>
 
@@ -80,14 +80,14 @@
 
     <div>
         <label for="{{ $fieldPrefix }}_username" class="sr-only">Username or Email</label>
-        <input id="{{ $fieldPrefix }}_username" name="username" type="text" value="{{ $valueFor('username', $guard->user?->username) }}" placeholder="sg-03@guard.local" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="username" inputmode="email">
+        <input id="{{ $fieldPrefix }}_username" name="username" type="text" value="{{ $valueFor('username', $guard->user?->username) }}" placeholder="first.last@localguard.com" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="username" inputmode="email">
         <x-input-error :messages="$errorFor('username')" class="mt-2" />
     </div>
 
     <div>
         <label for="{{ $fieldPrefix }}_password" class="sr-only">{{ $passwordRequired ? 'Password' : 'New Password' }}</label>
         <div x-data="{ showPassword: false }" class="relative mt-1">
-            <input id="{{ $fieldPrefix }}_password" name="password" type="password" :type="showPassword ? 'text' : 'password'" placeholder="{{ $passwordRequired ? 'Minimum 8 characters' : 'Leave blank to keep password' }}" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500" @required($passwordRequired) autocomplete="new-password">
+            <input id="{{ $fieldPrefix }}_password" name="password" type="password" :type="showPassword ? 'text' : 'password'" placeholder="{{ $passwordRequired ? '8+ characters' : 'Keep current password' }}" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500" @required($passwordRequired) autocomplete="new-password">
             <button
                 type="button"
                 x-on:click="showPassword = ! showPassword"

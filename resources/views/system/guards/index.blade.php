@@ -237,7 +237,7 @@
                                 </div>
                                 <div>
                                     <label for="create_email" class="sr-only">Email</label>
-                                    <input id="create_email" name="email" type="email" value="{{ old('email', $newGuard->email) }}" placeholder="name@guard.local" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <input id="create_email" name="email" type="email" value="{{ old('email', $newGuard->email) }}" placeholder="first.last@localguard.com" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
                                 </div>
                                 <div>
@@ -275,13 +275,13 @@
                                 </div>
                                 <div>
                                     <label for="create_username" class="sr-only">Username or Email</label>
-                                    <input id="create_username" name="username" type="text" value="{{ old('username', $newGuard->user?->username) }}" placeholder="sg-03@guard.local" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="username" inputmode="email">
+                                    <input id="create_username" name="username" type="text" value="{{ old('username', $newGuard->user?->username) }}" placeholder="first.last@localguard.com" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="username" inputmode="email">
                                     <x-input-error :messages="$errors->get('username')" class="mt-2" />
                                 </div>
                                 <div>
                                     <label for="create_password" class="sr-only">Password</label>
                                     <div x-data="{ showPassword: false }" class="relative mt-1">
-                                        <input id="create_password" name="password" type="password" :type="showPassword ? 'text' : 'password'" placeholder="Minimum 8 characters" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="new-password">
+                                        <input id="create_password" name="password" type="password" :type="showPassword ? 'text' : 'password'" placeholder="8+ characters" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="new-password">
                                         <button
                                             type="button"
                                             x-on:click="showPassword = ! showPassword"

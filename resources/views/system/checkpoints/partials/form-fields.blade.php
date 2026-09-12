@@ -18,7 +18,7 @@
             @if ($checkpoint->exists) data-edit-checkpoint-first-field="{{ $checkpoint->id }}" @endif
             name="code"
             value="{{ $valueFor('code', $checkpoint->code) }}"
-            placeholder="Checkpoint Code"
+            placeholder="CP-IT-01"
             class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500"
             required
         >
@@ -27,19 +27,19 @@
 
     <div>
         <label for="{{ $fieldPrefix }}_name" class="sr-only">Checkpoint Name</label>
-        <input id="{{ $fieldPrefix }}_name" name="name" value="{{ $valueFor('name', $checkpoint->name) }}" placeholder="Checkpoint Name" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+        <input id="{{ $fieldPrefix }}_name" name="name" value="{{ $valueFor('name', $checkpoint->name) }}" placeholder="IT" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
         <x-input-error :messages="$errorFor('name')" class="mt-2" />
     </div>
 
     <div>
         <label for="{{ $fieldPrefix }}_location" class="sr-only">Location</label>
-        <input id="{{ $fieldPrefix }}_location" name="location" value="{{ $valueFor('location', $checkpoint->location) }}" placeholder="Location" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+        <input id="{{ $fieldPrefix }}_location" name="location" value="{{ $valueFor('location', $checkpoint->location) }}" placeholder="IT Building" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
         <x-input-error :messages="$errorFor('location')" class="mt-2" />
     </div>
 
     <div>
         <label for="{{ $fieldPrefix }}_device_uid" class="sr-only">Device UID</label>
-        <input id="{{ $fieldPrefix }}_device_uid" name="device_uid" value="{{ $valueFor('device_uid', $checkpoint->device_uid) }}" placeholder="Device UID" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <input id="{{ $fieldPrefix }}_device_uid" name="device_uid" value="{{ $valueFor('device_uid', $checkpoint->device_uid) }}" placeholder="ESP32-IT-01" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500">
         <x-input-error :messages="$errorFor('device_uid')" class="mt-2" />
     </div>
 
@@ -54,7 +54,7 @@
 
     <div class="md:col-span-2">
         <label for="{{ $fieldPrefix }}_description" class="sr-only">Description</label>
-        <textarea id="{{ $fieldPrefix }}_description" name="description" rows="3" placeholder="Description" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ $valueFor('description', $checkpoint->description) }}</textarea>
+        <textarea id="{{ $fieldPrefix }}_description" name="description" rows="3" placeholder="RFID checkpoint for the IT patrol area." class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ $valueFor('description', $checkpoint->description) }}</textarea>
         <x-input-error :messages="$errorFor('description')" class="mt-2" />
     </div>
 </div>
