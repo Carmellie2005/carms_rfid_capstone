@@ -178,6 +178,7 @@ class ProfileTest extends TestCase
         $user = User::factory()->create([
             'username' => 'old.username',
             'phone' => '09170000000',
+            'birthday' => null,
         ]);
 
         $response = $this
@@ -187,6 +188,7 @@ class ProfileTest extends TestCase
                 'username' => 'test.user',
                 'email' => 'test@example.com',
                 'phone' => '09171234567',
+                'birthday' => '1997-05-21',
             ]);
 
         $response
@@ -199,7 +201,26 @@ class ProfileTest extends TestCase
         $this->assertSame('test.user', $user->username);
         $this->assertSame('test@example.com', $user->email);
         $this->assertSame('09171234567', $user->phone);
+        $this->assertSame('1997-05-21', $user->birthday->toDateString());
         $this->assertNull($user->email_verified_at);
+    }
+
+    public function test_supervisor_profile_page_displays_birthday(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'birthday.supervisor',
+            'birthday' => '1995-02-14',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/profile');
+
+        $response
+            ->assertOk()
+            ->assertSee('Birthday')
+            ->assertSee('Feb 14, 1995');
     }
 
     public function test_guard_can_update_birthday_from_profile_settings(): void

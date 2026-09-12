@@ -8,19 +8,19 @@
 
     @php
         $statusClasses = [
-            'invalid' => 'bg-red-50 text-red-700 ring-red-200',
-            'suspicious' => 'bg-amber-50 text-amber-700 ring-amber-200',
-            'pending_face' => 'bg-blue-50 text-blue-700 ring-blue-200',
-            'pending_selfie' => 'bg-blue-50 text-blue-700 ring-blue-200',
-            'profile_incomplete' => 'bg-violet-50 text-violet-700 ring-violet-200',
-            'outside_schedule' => 'bg-orange-50 text-orange-700 ring-orange-200',
-            'expired' => 'bg-slate-50 text-slate-700 ring-slate-200',
+            'invalid' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/35 dark:text-red-200 dark:ring-red-400/45',
+            'suspicious' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45',
+            'pending_face' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
+            'pending_selfie' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
+            'profile_incomplete' => 'bg-violet-50 text-violet-700 ring-violet-200 dark:bg-violet-950/35 dark:text-violet-200 dark:ring-violet-400/45',
+            'outside_schedule' => 'bg-orange-50 text-orange-700 ring-orange-200 dark:bg-orange-950/35 dark:text-orange-200 dark:ring-orange-400/45',
+            'expired' => 'bg-slate-50 text-slate-700 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60',
         ];
 
         $severityClasses = [
-            'ok' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-            'warning' => 'bg-amber-50 text-amber-700 ring-amber-200',
-            'danger' => 'bg-red-50 text-red-700 ring-red-200',
+            'ok' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45',
+            'warning' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45',
+            'danger' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/35 dark:text-red-200 dark:ring-red-400/45',
         ];
 
         $summaryCards = [

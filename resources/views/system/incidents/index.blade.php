@@ -10,16 +10,16 @@
 
     @php
         $priorityClasses = [
-            'low' => 'bg-sky-50 text-sky-700 ring-sky-200',
-            'normal' => 'bg-slate-50 text-slate-700 ring-slate-200',
-            'high' => 'bg-amber-50 text-amber-700 ring-amber-200',
-            'critical' => 'bg-red-50 text-red-700 ring-red-200',
+            'low' => 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-950/35 dark:text-sky-200 dark:ring-sky-400/45',
+            'normal' => 'bg-slate-50 text-slate-700 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60',
+            'high' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45',
+            'critical' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/35 dark:text-red-200 dark:ring-red-400/45',
         ];
 
         $statusClasses = [
-            'submitted' => 'bg-blue-50 text-blue-700 ring-blue-200',
-            'under_review' => 'bg-amber-50 text-amber-700 ring-amber-200',
-            'resolved' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+            'submitted' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
+            'under_review' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45',
+            'resolved' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45',
         ];
     @endphp
 

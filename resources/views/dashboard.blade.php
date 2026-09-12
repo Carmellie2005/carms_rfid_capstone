@@ -12,30 +12,30 @@
 
     @php
         $statusClasses = [
-            'valid' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-            'suspicious' => 'bg-amber-50 text-amber-700 ring-amber-200',
-            'invalid' => 'bg-red-50 text-red-700 ring-red-200',
-            'pending_face' => 'bg-blue-50 text-blue-700 ring-blue-200',
-            'pending_selfie' => 'bg-blue-50 text-blue-700 ring-blue-200',
-            'pending_checklist' => 'bg-blue-50 text-blue-700 ring-blue-200',
-            'profile_incomplete' => 'bg-violet-50 text-violet-700 ring-violet-200',
-            'outside_schedule' => 'bg-amber-50 text-amber-700 ring-amber-200',
-            'expired' => 'bg-slate-50 text-slate-700 ring-slate-200',
-            'pending' => 'bg-slate-50 text-slate-700 ring-slate-200',
-            'not_required' => 'bg-slate-50 text-slate-700 ring-slate-200',
+            'valid' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45',
+            'suspicious' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45',
+            'invalid' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/35 dark:text-red-200 dark:ring-red-400/45',
+            'pending_face' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
+            'pending_selfie' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
+            'pending_checklist' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
+            'profile_incomplete' => 'bg-violet-50 text-violet-700 ring-violet-200 dark:bg-violet-950/35 dark:text-violet-200 dark:ring-violet-400/45',
+            'outside_schedule' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-orange-950/35 dark:text-orange-200 dark:ring-orange-400/45',
+            'expired' => 'bg-slate-50 text-slate-700 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60',
+            'pending' => 'bg-slate-50 text-slate-700 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60',
+            'not_required' => 'bg-slate-50 text-slate-700 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60',
         ];
 
         $priorityClasses = [
-            'low' => 'bg-sky-50 text-sky-700 ring-sky-200',
-            'normal' => 'bg-slate-50 text-slate-700 ring-slate-200',
-            'high' => 'bg-amber-50 text-amber-700 ring-amber-200',
-            'critical' => 'bg-red-50 text-red-700 ring-red-200',
+            'low' => 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-950/35 dark:text-sky-200 dark:ring-sky-400/45',
+            'normal' => 'bg-slate-50 text-slate-700 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60',
+            'high' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45',
+            'critical' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/35 dark:text-red-200 dark:ring-red-400/45',
         ];
 
         $incidentStatusClasses = [
-            'submitted' => 'bg-blue-50 text-blue-700 ring-blue-200',
-            'under_review' => 'bg-amber-50 text-amber-700 ring-amber-200',
-            'resolved' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+            'submitted' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
+            'under_review' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45',
+            'resolved' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45',
         ];
 
         $summaryCards = [

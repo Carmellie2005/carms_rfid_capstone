@@ -336,7 +336,7 @@
                 <x-input-error class="mt-2" :messages="$errors->get('phone')" />
             </div>
 
-            @if ($isGuard)
+            @if ($isGuard || $isSupervisor)
                 <div>
                     <x-input-label for="birthday" :value="__('Birthday')" class="sr-only" />
                     <x-text-input id="birthday" name="birthday" type="date" class="mt-1 block w-full" :value="old('birthday', $user->birthday?->toDateString())" max="{{ now()->toDateString() }}" autocomplete="bday" />
@@ -357,11 +357,15 @@
                         <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Office</dt>
                         <dd class="mt-1 text-sm font-semibold text-slate-800">Security and Safety Services Office</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-2 md:border-b-0 md:pb-0">
+                    <div class="border-b border-blue-100 pb-2">
                         <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Role in System</dt>
                         <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $roleLabel }}</dd>
                     </div>
-                    <div>
+                    <div class="border-b border-blue-100 pb-2">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Birthday</dt>
+                        <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $user->birthday?->format('M d, Y') ?? 'Not set' }}</dd>
+                    </div>
+                    <div class="md:col-span-2">
                         <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Account Status</dt>
                         <dd class="mt-1 text-sm font-semibold text-emerald-700">Active</dd>
                     </div>
