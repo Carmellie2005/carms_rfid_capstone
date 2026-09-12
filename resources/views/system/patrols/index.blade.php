@@ -53,9 +53,7 @@
             this.proofPhotoTitle = '';
         },
     }" x-on:keydown.escape.window="if (proofPhotoOpen) { closeProofPhoto() } else if (detailsOpen) { closePatrolDetails() }">
-        <div class="mx-auto max-w-[96rem] px-4 sm:px-6 lg:px-8">
-            <div class="grid gap-5 transition-all duration-300" :class="detailsOpen ? 'lg:grid-cols-[minmax(0,1fr)_27rem]' : 'lg:grid-cols-[minmax(0,1fr)]'">
-                <div class="min-w-0 space-y-5">
+        <div class="mx-auto max-w-[96rem] space-y-5 px-4 sm:px-6 lg:px-8">
             @php
                 $exportQuery = request()->only(['status', 'guard_id', 'checkpoint_id', 'date']);
             @endphp
@@ -105,6 +103,9 @@
                     </a>
                 </div>
             </form>
+
+            <div class="grid gap-5 transition-all duration-300" :class="detailsOpen ? 'lg:grid-cols-[minmax(0,1fr)_27rem]' : 'lg:grid-cols-[minmax(0,1fr)]'">
+                <div class="min-w-0 space-y-5">
 
             <div class="flex flex-col gap-3 rounded-md border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm sm:flex-row sm:items-center sm:justify-between">
                 <p class="whitespace-nowrap">
@@ -300,7 +301,7 @@
 
                 <div x-show="detailsOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[70] bg-slate-950/45 lg:hidden" @click="closePatrolDetails()"></div>
 
-                <aside x-show="detailsOpen" x-cloak x-transition class="fixed inset-x-0 bottom-0 z-[80] max-h-[88dvh] overflow-hidden rounded-t-md border border-blue-100 bg-white shadow-2xl lg:sticky lg:inset-auto lg:top-24 lg:z-auto lg:h-[calc(100dvh-8rem)] lg:max-h-none lg:rounded-md" aria-label="Patrol details panel">
+                <aside x-show="detailsOpen" x-cloak x-transition class="fixed inset-x-0 bottom-0 z-[80] max-h-[88dvh] overflow-hidden rounded-t-md border border-blue-100 bg-white shadow-2xl lg:sticky lg:inset-auto lg:top-24 lg:z-auto lg:max-h-[calc(100dvh-8rem)] lg:self-start lg:rounded-md" aria-label="Patrol details panel">
                     @foreach ($logs as $log)
                         @php
                             $detailScanTime = $log->scanned_at?->timezone(config('app.timezone'));
@@ -308,7 +309,7 @@
                             $detailProofPhotos = $log->checklistResponse?->proofPhotos ?? collect();
                         @endphp
 
-                        <section x-show="selectedPatrolId === @js((string) $log->id)" x-cloak class="flex h-full max-h-[88dvh] flex-col lg:max-h-none">
+                        <section x-show="selectedPatrolId === @js((string) $log->id)" x-cloak class="flex max-h-[88dvh] flex-col overflow-hidden lg:max-h-[calc(100dvh-8rem)]">
                             <div class="flex items-start justify-between gap-3 border-b border-blue-100 px-5 py-4">
                                 <div class="min-w-0">
                                     <p class="text-xs font-bold uppercase tracking-wide text-blue-700">Patrol Record</p>
