@@ -4,7 +4,6 @@ namespace App\Http\Controllers\System;
 
 use App\Http\Controllers\Controller;
 use App\Models\PatrolLog;
-use App\Support\FaceVerification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -15,6 +14,7 @@ class ScanIssueController extends Controller
     private const ISSUE_STATUSES = [
         'invalid',
         'suspicious',
+        'pending_selfie',
         'pending_face',
         'profile_incomplete',
         'outside_schedule',
@@ -52,7 +52,7 @@ class ScanIssueController extends Controller
                     ->where(fn (Builder $query) => $this->whereUnregisteredScan($query))
                     ->count(),
                 'invalid' => (clone $issueQuery)->where('status', 'invalid')->count(),
-                'needsFace' => (clone $issueQuery)->whereIn('status', ['pending_face', 'profile_incomplete'])->count(),
+                'needsEvidence' => (clone $issueQuery)->whereIn('status', ['pending_selfie', 'pending_face', 'profile_incomplete'])->count(),
             ],
         ]);
     }
@@ -125,15 +125,11 @@ class ScanIssueController extends Controller
         }
 
         if ($log->status === 'profile_incomplete') {
-            return FaceVerification::enabled()
-                ? 'Open the guard profile and complete live face registration.'
-                : 'This scan used an older face requirement. Ask the guard to scan again and complete the checklist.';
+            return 'This scan used an older verification requirement. Ask the guard to scan again and complete the area selfie and checklist.';
         }
 
-        if ($log->status === 'pending_face') {
-            return FaceVerification::enabled()
-                ? 'Ask the guard to open Scan Checkpoint and finish face verification.'
-                : 'Ask the guard to open Scan Checkpoint and complete the checklist.';
+        if (in_array($log->status, ['pending_selfie', 'pending_face'], true)) {
+            return 'Ask the guard to open Scan Checkpoint, take the required area selfie, and complete the checklist.';
         }
 
         if ($log->status === 'outside_schedule') {
@@ -145,9 +141,7 @@ class ScanIssueController extends Controller
         }
 
         if ($log->status === 'suspicious') {
-            return FaceVerification::enabled()
-                ? 'Review the face verification attempt and patrol details.'
-                : 'Review the patrol details and checklist proof.';
+            return 'Review the patrol details, area selfie, and checklist proof.';
         }
 
         return 'Review the guard RFID UID, checkpoint code, and reader device UID.';
@@ -157,13 +151,17 @@ class ScanIssueController extends Controller
     {
         return match ($log->status) {
             'invalid', 'suspicious' => 'danger',
-            'profile_incomplete', 'pending_face', 'outside_schedule', 'expired' => 'warning',
+            'profile_incomplete', 'pending_selfie', 'pending_face', 'outside_schedule', 'expired' => 'warning',
             default => 'ok',
         };
     }
 
     private function labelFor(?string $value): string
     {
+        if ($value === 'pending_face') {
+            return 'Pending Selfie Legacy';
+        }
+
         return Str::of($value ?: 'unknown')
             ->replace('_', ' ')
             ->title()

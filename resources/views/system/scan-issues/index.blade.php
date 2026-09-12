@@ -7,11 +7,11 @@
     </x-slot>
 
     @php
-        $faceVerificationEnabled = \App\Support\FaceVerification::enabled();
         $statusClasses = [
             'invalid' => 'bg-red-50 text-red-700 ring-red-200',
             'suspicious' => 'bg-amber-50 text-amber-700 ring-amber-200',
             'pending_face' => 'bg-blue-50 text-blue-700 ring-blue-200',
+            'pending_selfie' => 'bg-blue-50 text-blue-700 ring-blue-200',
             'profile_incomplete' => 'bg-violet-50 text-violet-700 ring-violet-200',
             'outside_schedule' => 'bg-orange-50 text-orange-700 ring-orange-200',
             'expired' => 'bg-slate-50 text-slate-700 ring-slate-200',
@@ -27,7 +27,7 @@
             ['label' => 'Total Issues', 'value' => $summary['total'], 'cardClass' => 'border-blue-100 bg-white', 'labelClass' => 'text-blue-700', 'valueClass' => 'text-blue-950'],
             ['label' => 'Unregistered RFID', 'value' => $summary['unregistered'], 'cardClass' => 'border-red-100 bg-red-50/60', 'labelClass' => 'text-red-700', 'valueClass' => 'text-red-900'],
             ['label' => 'Invalid Scans', 'value' => $summary['invalid'], 'cardClass' => 'border-amber-100 bg-amber-50/60', 'labelClass' => 'text-amber-700', 'valueClass' => 'text-amber-900'],
-            ['label' => $faceVerificationEnabled ? 'Face Review' : 'Needs Review', 'value' => $summary['needsFace'], 'cardClass' => 'border-violet-100 bg-violet-50/60', 'labelClass' => 'text-violet-700', 'valueClass' => 'text-violet-900'],
+            ['label' => 'Evidence Review', 'value' => $summary['needsEvidence'], 'cardClass' => 'border-violet-100 bg-violet-50/60', 'labelClass' => 'text-violet-700', 'valueClass' => 'text-violet-900'],
         ];
     @endphp
 
@@ -103,7 +103,7 @@
                                     </td>
                                     <td class="px-5 py-4">
                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClass }}">
-                                            {{ str($log->status)->replace('_', ' ')->title() }}
+                                            {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
                                         </span>
                                     </td>
                                     <td class="max-w-xs px-5 py-4 text-sm text-slate-600">{{ $log->notes ?: 'No diagnosis recorded.' }}</td>
@@ -133,7 +133,7 @@
                                     <p class="mt-1 text-xs text-slate-500">{{ $scanTime?->format('M d, Y h:i A') ?? 'Not recorded' }}</p>
                                 </div>
                                 <span class="max-w-[7rem] shrink-0 truncate whitespace-nowrap rounded-md px-2 py-1 text-[0.65rem] font-semibold ring-1 {{ $statusClass }}">
-                                    {{ str($log->status)->replace('_', ' ')->title() }}
+                                    {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
                                 </span>
                             </div>
                             <div class="mt-3 flex flex-wrap gap-1.5">

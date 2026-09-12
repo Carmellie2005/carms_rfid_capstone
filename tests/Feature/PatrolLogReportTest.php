@@ -74,7 +74,7 @@ class PatrolLogReportTest extends TestCase
             ->assertSee('View patrol details', false)
             ->assertSee('openPatrolDetails', false)
             ->assertSee('Completed checklist')
-            ->assertSee('Proof Photos')
+            ->assertSee('Patrol Photos')
             ->assertSee($escapedProofPhotoUrl, false)
             ->assertSee('openProofPhoto', false);
 

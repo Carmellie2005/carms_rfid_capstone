@@ -23,12 +23,23 @@ class PatrolLog extends Model
         'rfid_status',
         'facial_status',
         'status',
+        'area_selfie_path',
+        'area_selfie_mime_type',
+        'area_selfie_image_data',
+        'area_selfie_captured_at',
+        'area_selfie_latitude',
+        'area_selfie_longitude',
+        'area_selfie_accuracy',
         'scanned_at',
         'notes',
     ];
 
     protected $casts = [
         'scanned_at' => 'datetime',
+        'area_selfie_captured_at' => 'datetime',
+        'area_selfie_latitude' => 'decimal:7',
+        'area_selfie_longitude' => 'decimal:7',
+        'area_selfie_accuracy' => 'decimal:2',
     ];
 
     public function securityGuard(): BelongsTo

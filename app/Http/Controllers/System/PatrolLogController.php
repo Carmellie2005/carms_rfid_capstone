@@ -58,6 +58,7 @@ class PatrolLogController extends Controller
             'suspicious' => $logs->where('status', 'suspicious')->count(),
             'invalid' => $logs->where('status', 'invalid')->count(),
             'pending_face' => $logs->where('status', 'pending_face')->count(),
+            'pending_selfie' => $logs->whereIn('status', ['pending_selfie', 'pending_face'])->count(),
             'pending_checklist' => $logs->where('status', 'pending_checklist')->count(),
             'profile_incomplete' => $logs->where('status', 'profile_incomplete')->count(),
             'outside_schedule' => $logs->where('status', 'outside_schedule')->count(),
@@ -90,6 +91,29 @@ class PatrolLogController extends Controller
         }
 
         return $pdf->download($filename);
+    }
+
+    public function areaSelfie(Request $request, PatrolLog $patrolLog): Response
+    {
+        $this->ensureCanViewPatrolLog($request, $patrolLog);
+
+        $contents = null;
+        $mimeType = $patrolLog->area_selfie_mime_type ?: 'image/jpeg';
+
+        if ($patrolLog->area_selfie_path && Storage::disk('public')->exists($patrolLog->area_selfie_path)) {
+            $contents = Storage::disk('public')->get($patrolLog->area_selfie_path);
+            $mimeType = Storage::disk('public')->mimeType($patrolLog->area_selfie_path) ?: $mimeType;
+        } elseif ($patrolLog->area_selfie_image_data) {
+            $decoded = base64_decode($patrolLog->area_selfie_image_data, true);
+            $contents = $decoded === false ? null : $decoded;
+        }
+
+        abort_if($contents === null, 404);
+
+        return response($contents, 200, [
+            'Content-Type' => $mimeType,
+            'Cache-Control' => 'private, max-age=300',
+        ]);
     }
 
     public function proofPhoto(Request $request, PatrolLog $patrolLog, ChecklistProofPhoto $checklistProofPhoto): Response
@@ -178,6 +202,10 @@ class PatrolLogController extends Controller
 
     private function labelFor(?string $value): string
     {
+        if ($value === 'pending_face') {
+            return 'Pending Selfie';
+        }
+
         return Str::of($value ?: 'unknown')
             ->replace('_', ' ')
             ->title()

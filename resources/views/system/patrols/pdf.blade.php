@@ -164,10 +164,6 @@
     </style>
 </head>
 <body>
-    @php
-        $faceVerificationEnabled = \App\Support\FaceVerification::enabled();
-    @endphp
-
     @if ($letterheadDataUri)
         <img class="letterhead-page" src="{{ $letterheadDataUri }}" alt="">
     @endif
@@ -178,7 +174,7 @@
 
     <div class="title-block">
         <h1>Patrol Logs Report</h1>
-        <div class="subtitle">{{ $faceVerificationEnabled ? 'RFID checkpoint scans, face verification results, checklist status, and incident records' : 'RFID checkpoint scans, checklist status, proof photos, and incident records' }}</div>
+        <div class="subtitle">RFID checkpoint scans, area selfie proofs, checklist status, and incident records</div>
     </div>
 
     <div class="section">
@@ -211,7 +207,8 @@
                 <th>Valid</th>
                 <th>Suspicious</th>
                 <th>Invalid</th>
-                <th>{{ $faceVerificationEnabled ? 'Pending Face' : 'Pending Checklist' }}</th>
+                <th>Pending Selfie</th>
+                <th>Pending Checklist</th>
                 <th>Incidents</th>
             </tr>
             <tr>
@@ -219,7 +216,8 @@
                 <td>{{ $summary['valid'] }}</td>
                 <td>{{ $summary['suspicious'] }}</td>
                 <td>{{ $summary['invalid'] }}</td>
-                <td>{{ $faceVerificationEnabled ? $summary['pending_face'] : $summary['pending_checklist'] }}</td>
+                <td>{{ $summary['pending_selfie'] }}</td>
+                <td>{{ $summary['pending_checklist'] }}</td>
                 <td>{{ $summary['incidents'] }}</td>
             </tr>
         </table>
@@ -233,7 +231,7 @@
                     <th class="w-time">Date / Time</th>
                     <th class="w-guard">Guard</th>
                     <th class="w-checkpoint">Checkpoint</th>
-                    <th class="w-rfid">{{ $faceVerificationEnabled ? 'RFID / Face' : 'RFID' }}</th>
+                    <th class="w-rfid">RFID</th>
                     <th class="w-status">Status</th>
                     <th class="w-checklist">Checklist</th>
                     <th class="w-incident">Incident</th>
@@ -257,12 +255,9 @@
                         </td>
                         <td>
                             <span class="mono">{{ $log->rfid_uid }}</span>
-                            @if ($faceVerificationEnabled)
-                                <br>{{ str($log->facial_status)->replace('_', ' ')->title() }}
-                            @endif
                         </td>
                         <td>
-                            {{ str($log->status)->replace('_', ' ')->title() }}
+                            {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
                             @if ($log->notes)
                                 <br><span class="muted">{{ str($log->notes)->limit(90) }}</span>
                             @endif

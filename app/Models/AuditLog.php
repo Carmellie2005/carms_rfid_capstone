@@ -65,7 +65,8 @@ class AuditLog extends Model
             'completed' => 'Completed',
             'valid' => 'Valid',
             'verified' => 'Verified',
-            'pending_face' => 'Pending Face',
+            'pending_face' => 'Pending Selfie',
+            'pending_selfie' => 'Pending Selfie',
             'pending_checklist' => 'Pending Checklist',
             'profile_incomplete' => 'Profile Incomplete',
             'outside_schedule' => 'Outside Schedule',
@@ -90,7 +91,7 @@ class AuditLog extends Model
     {
         return match ($this->resultKey()) {
             'success', 'completed', 'valid', 'verified' => 'success',
-            'pending_face', 'pending_checklist', 'profile_incomplete', 'outside_schedule', 'suspicious' => 'warning',
+            'pending_face', 'pending_selfie', 'pending_checklist', 'profile_incomplete', 'outside_schedule', 'suspicious' => 'warning',
             'invalid', 'failed' => 'danger',
             default => 'neutral',
         };

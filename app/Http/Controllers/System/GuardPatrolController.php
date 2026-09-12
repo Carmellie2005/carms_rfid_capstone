@@ -5,18 +5,17 @@ namespace App\Http\Controllers\System;
 use App\Http\Controllers\Controller;
 use App\Models\ChecklistResponse;
 use App\Models\Checkpoint;
-use App\Models\FaceVerificationAttempt;
 use App\Models\Guard;
 use App\Models\IncidentReport;
 use App\Models\PatrolLog;
 use App\Support\AuditLogger;
-use App\Support\FaceVerification;
 use App\Support\PatrolChecklist;
 use App\Support\PatrolSchedule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -25,34 +24,18 @@ use Illuminate\View\View;
 
 class GuardPatrolController extends Controller
 {
-    private const FACE_LIVENESS_SESSION_KEY = 'patrol_face_liveness_challenges';
-
     public function create(): View
     {
         $guardProfile = auth()->user()?->guardProfile;
         $patrolScheduleOpen = PatrolSchedule::isOpen();
-        $faceVerificationEnabled = FaceVerification::enabled();
         $pendingPatrol = $guardProfile && $patrolScheduleOpen
             ? $this->latestPendingPatrolFor($guardProfile)
-            : null;
-        $pendingFaceAttempt = $faceVerificationEnabled && $pendingPatrol
-            ? $this->latestVerifiedFaceAttemptFor($pendingPatrol)
-            : null;
-        $faceRegistrationComplete = ! $faceVerificationEnabled
-            || ($guardProfile ? $this->hasCompletedFaceRegistration($guardProfile) : false);
-        $pendingFaceLivenessChallenge = $faceVerificationEnabled && $pendingPatrol
-            ? $this->livenessChallengeFor($pendingPatrol)
             : null;
 
         return view('system.patrols.scan', [
             'checkpoints' => Checkpoint::where('status', 'active')->orderBy('name')->get(),
             'guardProfile' => $guardProfile,
             'pendingPatrol' => $pendingPatrol,
-            'pendingFaceVerified' => $pendingPatrol ? (! $faceVerificationEnabled || (bool) $pendingFaceAttempt) : false,
-            'pendingFaceMatchDistance' => $pendingFaceAttempt?->match_distance,
-            'pendingFaceLivenessChallenge' => $pendingFaceLivenessChallenge,
-            'faceVerificationEnabled' => $faceVerificationEnabled,
-            'faceRegistrationComplete' => $faceRegistrationComplete,
             'patrolScheduleOpen' => $patrolScheduleOpen,
             'patrolScheduleTestingMode' => PatrolSchedule::isTestingMode(),
             'patrolScheduleLabel' => PatrolSchedule::windowLabel(),
@@ -94,103 +77,15 @@ class GuardPatrolController extends Controller
         ]);
     }
 
-    public function verifyFace(Request $request): JsonResponse
-    {
-        if (! FaceVerification::enabled()) {
-            return response()->json([
-                'verified' => false,
-                'message' => 'Face verification is currently disabled for patrols.',
-            ], 409);
-        }
-
-        $data = $request->validate([
-            'patrol_log_id' => ['required', 'integer', 'exists:patrol_logs,id'],
-            'face_capture' => ['required', 'string'],
-            'captured_descriptor' => ['required', 'string'],
-            'face_liveness_confirmed' => ['accepted'],
-            'face_liveness_challenge' => ['required', 'string', Rule::in(FaceVerification::livenessChallenges())],
-        ]);
-
-        $guard = $request->user()?->guardProfile;
-
-        if (! $guard) {
-            return response()->json([
-                'verified' => false,
-                'message' => 'Signed-in account is not linked to a guard profile.',
-            ], 403);
-        }
-
-        if (! PatrolSchedule::isOpen()) {
-            return response()->json([
-                'verified' => false,
-                'message' => PatrolSchedule::closedMessage(),
-            ], 409);
-        }
-
-        $patrolLog = PatrolLog::query()
-            ->whereKey($data['patrol_log_id'])
-            ->where('guard_id', $guard->id)
-            ->where('rfid_status', 'valid')
-            ->where('facial_status', 'pending')
-            ->where('status', 'pending_face')
-            ->first();
-
-        if (! $patrolLog) {
-            return response()->json([
-                'verified' => false,
-                'message' => 'No pending RFID scan is available for this guard. Please scan your card at the checkpoint again.',
-            ], 409);
-        }
-
-        if (! $this->livenessChallengeMatches($patrolLog, $data['face_liveness_challenge'])) {
-            return response()->json([
-                'verified' => false,
-                'status' => 'failed',
-                'message' => 'The face liveness challenge expired. Restart face verification after the RFID scan.',
-                'match_distance' => null,
-                'match_threshold' => FaceVerification::matchThreshold(),
-            ], 422);
-        }
-
-        $faceResult = $this->evaluateFaceVerification(
-            $guard,
-            $data['captured_descriptor'],
-            $data['face_capture'],
-            true,
-            $data['face_liveness_challenge'],
-        );
-
-        if (! $faceResult['processable']) {
-            return response()->json([
-                'verified' => false,
-                'status' => 'failed',
-                'message' => $faceResult['message'],
-                'match_distance' => $faceResult['match_distance'],
-                'match_threshold' => FaceVerification::matchThreshold(),
-            ], 422);
-        }
-
-        $this->recordFaceVerificationAttempt($patrolLog, $guard, $faceResult);
-
-        return response()->json([
-            'verified' => $faceResult['verified'],
-            'status' => $faceResult['verified'] ? 'verified' : 'failed',
-            'message' => $faceResult['message'],
-            'match_distance' => $faceResult['match_distance'],
-            'match_threshold' => FaceVerification::matchThreshold(),
-        ], $faceResult['verified'] ? 200 : 422);
-    }
-
     public function store(Request $request): RedirectResponse
     {
-        $faceVerificationEnabled = FaceVerification::enabled();
-
         $data = $request->validate([
             'patrol_log_id' => ['required', 'integer', 'exists:patrol_logs,id'],
-            'face_capture' => ['nullable', 'string'],
-            'captured_descriptor' => ['nullable', 'string'],
-            'face_liveness_confirmed' => ['nullable', 'boolean'],
-            'face_liveness_challenge' => ['nullable', 'string', Rule::in(FaceVerification::livenessChallenges())],
+            'area_selfie_capture' => ['required', 'string'],
+            'area_selfie_captured_at' => ['required', 'date'],
+            'area_selfie_latitude' => ['required', 'numeric', 'between:-90,90'],
+            'area_selfie_longitude' => ['required', 'numeric', 'between:-180,180'],
+            'area_selfie_accuracy' => ['nullable', 'numeric', 'min:0', 'max:10000'],
             ...PatrolChecklist::validationRules(),
             'checklist_photos' => ['nullable', 'array', 'max:'.count(PatrolChecklist::fields())],
             'checklist_photos.*' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
@@ -222,80 +117,32 @@ class GuardPatrolController extends Controller
             ->whereKey($data['patrol_log_id'])
             ->where('guard_id', $guard->id)
             ->where('rfid_status', 'valid')
-            ->when(
-                $faceVerificationEnabled,
-                fn ($query) => $query->where('facial_status', 'pending')->where('status', 'pending_face'),
-                fn ($query) => $query
-                    ->whereIn('facial_status', ['pending', 'not_required'])
-                    ->whereIn('status', ['pending_face', 'pending_checklist']),
-            )
+            ->whereIn('facial_status', ['pending', 'not_required'])
+            ->whereIn('status', ['pending_face', 'pending_selfie', 'pending_checklist'])
             ->first();
 
         if (! $patrolLog) {
             return back()->with('warning', 'No pending RFID scan is available for this guard. Please scan your card at the checkpoint again.');
         }
 
-        $verifiedFaceAttempt = $faceVerificationEnabled
-            ? $this->latestVerifiedFaceAttemptFor($patrolLog)
-            : null;
-        $faceResult = $faceVerificationEnabled && $verifiedFaceAttempt
-            ? [
-                'processable' => true,
-                'verified' => true,
-                'message' => 'Face verification already completed. Continue to the patrol checklist.',
-                'captured_descriptor' => $verifiedFaceAttempt->captured_descriptor,
-                'captured_image' => null,
-                'match_distance' => $verifiedFaceAttempt->match_distance === null ? null : (float) $verifiedFaceAttempt->match_distance,
-                'liveness_confirmed' => (bool) $verifiedFaceAttempt->liveness_confirmed_at,
-                'liveness_challenge' => $verifiedFaceAttempt->liveness_challenge,
-            ]
-            : null;
+        $areaSelfieImage = $this->imageFromCaptureDataUrl($data['area_selfie_capture'] ?? null);
 
-        if ($faceVerificationEnabled && ! $verifiedFaceAttempt && ! $this->livenessChallengeMatches($patrolLog, $data['face_liveness_challenge'] ?? null)) {
+        if (! $areaSelfieImage) {
             return back()
                 ->withInput()
-                ->with('warning', 'Complete the current random liveness challenge before submitting patrol verification.');
+                ->withErrors(['area_selfie_capture' => 'Take a clear area selfie before submitting the patrol record.']);
         }
 
-        if ($faceVerificationEnabled) {
-            $faceResult ??= $this->evaluateFaceVerification(
-                $guard,
-                $data['captured_descriptor'] ?? null,
-                $data['face_capture'] ?? null,
-                $request->boolean('face_liveness_confirmed'),
-                $data['face_liveness_challenge'] ?? null,
-            );
-        } else {
-            $faceResult = [
-                'processable' => true,
-                'verified' => true,
-                'message' => 'Face verification is disabled. Continue to the patrol checklist.',
-                'captured_descriptor' => null,
-                'captured_image' => null,
-                'match_distance' => null,
-                'liveness_confirmed' => false,
-                'liveness_challenge' => null,
-            ];
-        }
-
-        if (! $faceResult['processable']) {
-            return back()
-                ->withInput()
-                ->with('warning', $faceResult['message']);
-        }
-
-        $capturedDescriptor = $faceResult['captured_descriptor'];
-        $capturedImage = $faceResult['captured_image'];
-        $matchDistance = $faceResult['match_distance'];
-        $facialStatus = $faceVerificationEnabled ? ($faceResult['verified'] ? 'verified' : 'failed') : 'not_required';
-        $patrolStatus = $facialStatus === 'failed' ? 'suspicious' : 'valid';
+        $facialStatus = 'not_required';
+        $patrolStatus = 'valid';
         $checkpoint = $patrolLog->checkpoint;
         $checklistProofPhotoFiles = $this->checklistProofPhotoFiles($request);
         $incidentImageFiles = $this->incidentImageFiles($request);
-        $checklistProofPhotoError = $this->checklistProofPhotoError($request, $facialStatus, $checklistProofPhotoFiles);
+        $checklistProofPhotoError = $this->checklistProofPhotoError($request, $checklistProofPhotoFiles);
         $incidentImageError = $this->incidentImageError($request, $incidentImageFiles);
         $incidentReport = null;
         $submittedAt = now(config('app.timezone'));
+        $selfieCapturedAt = Carbon::parse($data['area_selfie_captured_at'])->timezone(config('app.timezone'));
 
         if ($checklistProofPhotoError) {
             return back()
@@ -309,29 +156,23 @@ class GuardPatrolController extends Controller
                 ->withErrors(['incident_images' => $incidentImageError]);
         }
 
-        DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $facialStatus, $patrolStatus, $capturedDescriptor, $capturedImage, $matchDistance, $checklistProofPhotoFiles, $incidentImageFiles, $submittedAt, $verifiedFaceAttempt, $faceResult, $faceVerificationEnabled, &$incidentReport) {
+        DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $facialStatus, $patrolStatus, $areaSelfieImage, $selfieCapturedAt, $checklistProofPhotoFiles, $incidentImageFiles, $submittedAt, &$incidentReport) {
+            $areaSelfiePath = $this->storePatrolAreaSelfie($areaSelfieImage, $guard);
+
             $patrolLog->update([
                 'facial_status' => $facialStatus,
                 'status' => $patrolStatus,
-                'notes' => $facialStatus === 'failed' ? 'Facial verification failed after a valid RFID scan.' : null,
+                'area_selfie_path' => $areaSelfiePath,
+                'area_selfie_mime_type' => $areaSelfieImage['mime_type'],
+                'area_selfie_image_data' => base64_encode($areaSelfieImage['contents']),
+                'area_selfie_captured_at' => $selfieCapturedAt,
+                'area_selfie_latitude' => $data['area_selfie_latitude'],
+                'area_selfie_longitude' => $data['area_selfie_longitude'],
+                'area_selfie_accuracy' => $data['area_selfie_accuracy'] ?? null,
+                'notes' => null,
             ]);
 
             $this->expireOtherPendingPatrols($guard, $patrolLog);
-
-            if ($faceVerificationEnabled && ! $verifiedFaceAttempt) {
-                $this->recordFaceVerificationAttempt($patrolLog, $guard, [
-                    'verified' => $facialStatus === 'verified',
-                    'captured_descriptor' => $capturedDescriptor,
-                    'captured_image' => $capturedImage,
-                    'match_distance' => $matchDistance,
-                    'liveness_confirmed' => $faceResult['liveness_confirmed'] ?? false,
-                    'liveness_challenge' => $faceResult['liveness_challenge'] ?? null,
-                ], $submittedAt);
-            }
-
-            if ($facialStatus === 'failed') {
-                return;
-            }
 
             $checklistResponse = $patrolLog->checklistResponse()->create([
                 ...PatrolChecklist::valuesFromRequest($request),
@@ -367,13 +208,9 @@ class GuardPatrolController extends Controller
             }
         });
 
-        if ($faceVerificationEnabled) {
-            $this->forgetLivenessChallengeFor($patrolLog);
-        }
-
         AuditLogger::record(
-            $facialStatus === 'failed' ? 'patrol_marked_suspicious' : 'patrol_completed',
-            $facialStatus === 'failed' ? 'Face verification failed after RFID scan.' : 'Checkpoint visit recorded successfully.',
+            'patrol_completed',
+            'Checkpoint visit recorded successfully with area selfie.',
             $patrolLog,
             [
                 'guard_id' => $guard->id,
@@ -381,7 +218,9 @@ class GuardPatrolController extends Controller
                 'checkpoint_id' => $checkpoint?->id,
                 'checkpoint_code' => $patrolLog->checkpoint_code,
                 'facial_status' => $facialStatus,
-                'match_distance' => $matchDistance,
+                'area_selfie_captured_at' => $selfieCapturedAt->toDateTimeString(),
+                'area_selfie_latitude' => $data['area_selfie_latitude'],
+                'area_selfie_longitude' => $data['area_selfie_longitude'],
                 'incident_report_id' => $incidentReport?->id,
             ]
         );
@@ -392,10 +231,6 @@ class GuardPatrolController extends Controller
                 'category' => $incidentReport->category,
                 'priority' => $incidentReport->priority,
             ]);
-        }
-
-        if ($facialStatus === 'failed') {
-            return back()->with('warning', 'RFID scan saved, but facial verification failed and was marked suspicious.');
         }
 
         return redirect()->route('patrol.scan')->with('status', 'Checkpoint visit recorded successfully.');
@@ -418,15 +253,9 @@ class GuardPatrolController extends Controller
 
     private function isPendingPatrol(PatrolLog $patrolLog): bool
     {
-        if (! FaceVerification::enabled()) {
-            return $patrolLog->rfid_status === 'valid'
-                && in_array($patrolLog->facial_status, ['pending', 'not_required'], true)
-                && in_array($patrolLog->status, ['pending_face', 'pending_checklist'], true);
-        }
-
         return $patrolLog->rfid_status === 'valid'
-            && $patrolLog->facial_status === 'pending'
-            && $patrolLog->status === 'pending_face';
+            && in_array($patrolLog->facial_status, ['pending', 'not_required'], true)
+            && in_array($patrolLog->status, ['pending_face', 'pending_selfie', 'pending_checklist'], true);
     }
 
     private function expireOtherPendingPatrols(Guard $guard, PatrolLog $completedPatrolLog): void
@@ -435,7 +264,7 @@ class GuardPatrolController extends Controller
             ->whereKeyNot($completedPatrolLog->id)
             ->where('rfid_status', 'valid')
             ->whereIn('facial_status', ['pending', 'not_required'])
-            ->whereIn('status', ['pending_face', 'pending_checklist'])
+            ->whereIn('status', ['pending_face', 'pending_selfie', 'pending_checklist'])
             ->update([
                 'facial_status' => 'expired',
                 'status' => 'expired',
@@ -445,25 +274,17 @@ class GuardPatrolController extends Controller
 
     private function patrolLogPayload(PatrolLog $patrolLog): array
     {
-        $faceVerificationEnabled = FaceVerification::enabled();
-        $verifiedFaceAttempt = $faceVerificationEnabled
-            ? $this->latestVerifiedFaceAttemptFor($patrolLog)
-            : null;
-        $livenessChallenge = $faceVerificationEnabled
-            ? $this->livenessChallengeFor($patrolLog)
-            : null;
-
         return [
             'id' => $patrolLog->id,
             'rfid_uid' => $patrolLog->rfid_uid,
             'checkpoint_code' => $patrolLog->checkpoint_code,
             'status' => $patrolLog->status,
             'facial_status' => $patrolLog->facial_status,
-            'face_verified' => ! $faceVerificationEnabled || (bool) $verifiedFaceAttempt,
-            'face_verification_enabled' => $faceVerificationEnabled,
-            'match_distance' => $verifiedFaceAttempt?->match_distance,
-            'face_liveness_challenge' => $livenessChallenge,
-            'face_liveness_label' => FaceVerification::livenessLabel($livenessChallenge),
+            'area_selfie_captured' => filled($patrolLog->area_selfie_path) || filled($patrolLog->area_selfie_image_data),
+            'area_selfie_captured_at' => $patrolLog->area_selfie_captured_at?->timezone('Asia/Manila')->format('M d, Y h:i A'),
+            'area_selfie_latitude' => $patrolLog->area_selfie_latitude,
+            'area_selfie_longitude' => $patrolLog->area_selfie_longitude,
+            'area_selfie_accuracy' => $patrolLog->area_selfie_accuracy,
             'scanned_at' => $patrolLog->scanned_at?->timezone('Asia/Manila')->format('M d, Y h:i A'),
             'guard' => [
                 'name' => $patrolLog->securityGuard?->name,
@@ -476,201 +297,6 @@ class GuardPatrolController extends Controller
                 'device_uid' => $patrolLog->checkpoint?->device_uid,
             ],
         ];
-    }
-
-    private function latestVerifiedFaceAttemptFor(PatrolLog $patrolLog): ?FaceVerificationAttempt
-    {
-        return $patrolLog->faceVerificationAttempts()
-            ->where('status', 'verified')
-            ->latest('verified_at')
-            ->latest('id')
-            ->first();
-    }
-
-    private function recordFaceVerificationAttempt(PatrolLog $patrolLog, Guard $guard, array $faceResult, mixed $verifiedAt = null): FaceVerificationAttempt
-    {
-        $facialStatus = ($faceResult['verified'] ?? false) ? 'verified' : 'failed';
-        $capturedImagePath = $this->storeFaceCapture($faceResult['captured_image'] ?? null, $guard);
-        $verifiedAt ??= now(config('app.timezone'));
-
-        return $patrolLog->faceVerificationAttempts()->create([
-            'guard_id' => $guard->id,
-            'status' => $facialStatus,
-            'match_distance' => $faceResult['match_distance'] ?? null,
-            'match_threshold' => FaceVerification::matchThreshold(),
-            'liveness_challenge' => $faceResult['liveness_challenge'] ?? null,
-            'liveness_confirmed_at' => ($faceResult['liveness_confirmed'] ?? false) ? $verifiedAt : null,
-            'captured_image_path' => $capturedImagePath,
-            'captured_descriptor' => $faceResult['captured_descriptor'] ?? null,
-            'notes' => match (true) {
-                $facialStatus === 'verified' => 'Face matched the guard pre-registered face reference for ESP32 RFID scan.',
-                default => 'Face did not match the guard pre-registered face reference after ESP32 RFID scan.',
-            },
-            'verified_at' => $verifiedAt,
-        ]);
-    }
-
-    private function evaluateFaceVerification(Guard $guard, ?string $descriptorJson, ?string $captureDataUrl, bool $livenessConfirmed = false, ?string $livenessChallenge = null): array
-    {
-        if (! $this->hasCompletedFaceRegistration($guard)) {
-            return [
-                'processable' => false,
-                'verified' => false,
-                'message' => 'Live face registration is not ready for this guard. Open Profile Settings and complete all five samples first.',
-                'captured_descriptor' => null,
-                'captured_image' => null,
-                'match_distance' => null,
-                'liveness_confirmed' => false,
-                'liveness_challenge' => $livenessChallenge,
-            ];
-        }
-
-        $storedDescriptors = $this->storedFaceDescriptors($guard);
-
-        if ($storedDescriptors === []) {
-            return [
-                'processable' => false,
-                'verified' => false,
-                'message' => 'Live face registration is not ready for this guard. Open Profile Settings and complete registration first.',
-                'captured_descriptor' => null,
-                'captured_image' => null,
-                'match_distance' => null,
-                'liveness_confirmed' => false,
-                'liveness_challenge' => $livenessChallenge,
-            ];
-        }
-
-        if (! $livenessConfirmed || ! FaceVerification::isLivenessChallenge($livenessChallenge)) {
-            return [
-                'processable' => false,
-                'verified' => false,
-                'message' => 'Complete the random liveness challenge before face verification.',
-                'captured_descriptor' => null,
-                'captured_image' => null,
-                'match_distance' => null,
-                'liveness_confirmed' => false,
-                'liveness_challenge' => $livenessChallenge,
-            ];
-        }
-
-        $capturedImage = $this->imageFromCaptureDataUrl($captureDataUrl);
-
-        if (! $capturedImage) {
-            return [
-                'processable' => false,
-                'verified' => false,
-                'message' => 'Capture a clear live face photo before submitting the patrol checklist.',
-                'captured_descriptor' => null,
-                'captured_image' => null,
-                'match_distance' => null,
-                'liveness_confirmed' => true,
-                'liveness_challenge' => $livenessChallenge,
-            ];
-        }
-
-        $capturedDescriptor = $this->descriptorFromJson($descriptorJson);
-
-        if (! $capturedDescriptor) {
-            return [
-                'processable' => false,
-                'verified' => false,
-                'message' => 'Face data is not ready. Capture a clear front-facing face and wait for processing to finish.',
-                'captured_descriptor' => null,
-                'captured_image' => null,
-                'match_distance' => null,
-                'liveness_confirmed' => true,
-                'liveness_challenge' => $livenessChallenge,
-            ];
-        }
-
-        if ($this->isExactDescriptorReplay($capturedDescriptor, $storedDescriptors)) {
-            return [
-                'processable' => true,
-                'verified' => false,
-                'message' => 'Face verification rejected a reused face reference. Capture a new live face photo.',
-                'captured_descriptor' => $capturedDescriptor,
-                'captured_image' => $capturedImage,
-                'match_distance' => 0.0,
-                'liveness_confirmed' => true,
-                'liveness_challenge' => $livenessChallenge,
-            ];
-        }
-
-        $matchDistance = $this->bestMatchDistance($capturedDescriptor, $storedDescriptors);
-        $verified = $matchDistance !== null && $matchDistance <= FaceVerification::matchThreshold();
-
-        return [
-            'processable' => true,
-            'verified' => $verified,
-            'message' => $verified
-                ? 'Face verified successfully. Continue to the patrol checklist.'
-                : 'Face mismatch. This face does not match the registered guard face.',
-            'captured_descriptor' => $capturedDescriptor,
-            'captured_image' => $capturedImage,
-            'match_distance' => $matchDistance,
-            'liveness_confirmed' => true,
-            'liveness_challenge' => $livenessChallenge,
-        ];
-    }
-
-    private function livenessChallengeFor(PatrolLog $patrolLog): string
-    {
-        $challengesByPatrol = session(self::FACE_LIVENESS_SESSION_KEY, []);
-
-        if (! is_array($challengesByPatrol)) {
-            $challengesByPatrol = [];
-        }
-
-        $challenge = $challengesByPatrol[$patrolLog->id] ?? null;
-
-        if (! FaceVerification::isLivenessChallenge($challenge)) {
-            $pool = FaceVerification::livenessChallenges();
-            $challenge = $pool[array_rand($pool)];
-            $challengesByPatrol[$patrolLog->id] = $challenge;
-            session([self::FACE_LIVENESS_SESSION_KEY => $challengesByPatrol]);
-        }
-
-        return $challenge;
-    }
-
-    private function livenessChallengeMatches(PatrolLog $patrolLog, ?string $challenge): bool
-    {
-        if (! FaceVerification::isLivenessChallenge($challenge)) {
-            return false;
-        }
-
-        $challengesByPatrol = session(self::FACE_LIVENESS_SESSION_KEY, []);
-
-        return is_array($challengesByPatrol)
-            && ($challengesByPatrol[$patrolLog->id] ?? null) === $challenge;
-    }
-
-    private function forgetLivenessChallengeFor(PatrolLog $patrolLog): void
-    {
-        $challengesByPatrol = session(self::FACE_LIVENESS_SESSION_KEY, []);
-
-        if (! is_array($challengesByPatrol)) {
-            return;
-        }
-
-        unset($challengesByPatrol[$patrolLog->id]);
-        session([self::FACE_LIVENESS_SESSION_KEY => $challengesByPatrol]);
-    }
-
-    private function storedFaceDescriptors(Guard $guard): array
-    {
-        return $guard->faceDescriptors()
-            ->whereNotNull('descriptor')
-            ->get()
-            ->pluck('descriptor')
-            ->filter(fn ($descriptor) => is_array($descriptor) && count($descriptor) === 128)
-            ->values()
-            ->all();
-    }
-
-    private function hasCompletedFaceRegistration(Guard $guard): bool
-    {
-        return FaceVerification::hasCompleteRegistration($guard->faceDescriptors()->get(['descriptor', 'capture_type']));
     }
 
     private function imageFromCaptureDataUrl(?string $captureDataUrl): ?array
@@ -691,50 +317,21 @@ class GuardPatrolController extends Controller
 
         return [
             'extension' => $matches[1] === 'jpeg' ? 'jpg' : $matches[1],
+            'mime_type' => 'image/'.($matches[1] === 'jpg' ? 'jpeg' : $matches[1]),
             'contents' => $contents,
         ];
     }
 
-    private function isExactDescriptorReplay(array $capturedDescriptor, array $storedDescriptors): bool
+    private function storePatrolAreaSelfie(array $image, Guard $guard): string
     {
-        foreach ($storedDescriptors as $storedDescriptor) {
-            if (count($capturedDescriptor) !== count($storedDescriptor)) {
-                continue;
-            }
-
-            $differences = collect($capturedDescriptor)
-                ->filter(fn ($value, $index) => abs((float) $value - (float) $storedDescriptor[$index]) > 0.00000001);
-
-            if ($differences->isEmpty()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function storeFaceCapture(?array $image, Guard $guard): ?string
-    {
-        if (! $image) {
-            return null;
-        }
-
-        $path = 'face-verifications/'.$guard->id.'/'.Str::uuid().'.'.$image['extension'];
+        $path = 'patrol-area-selfies/'.$guard->id.'/'.Str::uuid().'.'.$image['extension'];
         Storage::disk('public')->put($path, $image['contents']);
 
         return $path;
     }
 
-    private function checklistProofPhotoError(Request $request, string $facialStatus, array $checklistProofPhotoFiles): ?string
+    private function checklistProofPhotoError(Request $request, array $checklistProofPhotoFiles): ?string
     {
-        if (! in_array($facialStatus, ['verified', 'not_required'], true)) {
-            return null;
-        }
-
-        if ($checklistProofPhotoFiles === []) {
-            return 'Take at least one checkpoint proof photo before submitting the patrol record.';
-        }
-
         $photoFields = collect($checklistProofPhotoFiles)->pluck('field');
         $missingIssuePhotoLabels = PatrolChecklist::issueFieldsFromRequest($request)
             ->reject(fn (string $field) => $photoFields->contains($field))
@@ -893,51 +490,4 @@ class GuardPatrolController extends Controller
         };
     }
 
-    private function descriptorFromJson(?string $value): ?array
-    {
-        if (! filled($value)) {
-            return null;
-        }
-
-        $descriptor = json_decode($value, true);
-
-        if (! is_array($descriptor) || count($descriptor) !== 128 || ! collect($descriptor)->every(fn ($item) => is_numeric($item))) {
-            return null;
-        }
-
-        return array_map(static fn ($item) => round((float) $item, 8), array_values($descriptor));
-    }
-
-    private function bestMatchDistance(array $capturedDescriptor, array $storedDescriptors): ?float
-    {
-        $bestDistance = null;
-
-        foreach ($storedDescriptors as $storedDescriptor) {
-            $distance = $this->faceDistance($capturedDescriptor, $storedDescriptor);
-
-            if ($distance === null) {
-                continue;
-            }
-
-            $bestDistance = $bestDistance === null ? $distance : min($bestDistance, $distance);
-        }
-
-        return $bestDistance === null ? null : round($bestDistance, 6);
-    }
-
-    private function faceDistance(array $firstDescriptor, array $secondDescriptor): ?float
-    {
-        if (count($firstDescriptor) !== count($secondDescriptor)) {
-            return null;
-        }
-
-        $sum = 0;
-
-        foreach ($firstDescriptor as $index => $value) {
-            $difference = (float) $value - (float) $secondDescriptor[$index];
-            $sum += $difference * $difference;
-        }
-
-        return sqrt($sum);
-    }
 }

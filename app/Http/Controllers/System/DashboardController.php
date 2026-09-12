@@ -27,7 +27,7 @@ class DashboardController extends Controller
                 'activeCheckpoints' => Checkpoint::where('status', 'active')->count(),
                 'todayPatrols' => PatrolLog::whereDate('scanned_at', $today)->where('status', 'valid')->count(),
                 'openIncidents' => IncidentReport::whereIn('status', ['submitted', 'under_review'])->count(),
-                'suspiciousScans' => PatrolLog::whereIn('status', ['invalid', 'suspicious', 'profile_incomplete', 'outside_schedule'])->count(),
+                'suspiciousScans' => PatrolLog::whereIn('status', ['invalid', 'suspicious', 'pending_selfie', 'pending_face', 'profile_incomplete', 'outside_schedule'])->count(),
             ],
             'recentPatrols' => PatrolLog::with(['securityGuard', 'checkpoint'])
                 ->where('status', '!=', 'expired')
@@ -47,11 +47,12 @@ class DashboardController extends Controller
                         ->values(),
                 ],
                 'scanStatus' => [
-                    'labels' => ['Valid', 'Suspicious', 'Invalid', 'Profile Incomplete', 'Outside Schedule'],
+                    'labels' => ['Valid', 'Suspicious', 'Invalid', 'Pending Selfie', 'Profile Incomplete', 'Outside Schedule'],
                     'data' => [
                         PatrolLog::where('status', 'valid')->count(),
                         PatrolLog::where('status', 'suspicious')->count(),
                         PatrolLog::where('status', 'invalid')->count(),
+                        PatrolLog::whereIn('status', ['pending_selfie', 'pending_face'])->count(),
                         PatrolLog::where('status', 'profile_incomplete')->count(),
                         PatrolLog::where('status', 'outside_schedule')->count(),
                     ],

@@ -16,6 +16,7 @@
             'suspicious' => 'bg-amber-50 text-amber-700 ring-amber-200',
             'invalid' => 'bg-red-50 text-red-700 ring-red-200',
             'pending_face' => 'bg-blue-50 text-blue-700 ring-blue-200',
+            'pending_selfie' => 'bg-blue-50 text-blue-700 ring-blue-200',
             'pending_checklist' => 'bg-blue-50 text-blue-700 ring-blue-200',
             'profile_incomplete' => 'bg-violet-50 text-violet-700 ring-violet-200',
             'outside_schedule' => 'bg-amber-50 text-amber-700 ring-amber-200',
@@ -211,7 +212,7 @@
                                         <p class="mt-1 truncate text-xs text-slate-500">{{ $log->securityGuard?->employee_no ?? $log->rfid_uid }}</p>
                                     </div>
                                     <span class="shrink-0 whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
-                                        {{ str($log->status)->replace('_', ' ')->title() }}
+                                        {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
                                     </span>
                                 </div>
                                 <dl class="mt-3 grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
@@ -253,7 +254,7 @@
                                         <td class="px-5 py-4 text-slate-600">{{ $log->checkpoint?->name ?? $log->checkpoint_code }}</td>
                                         <td class="px-5 py-4">
                                             <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
-                                                {{ str($log->status)->replace('_', ' ')->title() }}
+                                                {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
                                             </span>
                                         </td>
                                         <td class="whitespace-nowrap px-5 py-4 text-slate-600">{{ $scanTime?->format('M d, Y h:i A') ?? 'Not recorded' }}</td>

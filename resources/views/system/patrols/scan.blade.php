@@ -6,12 +6,9 @@
         $incidentCategories = \App\Support\PatrolChecklist::incidentCategories();
         $guardName = $guardProfile?->name ?? Auth::user()->name;
         $guardEmployeeNo = $guardProfile?->employee_no ?? 'Account only';
-        $faceVerificationEnabled = (bool) ($faceVerificationEnabled ?? \App\Support\FaceVerification::enabled());
-        $pendingFaceVerified = $faceVerificationEnabled
-            ? (bool) ($pendingFaceVerified ?? false)
-            : (bool) $pendingPatrol;
-        $pendingFaceMatchDistance = $pendingFaceMatchDistance ?? null;
-        $pendingFaceLivenessChallenge = $pendingFaceLivenessChallenge ?? null;
+        $oldAreaSelfieCapture = old('area_selfie_capture', '');
+        $pendingSelfieCaptured = filled($oldAreaSelfieCapture)
+            || ($pendingPatrol && (filled($pendingPatrol->area_selfie_path) || filled($pendingPatrol->area_selfie_image_data)));
         $incidentFormHasErrors = $errors->has('incident_category')
             || $errors->has('incident_priority')
             || $errors->has('incident_description')
@@ -21,8 +18,7 @@
             || $errors->has('incident_camera_images')
             || $errors->has('incident_camera_images.*');
         $openIncident = $incidentDefault && old('patrol_log_id') && $incidentFormHasErrors;
-        $openChecklist = ((($errors->any() && old('patrol_log_id')) || $pendingFaceVerified) && ! $openIncident);
-        $faceRegistrationComplete = (bool) ($faceRegistrationComplete ?? false);
+        $openChecklist = ((($errors->any() && old('patrol_log_id') && $pendingSelfieCaptured) || $pendingSelfieCaptured) && ! $openIncident);
         $patrolScheduleOpen = (bool) ($patrolScheduleOpen ?? true);
         $patrolScheduleTestingMode = (bool) ($patrolScheduleTestingMode ?? false);
         $patrolScheduleMessage = $patrolScheduleMessage ?? 'Guard patrol scanning is only available during the assigned patrol schedule.';
@@ -36,11 +32,11 @@
             'checkpoint_code' => $pendingPatrol->checkpoint_code,
             'status' => $pendingPatrol->status,
             'facial_status' => $pendingPatrol->facial_status,
-            'face_verified' => $pendingFaceVerified,
-            'face_verification_enabled' => $faceVerificationEnabled,
-            'match_distance' => $pendingFaceMatchDistance,
-            'face_liveness_challenge' => $faceVerificationEnabled ? $pendingFaceLivenessChallenge : null,
-            'face_liveness_label' => $faceVerificationEnabled ? \App\Support\FaceVerification::livenessLabel($pendingFaceLivenessChallenge) : null,
+            'area_selfie_captured' => $pendingSelfieCaptured,
+            'area_selfie_captured_at' => $pendingPatrol->area_selfie_captured_at?->timezone('Asia/Manila')->format('M d, Y h:i A'),
+            'area_selfie_latitude' => $pendingPatrol->area_selfie_latitude,
+            'area_selfie_longitude' => $pendingPatrol->area_selfie_longitude,
+            'area_selfie_accuracy' => $pendingPatrol->area_selfie_accuracy,
             'scanned_at' => $pendingPatrol->scanned_at?->timezone('Asia/Manila')->format('M d, Y h:i A'),
             'guard' => [
                 'name' => $pendingPatrol->securityGuard?->name,
@@ -85,13 +81,6 @@
                 </div>
             @endif
 
-            @if ($faceVerificationEnabled && $guardProfile && ! $faceRegistrationComplete)
-                <div class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
-                    Face registration must be completed before patrol scanning.
-                    <a href="{{ route('profile.edit') }}" class="font-semibold underline hover:text-amber-900">Open Profile Settings</a>
-                </div>
-            @endif
-
             @if ($patrolScheduleTestingMode)
                 <div class="flex items-center gap-3 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800 dark:border-blue-400/30 dark:bg-blue-950/50 dark:text-blue-100">
                     <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-blue-700 ring-1 ring-blue-100 dark:bg-blue-900 dark:text-blue-100 dark:ring-blue-400/30">
@@ -107,7 +96,7 @@
                 </div>
             @endif
 
-            @if (! $guardProfile || $faceRegistrationComplete)
+            @if ($guardProfile)
             <form
                 method="POST"
                 action="{{ route('patrol.store') }}"
@@ -118,37 +107,36 @@
                     incident: @js((bool) $incidentDefault),
                     pendingScan: @js($pendingScan),
                     pendingScanUrl: @js(route('patrol.pending-scan', [], false)),
-                    faceVerifyUrl: @js(route('patrol.verify-face', [], false)),
                     csrfRefreshUrl: @js(route('csrf.refresh', [], false)),
                     guardName: @js($guardName),
                     guardEmployeeNo: @js($guardEmployeeNo),
                     patrolLogId: @js(old('patrol_log_id', $pendingPatrol?->id)),
-                    scanMessage: @js($pendingScan ? ($faceVerificationEnabled ? ($pendingFaceVerified ? 'Face verified successfully. Complete the checklist.' : 'RFID accepted. Face verification starts in 2 seconds.') : 'RFID accepted. Complete the checklist.') : ($patrolScheduleOpen ? $scanWaitingMessage : $patrolScheduleMessage)),
+                    scanMessage: @js($pendingScan ? ($pendingSelfieCaptured ? 'Area selfie captured. Complete the checklist.' : 'RFID accepted. Take the required area selfie.') : ($patrolScheduleOpen ? $scanWaitingMessage : $patrolScheduleMessage)),
                     patrolScheduleOpen: @js($patrolScheduleOpen),
                     patrolScheduleTestingMode: @js($patrolScheduleTestingMode),
                     patrolScheduleMessage: @js($patrolScheduleMessage),
                     patrolTestingNotice: @js($patrolTestingNotice),
                     openChecklist: @js((bool) $openChecklist),
                     openIncident: @js((bool) $openIncident),
-                    faceVerified: @js((bool) $pendingFaceVerified),
-                    faceVerificationEnabled: @js($faceVerificationEnabled),
-                    faceCapture: @js(old('face_capture', '')),
-                    capturedDescriptor: @js(old('captured_descriptor', '')),
-                    faceLivenessChallenge: @js($pendingFaceLivenessChallenge),
-                    matchDistance: @js($pendingFaceMatchDistance),
+                    areaSelfieCapture: @js($oldAreaSelfieCapture),
+                    areaSelfieCapturedAt: @js(old('area_selfie_captured_at', '')),
+                    areaSelfieLatitude: @js(old('area_selfie_latitude', '')),
+                    areaSelfieLongitude: @js(old('area_selfie_longitude', '')),
+                    areaSelfieAccuracy: @js(old('area_selfie_accuracy', '')),
                     checklistItems: @js(collect($checkpointChecklistItems)->map(fn ($label, $field) => ['field' => $field, 'label' => $label])->values()),
                 })"
                 x-init="boot()"
                 x-on:submit="handleSubmit($event)"
-                x-on:beforeunload.window="stopCamera(); if (pollingTimer) clearInterval(pollingTimer); if (faceVerificationDelayTimer) clearTimeout(faceVerificationDelayTimer)"
+                x-on:beforeunload.window="stopCamera(); if (pollingTimer) clearInterval(pollingTimer)"
             >
                 @csrf
 
                 <input type="hidden" name="patrol_log_id" :value="patrolLogId">
-                <input type="hidden" name="face_capture" :value="faceCapture">
-                <input type="hidden" name="captured_descriptor" :value="capturedDescriptor">
-                <input type="hidden" name="face_liveness_confirmed" :value="faceLivenessPassed ? '1' : ''">
-                <input type="hidden" name="face_liveness_challenge" :value="faceLivenessChallenge">
+                <input type="hidden" name="area_selfie_capture" :value="areaSelfieCapture">
+                <input type="hidden" name="area_selfie_captured_at" :value="areaSelfieCapturedAt">
+                <input type="hidden" name="area_selfie_latitude" :value="areaSelfieLatitude">
+                <input type="hidden" name="area_selfie_longitude" :value="areaSelfieLongitude">
+                <input type="hidden" name="area_selfie_accuracy" :value="areaSelfieAccuracy">
 
                 <section class="rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-4">
                     <div class="space-y-3">
@@ -158,68 +146,44 @@
                                 <h3 class="mt-0.5 text-base font-semibold text-blue-950">Checkpoint Scan Progress</h3>
                             </div>
                             <span class="inline-flex w-fit items-center gap-2 rounded-md px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-wide ring-1"
-                                :class="faceVerified ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : (pendingScan ? 'bg-blue-50 text-blue-700 ring-blue-200' : 'bg-slate-50 text-slate-600 ring-slate-200')"
-                                x-text="faceVerificationEnabled ? (faceVerified ? 'Step 3 of 3' : (pendingScan ? 'Step 2 of 3' : 'Step 1 of 3')) : (pendingScan ? 'Step 2 of 2' : 'Step 1 of 2')">
+                                :class="areaSelfieComplete() ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : (pendingScan ? 'bg-blue-50 text-blue-700 ring-blue-200' : 'bg-slate-50 text-slate-600 ring-slate-200')"
+                                x-text="areaSelfieComplete() ? 'Step 3 of 3' : (pendingScan ? 'Step 2 of 3' : 'Step 1 of 3')">
                             </span>
                         </div>
 
                         <div class="rounded-md border border-blue-100 bg-blue-50/60 px-3 py-3 sm:px-4">
-                            @if ($faceVerificationEnabled)
-                                <div class="grid grid-cols-[2rem_minmax(1.5rem,1fr)_2rem_minmax(1.5rem,1fr)_2rem] items-center sm:grid-cols-[2.25rem_minmax(2rem,1fr)_2.25rem_minmax(2rem,1fr)_2.25rem]">
-                                    <div class="flex justify-center">
-                                        <span class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold shadow-sm transition sm:h-9 sm:w-9 sm:text-sm"
-                                            :class="pendingScan ? 'bg-emerald-600 text-white' : 'bg-blue-700 text-white ring-4 ring-blue-100'">
-                                            <svg x-show="pendingScan" x-cloak class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                            </svg>
-                                            <span x-show="! pendingScan">1</span>
-                                        </span>
-                                    </div>
-                                    <span class="h-1 rounded-full transition" :class="pendingScan ? 'bg-emerald-500' : 'bg-blue-200'"></span>
-                                    <div class="flex justify-center">
-                                        <span class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold shadow-sm transition sm:h-9 sm:w-9 sm:text-sm"
-                                            :class="faceVerified ? 'bg-emerald-600 text-white' : (pendingScan ? 'bg-blue-700 text-white ring-4 ring-blue-100' : 'bg-white text-slate-400 ring-1 ring-slate-200')">
-                                            <svg x-show="faceVerified" x-cloak class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                            </svg>
-                                            <span x-show="! faceVerified">2</span>
-                                        </span>
-                                    </div>
-                                    <span class="h-1 rounded-full transition" :class="faceVerified ? 'bg-emerald-500' : (pendingScan ? 'bg-blue-200' : 'bg-slate-200')"></span>
-                                    <div class="flex justify-center">
-                                        <span class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold shadow-sm transition sm:h-9 sm:w-9 sm:text-sm"
-                                            :class="faceVerified ? 'bg-blue-700 text-white ring-4 ring-blue-100' : 'bg-white text-slate-400 ring-1 ring-slate-200'">3</span>
-                                    </div>
+                            <div class="grid grid-cols-[2rem_minmax(1.5rem,1fr)_2rem_minmax(1.5rem,1fr)_2rem] items-center sm:grid-cols-[2.25rem_minmax(2rem,1fr)_2.25rem_minmax(2rem,1fr)_2.25rem]">
+                                <div class="flex justify-center">
+                                    <span class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold shadow-sm transition sm:h-9 sm:w-9 sm:text-sm"
+                                        :class="pendingScan ? 'bg-emerald-600 text-white' : 'bg-blue-700 text-white ring-4 ring-blue-100'">
+                                        <svg x-show="pendingScan" x-cloak class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                        <span x-show="! pendingScan">1</span>
+                                    </span>
                                 </div>
+                                <span class="h-1 rounded-full transition" :class="pendingScan ? 'bg-emerald-500' : 'bg-blue-200'"></span>
+                                <div class="flex justify-center">
+                                    <span class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold shadow-sm transition sm:h-9 sm:w-9 sm:text-sm"
+                                        :class="areaSelfieComplete() ? 'bg-emerald-600 text-white' : (pendingScan ? 'bg-blue-700 text-white ring-4 ring-blue-100' : 'bg-white text-slate-400 ring-1 ring-slate-200')">
+                                        <svg x-show="areaSelfieComplete()" x-cloak class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                        <span x-show="! areaSelfieComplete()">2</span>
+                                    </span>
+                                </div>
+                                <span class="h-1 rounded-full transition" :class="areaSelfieComplete() ? 'bg-emerald-500' : (pendingScan ? 'bg-blue-200' : 'bg-slate-200')"></span>
+                                <div class="flex justify-center">
+                                    <span class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold shadow-sm transition sm:h-9 sm:w-9 sm:text-sm"
+                                        :class="areaSelfieComplete() ? 'bg-blue-700 text-white ring-4 ring-blue-100' : 'bg-white text-slate-400 ring-1 ring-slate-200'">3</span>
+                                </div>
+                            </div>
 
-                                <div class="mt-2 grid grid-cols-3 gap-1 text-center text-[0.62rem] font-bold uppercase tracking-wide sm:text-[0.68rem]">
-                                    <span class="whitespace-nowrap" :class="pendingScan ? 'text-emerald-700' : 'text-blue-800'">RFID Scan</span>
-                                    <span class="whitespace-nowrap" :class="faceVerified ? 'text-emerald-700' : (pendingScan ? 'text-blue-800' : 'text-slate-400')">Face Verify</span>
-                                    <span class="whitespace-nowrap" :class="faceVerified ? 'text-blue-800' : 'text-slate-400'">Checklist</span>
-                                </div>
-                            @else
-                                <div class="grid grid-cols-[2rem_minmax(1.5rem,1fr)_2rem] items-center sm:grid-cols-[2.25rem_minmax(2rem,1fr)_2.25rem]">
-                                    <div class="flex justify-center">
-                                        <span class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold shadow-sm transition sm:h-9 sm:w-9 sm:text-sm"
-                                            :class="pendingScan ? 'bg-emerald-600 text-white' : 'bg-blue-700 text-white ring-4 ring-blue-100'">
-                                            <svg x-show="pendingScan" x-cloak class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                            </svg>
-                                            <span x-show="! pendingScan">1</span>
-                                        </span>
-                                    </div>
-                                    <span class="h-1 rounded-full transition" :class="pendingScan ? 'bg-emerald-500' : 'bg-blue-200'"></span>
-                                    <div class="flex justify-center">
-                                        <span class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold shadow-sm transition sm:h-9 sm:w-9 sm:text-sm"
-                                            :class="pendingScan ? 'bg-blue-700 text-white ring-4 ring-blue-100' : 'bg-white text-slate-400 ring-1 ring-slate-200'">2</span>
-                                    </div>
-                                </div>
-
-                                <div class="mt-2 grid grid-cols-2 gap-1 text-center text-[0.62rem] font-bold uppercase tracking-wide sm:text-[0.68rem]">
-                                    <span class="whitespace-nowrap" :class="pendingScan ? 'text-emerald-700' : 'text-blue-800'">RFID Scan</span>
-                                    <span class="whitespace-nowrap" :class="pendingScan ? 'text-blue-800' : 'text-slate-400'">Checklist</span>
-                                </div>
-                            @endif
+                            <div class="mt-2 grid grid-cols-3 gap-1 text-center text-[0.62rem] font-bold uppercase tracking-wide sm:text-[0.68rem]">
+                                <span class="whitespace-nowrap" :class="pendingScan ? 'text-emerald-700' : 'text-blue-800'">RFID Scan</span>
+                                <span class="whitespace-nowrap" :class="areaSelfieComplete() ? 'text-emerald-700' : (pendingScan ? 'text-blue-800' : 'text-slate-400')">Area Selfie</span>
+                                <span class="whitespace-nowrap" :class="areaSelfieComplete() ? 'text-blue-800' : 'text-slate-400'">Checklist</span>
+                            </div>
                         </div>
 
                         <div class="rounded-md border border-blue-100 bg-blue-50/40 p-2.5 sm:p-3">
@@ -241,8 +205,7 @@
                                 </div>
                             </div>
 
-                            @if ($faceVerificationEnabled)
-                            <div x-show="pendingScan && ! faceVerified" x-cloak x-transition.opacity.duration.200ms class="space-y-3">
+                            <div x-show="pendingScan && ! areaSelfieComplete()" x-cloak x-transition.opacity.duration.200ms class="space-y-3">
                                 <div class="rounded-md border border-emerald-100 bg-white p-3">
                                     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                         <div>
@@ -251,37 +214,88 @@
                                             <p class="mt-1 text-sm text-slate-500" x-text="pendingScan?.scanned_at || ''"></p>
                                             <p class="mt-1 text-sm font-semibold text-emerald-700" x-text="scanMessage"></p>
                                         </div>
-                                        <button type="button" class="inline-flex w-fit rounded-md bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-200 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openFaceModal()">
-                                            Start now
+                                        <button type="button" class="inline-flex w-fit rounded-md bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-200 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60" @click="openAreaSelfieCamera()" :disabled="cameraOpening || submittingPatrol">
+                                            <span x-text="cameraOpen ? 'Camera open' : 'Take selfie'"></span>
                                         </button>
                                     </div>
                                 </div>
 
-                                <dl class="grid gap-2 sm:grid-cols-4">
-                                    <div class="rounded-md border border-blue-100 bg-white p-2.5">
-                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Guard</dt>
-                                        <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="pendingScan?.guard?.name || guardName"></dd>
-                                        <dd class="text-xs text-slate-500" x-text="pendingScan?.guard?.employee_no || guardEmployeeNo"></dd>
+                                <div class="grid gap-3 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
+                                    <div class="rounded-md border border-blue-100 bg-white p-3">
+                                        <div class="relative aspect-[4/3] overflow-hidden rounded-md border border-blue-100 bg-slate-950">
+                                            <video x-ref="areaSelfieVideo" x-show="cameraOpen && ! areaSelfieCapture" x-cloak class="h-full w-full object-cover" autoplay playsinline muted></video>
+                                            <img x-show="areaSelfieCapture" x-cloak :src="areaSelfieCapture" alt="Captured area selfie" class="h-full w-full object-cover">
+                                            <div x-show="! cameraOpen && ! areaSelfieCapture" class="absolute inset-0 flex flex-col items-center justify-center bg-blue-50 px-6 text-center text-blue-800">
+                                                <span class="flex h-14 w-14 items-center justify-center rounded-full bg-white text-blue-700 shadow-sm ring-1 ring-blue-100">
+                                                    <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                        <path d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                                                        <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
+                                                    </svg>
+                                                </span>
+                                                <p class="mt-4 text-sm font-semibold">Take a selfie at the checkpoint area</p>
+                                                <p class="mt-1 text-xs leading-5 text-blue-700/80">The proof photo will include guard, location, time, and GPS stamp.</p>
+                                            </div>
+                                            <div x-show="cameraOpen && ! areaSelfieCapture" x-cloak class="absolute inset-x-3 bottom-3 rounded-md bg-slate-950/70 px-3 py-2 text-xs font-semibold leading-5 text-white">
+                                                <p x-text="areaSelfieStampPreview()"></p>
+                                            </div>
+                                        </div>
+                                        <canvas x-ref="areaSelfieCanvas" class="hidden"></canvas>
+
+                                        <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+                                            <button x-show="! cameraOpen && ! areaSelfieCapture" type="button" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="openAreaSelfieCamera()" :disabled="cameraOpening || submittingPatrol">
+                                                <svg x-show="cameraOpening" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                                                </svg>
+                                                <span x-text="cameraOpening ? 'Opening...' : 'Open Camera'"></span>
+                                            </button>
+                                            <button x-show="cameraOpen && ! areaSelfieCapture" x-cloak type="button" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="captureAreaSelfie()" :disabled="areaSelfieLocationBusy || submittingPatrol">
+                                                <svg x-show="areaSelfieLocationBusy" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                                                </svg>
+                                                <span x-text="areaSelfieLocationBusy ? 'Getting GPS...' : 'Capture Selfie'"></span>
+                                            </button>
+                                            <button x-show="areaSelfieCapture" x-cloak type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="clearAreaSelfie()" :disabled="submittingPatrol">
+                                                Retake
+                                            </button>
+                                        </div>
+
+                                        <p x-show="areaSelfieMessage" x-cloak class="mt-3 text-sm font-semibold text-blue-800" x-text="areaSelfieMessage"></p>
+                                        <p x-show="cameraError || areaSelfieError" x-cloak class="mt-3 text-sm font-semibold text-red-700" x-text="cameraError || areaSelfieError"></p>
+                                        <x-input-error :messages="$errors->get('area_selfie_capture')" class="mt-2" />
+                                        <x-input-error :messages="$errors->get('area_selfie_latitude')" class="mt-2" />
+                                        <x-input-error :messages="$errors->get('area_selfie_longitude')" class="mt-2" />
                                     </div>
-                                    <div class="rounded-md border border-blue-100 bg-white p-2.5">
-                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">RFID UID</dt>
-                                        <dd class="mt-1 truncate font-mono text-sm text-slate-900" x-text="pendingScan?.rfid_uid || ''"></dd>
+
+                                    <div class="space-y-3">
+                                        <dl class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+                                            <div class="rounded-md border border-blue-100 bg-white p-2.5">
+                                                <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Guard</dt>
+                                                <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="pendingScan?.guard?.name || guardName"></dd>
+                                                <dd class="text-xs text-slate-500" x-text="pendingScan?.guard?.employee_no || guardEmployeeNo"></dd>
+                                            </div>
+                                            <div class="rounded-md border border-blue-100 bg-white p-2.5">
+                                                <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Location</dt>
+                                                <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="areaSelfieLocationLabel()"></dd>
+                                                <dd class="text-xs text-slate-500" x-text="pendingScan?.checkpoint?.code || pendingScan?.checkpoint_code || ''"></dd>
+                                            </div>
+                                            <div class="rounded-md border border-blue-100 bg-white p-2.5">
+                                                <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">RFID UID</dt>
+                                                <dd class="mt-1 truncate font-mono text-sm text-slate-900" x-text="pendingScan?.rfid_uid || ''"></dd>
+                                            </div>
+                                        </dl>
+
+                                        <button type="button" class="inline-flex h-10 w-full items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="continueToChecklist()" :disabled="! areaSelfieComplete() || submittingPatrol">
+                                            Continue to Checklist
+                                        </button>
                                     </div>
-                                    <div class="rounded-md border border-blue-100 bg-white p-2.5">
-                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Checkpoint</dt>
-                                        <dd class="mt-1 truncate font-mono text-sm text-slate-900" x-text="pendingScan?.checkpoint?.code || pendingScan?.checkpoint_code || ''"></dd>
-                                    </div>
-                                    <div class="rounded-md border border-blue-100 bg-white p-2.5">
-                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Device UID</dt>
-                                        <dd class="mt-1 truncate font-mono text-sm text-slate-900" x-text="pendingScan?.checkpoint?.device_uid || 'Device recorded'"></dd>
-                                    </div>
-                                </dl>
+                                </div>
 
                                 <x-input-error :messages="$errors->get('patrol_log_id')" class="mt-2" />
                             </div>
-                            @endif
 
-                            <div x-show="faceVerified" x-cloak x-transition.opacity.duration.200ms class="space-y-3">
+                            <div x-show="pendingScan && areaSelfieComplete()" x-cloak x-transition.opacity.duration.200ms class="space-y-3">
                                 <div class="rounded-md border border-emerald-100 bg-emerald-50 px-4 py-3">
                                     <div class="flex items-center gap-3">
                                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-emerald-700 ring-1 ring-emerald-100">
@@ -290,38 +304,39 @@
                                             </svg>
                                         </span>
                                         <div>
-                                            <p class="text-sm font-semibold text-emerald-800">{{ $faceVerificationEnabled ? 'Steps 1 and 2 complete' : 'RFID scan accepted' }}</p>
-                                            <p class="mt-0.5 text-xs text-emerald-700">{{ $faceVerificationEnabled ? 'RFID and face verification are confirmed.' : 'Complete the checklist and proof photo for this checkpoint.' }}</p>
+                                            <p class="text-sm font-semibold text-emerald-800">Steps 1 and 2 complete</p>
+                                            <p class="mt-0.5 text-xs text-emerald-700">RFID scan and stamped area selfie are ready.</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <dl class="grid gap-2 sm:grid-cols-2">
-                                    <div class="rounded-md border border-blue-100 bg-white p-2.5">
-                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Checkpoint</dt>
-                                        <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="pendingScan?.checkpoint?.name || 'Checkpoint'"></dd>
-                                        <dd class="text-xs text-slate-500" x-text="pendingScan?.scanned_at || ''"></dd>
-                                    </div>
-                                    <div class="rounded-md border border-blue-100 bg-white p-2.5">
-                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Guard</dt>
-                                        <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="pendingScan?.guard?.name || guardName"></dd>
-                                        <dd class="text-xs text-slate-500" x-text="pendingScan?.guard?.employee_no || guardEmployeeNo"></dd>
-                                    </div>
-                                </dl>
-
-                                <div class="rounded-md border border-blue-100 bg-white p-3">
-                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <div>
-                                            <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">{{ $faceVerificationEnabled ? 'Step 3' : 'Step 2' }}</p>
-                                            <h4 class="mt-0.5 text-sm font-semibold text-blue-950">Checklist and Incident</h4>
-                                            <p class="mt-1 text-xs text-slate-500">Complete the patrol checklist before submitting this checkpoint visit.</p>
+                                <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.9fr)]">
+                                    <div class="overflow-hidden rounded-md border border-blue-100 bg-white">
+                                        <div class="aspect-[4/3] bg-slate-950">
+                                            <img :src="areaSelfieCapture" alt="Captured area selfie proof" class="h-full w-full object-cover">
                                         </div>
-                                        <div class="flex flex-col gap-2 sm:flex-row">
-                                            @if ($faceVerificationEnabled)
-                                            <button type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60" @click="openFaceModal()" :disabled="faceModelLoading || cameraOpening || verificationBusy || submittingPatrol">
-                                                Recheck Face
+                                    </div>
+                                    <div class="space-y-3">
+                                        <dl class="grid gap-2">
+                                            <div class="rounded-md border border-blue-100 bg-white p-2.5">
+                                                <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Guard</dt>
+                                                <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="pendingScan?.guard?.name || guardName"></dd>
+                                                <dd class="text-xs text-slate-500" x-text="pendingScan?.guard?.employee_no || guardEmployeeNo"></dd>
+                                            </div>
+                                            <div class="rounded-md border border-blue-100 bg-white p-2.5">
+                                                <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Location</dt>
+                                                <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="areaSelfieLocationLabel()"></dd>
+                                                <dd class="text-xs text-slate-500" x-text="areaSelfieGpsLabel()"></dd>
+                                            </div>
+                                            <div class="rounded-md border border-blue-100 bg-white p-2.5">
+                                                <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Captured</dt>
+                                                <dd class="mt-1 text-sm font-semibold text-slate-900" x-text="areaSelfieCapturedLabel()"></dd>
+                                            </div>
+                                        </dl>
+                                        <div class="flex flex-col gap-2 sm:flex-row lg:flex-col">
+                                            <button type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="clearAreaSelfie()" :disabled="submittingPatrol">
+                                                Retake Selfie
                                             </button>
-                                            @endif
                                             <button type="button" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="continueToChecklist()" :disabled="submittingPatrol">
                                                 Open Checklist
                                             </button>
@@ -333,125 +348,11 @@
                     </div>
                 </section>
 
-                @if ($faceVerificationEnabled)
-                <div x-show="faceModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-slate-950/55 p-3 sm:p-6">
-                    <section class="face-verification-modal mobile-scroll-area overflow-y-auto rounded-md bg-white px-4 py-4 text-center shadow-2xl dark:bg-slate-900 sm:px-6 sm:py-5">
-                        <div class="flex justify-end">
-                            <button type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-slate-700 ring-1 ring-blue-100 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-700 dark:focus:ring-offset-slate-900" @click="closeFaceModal()" aria-label="Close face verification">
-                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div class="-mt-2">
-                            <p class="text-sm font-bold uppercase tracking-wide text-blue-700">Step 2</p>
-                            <h3 class="mt-1 text-2xl font-bold tracking-tight text-blue-950 dark:text-white">Face Verification</h3>
-                        </div>
-
-                        <div class="mt-6">
-                            <div class="face-verification-circle relative mx-auto aspect-square" :class="faceLightAssist ? 'camera-light-assist-on' : ''">
-                                <span x-show="cameraOpen && ! faceCapture" x-cloak class="face-auto-scan-ring" :class="faceGuideState === 'centered' ? 'opacity-100' : 'opacity-70'"></span>
-
-                                <div class="absolute inset-0 overflow-hidden rounded-full border-[6px] border-blue-700 bg-gradient-to-b from-sky-100 via-blue-50 to-emerald-50 shadow-[0_16px_45px_rgba(37,99,235,0.18)] dark:border-blue-500 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800">
-                                    <video x-ref="faceVideo" x-show="cameraOpen && ! faceCapture" class="camera-unmirrored h-full w-full object-cover" autoplay playsinline muted></video>
-                                    <img x-show="faceCapture" :src="faceCapture" alt="Captured face" class="camera-unmirrored h-full w-full object-cover">
-
-                                    <div x-show="! cameraOpen && ! faceCapture" class="absolute inset-0 flex flex-col items-center justify-center px-6 text-blue-800 dark:text-blue-100">
-                                        <span class="flex h-16 w-16 items-center justify-center rounded-full bg-white/75 text-blue-700 shadow-sm ring-1 ring-blue-100 dark:bg-slate-900/80 dark:text-blue-200 dark:ring-slate-700">
-                                            <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                <path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" stroke="currentColor" stroke-width="2" />
-                                                <path d="M4 19c1.6-3 4.3-4.5 8-4.5S18.4 16 20 19M5 5h3M16 5h3M5 5v3M19 5v3M5 16v3M5 19h3M19 16v3M16 19h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                            </svg>
-                                        </span>
-                                        <p class="mt-4 text-sm font-semibold">Start face verification</p>
-                                        <p class="mt-1 text-xs leading-5 text-blue-700/80 dark:text-blue-200">Your face preview will stay inside this circle.</p>
-                                    </div>
-                                </div>
-
-                                <div x-show="cameraOpen && ! faceCapture" x-cloak class="absolute left-1/2 top-3 z-20 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-semibold shadow-sm ring-1" :class="faceLivenessPassed ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-white/90 text-blue-800 ring-blue-100'">
-                                    <span x-text="faceLivenessChallengeBadge()"></span>
-                                </div>
-
-                                <div x-show="faceModelLoading || cameraOpening || capturingFace || verificationBusy" x-cloak x-transition.opacity.duration.150ms class="absolute inset-0 flex items-center justify-center rounded-full bg-white/85 p-4 text-blue-950 backdrop-blur-sm dark:bg-slate-950/80 dark:text-blue-100">
-                                    <x-brand-spinner>
-                                        <span x-text="faceModelLoading ? 'Loading face model...' : (cameraOpening ? 'Opening camera...' : (capturingFace ? 'Capturing face...' : 'Verifying face...'))"></span>
-                                        <x-slot name="description">
-                                            <span x-text="faceModelLoading ? 'Preparing the face matcher.' : (cameraOpening ? 'Starting camera.' : 'This step will continue automatically.')"></span>
-                                        </x-slot>
-                                    </x-brand-spinner>
-                                </div>
-                            </div>
-                            <canvas x-ref="faceCanvas" class="hidden"></canvas>
-
-                            <div class="mt-6 space-y-3 text-left">
-                                <div class="flex items-center gap-3">
-                                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700 ring-1 ring-blue-100 dark:bg-slate-800 dark:text-blue-200 dark:ring-slate-700">
-                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                            <path d="M5 5h4M15 5h4M5 5v4M19 5v4M5 15v4M5 19h4M19 15v4M15 19h4M9.5 12a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                        </svg>
-                                    </span>
-                                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">Position your face inside the circle</p>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-1 dark:bg-emerald-950 dark:text-emerald-200 dark:ring-emerald-900" :class="faceLivenessPassed ? 'bg-emerald-50 text-emerald-700 ring-emerald-100' : 'bg-blue-50 text-blue-700 ring-blue-100'">
-                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                            <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" stroke="currentColor" stroke-width="2" />
-                                            <path d="m7.8 12.2 2.5 2.5 5.9-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                        </svg>
-                                    </span>
-                                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-100" x-text="faceLivenessPassed ? 'Random challenge confirmed' : faceLivenessChallengeInstruction()"></p>
-                                </div>
-                            </div>
-
-                            <div x-show="cameraOpen && ! faceCapture" x-cloak class="mx-auto mt-5 max-w-64">
-                                <div class="h-1.5 overflow-hidden rounded-full bg-emerald-100">
-                                    <div class="h-full rounded-full bg-emerald-500 transition-all duration-150" :style="`width: ${faceScanProgress}%`"></div>
-                                </div>
-                            </div>
-
-                            <p x-show="cameraError" x-text="cameraError" class="mt-4 text-sm font-semibold text-red-700"></p>
-                            <p x-show="verificationMessage && (! cameraOpen || faceCapture)" x-text="verificationMessage" class="mt-3 text-sm font-semibold leading-5 text-blue-800 dark:text-blue-200"></p>
-                            <p x-show="faceLightMessage && cameraOpen && ! faceCapture" x-cloak x-text="faceLightMessage" class="mt-3 text-xs font-semibold text-amber-700 dark:text-amber-300"></p>
-                            <p class="mt-2 text-xs font-semibold text-blue-700 dark:text-blue-300" x-show="matchDistance !== null" x-text="`Match distance: ${matchDistance}`"></p>
-
-                            <div x-show="cameraOpen && ! faceCapture && ! cameraError" x-cloak class="mx-auto mt-5 inline-flex items-center gap-2 rounded-md bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950 dark:text-emerald-200 dark:ring-emerald-900">
-                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                                <span x-text="verificationBusy ? 'Checking face...' : (faceLivenessPassed ? 'Verifying face...' : 'Verifying live challenge...')"></span>
-                            </div>
-
-                            <div class="mt-3">
-                                <button x-show="! cameraOpen && ! faceCapture" type="button" class="inline-flex h-10 w-full items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300 dark:focus:ring-offset-slate-900" @click="beginAutomaticFaceVerification()" :disabled="faceModelLoading || cameraOpening || capturingFace || verificationBusy || submittingPatrol">
-                                    <svg x-show="faceModelLoading || cameraOpening" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
-                                    </svg>
-                                    <span x-text="faceModelLoading ? 'Preparing...' : (cameraOpening ? 'Opening...' : 'Start Face Verification')"></span>
-                                </button>
-
-                                <button type="button" class="mt-2 inline-flex h-10 w-full items-center justify-center rounded-md border px-4 text-sm font-semibold shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-offset-slate-900" :class="faceLightAssist ? 'border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200 dark:hover:bg-amber-900' : 'border-blue-200 bg-white text-blue-700 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-slate-800'" @click="toggleFaceLightAssist()" :disabled="faceModelLoading || cameraOpening || capturingFace || verificationBusy || submittingPatrol" :aria-pressed="faceLightAssist.toString()">
-                                    <svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                        <path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                    </svg>
-                                    <span x-text="faceLightAssistLabel()">Light Assist</span>
-                                </button>
-
-                                <button x-show="cameraError && ! cameraOpening && ! faceModelLoading && ! verificationBusy && ! capturingFace" x-cloak type="button" class="mt-2 inline-flex h-10 w-full items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-slate-800" @click="restartFaceVerification()" :disabled="submittingPatrol">
-                                    Try Again
-                                </button>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-                @endif
-
                 <div x-show="checklistModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[80] flex items-stretch justify-center overflow-hidden bg-slate-950/55 p-0 sm:items-center sm:px-4 sm:py-6">
                     <section class="flex h-[100svh] max-h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:min-h-0 sm:max-h-[92vh] sm:max-w-5xl sm:rounded-lg">
                         <div class="flex items-start justify-between gap-4 border-b border-blue-100 px-4 py-4 sm:px-5">
                             <div>
-                                <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">{{ $faceVerificationEnabled ? 'Step 3' : 'Step 2' }}</p>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Step 3</p>
                                 <h3 class="text-lg font-semibold text-blue-950">Checklist and Incident Report</h3>
                                 <p class="mt-1 text-sm text-slate-500">Complete the patrol checklist before submitting this checkpoint visit.</p>
                             </div>
@@ -568,13 +469,13 @@
 
                         <div class="flex flex-col gap-3 border-t border-blue-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                             <p class="text-sm text-slate-500">
-                                {{ $faceVerificationEnabled ? 'Submitting will complete the ESP32 RFID scan, face verification step, checklist, and incident report if provided.' : 'Submitting will complete the ESP32 RFID scan, checklist, and incident report if provided.' }}
+                                Submitting will complete the ESP32 RFID scan, stamped area selfie, checklist, and incident report if provided.
                             </p>
                             <div class="flex flex-col gap-2 sm:flex-row">
                                 <button type="button" class="inline-flex h-11 items-center justify-center rounded-md border border-blue-200 bg-white px-5 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="checklistModalOpen = false" :disabled="submittingPatrol">
                                     Review Scan
                                 </button>
-                                <button type="submit" class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" :disabled="! patrolLogId || ! faceVerified || submittingPatrol" :class="(! patrolLogId || ! faceVerified || submittingPatrol) ? 'cursor-not-allowed opacity-60' : ''">
+                                <button type="submit" class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" :disabled="! patrolLogId || ! areaSelfieComplete() || submittingPatrol" :class="(! patrolLogId || ! areaSelfieComplete() || submittingPatrol) ? 'cursor-not-allowed opacity-60' : ''">
                                     <svg x-show="submittingPatrol" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
@@ -700,7 +601,7 @@
                             <button type="button" class="inline-flex h-11 items-center justify-center rounded-md border border-blue-200 bg-white px-5 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="closeIncidentModal()" :disabled="submittingPatrol">
                                 Back to Checklist
                             </button>
-                            <button type="submit" class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" :disabled="! patrolLogId || ! faceVerified || submittingPatrol">
+                            <button type="submit" class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" :disabled="! patrolLogId || ! areaSelfieComplete() || submittingPatrol">
                                 <svg x-show="submittingPatrol" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>

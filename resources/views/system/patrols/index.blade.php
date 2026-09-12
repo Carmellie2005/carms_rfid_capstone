@@ -3,7 +3,7 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-blue-950">{{ $isSupervisor ? __('Patrol Logs') : __('My Patrol Logs') }}</h2>
-                <p class="mt-1 text-sm text-blue-600">{{ \App\Support\FaceVerification::enabled() ? 'RFID scans, facial verification results, and checklist records' : 'RFID scans, checklist records, and incident reports' }}</p>
+                <p class="mt-1 text-sm text-blue-600">RFID scans, area selfie proofs, checklist records, and incident reports</p>
             </div>
             @unless ($isSupervisor)
                 <a href="{{ route('patrol.scan') }}" class="inline-flex w-full items-center justify-center rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">
@@ -14,12 +14,12 @@
     </x-slot>
 
     @php
-        $faceVerificationEnabled = \App\Support\FaceVerification::enabled();
         $statusClasses = [
             'valid' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
             'suspicious' => 'bg-amber-50 text-amber-700 ring-amber-200',
             'invalid' => 'bg-red-50 text-red-700 ring-red-200',
             'pending_face' => 'bg-blue-50 text-blue-700 ring-blue-200',
+            'pending_selfie' => 'bg-blue-50 text-blue-700 ring-blue-200',
             'pending_checklist' => 'bg-blue-50 text-blue-700 ring-blue-200',
             'profile_incomplete' => 'bg-violet-50 text-violet-700 ring-violet-200',
             'outside_schedule' => 'bg-amber-50 text-amber-700 ring-amber-200',
@@ -63,7 +63,7 @@
                     <label for="status" class="block text-xs font-semibold uppercase text-blue-800">Status</label>
                     <select id="status" name="status" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="">All</option>
-                        @foreach (['valid' => 'Valid', 'suspicious' => 'Suspicious', 'invalid' => 'Invalid', 'pending_checklist' => 'Pending Checklist', 'pending_face' => 'Pending Face', 'profile_incomplete' => 'Profile Incomplete', 'outside_schedule' => 'Outside Schedule', 'expired' => 'Expired'] as $value => $label)
+                        @foreach (['valid' => 'Valid', 'suspicious' => 'Suspicious', 'invalid' => 'Invalid', 'pending_selfie' => 'Pending Selfie', 'pending_checklist' => 'Pending Checklist', 'profile_incomplete' => 'Profile Incomplete', 'outside_schedule' => 'Outside Schedule', 'expired' => 'Expired'] as $value => $label)
                             <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
@@ -148,7 +148,7 @@
                                 <p class="mt-1 text-sm font-semibold text-blue-950">{{ $scanTime?->format('h:i A') ?? 'No time' }}</p>
                             </div>
                             <span class="max-w-[7rem] shrink-0 truncate whitespace-nowrap rounded-md px-2 py-1 text-[0.65rem] font-semibold ring-1 sm:px-2.5 sm:text-xs {{ $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
-                                {{ str($log->status)->replace('_', ' ')->title() }}
+                                {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
                             </span>
                         </div>
 
@@ -168,12 +168,6 @@
                                     <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 sm:text-xs">RFID</dt>
                                     <dd class="mt-1 truncate font-mono">{{ $log->rfid_uid }}</dd>
                                 </div>
-                                @if ($faceVerificationEnabled)
-                                <div class="min-w-0">
-                                    <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 sm:text-xs">Face</dt>
-                                    <dd class="mt-1 truncate">{{ str($log->facial_status)->replace('_', ' ')->title() }}</dd>
-                                </div>
-                                @endif
                             </div>
                         </dl>
 
@@ -220,9 +214,6 @@
                                 <th class="px-5 py-3">Guard</th>
                                 <th class="px-5 py-3">Checkpoint</th>
                                 <th class="px-5 py-3">RFID</th>
-                                @if ($faceVerificationEnabled)
-                                    <th class="px-5 py-3">Face</th>
-                                @endif
                                 <th class="px-5 py-3">Status</th>
                                 <th class="px-5 py-3">Checklist</th>
                                 <th class="px-5 py-3">Incident</th>
@@ -248,12 +239,9 @@
                                         <div class="text-xs font-mono text-slate-500">{{ $log->checkpoint_code }}</div>
                                     </td>
                                     <td class="px-5 py-4 font-mono text-slate-700">{{ $log->rfid_uid }}</td>
-                                    @if ($faceVerificationEnabled)
-                                        <td class="px-5 py-4 text-slate-600">{{ str($log->facial_status)->replace('_', ' ')->title() }}</td>
-                                    @endif
                                     <td class="px-5 py-4">
                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
-                                            {{ str($log->status)->replace('_', ' ')->title() }}
+                                            {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
                                         </span>
                                         @if ($log->notes)
                                             <div class="mt-2 max-w-xs text-xs text-slate-500">{{ $log->notes }}</div>
@@ -284,7 +272,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ $faceVerificationEnabled ? 9 : 8 }}" class="px-5 py-8 text-center text-slate-500">No patrol logs found.</td>
+                                    <td colspan="8" class="px-5 py-8 text-center text-slate-500">No patrol logs found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -304,8 +292,13 @@
             @foreach ($logs as $log)
                 @php
                     $detailScanTime = $log->scanned_at?->timezone(config('app.timezone'));
+                    $detailSelfieTime = $log->area_selfie_captured_at?->timezone(config('app.timezone'));
                     $detailChecklistItems = \App\Support\PatrolChecklist::statusSummaries($log->checklistResponse);
                     $detailProofPhotos = $log->checklistResponse?->proofPhotos ?? collect();
+                    $detailAreaSelfieUrl = (filled($log->area_selfie_path) || filled($log->area_selfie_image_data))
+                        ? route('patrol-logs.area-selfie.show', $log)
+                        : null;
+                    $detailPhotoCount = $detailProofPhotos->count() + ($detailAreaSelfieUrl ? 1 : 0);
                 @endphp
 
                 <section x-show="selectedPatrolId === @js((string) $log->id)" x-cloak class="flex max-h-[88dvh] w-full max-w-5xl flex-col overflow-hidden rounded-md border border-blue-100 bg-white shadow-2xl">
@@ -350,16 +343,23 @@
                                 <dt class="font-bold text-slate-600">Status</dt>
                                 <dd class="mt-1">
                                     <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-bold ring-1 {{ $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
-                                        {{ str($log->status)->replace('_', ' ')->title() }}
+                                        {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
                                     </span>
                                 </dd>
                             </div>
-                            @if ($faceVerificationEnabled)
-                                <div class="min-w-0 sm:col-span-2 lg:col-span-5">
-                                    <dt class="font-bold text-slate-600">Face</dt>
-                                    <dd class="mt-1 text-slate-700">{{ str($log->facial_status)->replace('_', ' ')->title() }}</dd>
-                                </div>
-                            @endif
+                            <div class="min-w-0 sm:col-span-2 lg:col-span-5">
+                                <dt class="font-bold text-slate-600">Area Selfie</dt>
+                                <dd class="mt-1 text-slate-700">
+                                    @if ($detailAreaSelfieUrl)
+                                        Captured {{ $detailSelfieTime?->format('M d, Y h:i A') ?? 'with patrol record' }}
+                                        @if ($log->area_selfie_latitude && $log->area_selfie_longitude)
+                                            <span class="block font-mono text-xs text-slate-500">{{ number_format((float) $log->area_selfie_latitude, 6) }}, {{ number_format((float) $log->area_selfie_longitude, 6) }}</span>
+                                        @endif
+                                    @else
+                                        Not captured
+                                    @endif
+                                </dd>
+                            </div>
                         </dl>
 
                         <div class="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(18rem,0.85fr)]">
@@ -412,23 +412,20 @@
 
                             <div class="rounded-md border border-blue-100 bg-white p-4">
                                 <div class="flex items-center justify-between gap-3">
-                                    <h4 class="text-base font-bold text-blue-950">Proof Photos</h4>
-                                    <span class="rounded-md bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700 ring-1 ring-blue-100">{{ $detailProofPhotos->count() }}</span>
+                                    <h4 class="text-base font-bold text-blue-950">Patrol Photos</h4>
+                                    <span class="rounded-md bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700 ring-1 ring-blue-100">{{ $detailPhotoCount }}</span>
                                 </div>
-                                @if ($detailProofPhotos->isNotEmpty())
-                                    @php
-                                        $featuredProofPhoto = $detailProofPhotos->first();
-                                        $featuredProofPhotoUrl = route('patrol-logs.proof-photos.show', [$log, $featuredProofPhoto]);
-                                    @endphp
+                                @if ($detailAreaSelfieUrl || $detailProofPhotos->isNotEmpty())
+                                    @if ($detailAreaSelfieUrl)
+                                        <button type="button" class="group relative mt-3 aspect-[4/3] w-full overflow-hidden rounded-md border border-blue-100 bg-slate-100 shadow-sm transition hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openProofPhoto(@js($detailAreaSelfieUrl), 'Area selfie proof')" aria-label="Open area selfie proof photo">
+                                            <img :src="selectedPatrolId === @js((string) $log->id) ? @js($detailAreaSelfieUrl) : ''" alt="Area selfie proof photo" class="h-full w-full object-cover transition group-hover:scale-105" loading="lazy">
+                                            <span class="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate rounded-md bg-slate-950/75 px-2 py-1 text-xs font-semibold text-white">Area selfie</span>
+                                        </button>
+                                    @endif
 
-                                    <button type="button" class="group relative mt-3 aspect-[4/3] w-full overflow-hidden rounded-md border border-blue-100 bg-slate-100 shadow-sm transition hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openProofPhoto(@js($featuredProofPhotoUrl), @js($featuredProofPhoto->item_label))" aria-label="Open {{ $featuredProofPhoto->item_label }} proof photo">
-                                        <img :src="selectedPatrolId === @js((string) $log->id) ? @js($featuredProofPhotoUrl) : ''" alt="{{ $featuredProofPhoto->item_label }} proof photo" class="h-full w-full object-cover transition group-hover:scale-105" loading="lazy">
-                                        <span class="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate rounded-md bg-slate-950/75 px-2 py-1 text-xs font-semibold text-white">{{ $featuredProofPhoto->item_label }}</span>
-                                    </button>
-
-                                    @if ($detailProofPhotos->count() > 1)
+                                    @if ($detailProofPhotos->isNotEmpty())
                                         <div class="mt-2 grid grid-cols-3 gap-2">
-                                            @foreach ($detailProofPhotos->skip(1) as $photo)
+                                            @foreach ($detailProofPhotos as $photo)
                                                 @php
                                                     $photoUrl = route('patrol-logs.proof-photos.show', [$log, $photo]);
                                                 @endphp
@@ -441,7 +438,7 @@
                                     @endif
                                 @else
                                     <div class="mt-3 flex aspect-[4/3] items-center justify-center rounded-md border border-dashed border-blue-200 bg-slate-50 px-4 text-center text-sm text-slate-500">
-                                        No proof photos uploaded.
+                                        No patrol photos uploaded.
                                     </div>
                                 @endif
                             </div>

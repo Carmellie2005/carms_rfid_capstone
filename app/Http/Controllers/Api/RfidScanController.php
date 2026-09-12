@@ -7,7 +7,6 @@ use App\Models\Checkpoint;
 use App\Models\Guard;
 use App\Models\PatrolLog;
 use App\Support\AuditLogger;
-use App\Support\FaceVerification;
 use App\Support\PatrolSchedule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -49,9 +48,7 @@ class RfidScanController extends Controller
             ? Carbon::parse($data['scanned_at'])->timezone(config('app.timezone'))
             : now(config('app.timezone'));
 
-        $matchedGuard = Guard::with('faceDescriptors')
-            ->where('rfid_uid', $rfidUid)
-            ->first();
+        $matchedGuard = Guard::where('rfid_uid', $rfidUid)->first();
         $guard = $matchedGuard?->status === 'active' ? $matchedGuard : null;
 
         $matchedCheckpoint = Checkpoint::where(function ($query) use ($checkpointToken) {
@@ -59,13 +56,8 @@ class RfidScanController extends Controller
         })->first();
         $checkpoint = $matchedCheckpoint?->status === 'active' ? $matchedCheckpoint : null;
 
-        $faceVerificationEnabled = FaceVerification::enabled();
-        $isProfileIncomplete = $faceVerificationEnabled
-            && $guard
-            && $checkpoint
-            && ! $this->hasCompletedFaceRegistration($guard);
-        $isValid = $guard && $checkpoint && ! $isProfileIncomplete;
-        $diagnostic = $this->scanDiagnostic($matchedGuard, $guard, $matchedCheckpoint, $checkpoint, $isProfileIncomplete, $isValid, $faceVerificationEnabled);
+        $isValid = $guard && $checkpoint;
+        $diagnostic = $this->scanDiagnostic($matchedGuard, $guard, $matchedCheckpoint, $checkpoint, $isValid);
 
         if (! PatrolSchedule::isOpen()) {
             $scheduleMessage = PatrolSchedule::closedMessage();
@@ -112,7 +104,7 @@ class RfidScanController extends Controller
             PatrolLog::where('guard_id', $guard->id)
                 ->where('rfid_status', 'valid')
                 ->whereIn('facial_status', ['pending', 'not_required'])
-                ->whereIn('status', ['pending_face', 'pending_checklist'])
+                ->whereIn('status', ['pending_face', 'pending_selfie', 'pending_checklist'])
                 ->update([
                     'facial_status' => 'expired',
                     'status' => 'expired',
@@ -125,11 +117,10 @@ class RfidScanController extends Controller
             'checkpoint_id' => $matchedCheckpoint?->id,
             'rfid_uid' => $rfidUid,
             'checkpoint_code' => $matchedCheckpoint?->code ?? $checkpointToken,
-            'rfid_status' => ($isValid || $isProfileIncomplete) ? 'valid' : 'invalid',
-            'facial_status' => $isValid ? ($faceVerificationEnabled ? 'pending' : 'not_required') : 'not_started',
+            'rfid_status' => $isValid ? 'valid' : 'invalid',
+            'facial_status' => $isValid ? 'not_required' : 'not_started',
             'status' => match (true) {
-                $isValid => $faceVerificationEnabled ? 'pending_face' : 'pending_checklist',
-                $isProfileIncomplete => 'profile_incomplete',
+                $isValid => 'pending_selfie',
                 default => 'invalid',
             },
             'scanned_at' => $scannedAt,
@@ -152,10 +143,7 @@ class RfidScanController extends Controller
 
         return response()->json([
             'message' => match (true) {
-                $isValid => $faceVerificationEnabled
-                    ? 'RFID scan accepted. Facial verification required.'
-                    : 'RFID scan accepted. Complete the patrol checklist.',
-                $isProfileIncomplete => 'Face registration is required before patrol verification.',
+                $isValid => 'RFID scan accepted. Take the required area selfie.',
                 default => 'RFID scan recorded as invalid.',
             },
             'diagnostic' => $diagnostic,
@@ -168,7 +156,6 @@ class RfidScanController extends Controller
             'checkpoint' => $checkpoint?->only(['id', 'code', 'name', 'location']),
         ], match (true) {
             $isValid => 201,
-            $isProfileIncomplete => 409,
             default => 422,
         });
     }
@@ -213,12 +200,10 @@ class RfidScanController extends Controller
         return null;
     }
 
-    private function scanDiagnostic(?Guard $matchedGuard, ?Guard $guard, ?Checkpoint $matchedCheckpoint, ?Checkpoint $checkpoint, bool $isProfileIncomplete, bool $isValid, bool $faceVerificationEnabled): string
+    private function scanDiagnostic(?Guard $matchedGuard, ?Guard $guard, ?Checkpoint $matchedCheckpoint, ?Checkpoint $checkpoint, bool $isValid): string
     {
         if ($isValid) {
-            return $faceVerificationEnabled
-                ? 'RFID accepted by hardware API; awaiting facial verification.'
-                : 'RFID accepted by hardware API; awaiting patrol checklist.';
+            return 'RFID accepted by hardware API; awaiting area selfie.';
         }
 
         if (! $matchedGuard) {
@@ -237,10 +222,6 @@ class RfidScanController extends Controller
             return 'Reader device is registered, but the checkpoint is inactive.';
         }
 
-        if ($isProfileIncomplete) {
-            return 'RFID accepted, but guard face registration must be completed before patrol verification.';
-        }
-
         return 'RFID scan could not be accepted. Review guard, checkpoint, and device setup.';
     }
 
@@ -256,11 +237,6 @@ class RfidScanController extends Controller
             'reader_last_status' => $status,
             'reader_last_message' => $message,
         ]);
-    }
-
-    private function hasCompletedFaceRegistration(Guard $guard): bool
-    {
-        return FaceVerification::hasCompleteRegistration($guard->faceDescriptors);
     }
 
     private function unknownGuard(): Guard

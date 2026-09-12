@@ -34,6 +34,7 @@ class ReaderStatusController extends Controller
             'invalid',
             'suspicious',
             'profile_incomplete',
+            'pending_selfie',
             'pending_face',
             'outside_schedule',
             'expired',
