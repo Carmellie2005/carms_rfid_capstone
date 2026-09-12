@@ -136,9 +136,11 @@ class GuardManagementTest extends TestCase
             ->assertDontSee('<dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Account</dt>', false)
             ->assertDontSee('selectedGuard?.username', false)
             ->assertDontSee('selectedGuard.role.charAt', false)
+            ->assertDontSee('selectedGuard?.email', false)
+            ->assertDontSee('selectedGuard?.shift', false)
+            ->assertDontSee('Shift / Status')
             ->assertSee('dark:bg-slate-900', false)
             ->assertSee('dark:bg-slate-950/45', false)
-            ->assertSee('break-all', false)
             ->assertDontSee('Register Guard');
     }
 

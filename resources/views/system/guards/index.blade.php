@@ -495,43 +495,22 @@
                         <div x-show="recordError && ! recordLoading" class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-400/40 dark:bg-red-950/35 dark:text-red-200" x-text="recordError"></div>
 
                         <div x-show="! recordLoading && ! recordError && selectedGuard" class="space-y-6">
-                            <div class="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-                                <dl class="grid min-w-0 gap-3 rounded-md border border-blue-100 bg-blue-50/50 p-4 text-sm dark:border-slate-700 dark:bg-slate-950/45 sm:grid-cols-2">
-                                    <div class="min-w-0">
-                                        <dt class="text-xs font-semibold uppercase tracking-wide text-blue-800 dark:text-blue-300">Contact</dt>
-                                        <dd class="mt-1 break-all text-slate-700 dark:text-slate-200" x-text="selectedGuard?.email || 'No email'"></dd>
-                                        <dd class="text-xs text-slate-500 dark:text-slate-400" x-text="selectedGuard?.phone || 'No phone'"></dd>
-                                    </div>
-                                    @if ($faceVerificationEnabled)
-                                    <div class="min-w-0">
-                                        <dt class="text-xs font-semibold uppercase tracking-wide text-blue-800 dark:text-blue-300">Face Registration</dt>
-                                        <dd class="mt-1 text-slate-700 dark:text-slate-200" x-text="selectedGuard?.face_registration || 'Not registered'"></dd>
-                                    </div>
-                                    @endif
-                                    <div class="min-w-0">
-                                        <dt class="text-xs font-semibold uppercase tracking-wide text-blue-800 dark:text-blue-300">Shift / Status</dt>
-                                        <dd class="mt-1 text-slate-700 dark:text-slate-200" x-text="selectedGuard?.shift || 'Unassigned'"></dd>
-                                        <dd class="text-xs text-slate-500 dark:text-slate-400" x-text="selectedGuard?.status_label || 'Unknown'"></dd>
-                                    </div>
-                                </dl>
-
-                                <div class="grid grid-cols-2 gap-3 text-sm">
-                                    <div class="rounded-md border border-blue-100 bg-white p-3 dark:border-slate-700 dark:bg-slate-950/45">
-                                        <p class="text-xs font-semibold uppercase tracking-wide text-blue-800 dark:text-blue-300">Total Scans</p>
-                                        <p class="mt-2 text-2xl font-semibold text-blue-950 dark:text-blue-100" x-text="recordStats.total_scans ?? 0"></p>
-                                    </div>
-                                    <div class="rounded-md border border-blue-100 bg-white p-3 dark:border-slate-700 dark:bg-slate-950/45">
-                                        <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Completed</p>
-                                        <p class="mt-2 text-2xl font-semibold text-emerald-700 dark:text-emerald-100" x-text="recordStats.completed_patrols ?? 0"></p>
-                                    </div>
-                                    <div class="rounded-md border border-blue-100 bg-white p-3 dark:border-slate-700 dark:bg-slate-950/45">
-                                        <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">Suspicious</p>
-                                        <p class="mt-2 text-2xl font-semibold text-amber-700 dark:text-amber-100" x-text="recordStats.suspicious_patrols ?? 0"></p>
-                                    </div>
-                                    <div class="rounded-md border border-blue-100 bg-white p-3 dark:border-slate-700 dark:bg-slate-950/45">
-                                        <p class="text-xs font-semibold uppercase tracking-wide text-red-700 dark:text-red-300">Incidents</p>
-                                        <p class="mt-2 text-2xl font-semibold text-red-700 dark:text-red-100" x-text="recordStats.incident_reports ?? 0"></p>
-                                    </div>
+                            <div class="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+                                <div class="rounded-md border border-blue-100 bg-white p-3 dark:border-slate-700 dark:bg-slate-950/45">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-blue-800 dark:text-blue-300">Total Scans</p>
+                                    <p class="mt-2 text-2xl font-semibold text-blue-950 dark:text-blue-100" x-text="recordStats.total_scans ?? 0"></p>
+                                </div>
+                                <div class="rounded-md border border-blue-100 bg-white p-3 dark:border-slate-700 dark:bg-slate-950/45">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Completed</p>
+                                    <p class="mt-2 text-2xl font-semibold text-emerald-700 dark:text-emerald-100" x-text="recordStats.completed_patrols ?? 0"></p>
+                                </div>
+                                <div class="rounded-md border border-blue-100 bg-white p-3 dark:border-slate-700 dark:bg-slate-950/45">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">Suspicious</p>
+                                    <p class="mt-2 text-2xl font-semibold text-amber-700 dark:text-amber-100" x-text="recordStats.suspicious_patrols ?? 0"></p>
+                                </div>
+                                <div class="rounded-md border border-blue-100 bg-white p-3 dark:border-slate-700 dark:bg-slate-950/45">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-red-700 dark:text-red-300">Incidents</p>
+                                    <p class="mt-2 text-2xl font-semibold text-red-700 dark:text-red-100" x-text="recordStats.incident_reports ?? 0"></p>
                                 </div>
                             </div>
 
