@@ -530,7 +530,7 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
         }
 
         if (this.checkingInstall || ! this.serviceWorkerReady) {
-            return 'Preparing install. Wait a few seconds, then tap Install App again.';
+            return 'Preparing install. Wait a few seconds, then tap Install Now again.';
         }
 
         return 'Use Chrome or Edge, then open the browser menu and choose Install app or Add to Home screen.';
@@ -553,7 +553,7 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
             return 'Open App';
         }
 
-        return 'Install App';
+        return 'Install Now';
     },
 
     openApp() {

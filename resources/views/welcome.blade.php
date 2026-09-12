@@ -26,6 +26,9 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     @php
+        $systemHref = auth()->check()
+            ? (auth()->user()->role === 'guard' ? route('patrol.scan') : route('dashboard'))
+            : route('login');
         $pwaStartHref = Route::has('login') ? route('login') : url('/');
     @endphp
     <body x-data="pwaInstallPrompt({ appName: 'BC Patrol', startUrl: @js($pwaStartHref) })" class="bg-slate-50 font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
@@ -88,11 +91,11 @@
         </div>
 
         <header class="sticky top-0 z-30 border-b border-blue-100 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
-            <nav class="mx-auto flex max-w-[92rem] items-center justify-between px-5 py-4 sm:px-8 lg:px-10" aria-label="Main navigation">
+            <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4 lg:px-8" aria-label="Main navigation">
                 <a href="{{ url('/') }}" class="flex min-w-0 items-center gap-3">
-                    <x-application-logo class="h-11 w-11 shrink-0 sm:h-12 sm:w-12" />
+                    <x-application-logo class="h-10 w-10 shrink-0 sm:h-11 sm:w-11" />
                     <span class="leading-tight">
-                        <span class="block text-base font-bold text-blue-950 sm:text-lg dark:text-blue-100">SLSU Bontoc Patrol</span>
+                        <span class="block text-sm font-semibold text-blue-950 sm:text-base dark:text-blue-100">SLSU Bontoc Patrol</span>
                     </span>
                 </a>
 
@@ -115,37 +118,29 @@
         </header>
 
         <main>
-            <section class="relative isolate overflow-hidden border-b border-blue-100 bg-slate-100 dark:border-slate-800 dark:bg-slate-900">
+            <section class="relative overflow-hidden border-b border-blue-100 bg-slate-100 dark:border-slate-800 dark:bg-slate-900">
                 <img
                     src="{{ asset('images/homepage-hero-background.png') }}"
                     alt=""
                     class="pointer-events-none absolute inset-0 h-full w-full object-cover"
                     aria-hidden="true"
                 >
-                <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/58 to-slate-950/10 dark:from-slate-950/95 dark:via-slate-950/76 dark:to-slate-950/30"></div>
-                <div class="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-slate-950/65 to-transparent"></div>
+                <div class="pointer-events-none absolute inset-0 bg-slate-950/58 dark:bg-slate-950/70"></div>
+                <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(15,23,42,0.34),rgba(15,23,42,0.78))]"></div>
 
-                <div class="relative mx-auto flex min-h-[34rem] max-w-[92rem] items-center px-5 py-14 sm:min-h-[calc(100svh-13rem)] sm:px-8 sm:py-16 lg:min-h-[42rem] lg:px-10">
-                    <div class="max-w-5xl text-left">
-                        <div class="mb-5 flex max-w-full flex-wrap items-center gap-3">
-                            <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-emerald-500 text-white ring-1 ring-white/30">
-                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="M12 3 5 6v5c0 4.2 2.7 8 7 10 4.3-2 7-5.8 7-10V6l-7-3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                                    <path d="m9.5 12 1.7 1.7 3.8-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                            </span>
-                            <p class="inline-flex max-w-full items-center rounded-md border border-white/35 bg-white/12 px-3 py-2 text-[0.68rem] font-bold uppercase text-blue-50 shadow-lg shadow-slate-950/20 backdrop-blur sm:px-4 sm:text-xs">
-                                Southern Leyte State University - Bontoc Campus
-                            </p>
-                        </div>
-                        <h1 class="max-w-4xl text-4xl font-bold leading-none text-white drop-shadow-lg sm:text-6xl lg:text-7xl">
-                            SLSU Bontoc Patrol
+                <div class="relative mx-auto flex min-h-[calc(100svh-128px)] max-w-7xl items-center justify-center px-4 py-10 text-center sm:min-h-[calc(100svh-80px)] sm:px-6 sm:py-14 lg:px-8">
+                    <div class="max-w-4xl">
+                        <p class="mx-auto mb-3 inline-flex max-w-full items-center justify-center rounded-md border border-white/40 bg-white/15 px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-wide text-blue-50 shadow-lg shadow-slate-950/20 backdrop-blur sm:mb-4 sm:px-4 sm:py-2 sm:text-xs">
+                            Southern Leyte State University - Bontoc Campus
+                        </p>
+                        <h1 class="text-3xl font-bold leading-tight text-white drop-shadow-lg sm:text-5xl">
+                            Secure Campus Patrol, Smarter Incident Reporting
                         </h1>
-                        <p class="mt-5 max-w-3xl text-base font-medium leading-7 text-blue-50 drop-shadow sm:text-xl sm:leading-8">
-                            RFID checkpoint monitoring, stamped patrol proof, and incident reporting for campus security.
+                        <p class="mx-auto mt-4 max-w-3xl text-sm font-medium leading-6 text-blue-50 drop-shadow sm:mt-5 sm:text-lg sm:leading-7">
+                            A focused patrol system for SLSU Bontoc Campus, built to record checkpoint visits, capture patrol proof, complete patrol checklists, and submit incident reports.
                         </p>
                         <div class="mt-6 sm:mt-8">
-                            <div class="flex flex-col gap-2.5 sm:flex-row sm:gap-3">
+                            <div class="flex flex-col justify-center gap-2.5 sm:flex-row sm:gap-3">
                                 <button
                                     type="button"
                                     class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-white px-4 py-2.5 text-sm font-bold text-blue-950 shadow-lg shadow-slate-950/20 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:cursor-wait disabled:opacity-80 sm:min-h-12 sm:px-5 sm:py-3"
@@ -163,10 +158,17 @@
                                     <svg x-show="! isBusy() && installLabel() === 'Open App'" x-cloak class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                         <path d="M5 12h12m0 0-4-4m4 4-4 4M5 5h14v14H5V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
-                                    <span x-text="installLabel()">Install App</span>
+                                    <span x-text="installLabel()">Install Now</span>
                                 </button>
 
-                                <a href="#role-access" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/80 bg-slate-950/20 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 backdrop-blur transition hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2 focus:ring-offset-slate-950 sm:min-h-12 sm:px-5 sm:py-3">
+                                <a href="{{ $systemHref }}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2 focus:ring-offset-slate-950 sm:min-h-12 sm:px-5 sm:py-3">
+                                    <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M5 12h12m0 0-4-4m4 4-4 4M5 5h14v14H5V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <span>Open System</span>
+                                </a>
+
+                                <a href="#system-flow" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/80 bg-slate-950/20 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 backdrop-blur transition hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2 focus:ring-offset-slate-950 sm:min-h-12 sm:px-5 sm:py-3">
                                     <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                         <path d="M5 5h6v6H5V5Zm8 0h6v6h-6V5ZM5 13h6v6H5v-6Zm8 0h6v6h-6v-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
                                     </svg>
@@ -178,7 +180,7 @@
                                 x-cloak
                                 x-show="message"
                                 x-text="message"
-                                class="mt-3 max-w-xl rounded-md bg-slate-950/45 px-4 py-2 text-sm font-medium text-blue-50 shadow-sm"
+                                class="mx-auto mt-3 max-w-xl rounded-md bg-slate-950/45 px-4 py-2 text-sm font-medium text-blue-50 shadow-sm"
                             ></p>
                         </div>
                     </div>
@@ -186,49 +188,8 @@
             </section>
 
             <section id="system-flow" class="border-b border-blue-100 bg-white dark:border-slate-800 dark:bg-slate-950">
-                <div class="mx-auto max-w-[92rem] px-5 py-6 sm:px-8 sm:py-10 lg:px-10">
-                    <div class="grid gap-3 md:grid-cols-3">
-                        <article class="flex items-center gap-4 rounded-md border border-blue-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-200">
-                                <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="M6.5 14.5a7.8 7.8 0 0 1 11 0M3.5 11.5a12 12 0 0 1 17 0M9.5 17.5a3.5 3.5 0 0 1 5 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                    <path d="M12 20h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h2 class="text-base font-bold text-blue-950 dark:text-white">RFID Checkpoints</h2>
-                                <p class="mt-1 text-sm leading-5 text-slate-500 dark:text-slate-300">Record and verify checkpoint visits.</p>
-                            </div>
-                        </article>
-
-                        <article class="flex items-center gap-4 rounded-md border border-emerald-100 bg-white p-4 shadow-sm dark:border-emerald-900 dark:bg-slate-900">
-                            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-200">
-                                <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                                    <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h2 class="text-base font-bold text-blue-950 dark:text-white">Area Selfie Proof</h2>
-                                <p class="mt-1 text-sm leading-5 text-slate-500 dark:text-slate-300">Attach stamped photo proof to patrol logs.</p>
-                            </div>
-                        </article>
-
-                        <article class="flex items-center gap-4 rounded-md border border-rose-100 bg-white p-4 shadow-sm dark:border-rose-900 dark:bg-slate-900">
-                            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-200">
-                                <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="m12 3 9 16H3L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                                    <path d="M12 9v4m0 3h.01" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h2 class="text-base font-bold text-blue-950 dark:text-white">Incident Reports</h2>
-                                <p class="mt-1 text-sm leading-5 text-slate-500 dark:text-slate-300">Submit and track campus incidents.</p>
-                            </div>
-                        </article>
-                    </div>
-
-                    <div class="mt-10 max-w-3xl">
+                <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-14 lg:px-8">
+                    <div class="max-w-3xl">
                         <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 sm:text-sm dark:text-emerald-300">System Flow</p>
                         <h2 class="mt-2 text-2xl font-bold tracking-tight text-blue-950 sm:mt-3 sm:text-3xl dark:text-white">From guard setup to verified patrol records</h2>
                         <p class="mt-3 text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7 dark:text-slate-300">
@@ -285,7 +246,7 @@
                 </div>
             </section>
 
-            <section id="role-access" class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-14 lg:px-8">
+            <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-14 lg:px-8">
                 <div class="grid gap-3 sm:gap-6 lg:grid-cols-2">
                     <article class="rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
                         <p class="text-xs font-semibold uppercase tracking-wide text-blue-700 sm:text-sm dark:text-blue-300">For Supervisors</p>
@@ -392,7 +353,7 @@
                             <svg x-show="! isBusy() && installLabel() === 'Open App'" x-cloak class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                 <path d="M5 12h12m0 0-4-4m4 4-4 4M5 5h14v14H5V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
-                            <span x-text="installLabel()">Install App</span>
+                            <span x-text="installLabel()">Install Now</span>
                         </button>
 
                         <p x-cloak x-show="message" x-text="message" class="mt-3 text-center text-xs font-medium text-slate-500 sm:text-sm dark:text-slate-400"></p>
