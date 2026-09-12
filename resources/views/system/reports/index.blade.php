@@ -38,13 +38,13 @@
         ];
 
         $summaryCards = [
-            ['label' => 'Valid Patrols', 'value' => $summary['valid'], 'cardClass' => 'border-emerald-100 bg-emerald-50/60', 'labelClass' => 'text-emerald-700', 'valueClass' => 'text-emerald-900'],
-            ['label' => 'Suspicious', 'value' => $summary['suspicious'], 'cardClass' => 'border-amber-100 bg-amber-50/60', 'labelClass' => 'text-amber-700', 'valueClass' => 'text-amber-900'],
-            ['label' => 'Invalid Scans', 'value' => $summary['invalid'], 'cardClass' => 'border-red-100 bg-red-50/60', 'labelClass' => 'text-red-700', 'valueClass' => 'text-red-900'],
-            ['label' => 'Pending Selfie', 'value' => $summary['pendingSelfie'], 'cardClass' => 'border-sky-100 bg-sky-50/60', 'labelClass' => 'text-sky-700', 'valueClass' => 'text-sky-900'],
-            ['label' => 'Pending Checklist', 'value' => $summary['pendingChecklist'], 'cardClass' => 'border-blue-100 bg-blue-50/60', 'labelClass' => 'text-blue-700', 'valueClass' => 'text-blue-950'],
-            ['label' => 'Outside Schedule', 'value' => $summary['outsideSchedule'], 'cardClass' => 'border-orange-100 bg-orange-50/60', 'labelClass' => 'text-orange-700', 'valueClass' => 'text-orange-900'],
-            ['label' => 'Incidents', 'value' => $summary['incidents'], 'cardClass' => 'border-blue-100 bg-white', 'labelClass' => 'text-blue-700', 'valueClass' => 'text-blue-950'],
+            ['label' => 'Valid Patrols', 'value' => $summary['valid'], 'labelClass' => 'text-emerald-700 dark:text-emerald-300', 'valueClass' => 'text-emerald-900 dark:text-emerald-100'],
+            ['label' => 'Suspicious', 'value' => $summary['suspicious'], 'labelClass' => 'text-amber-700 dark:text-amber-300', 'valueClass' => 'text-amber-900 dark:text-amber-100'],
+            ['label' => 'Invalid Scans', 'value' => $summary['invalid'], 'labelClass' => 'text-red-700 dark:text-red-300', 'valueClass' => 'text-red-900 dark:text-red-100'],
+            ['label' => 'Pending Selfie', 'value' => $summary['pendingSelfie'], 'labelClass' => 'text-sky-700 dark:text-sky-300', 'valueClass' => 'text-sky-900 dark:text-sky-100'],
+            ['label' => 'Pending Checklist', 'value' => $summary['pendingChecklist'], 'labelClass' => 'text-blue-700 dark:text-blue-300', 'valueClass' => 'text-blue-950 dark:text-blue-100'],
+            ['label' => 'Outside Schedule', 'value' => $summary['outsideSchedule'], 'labelClass' => 'text-orange-700 dark:text-orange-300', 'valueClass' => 'text-orange-900 dark:text-orange-100'],
+            ['label' => 'Incidents', 'value' => $summary['incidents'], 'labelClass' => 'text-blue-700 dark:text-blue-300', 'valueClass' => 'text-blue-950 dark:text-blue-100'],
         ];
     @endphp
 
@@ -90,7 +90,7 @@
 
                 <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-7">
                     @foreach ($summaryCards as $card)
-                        <div class="min-h-[5.5rem] rounded-md border p-3 shadow-sm sm:p-4 {{ $card['cardClass'] }}">
+                        <div class="min-h-[5.5rem] rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-4 dark:border-slate-700 dark:bg-slate-900">
                             <p class="min-h-8 text-[0.68rem] font-bold uppercase leading-4 tracking-wide sm:text-[0.72rem] {{ $card['labelClass'] }}">{{ $card['label'] }}</p>
                             <p class="mt-2 text-2xl font-semibold {{ $card['valueClass'] }}">{{ $card['value'] }}</p>
                         </div>
