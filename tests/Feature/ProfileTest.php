@@ -40,6 +40,7 @@ class ProfileTest extends TestCase
         $user = User::factory()->create([
             'role' => 'guard',
             'username' => 'guard.profile',
+            'birthday' => '1998-04-12',
         ]);
 
         $guard = Guard::create([
@@ -68,6 +69,7 @@ class ProfileTest extends TestCase
             ->assertSee('SG-TEST')
             ->assertSee('RFID-TEST')
             ->assertSee('Night Shift')
+            ->assertSee('Apr 12, 1998')
             ->assertSee('Completed');
     }
 
@@ -198,6 +200,42 @@ class ProfileTest extends TestCase
         $this->assertSame('test@example.com', $user->email);
         $this->assertSame('09171234567', $user->phone);
         $this->assertNull($user->email_verified_at);
+    }
+
+    public function test_guard_can_update_birthday_from_profile_settings(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'guard',
+            'username' => 'birthday.guard',
+            'birthday' => null,
+        ]);
+
+        Guard::create([
+            'user_id' => $user->id,
+            'employee_no' => 'SG-BDAY',
+            'name' => 'Birthday Guard',
+            'rfid_uid' => 'RFID-BDAY',
+            'shift' => 'Night Shift',
+            'status' => 'active',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'phone' => '09171234567',
+                'birthday' => '1999-09-12',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $user->refresh();
+
+        $this->assertSame('1999-09-12', $user->birthday->toDateString());
     }
 
     public function test_profile_page_does_not_show_profile_photo_upload_controls(): void

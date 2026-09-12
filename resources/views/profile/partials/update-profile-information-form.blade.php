@@ -335,6 +335,14 @@
                 <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone', $user->phone)" placeholder="{{ __('Contact Number') }}" autocomplete="tel" />
                 <x-input-error class="mt-2" :messages="$errors->get('phone')" />
             </div>
+
+            @if ($isGuard)
+                <div>
+                    <x-input-label for="birthday" :value="__('Birthday')" class="sr-only" />
+                    <x-text-input id="birthday" name="birthday" type="date" class="mt-1 block w-full" :value="old('birthday', $user->birthday?->toDateString())" max="{{ now()->toDateString() }}" autocomplete="bday" />
+                    <x-input-error class="mt-2" :messages="$errors->get('birthday')" />
+                </div>
+            @endif
         </div>
 
         @if ($isSupervisor)
@@ -382,6 +390,10 @@
                     <div class="border-b border-blue-100 pb-2">
                         <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Assigned Shift</dt>
                         <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $guardProfile->shift ?: 'Unassigned' }}</dd>
+                    </div>
+                    <div class="border-b border-blue-100 pb-2">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Birthday</dt>
+                        <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $user->birthday?->format('M d, Y') ?? 'Not set' }}</dd>
                     </div>
                     <div class="border-b border-blue-100 pb-2">
                         <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Account Status</dt>
