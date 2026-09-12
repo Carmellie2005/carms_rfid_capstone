@@ -74,10 +74,6 @@
 
                         <dl class="mt-3 grid gap-2 text-xs text-slate-600">
                             <div class="min-w-0">
-                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Account</dt>
-                                <dd class="mt-1 truncate font-mono font-semibold text-blue-900">{{ $guard->user?->username ?? 'No account' }}</dd>
-                            </div>
-                            <div class="min-w-0">
                                 <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">RFID UID</dt>
                                 <dd class="mt-1 truncate font-mono">{{ $guard->rfid_uid }}</dd>
                             </div>
@@ -118,7 +114,6 @@
                             <tr>
                                 <th class="px-5 py-3">Employee</th>
                                 <th class="px-5 py-3">Contact</th>
-                                <th class="px-5 py-3">Account</th>
                                 <th class="px-5 py-3">RFID UID</th>
                                 @if ($faceVerificationEnabled)
                                     <th class="px-5 py-3">Face Registration</th>
@@ -149,10 +144,6 @@
                                         <div>{{ $guard->email ?? 'No email' }}</div>
                                         <div class="text-xs">{{ $guard->phone ?? 'No phone' }}</div>
                                     </td>
-                                    <td class="px-5 py-4">
-                                        <div class="max-w-[13rem] break-all font-mono text-sm font-semibold text-blue-800 dark:text-blue-200">{{ $guard->user?->username ?? 'No account' }}</div>
-                                        <div class="text-xs text-slate-500">{{ $guard->user?->role ? ucfirst($guard->user->role) : '' }}</div>
-                                    </td>
                                     <td class="px-5 py-4 font-mono text-slate-700">{{ $guard->rfid_uid }}</td>
                                     @if ($faceVerificationEnabled)
                                         <td class="px-5 py-4 text-slate-600">{{ $hasLiveFaceRegistration ? 'Registered' : 'Not registered' }}</td>
@@ -172,7 +163,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ $faceVerificationEnabled ? 8 : 7 }}" class="px-5 py-8 text-center text-slate-500">No guards registered.</td>
+                                    <td colspan="{{ $faceVerificationEnabled ? 7 : 6 }}" class="px-5 py-8 text-center text-slate-500">No guards registered.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -510,11 +501,6 @@
                                         <dt class="text-xs font-semibold uppercase tracking-wide text-blue-800 dark:text-blue-300">Contact</dt>
                                         <dd class="mt-1 break-all text-slate-700 dark:text-slate-200" x-text="selectedGuard?.email || 'No email'"></dd>
                                         <dd class="text-xs text-slate-500 dark:text-slate-400" x-text="selectedGuard?.phone || 'No phone'"></dd>
-                                    </div>
-                                    <div class="min-w-0">
-                                        <dt class="text-xs font-semibold uppercase tracking-wide text-blue-800 dark:text-blue-300">Account</dt>
-                                        <dd class="mt-1 break-all font-mono font-semibold leading-5 text-blue-900 dark:text-blue-100" x-text="selectedGuard?.username || 'No account'"></dd>
-                                        <dd class="text-xs text-slate-500 dark:text-slate-400" x-text="selectedGuard?.role ? selectedGuard.role.charAt(0).toUpperCase() + selectedGuard.role.slice(1) : ''"></dd>
                                     </div>
                                     @if ($faceVerificationEnabled)
                                     <div class="min-w-0">
