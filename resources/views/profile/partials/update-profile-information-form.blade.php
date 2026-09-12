@@ -295,17 +295,20 @@
 
         <div class="grid gap-3 md:grid-cols-2">
             <div>
-                <x-floating-input id="name" name="name" type="text" label="{{ __('Full Name') }}" :value="old('name', $user->name)" required autofocus autocomplete="name" />
+                <x-input-label for="name" :value="__('Full Name')" class="sr-only" />
+                <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" placeholder="{{ __('Full Name') }}" required autofocus autocomplete="name" />
                 <x-input-error class="mt-2" :messages="$errors->get('name')" />
             </div>
 
             <div>
-                <x-floating-input id="username" name="username" type="text" label="{{ __('Username or Email') }}" :value="old('username', $user->username)" class="font-mono" required autocomplete="username" inputmode="email" />
+                <x-input-label for="username" :value="__('Username or Email')" class="sr-only" />
+                <x-text-input id="username" name="username" type="text" class="mt-1 block w-full font-mono" :value="old('username', $user->username)" placeholder="{{ __('Username or Email') }}" required autocomplete="username" inputmode="email" />
                 <x-input-error class="mt-2" :messages="$errors->get('username')" />
             </div>
 
             <div>
-                <x-floating-input id="email" name="email" type="email" label="{{ __('Email Address') }}" :value="old('email', $user->email)" required autocomplete="email" />
+                <x-input-label for="email" :value="__('Email Address')" class="sr-only" />
+                <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" placeholder="{{ __('Email Address') }}" required autocomplete="email" />
                 <x-input-error class="mt-2" :messages="$errors->get('email')" />
 
                 @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
@@ -328,7 +331,8 @@
             </div>
 
             <div>
-                <x-floating-input id="phone" name="phone" type="text" label="{{ __('Contact Number') }}" :value="old('phone', $user->phone)" autocomplete="tel" />
+                <x-input-label for="phone" :value="__('Contact Number')" class="sr-only" />
+                <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone', $user->phone)" placeholder="{{ __('Contact Number') }}" autocomplete="tel" />
                 <x-input-error class="mt-2" :messages="$errors->get('phone')" />
             </div>
         </div>

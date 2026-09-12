@@ -31,20 +31,22 @@
 
             <form method="GET" action="{{ route('incidents.index') }}" class="grid gap-4 rounded-md border border-blue-100 bg-white p-4 shadow-sm md:grid-cols-4">
                 <div>
-                    <x-floating-select id="status" name="status" label="Status" class="text-sm">
+                    <label for="status" class="block text-xs font-semibold uppercase text-blue-800">Status</label>
+                    <select id="status" name="status" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="">All</option>
                         @foreach (['submitted' => 'Submitted', 'under_review' => 'Under Review', 'resolved' => 'Resolved'] as $value => $label)
                             <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
                         @endforeach
-                    </x-floating-select>
+                    </select>
                 </div>
                 <div>
-                    <x-floating-select id="priority" name="priority" label="Priority" class="text-sm">
+                    <label for="priority" class="block text-xs font-semibold uppercase text-blue-800">Priority</label>
+                    <select id="priority" name="priority" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="">All</option>
                         @foreach (['low' => 'Low', 'normal' => 'Normal', 'high' => 'High', 'critical' => 'Critical'] as $value => $label)
                             <option value="{{ $value }}" @selected(request('priority') === $value)>{{ $label }}</option>
                         @endforeach
-                    </x-floating-select>
+                    </select>
                 </div>
                 <div class="grid grid-cols-2 items-end gap-2 md:col-span-2 md:flex">
                     <button class="h-10 rounded-md bg-blue-700 px-4 text-sm font-semibold text-white hover:bg-blue-800 md:w-auto" type="submit">Filter</button>
@@ -123,14 +125,16 @@
                                 @csrf
                                 @method('PATCH')
                                 <div>
-                                    <x-floating-select id="status-{{ $incident->id }}" name="status" label="Review Status" class="text-sm">
+                                    <label for="status-{{ $incident->id }}" class="block text-sm font-medium text-slate-700">Review Status</label>
+                                    <select id="status-{{ $incident->id }}" name="status" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                         @foreach (['submitted' => 'Submitted', 'under_review' => 'Under Review', 'resolved' => 'Resolved'] as $value => $label)
                                             <option value="{{ $value }}" @selected($incident->status === $value)>{{ $label }}</option>
                                         @endforeach
-                                    </x-floating-select>
+                                    </select>
                                 </div>
                                 <div class="mt-3">
-                                    <x-floating-textarea id="admin_notes-{{ $incident->id }}" name="admin_notes" label="Admin Notes" rows="4" :value="old('admin_notes', $incident->admin_notes)" class="text-sm" />
+                                    <label for="admin_notes-{{ $incident->id }}" class="sr-only">Admin Notes</label>
+                                    <textarea id="admin_notes-{{ $incident->id }}" name="admin_notes" rows="4" placeholder="Admin Notes" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('admin_notes', $incident->admin_notes) }}</textarea>
                                 </div>
                                 <button class="mt-4 w-full rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800" type="submit">Update Report</button>
                             </form>

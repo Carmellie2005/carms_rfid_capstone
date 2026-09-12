@@ -44,12 +44,13 @@
 
             <form method="GET" action="{{ route('scan-issues.index') }}" class="grid gap-3 rounded-md border border-blue-100 bg-white p-3 shadow-sm md:grid-cols-[minmax(12rem,18rem)_auto]">
                 <div>
-                    <x-floating-select id="status" name="status" label="Status" class="text-sm">
+                    <label for="status" class="block text-xs font-semibold uppercase text-blue-800">Status</label>
+                    <select id="status" name="status" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="">All issue statuses</option>
                         @foreach ($statusOptions as $value => $label)
                             <option value="{{ $value }}" @selected($selectedStatus === $value)>{{ $label }}</option>
                         @endforeach
-                    </x-floating-select>
+                    </select>
                 </div>
 
                 <div class="flex flex-wrap items-end gap-2">

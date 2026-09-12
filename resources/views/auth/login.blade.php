@@ -73,44 +73,44 @@
                     @csrf
 
                     <div>
-                        <div class="floating-field">
-                            <svg class="pointer-events-none absolute left-3.5 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-blue-700 dark:text-blue-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <label for="email" class="sr-only">Email or Username</label>
+                        <div class="mt-1.5 flex h-12 items-center rounded-lg border border-slate-200 bg-white px-3.5 shadow-sm transition focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 dark:border-slate-700 dark:bg-slate-950 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-950">
+                            <svg class="mr-3 h-4 w-4 flex-none text-blue-700 dark:text-blue-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                 <path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm0 2.25c-4.42 0-8 2.47-8 5.5 0 .69.56 1.25 1.25 1.25h13.5c.69 0 1.25-.56 1.25-1.25 0-3.03-3.58-5.5-8-5.5Z" />
                             </svg>
                             <input
                                 id="email"
-                                class="floating-control pl-10 text-sm"
+                                class="w-full border-0 bg-transparent text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:ring-0 dark:text-slate-100 dark:placeholder:text-slate-500"
                                 type="text"
                                 name="email"
                                 value="{{ old('email') }}"
                                 required
                                 autofocus
                                 autocomplete="username"
-                                placeholder=" "
+                                placeholder="Email or Username"
                             >
-                            <label for="email" class="floating-label left-10 max-w-[calc(100%-3.5rem)]">Email or Username</label>
                         </div>
                         <x-input-error :messages="$errors->get('email')" class="mt-2" />
                     </div>
 
                     <div>
-                        <div class="floating-field">
-                            <svg class="pointer-events-none absolute left-3.5 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-blue-700 dark:text-blue-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <label for="password" class="sr-only">Password</label>
+                        <div class="mt-1.5 flex h-12 items-center rounded-lg border border-slate-200 bg-white px-3.5 shadow-sm focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 dark:border-slate-700 dark:bg-slate-950 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-950">
+                            <svg class="mr-3 h-4 w-4 flex-none text-blue-700 dark:text-blue-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                 <path fill-rule="evenodd" d="M7 10V8a5 5 0 0 1 10 0v2h.5A2.5 2.5 0 0 1 20 12.5v6A2.5 2.5 0 0 1 17.5 21h-11A2.5 2.5 0 0 1 4 18.5v-6A2.5 2.5 0 0 1 6.5 10H7Zm2 0h6V8a3 3 0 1 0-6 0v2Zm4 5.73a2 2 0 1 0-2 0V18h2v-2.27Z" clip-rule="evenodd" />
                             </svg>
                             <input
                                 id="password"
-                                class="floating-control pl-10 pr-11 text-sm"
+                                class="w-full border-0 bg-transparent text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:ring-0 dark:text-slate-100 dark:placeholder:text-slate-500"
                                 type="password"
                                 name="password"
                                 required
                                 autocomplete="current-password"
-                                placeholder=" "
+                                placeholder="Password"
                             >
-                            <label for="password" class="floating-label left-10 max-w-[calc(100%-5rem)]">Password</label>
                             <button
                                 type="button"
-                                class="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center rounded-r-md text-slate-400 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:text-slate-500 dark:hover:text-blue-200"
+                                class="ml-2 inline-flex h-8 w-8 flex-none items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-blue-200"
                                 aria-label="Show password"
                                 data-password-toggle
                             >

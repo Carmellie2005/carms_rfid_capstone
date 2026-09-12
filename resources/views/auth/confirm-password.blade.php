@@ -8,7 +8,14 @@
 
         <!-- Password -->
         <div>
-            <x-floating-password id="password" name="password" label="{{ __('Password') }}" required autocomplete="current-password" />
+            <x-input-label for="password" :value="__('Password')" class="sr-only" />
+
+            <x-text-input id="password" class="block mt-1 w-full"
+                            type="password"
+                            name="password"
+                            placeholder="{{ __('Password') }}"
+                            required autocomplete="current-password" />
+
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 

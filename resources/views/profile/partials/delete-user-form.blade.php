@@ -28,11 +28,14 @@
             </p>
 
             <div class="mt-6">
-                <x-floating-password
+                <x-input-label for="password" value="{{ __('Password') }}" class="sr-only" />
+
+                <x-text-input
                     id="password"
                     name="password"
-                    label="{{ __('Password') }}"
-                    class="w-3/4"
+                    type="password"
+                    class="mt-1 block w-3/4"
+                    placeholder="{{ __('Password') }}"
                 />
 
                 <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
