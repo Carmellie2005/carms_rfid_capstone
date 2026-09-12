@@ -273,7 +273,7 @@
                         <ul class="mt-4 space-y-2 text-xs leading-5 text-slate-600 sm:mt-5 sm:space-y-3 sm:text-sm sm:leading-6 dark:text-slate-300">
                             <li class="flex gap-3">
                                 <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500"></span>
-                                Keep profile information complete, including contact details, assigned shift, and profile photo.
+                                Keep profile information complete, including contact details, assigned shift, and verification status.
                             </li>
                             <li class="flex gap-3">
                                 <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-sky-500"></span>
@@ -302,7 +302,7 @@
                         <div class="grid grid-cols-2 gap-2 sm:gap-4">
                             <article class="rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-950">
                                 <h3 class="text-sm font-bold text-blue-950 sm:text-base dark:text-white">Profile Completion</h3>
-                                <p class="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6 dark:text-slate-300">Shows account details, profile photo status, assigned RFID card, and active status.</p>
+                                <p class="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6 dark:text-slate-300">Shows account details, assigned RFID card, verification status, and active status.</p>
                             </article>
 
                             <article class="rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-950">

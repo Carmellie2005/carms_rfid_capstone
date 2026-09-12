@@ -38,9 +38,6 @@ class ProfileController extends Controller
         $user = $request->user();
         $user->loadMissing(['guardProfile.faceDescriptors']);
         $data = $request->validated();
-        $removeProfilePhoto = $request->boolean('remove_profile_photo');
-        $profilePhotoChanged = false;
-        $profilePhotoRemoved = false;
         $faceRegistrationCaptures = $request->input('face_registration_captures', []);
         $faceRegistrationDescriptors = $request->input('face_descriptors', []);
         $wantsFaceRegistration = FaceVerification::enabled()
@@ -58,8 +55,6 @@ class ProfileController extends Controller
             : null;
 
         unset(
-            $data['profile_photo'],
-            $data['remove_profile_photo'],
             $data['face_registration_capture'],
             $data['face_registration_captures'],
             $data['face_liveness_confirmed'],
@@ -72,22 +67,6 @@ class ProfileController extends Controller
 
         if (array_key_exists('phone', $data)) {
             $data['phone'] = filled($data['phone']) ? trim($data['phone']) : null;
-        }
-
-        if ($request->hasFile('profile_photo')) {
-            $previousPhoto = $user->profile_photo_path;
-            $profilePhotoChanged = true;
-
-            $data['profile_photo_path'] = $request->file('profile_photo')->store('profile-photos', 'public');
-
-            if ($previousPhoto) {
-                Storage::disk('public')->delete($previousPhoto);
-            }
-        } elseif ($removeProfilePhoto && $user->profile_photo_path) {
-            Storage::disk('public')->delete($user->profile_photo_path);
-
-            $data['profile_photo_path'] = null;
-            $profilePhotoRemoved = true;
         }
 
         DB::transaction(function () use ($user, $data, $faceRegistration) {
@@ -105,8 +84,6 @@ class ProfileController extends Controller
         });
 
         AuditLogger::record('profile_updated', 'Profile settings updated.', $user, [
-            'profile_photo_changed' => $profilePhotoChanged,
-            'profile_photo_removed' => $profilePhotoRemoved,
             'face_registration_completed' => (bool) $faceRegistration,
         ]);
 

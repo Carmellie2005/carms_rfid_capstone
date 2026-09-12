@@ -200,35 +200,28 @@ class ProfileTest extends TestCase
         $this->assertNull($user->email_verified_at);
     }
 
-    public function test_profile_photo_can_be_uploaded(): void
+    public function test_profile_page_does_not_show_profile_photo_upload_controls(): void
     {
-        Storage::fake('public');
-
         $user = User::factory()->create([
             'role' => 'admin',
             'username' => 'supervisor',
+            'profile_photo_path' => 'profile-photos/current.jpg',
         ]);
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile', [
-                'name' => $user->name,
-                'username' => $user->username,
-                'email' => $user->email,
-                'profile_photo' => UploadedFile::fake()->image('supervisor.jpg'),
-            ]);
+            ->get('/profile');
 
         $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
-
-        $user->refresh();
-
-        $this->assertNotNull($user->profile_photo_path);
-        Storage::disk('public')->assertExists($user->profile_photo_path);
+            ->assertOk()
+            ->assertSee('Profile Information')
+            ->assertDontSee('Profile Picture')
+            ->assertDontSee('name="profile_photo"', false)
+            ->assertDontSee('Remove current profile picture')
+            ->assertDontSee('JPG, PNG, WEBP');
     }
 
-    public function test_profile_photo_can_be_removed(): void
+    public function test_profile_photo_update_fields_are_ignored(): void
     {
         Storage::fake('public');
         Storage::disk('public')->put('profile-photos/current.jpg', 'current photo');
@@ -245,6 +238,7 @@ class ProfileTest extends TestCase
                 'name' => $user->name,
                 'username' => $user->username,
                 'email' => $user->email,
+                'profile_photo' => UploadedFile::fake()->image('supervisor.jpg'),
                 'remove_profile_photo' => '1',
             ]);
 
@@ -252,8 +246,9 @@ class ProfileTest extends TestCase
             ->assertSessionHasNoErrors()
             ->assertRedirect('/profile');
 
-        $this->assertNull($user->refresh()->profile_photo_path);
-        Storage::disk('public')->assertMissing('profile-photos/current.jpg');
+        $this->assertSame('profile-photos/current.jpg', $user->refresh()->profile_photo_path);
+        Storage::disk('public')->assertExists('profile-photos/current.jpg');
+        $this->assertCount(1, Storage::disk('public')->allFiles('profile-photos'));
     }
 
     public function test_guard_can_complete_live_face_registration_once(): void

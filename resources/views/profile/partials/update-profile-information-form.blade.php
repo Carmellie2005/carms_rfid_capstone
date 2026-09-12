@@ -16,20 +16,11 @@
         ? \App\Support\FaceVerification::hasCompleteRegistration($guardProfile->faceDescriptors)
         : false;
     $roleLabel = $isSupervisor ? 'Supervisor' : ucfirst($user->role ?? 'User');
-    $fallbackIconPath = $isSupervisor
-        ? 'images/user-icons/supervisor-account.png'
-        : 'images/user-icons/guard-account.png';
-    $profileFallbackPhotoUrl = asset($fallbackIconPath);
-    $profilePhotoUrl = $user->profile_photo_path
-        && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->profile_photo_path)
-        ? asset('storage/'.$user->profile_photo_path)
-        : $profileFallbackPhotoUrl;
     $profileCompletionItems = [
         filled($user->name),
         filled($user->username),
         filled($user->email),
         filled($user->phone),
-        filled($user->profile_photo_path),
     ];
 
     if ($isGuard) {
@@ -57,11 +48,11 @@
 <section>
     <header>
         <h2 class="text-base font-semibold text-blue-950">
-            {{ __('Profile Picture & Information') }}
+            {{ __('Profile Information') }}
         </h2>
 
         <p class="mt-1 text-xs text-slate-600">
-            {{ __('Profile photo and personal account details.') }}
+            {{ __('Personal account details and verification status.') }}
         </p>
 
         @if ($isGuard)
@@ -90,7 +81,6 @@
     <form
         method="post"
         action="{{ route('profile.update') }}"
-        enctype="multipart/form-data"
         class="mt-4 space-y-4"
         x-data="guardFaceForm({
             faceSamples: [],
@@ -105,26 +95,6 @@
     >
         @csrf
         @method('patch')
-
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <span class="inline-flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-50 ring-1 ring-blue-100">
-                <img src="{{ $profilePhotoUrl }}" alt="{{ $roleLabel }} profile photo" onerror="this.onerror=null; this.src='{{ $profileFallbackPhotoUrl }}';" class="h-full w-full object-cover">
-            </span>
-
-            <div class="min-w-0 flex-1">
-                <x-input-label for="profile_photo" :value="__('Profile Picture')" />
-                <input id="profile_photo" name="profile_photo" type="file" accept="image/jpeg,image/png,image/webp" class="mt-1 block w-full rounded-md border border-slate-300 text-xs text-slate-700 shadow-sm file:mr-3 file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-blue-700 hover:file:bg-blue-100">
-                <p class="mt-1.5 text-[0.68rem] text-slate-500">JPG, PNG, WEBP. Maximum size: 2 MB.</p>
-                @if ($user->profile_photo_path)
-                    <label for="remove_profile_photo" class="mt-2 flex items-center gap-2 text-xs font-medium text-slate-700">
-                        <input id="remove_profile_photo" name="remove_profile_photo" type="checkbox" value="1" class="rounded border-slate-300 text-blue-700 shadow-sm focus:ring-blue-500">
-                        <span>Remove current profile picture</span>
-                    </label>
-                @endif
-                <x-input-error class="mt-2" :messages="$errors->get('profile_photo')" />
-                <x-input-error class="mt-2" :messages="$errors->get('remove_profile_photo')" />
-            </div>
-        </div>
 
         @if ($faceVerificationEnabled && $isGuard)
             <div class="border-t border-blue-100 pt-4">

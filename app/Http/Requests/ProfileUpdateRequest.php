@@ -21,8 +21,6 @@ class ProfileUpdateRequest extends FormRequest
             'username' => ['sometimes', 'nullable', 'string', 'max:255', new UsernameOrEmail, Rule::unique(User::class, 'username')->ignore($this->user()->id), Rule::unique(User::class, 'email')->ignore($this->user()->id)],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($this->user()->id)],
             'phone' => ['sometimes', 'nullable', 'string', 'max:30'],
-            'profile_photo' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'remove_profile_photo' => ['sometimes', 'boolean'],
             'face_registration_capture' => ['sometimes', 'nullable', 'string'],
             'face_registration_captures' => ['sometimes', 'nullable', 'array', 'size:5'],
             'face_registration_captures.*' => ['nullable', 'string'],
