@@ -14,30 +14,26 @@
 
             <form method="GET" action="{{ route('audit-logs.index') }}" class="grid gap-3 rounded-md border border-blue-100 bg-white p-3 shadow-sm md:grid-cols-2 xl:grid-cols-[minmax(170px,1fr)_minmax(170px,1fr)_minmax(140px,0.75fr)_minmax(220px,1.2fr)_auto] print:hidden">
                 <div>
-                    <label for="guard_id" class="block text-xs font-semibold uppercase text-blue-800">Guard</label>
-                    <select id="guard_id" name="guard_id" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <x-floating-select id="guard_id" name="guard_id" label="Guard" class="text-sm">
                         <option value="">All guards</option>
                         @foreach ($guards as $guard)
                             <option value="{{ $guard->id }}" @selected((string) request('guard_id') === (string) $guard->id)>{{ $guard->name }} - {{ $guard->employee_no }}</option>
                         @endforeach
-                    </select>
+                    </x-floating-select>
                 </div>
                 <div>
-                    <label for="action" class="block text-xs font-semibold uppercase text-blue-800">Action</label>
-                    <select id="action" name="action" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <x-floating-select id="action" name="action" label="Action" class="text-sm">
                         <option value="">All actions</option>
                         @foreach ($actions as $action)
                             <option value="{{ $action }}" @selected(request('action') === $action)>{{ str($action)->replace('_', ' ')->title() }}</option>
                         @endforeach
-                    </select>
+                    </x-floating-select>
                 </div>
                 <div>
-                    <label for="date" class="block text-xs font-semibold uppercase text-blue-800">Date</label>
-                    <input id="date" name="date" type="date" value="{{ request('date') }}" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <x-floating-input id="date" name="date" type="date" label="Date" :value="request('date')" class="text-sm" />
                 </div>
                 <div>
-                    <label for="search" class="block text-xs font-semibold uppercase text-blue-800">Search</label>
-                    <input id="search" name="search" value="{{ request('search') }}" placeholder="Actor, action, or diagnostic" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <x-floating-input id="search" name="search" label="Search" :value="request('search')" class="text-sm" />
                 </div>
                 <div class="flex flex-wrap items-end gap-2 md:col-span-2 xl:col-span-1 xl:self-end xl:justify-end">
                     <button type="submit" class="h-9 rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50">Filter</button>

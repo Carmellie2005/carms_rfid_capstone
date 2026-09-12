@@ -437,8 +437,7 @@
                                     @endforeach
                                 </div>
                                 <div class="mt-4">
-                                    <label for="remarks" class="block text-sm font-medium text-slate-700">Remarks</label>
-                                    <textarea id="remarks" name="remarks" rows="4" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('remarks') }}</textarea>
+                                    <x-floating-textarea id="remarks" name="remarks" label="Remarks" rows="4" :value="old('remarks')" />
                                     <x-input-error :messages="$errors->get('remarks')" class="mt-2" />
                                 </div>
                             </div>
@@ -539,28 +538,25 @@
                             <p x-show="incidentFormError" x-cloak class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700" x-text="incidentFormError"></p>
 
                             <div>
-                                <label for="incident_category" class="block text-sm font-medium text-slate-700">Category</label>
-                                <select x-ref="incidentCategory" id="incident_category" name="incident_category" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" :required="incident && incidentModalOpen" @change="incidentFormError = ''">
+                                <x-floating-select x-ref="incidentCategory" id="incident_category" name="incident_category" label="Category" x-bind:required="incident && incidentModalOpen" @change="incidentFormError = ''">
                                     @foreach ($incidentCategories as $category)
                                         <option value="{{ $category }}" @selected(old('incident_category') === $category)>{{ $category }}</option>
                                     @endforeach
-                                </select>
+                                </x-floating-select>
                                 <x-input-error :messages="$errors->get('incident_category')" class="mt-2" />
                             </div>
 
                             <div>
-                                <label for="incident_priority" class="block text-sm font-medium text-slate-700">Priority</label>
-                                <select x-ref="incidentPriority" id="incident_priority" name="incident_priority" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <x-floating-select x-ref="incidentPriority" id="incident_priority" name="incident_priority" label="Priority">
                                     @foreach (['low' => 'Low', 'normal' => 'Normal', 'high' => 'High', 'critical' => 'Critical'] as $value => $label)
                                         <option value="{{ $value }}" @selected(old('incident_priority', 'normal') === $value)>{{ $label }}</option>
                                     @endforeach
-                                </select>
+                                </x-floating-select>
                                 <x-input-error :messages="$errors->get('incident_priority')" class="mt-2" />
                             </div>
 
                             <div>
-                                <label for="incident_description" class="block text-sm font-medium text-slate-700">Description</label>
-                                <textarea x-ref="incidentDescription" id="incident_description" name="incident_description" rows="4" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" :required="incident && incidentModalOpen" @input="incidentFormError = ''">{{ old('incident_description') }}</textarea>
+                                <x-floating-textarea x-ref="incidentDescription" id="incident_description" name="incident_description" label="Description" rows="4" :value="old('incident_description')" x-bind:required="incident && incidentModalOpen" @input="incidentFormError = ''" />
                                 <x-input-error :messages="$errors->get('incident_description')" class="mt-2" />
                             </div>
 

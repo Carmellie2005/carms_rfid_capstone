@@ -60,37 +60,33 @@
 
             <form method="GET" action="{{ route('patrol-logs.index') }}" class="grid gap-3 rounded-md border border-blue-100 bg-white p-3 shadow-sm {{ $isSupervisor ? 'md:grid-cols-2 xl:grid-cols-[minmax(150px,0.8fr)_minmax(170px,1fr)_minmax(150px,0.8fr)_minmax(140px,0.75fr)_auto]' : 'md:grid-cols-2 xl:grid-cols-[minmax(150px,0.8fr)_minmax(150px,0.8fr)_minmax(140px,0.75fr)_auto]' }}">
                 <div>
-                    <label for="status" class="block text-xs font-semibold uppercase text-blue-800">Status</label>
-                    <select id="status" name="status" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <x-floating-select id="status" name="status" label="Status" class="text-sm">
                         <option value="">All</option>
                         @foreach (['valid' => 'Valid', 'suspicious' => 'Suspicious', 'invalid' => 'Invalid', 'pending_selfie' => 'Pending Selfie', 'pending_checklist' => 'Pending Checklist', 'profile_incomplete' => 'Profile Incomplete', 'outside_schedule' => 'Outside Schedule', 'expired' => 'Expired'] as $value => $label)
                             <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
                         @endforeach
-                    </select>
+                    </x-floating-select>
                 </div>
                 @if ($isSupervisor)
                     <div>
-                        <label for="guard_id" class="block text-xs font-semibold uppercase text-blue-800">Guard</label>
-                        <select id="guard_id" name="guard_id" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <x-floating-select id="guard_id" name="guard_id" label="Guard" class="text-sm">
                             <option value="">All</option>
                             @foreach ($guards as $guard)
                                 <option value="{{ $guard->id }}" @selected((string) request('guard_id') === (string) $guard->id)>{{ $guard->name }}</option>
                             @endforeach
-                        </select>
+                        </x-floating-select>
                     </div>
                 @endif
                 <div>
-                    <label for="checkpoint_id" class="block text-xs font-semibold uppercase text-blue-800">Checkpoint</label>
-                    <select id="checkpoint_id" name="checkpoint_id" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <x-floating-select id="checkpoint_id" name="checkpoint_id" label="Checkpoint" class="text-sm">
                         <option value="">All</option>
                         @foreach ($checkpoints as $checkpoint)
                             <option value="{{ $checkpoint->id }}" @selected((string) request('checkpoint_id') === (string) $checkpoint->id)>{{ $checkpoint->code }}</option>
                         @endforeach
-                    </select>
+                    </x-floating-select>
                 </div>
                 <div>
-                    <label for="date" class="block text-xs font-semibold uppercase text-blue-800">Date Filter</label>
-                    <input id="date" name="date" type="date" value="{{ request('date') }}" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <x-floating-input id="date" name="date" type="date" label="Date Filter" :value="request('date')" class="text-sm" />
                 </div>
                 <div class="flex flex-wrap items-end gap-2 {{ $isSupervisor ? 'md:col-span-2 xl:col-span-1' : 'md:col-span-2 xl:col-span-1' }} xl:self-end xl:justify-end">
                     <button class="h-9 rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50" type="submit">Filter</button>

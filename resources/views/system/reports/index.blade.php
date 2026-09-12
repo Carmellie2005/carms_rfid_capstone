@@ -67,12 +67,10 @@
                 class="grid gap-4 rounded-md border border-blue-100 bg-white p-4 shadow-sm md:grid-cols-[1fr_1fr_auto] print:hidden"
             >
                 <div>
-                    <label for="from" class="block text-xs font-semibold uppercase text-blue-800">From</label>
-                    <input id="from" name="from" type="date" value="{{ $from->toDateString() }}" x-model="from" x-on:change="syncToDate()" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <x-floating-input id="from" name="from" type="date" label="From" :value="$from->toDateString()" x-model="from" x-on:change="syncToDate()" class="text-sm" />
                 </div>
                 <div>
-                    <label for="to" class="block text-xs font-semibold uppercase text-blue-800">To</label>
-                    <input id="to" name="to" type="date" value="{{ $to->toDateString() }}" x-model="to" x-bind:min="from || null" x-on:change="syncToDate()" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <x-floating-input id="to" name="to" type="date" label="To" :value="$to->toDateString()" x-model="to" x-bind:min="from || null" x-on:change="syncToDate()" class="text-sm" />
                 </div>
                 <div class="flex items-end">
                     <button class="w-full rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800" type="submit">Generate</button>
