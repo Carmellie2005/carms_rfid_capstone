@@ -7,6 +7,7 @@ use App\Models\Guard;
 use App\Models\IncidentReport;
 use App\Models\PatrolLog;
 use App\Models\User;
+use App\Support\ImageCompressor;
 use App\Support\PatrolChecklist;
 use App\Support\PatrolSchedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -247,6 +248,60 @@ class PatrolAreaSelfieTest extends TestCase
         $incident->images->each(fn ($image) => Storage::disk('public')->assertExists($image->image_path));
     }
 
+    public function test_patrol_images_are_compressed_before_storage(): void
+    {
+        Storage::fake('public');
+
+        [$user, $guard, $patrolLog] = $this->pendingAreaSelfiePatrol();
+        $checklistStatuses = $this->normalChecklistStatuses();
+        $checklistStatuses['checklist_statuses']['lighting_ok'] = PatrolChecklist::STATUS_ISSUE;
+
+        $response = $this
+            ->actingAs($user)
+            ->from(route('patrol.scan'))
+            ->post(route('patrol.store'), [
+                'patrol_log_id' => $patrolLog->id,
+                ...$this->areaSelfiePayload(),
+                ...$checklistStatuses,
+                'checklist_photos' => [
+                    'lighting_ok' => UploadedFile::fake()->image('lighting-proof.png', 2200, 1600)->size(9000),
+                ],
+                'has_incident' => '1',
+                'incident_category' => 'Suspicious Activity',
+                'incident_priority' => 'normal',
+                'incident_description' => 'Unknown person stayed near the checkpoint.',
+                'incident_images' => [
+                    UploadedFile::fake()->image('incident-upload-1.png', 2400, 1800)->size(9000),
+                    UploadedFile::fake()->image('incident-upload-2.jpg', 1800, 2400)->size(9000),
+                ],
+            ]);
+
+        $response
+            ->assertRedirect(route('patrol.scan'))
+            ->assertSessionHasNoErrors();
+
+        $patrolLog->refresh()->load(['checklistResponse.proofPhotos', 'incidentReport.images']);
+
+        $this->assertSame($guard->id, $patrolLog->guard_id);
+        $this->assertSame('image/jpeg', $patrolLog->area_selfie_mime_type);
+        $this->assertStoredImageIsCompressedJpeg($patrolLog->area_selfie_path);
+
+        $proofPhoto = $patrolLog->checklistResponse->proofPhotos->first();
+        $this->assertNotNull($proofPhoto);
+        $this->assertSame('image/jpeg', $proofPhoto->mime_type);
+        $this->assertStoredImageIsCompressedJpeg($proofPhoto->image_path);
+        $this->assertSame(base64_encode(Storage::disk('public')->get($proofPhoto->image_path)), $proofPhoto->image_data);
+
+        $incidentImages = $patrolLog->incidentReport->images;
+        $this->assertCount(2, $incidentImages);
+
+        $incidentImages->each(function ($image) {
+            $this->assertSame('image/jpeg', $image->mime_type);
+            $this->assertStoredImageIsCompressedJpeg($image->image_path);
+            $this->assertSame(base64_encode(Storage::disk('public')->get($image->image_path)), $image->image_data);
+        });
+    }
+
     private function areaSelfiePayload(): array
     {
         return [
@@ -279,6 +334,19 @@ class PatrolAreaSelfieTest extends TestCase
         return [
             'checklist_statuses' => array_fill_keys(array_keys(PatrolChecklist::items()), PatrolChecklist::STATUS_NORMAL),
         ];
+    }
+
+    private function assertStoredImageIsCompressedJpeg(string $path): void
+    {
+        Storage::disk('public')->assertExists($path);
+        $this->assertStringEndsWith('.jpg', $path);
+
+        $contents = Storage::disk('public')->get($path);
+        $size = getimagesizefromstring($contents);
+
+        $this->assertIsArray($size);
+        $this->assertSame('image/jpeg', $size['mime']);
+        $this->assertLessThanOrEqual(ImageCompressor::DEFAULT_MAX_DIMENSION, max($size[0], $size[1]));
     }
 
     private function pendingAreaSelfiePatrol(): array

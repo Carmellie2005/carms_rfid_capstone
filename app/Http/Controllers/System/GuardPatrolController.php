@@ -9,6 +9,7 @@ use App\Models\Guard;
 use App\Models\IncidentReport;
 use App\Models\PatrolLog;
 use App\Support\AuditLogger;
+use App\Support\ImageCompressor;
 use App\Support\PatrolChecklist;
 use App\Support\PatrolSchedule;
 use Illuminate\Http\JsonResponse;
@@ -88,17 +89,17 @@ class GuardPatrolController extends Controller
             'area_selfie_accuracy' => ['nullable', 'numeric', 'min:0', 'max:10000'],
             ...PatrolChecklist::validationRules(),
             'checklist_photos' => ['nullable', 'array', 'max:'.count(PatrolChecklist::fields())],
-            'checklist_photos.*' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'checklist_photos.*' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
             'remarks' => ['nullable', 'string', 'max:2000'],
             'has_incident' => ['nullable', 'boolean'],
             'incident_category' => ['nullable', 'required_if:has_incident,1', 'string', 'max:100', Rule::in(PatrolChecklist::incidentCategories())],
             'incident_priority' => ['nullable', Rule::in(['low', 'normal', 'high', 'critical'])],
             'incident_description' => ['nullable', 'required_if:has_incident,1', 'string', 'max:3000'],
-            'incident_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'incident_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
             'incident_images' => ['nullable', 'array', 'max:3'],
-            'incident_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'incident_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
             'incident_camera_images' => ['nullable', 'array', 'max:3'],
-            'incident_camera_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'incident_camera_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
         ]);
 
         $guard = $request->user()?->guardProfile;
@@ -315,11 +316,7 @@ class GuardPatrolController extends Controller
             return null;
         }
 
-        return [
-            'extension' => $matches[1] === 'jpeg' ? 'jpg' : $matches[1],
-            'mime_type' => 'image/'.($matches[1] === 'jpg' ? 'jpeg' : $matches[1]),
-            'contents' => $contents,
-        ];
+        return ImageCompressor::compressedJpeg($contents);
     }
 
     private function storePatrolAreaSelfie(array $image, Guard $guard): string
@@ -368,8 +365,9 @@ class GuardPatrolController extends Controller
     {
         foreach ($checklistProofPhotoFiles as $index => $item) {
             $file = $item['file'];
-            $path = $file->store('checklist-proof-photos', 'public');
-            $contents = file_get_contents($file->getRealPath());
+            $image = $this->compressedUploadedImage($file);
+            $path = 'checklist-proof-photos/'.Str::uuid().'.'.$image['extension'];
+            Storage::disk('public')->put($path, $image['contents']);
             $field = $item['field'];
 
             $checklistResponse->proofPhotos()->create([
@@ -378,8 +376,8 @@ class GuardPatrolController extends Controller
                 'item_label' => PatrolChecklist::label($field) ?? Str::of($field)->replace('_', ' ')->title()->toString(),
                 'image_path' => $path,
                 'original_name' => $file->getClientOriginalName(),
-                'mime_type' => $file->getMimeType() ?: 'image/jpeg',
-                'image_data' => $contents === false ? null : base64_encode($contents),
+                'mime_type' => $image['mime_type'],
+                'image_data' => base64_encode($image['contents']),
                 'sort_order' => $index + 1,
             ]);
         }
@@ -451,21 +449,41 @@ class GuardPatrolController extends Controller
 
         foreach (array_slice($incidentImageFiles, 0, 3) as $index => $item) {
             $file = $item['file'];
-            $path = $file->store('incident-reports', 'public');
-            $contents = file_get_contents($file->getRealPath());
+            $image = $this->compressedUploadedImage($file);
+            $path = 'incident-reports/'.Str::uuid().'.'.$image['extension'];
+            Storage::disk('public')->put($path, $image['contents']);
             $paths[] = $path;
 
             $incidentReport->images()->create([
                 'image_path' => $path,
                 'original_name' => $file->getClientOriginalName(),
-                'mime_type' => $file->getMimeType() ?: 'image/jpeg',
-                'image_data' => $contents === false ? null : base64_encode($contents),
+                'mime_type' => $image['mime_type'],
+                'image_data' => base64_encode($image['contents']),
                 'source' => $item['source'],
                 'sort_order' => $index + 1,
             ]);
         }
 
         return $paths;
+    }
+
+    private function compressedUploadedImage(UploadedFile $file): array
+    {
+        $contents = file_get_contents($file->getRealPath());
+
+        if ($contents === false) {
+            return [
+                'extension' => $file->extension() ?: 'jpg',
+                'mime_type' => $file->getMimeType() ?: 'image/jpeg',
+                'contents' => '',
+            ];
+        }
+
+        return ImageCompressor::compressedJpeg($contents, sourcePath: $file->getRealPath()) ?? [
+            'extension' => $file->extension() ?: 'jpg',
+            'mime_type' => $file->getMimeType() ?: 'image/jpeg',
+            'contents' => $contents,
+        ];
     }
 
     private function unknownGuard(): Guard

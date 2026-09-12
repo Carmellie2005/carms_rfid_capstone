@@ -250,6 +250,56 @@ async function dataUrlFromImageFile(file, options = {}) {
     return canvas.toDataURL('image/jpeg', quality);
 }
 
+function compressedImageName(name) {
+    const cleanName = String(name || 'patrol-photo').trim() || 'patrol-photo';
+    const withoutExtension = cleanName.replace(/\.[^.]+$/, '');
+
+    return `${withoutExtension || 'patrol-photo'}.jpg`;
+}
+
+async function compressedImageFile(file, options = {}) {
+    if (! file || (file.type && ! file.type.startsWith('image/'))) {
+        return file;
+    }
+
+    try {
+        const dataUrl = await dataUrlFromImageFile(file, {
+            maxSize: 1280,
+            quality: 0.72,
+            ...options,
+        });
+        const response = await fetch(dataUrl);
+        const blob = await response.blob();
+
+        if (! blob?.size || typeof File === 'undefined') {
+            return file;
+        }
+
+        return new File([blob], compressedImageName(file.name), {
+            type: 'image/jpeg',
+            lastModified: file.lastModified || Date.now(),
+        });
+    } catch (error) {
+        return file;
+    }
+}
+
+async function replaceInputImagesWithCompressedCopies(input, options = {}) {
+    if (! input?.files?.length || typeof DataTransfer === 'undefined') {
+        return false;
+    }
+
+    const transfer = new DataTransfer();
+
+    for (const file of Array.from(input.files)) {
+        transfer.items.add(await compressedImageFile(file, options));
+    }
+
+    input.files = transfer.files;
+
+    return true;
+}
+
 function pointDistance(first, second) {
     const x = Number(first.x) - Number(second.x);
     const y = Number(first.y) - Number(second.y);
@@ -1483,6 +1533,8 @@ Alpine.data('patrolScan', (config = {}) => ({
     incidentImagePreviews: [],
     checklistPhotoError: '',
     checklistPhotoPreviews: {},
+    imageCompressionBusy: false,
+    imageCompressionMessage: '',
     checklistItems: config.checklistItems || [],
     checklistPhotoModalOpen: false,
     selectedChecklistPhoto: null,
@@ -1934,7 +1986,20 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.checklistPhotoInput(field)?.click();
     },
 
-    updateChecklistPhoto(field, event) {
+    async updateChecklistPhoto(field, event) {
+        this.imageCompressionBusy = true;
+        this.imageCompressionMessage = 'Preparing photo...';
+
+        try {
+            await replaceInputImagesWithCompressedCopies(event.target, {
+                maxSize: 1280,
+                quality: 0.72,
+            });
+        } finally {
+            this.imageCompressionBusy = false;
+            this.imageCompressionMessage = '';
+        }
+
         const file = event.target.files?.[0];
 
         if (! file) {
@@ -2127,6 +2192,23 @@ Alpine.data('patrolScan', (config = {}) => ({
         ];
     },
 
+    async prepareIncidentImages(event) {
+        this.imageCompressionBusy = true;
+        this.imageCompressionMessage = 'Preparing selected photos...';
+
+        try {
+            await replaceInputImagesWithCompressedCopies(event?.target, {
+                maxSize: 1280,
+                quality: 0.72,
+            });
+        } finally {
+            this.imageCompressionBusy = false;
+            this.imageCompressionMessage = '';
+        }
+
+        return this.updateIncidentImageCount(event);
+    },
+
     clearIncidentImagePreviews() {
         this.incidentImagePreviews.forEach((preview) => {
             if (preview.url) {
@@ -2199,6 +2281,12 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     handleSubmit(event) {
+        if (this.imageCompressionBusy) {
+            event.preventDefault();
+            this.verificationMessage = 'Please wait while photos are being prepared.';
+            return;
+        }
+
         if (! this.patrolScheduleOpen) {
             event.preventDefault();
             this.verificationMessage = this.patrolScheduleMessage;

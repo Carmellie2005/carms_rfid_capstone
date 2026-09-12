@@ -383,6 +383,7 @@
                         <div class="mobile-scroll-area grid flex-1 gap-5 overflow-y-auto p-4 sm:p-5 lg:grid-cols-[1fr_0.95fr]">
                             <div>
                                 <h4 class="text-base font-semibold text-blue-950">Checkpoint Checklist</h4>
+                                <p x-show="imageCompressionMessage" x-cloak x-text="imageCompressionMessage" class="mt-3 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-800"></p>
                                 <p x-show="checklistPhotoError" x-cloak x-text="checklistPhotoError" class="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700"></p>
                                 <x-input-error :messages="$errors->get('checklist_photos')" class="mt-3" />
                                 <div class="mt-4 grid gap-3 sm:grid-cols-2">
@@ -492,12 +493,12 @@
                                 <button type="button" class="inline-flex h-11 items-center justify-center rounded-md border border-blue-200 bg-white px-5 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="checklistModalOpen = false" :disabled="submittingPatrol">
                                     Review Scan
                                 </button>
-                                <button type="submit" class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" :disabled="! patrolLogId || ! areaSelfieComplete() || submittingPatrol" :class="(! patrolLogId || ! areaSelfieComplete() || submittingPatrol) ? 'cursor-not-allowed opacity-60' : ''">
-                                    <svg x-show="submittingPatrol" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <button type="submit" class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" :disabled="! patrolLogId || ! areaSelfieComplete() || submittingPatrol || imageCompressionBusy" :class="(! patrolLogId || ! areaSelfieComplete() || submittingPatrol || imageCompressionBusy) ? 'cursor-not-allowed opacity-60' : ''">
+                                    <svg x-show="submittingPatrol || imageCompressionBusy" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
                                     </svg>
-                                    <span x-text="submittingPatrol ? 'Submitting...' : 'Submit Patrol Record'"></span>
+                                    <span x-text="imageCompressionBusy ? 'Preparing Photos...' : (submittingPatrol ? 'Submitting...' : 'Submit Patrol Record')"></span>
                                 </button>
                             </div>
                         </div>
@@ -575,7 +576,7 @@
                                                 <path d="M12 5v14m7-7H5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                                             </svg>
                                             Upload Images
-                                            <input x-ref="incidentUploadImages" id="incident_images" name="incident_images[]" type="file" accept="image/*" multiple class="sr-only" @change="updateIncidentImageCount($event)">
+                                            <input x-ref="incidentUploadImages" id="incident_images" name="incident_images[]" type="file" accept="image/*" multiple class="sr-only" @change="prepareIncidentImages($event)">
                                         </label>
                                         <button type="button" class="inline-flex h-11 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50" @click="$refs.incidentCameraImages?.click()">
                                             <svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -584,7 +585,7 @@
                                             </svg>
                                             Take Photo
                                         </button>
-                                        <input x-ref="incidentCameraImages" id="incident_camera_images" name="incident_camera_images[]" type="file" accept="image/*" capture="environment" class="sr-only" @change="updateIncidentImageCount($event)">
+                                        <input x-ref="incidentCameraImages" id="incident_camera_images" name="incident_camera_images[]" type="file" accept="image/*" capture="environment" class="sr-only" @change="prepareIncidentImages($event)">
                                     </div>
 
                                     <p class="mt-2 text-xs text-slate-500">
@@ -604,6 +605,7 @@
                                     </div>
 
                                     <p x-show="incidentImageCount > 0 && ! incidentImageError" x-cloak class="mt-2 text-xs font-semibold text-blue-700" x-text="`${incidentImageCount} image${incidentImageCount === 1 ? '' : 's'} selected`"></p>
+                                    <p x-show="imageCompressionMessage" x-cloak class="mt-2 text-xs font-semibold text-blue-700" x-text="imageCompressionMessage"></p>
                                     <p x-show="incidentImageError" x-cloak class="mt-2 text-xs font-semibold text-red-700" x-text="incidentImageError"></p>
                                 </div>
                                 <x-input-error :messages="$errors->get('incident_image')" class="mt-2" />
@@ -618,12 +620,12 @@
                             <button type="button" class="inline-flex h-11 items-center justify-center rounded-md border border-blue-200 bg-white px-5 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="closeIncidentModal()" :disabled="submittingPatrol">
                                 Back to Checklist
                             </button>
-                            <button type="submit" class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" :disabled="! patrolLogId || ! areaSelfieComplete() || submittingPatrol">
-                                <svg x-show="submittingPatrol" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <button type="submit" class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" :disabled="! patrolLogId || ! areaSelfieComplete() || submittingPatrol || imageCompressionBusy">
+                                <svg x-show="submittingPatrol || imageCompressionBusy" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
                                 </svg>
-                                <span x-text="submittingPatrol ? 'Submitting...' : 'Submit Patrol Record'"></span>
+                                <span x-text="imageCompressionBusy ? 'Preparing Photos...' : (submittingPatrol ? 'Submitting...' : 'Submit Patrol Record')"></span>
                             </button>
                         </div>
                     </section>
