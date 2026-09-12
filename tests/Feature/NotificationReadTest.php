@@ -192,6 +192,154 @@ class NotificationReadTest extends TestCase
         ]);
     }
 
+    public function test_guard_notification_feed_only_shows_own_action_needed_patrols(): void
+    {
+        $guardUser = User::factory()->create(['role' => 'guard']);
+        $guard = Guard::create([
+            'user_id' => $guardUser->id,
+            'employee_no' => 'SG-ACTION',
+            'name' => 'Action Guard',
+            'rfid_uid' => 'RFID-ACTION',
+            'status' => 'active',
+        ]);
+        $checkpoint = Checkpoint::create([
+            'code' => 'CP-ACTION',
+            'name' => 'Action Checkpoint',
+            'location' => 'Main Gate',
+            'status' => 'active',
+        ]);
+        $incident = IncidentReport::create([
+            'guard_id' => $guard->id,
+            'checkpoint_id' => $checkpoint->id,
+            'category' => 'Guard Submitted Incident',
+            'priority' => 'high',
+            'severity' => 'high',
+            'incident_at' => now(),
+            'description' => 'Incident submitted by this guard.',
+            'status' => 'submitted',
+        ]);
+        $suspiciousPatrol = PatrolLog::create([
+            'guard_id' => $guard->id,
+            'checkpoint_id' => $checkpoint->id,
+            'rfid_uid' => 'RFID-ACTION',
+            'checkpoint_code' => 'CP-ACTION',
+            'rfid_status' => 'valid',
+            'facial_status' => 'not_required',
+            'status' => 'suspicious',
+            'scanned_at' => now('Asia/Manila')->subMinutes(2),
+        ]);
+        $pendingSelfiePatrol = PatrolLog::create([
+            'guard_id' => $guard->id,
+            'checkpoint_id' => $checkpoint->id,
+            'rfid_uid' => 'RFID-ACTION',
+            'checkpoint_code' => 'CP-ACTION',
+            'rfid_status' => 'valid',
+            'facial_status' => 'not_required',
+            'status' => 'pending_selfie',
+            'scanned_at' => now('Asia/Manila')->subMinute(),
+        ]);
+
+        $this
+            ->actingAs($guardUser)
+            ->get(route('notifications.index'))
+            ->assertOk()
+            ->assertSee('1 unread alert')
+            ->assertSee('Pending Selfie scan')
+            ->assertSee(route('patrol.scan'), false)
+            ->assertDontSee('Guard Submitted Incident')
+            ->assertDontSee('Suspicious scan');
+
+        $this
+            ->actingAs($guardUser)
+            ->post(route('notifications.read'), [
+                'type' => 'incident',
+                'id' => $incident->id,
+            ])
+            ->assertNotFound();
+
+        $this
+            ->actingAs($guardUser)
+            ->post(route('notifications.read'), [
+                'type' => 'patrol',
+                'id' => $suspiciousPatrol->id,
+            ])
+            ->assertNotFound();
+
+        $this
+            ->actingAs($guardUser)
+            ->from(route('notifications.index'))
+            ->post(route('notifications.read'), [
+                'type' => 'patrol',
+                'id' => $pendingSelfiePatrol->id,
+            ])
+            ->assertRedirect(route('notifications.index'))
+            ->assertSessionHas('status', 'Notification marked as read.');
+
+        $this->assertDatabaseHas('notification_reads', [
+            'user_id' => $guardUser->id,
+            'notifiable_type' => PatrolLog::class,
+            'notifiable_id' => $pendingSelfiePatrol->id,
+        ]);
+
+        $this->assertDatabaseMissing('notification_reads', [
+            'user_id' => $guardUser->id,
+            'notifiable_type' => IncidentReport::class,
+            'notifiable_id' => $incident->id,
+        ]);
+    }
+
+    public function test_supervisor_notification_feed_hides_guard_action_needed_patrols(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'admin']);
+        $guard = Guard::create([
+            'employee_no' => 'SG-REVIEW',
+            'name' => 'Review Guard',
+            'rfid_uid' => 'RFID-REVIEW',
+            'status' => 'active',
+        ]);
+        $checkpoint = Checkpoint::create([
+            'code' => 'CP-REVIEW',
+            'name' => 'Review Checkpoint',
+            'location' => 'Main Gate',
+            'status' => 'active',
+        ]);
+
+        IncidentReport::create([
+            'guard_id' => $guard->id,
+            'checkpoint_id' => $checkpoint->id,
+            'category' => 'Supervisor Review Incident',
+            'priority' => 'critical',
+            'severity' => 'critical',
+            'incident_at' => now(),
+            'description' => 'Incident for supervisor review.',
+            'status' => 'submitted',
+        ]);
+
+        foreach (['suspicious', 'invalid', 'outside_schedule', 'pending_selfie'] as $index => $status) {
+            PatrolLog::create([
+                'guard_id' => $guard->id,
+                'checkpoint_id' => $checkpoint->id,
+                'rfid_uid' => 'RFID-REVIEW',
+                'checkpoint_code' => 'CP-REVIEW',
+                'rfid_status' => $status === 'invalid' ? 'invalid' : 'valid',
+                'facial_status' => $status === 'pending_selfie' ? 'not_required' : 'not_started',
+                'status' => $status,
+                'scanned_at' => now('Asia/Manila')->subMinutes($index + 1),
+            ]);
+        }
+
+        $this
+            ->actingAs($supervisor)
+            ->get(route('notifications.index'))
+            ->assertOk()
+            ->assertSee('4 unread alerts')
+            ->assertSee('Supervisor Review Incident')
+            ->assertSee('Suspicious scan')
+            ->assertSee('Invalid scan')
+            ->assertSee('Outside Schedule scan')
+            ->assertDontSee('Pending Selfie scan');
+    }
+
     public function test_guard_cannot_mark_another_guards_notification_as_read(): void
     {
         $firstUser = User::factory()->create(['role' => 'guard']);

@@ -16,8 +16,10 @@ class NotificationFeed
     public const DROPDOWN_LIMIT = 5;
     public const PAGE_SIZE = 12;
 
-    private const INCIDENT_STATUSES = ['submitted', 'under_review'];
-    private const PATROL_STATUSES = ['suspicious', 'invalid', 'pending_selfie', 'pending_face', 'profile_incomplete', 'outside_schedule'];
+    private const SUPERVISOR_INCIDENT_STATUSES = ['submitted', 'under_review'];
+    private const SUPERVISOR_PATROL_STATUSES = ['suspicious', 'invalid', 'outside_schedule'];
+    private const GUARD_INCIDENT_STATUSES = [];
+    private const GUARD_ACTION_PATROL_STATUSES = ['pending_selfie', 'pending_face', 'pending_checklist', 'profile_incomplete'];
 
     public static function unreadCountFor(User $user): int
     {
@@ -85,7 +87,7 @@ class NotificationFeed
     {
         $query = IncidentReport::query()
             ->with(['securityGuard', 'checkpoint'])
-            ->whereIn('status', self::INCIDENT_STATUSES)
+            ->whereIn('status', static::incidentStatusesFor($user))
             ->when(
                 $user->role !== 'admin',
                 fn (Builder $query) => $query->where('guard_id', $user->guardProfile?->id ?? 0)
@@ -103,7 +105,7 @@ class NotificationFeed
         $todayDate = now('Asia/Manila')->toDateString();
         $query = PatrolLog::query()
             ->with(['securityGuard', 'checkpoint'])
-            ->whereIn('status', self::PATROL_STATUSES)
+            ->whereIn('status', static::patrolStatusesFor($user))
             ->whereDate('scanned_at', $todayDate)
             ->when(
                 $user->role !== 'admin',
@@ -115,6 +117,20 @@ class NotificationFeed
         }
 
         return $unreadOnly ? static::unreadOnly($query, $user) : $query;
+    }
+
+    private static function incidentStatusesFor(User $user): array
+    {
+        return $user->role === 'admin'
+            ? self::SUPERVISOR_INCIDENT_STATUSES
+            : self::GUARD_INCIDENT_STATUSES;
+    }
+
+    private static function patrolStatusesFor(User $user): array
+    {
+        return $user->role === 'admin'
+            ? self::SUPERVISOR_PATROL_STATUSES
+            : self::GUARD_ACTION_PATROL_STATUSES;
     }
 
     private static function unreadOnly(Builder $query, User $user): Builder
@@ -165,7 +181,7 @@ class NotificationFeed
             'badge' => $statusLabel,
             'href' => $user->role === 'admin'
                 ? route('scan-issues.index', ['status' => $patrol->status])
-                : route('patrol-logs.index', ['status' => $patrol->status, 'date' => $patrol->scanned_at?->toDateString()]),
+                : route('patrol.scan'),
             'is_read' => (bool) $readAt,
             'read_at_label' => static::timeLabel($readAt),
         ];
