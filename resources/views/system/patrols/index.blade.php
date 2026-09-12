@@ -299,7 +299,8 @@
             </div>
         </div>
 
-        <div x-show="detailsOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/55 p-3 sm:p-6" x-on:click.self="closePatrolDetails()" role="dialog" aria-modal="true" aria-label="Patrol details">
+        <template x-teleport="body">
+            <div x-show="detailsOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/55 p-3 sm:p-6" x-on:click.self="closePatrolDetails()" role="dialog" aria-modal="true" aria-label="Patrol details">
             @foreach ($logs as $log)
                 @php
                     $detailScanTime = $log->scanned_at?->timezone(config('app.timezone'));
@@ -434,22 +435,25 @@
                     </div>
                 </section>
             @endforeach
-        </div>
+            </div>
+        </template>
 
-        <div x-show="proofPhotoOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[95] flex items-center justify-center bg-slate-950/70 p-3 sm:p-6" x-on:click.self="closeProofPhoto()" x-on:keydown.escape.window="proofPhotoOpen && closeProofPhoto()">
-            <section class="w-full max-w-2xl overflow-hidden rounded-md bg-white shadow-2xl">
-                <div class="flex items-center justify-between gap-3 border-b border-blue-100 px-4 py-3">
-                    <p class="min-w-0 truncate text-sm font-semibold text-blue-950" x-text="proofPhotoTitle"></p>
-                    <button type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-100 bg-white text-slate-700 hover:bg-blue-50" @click="closeProofPhoto()" aria-label="Close proof photo preview">
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                            <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                        </svg>
-                    </button>
-                </div>
-                <div class="bg-slate-950 p-2 sm:p-3">
-                    <img x-show="proofPhotoSrc" :src="proofPhotoSrc" alt="Checklist proof photo" class="max-h-[78dvh] w-full rounded object-contain">
-                </div>
-            </section>
-        </div>
+        <template x-teleport="body">
+            <div x-show="proofPhotoOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[95] flex items-center justify-center bg-slate-950/70 p-3 sm:p-6" x-on:click.self="closeProofPhoto()" x-on:keydown.escape.window="proofPhotoOpen && closeProofPhoto()">
+                <section class="w-full max-w-2xl overflow-hidden rounded-md bg-white shadow-2xl">
+                    <div class="flex items-center justify-between gap-3 border-b border-blue-100 px-4 py-3">
+                        <p class="min-w-0 truncate text-sm font-semibold text-blue-950" x-text="proofPhotoTitle"></p>
+                        <button type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-100 bg-white text-slate-700 hover:bg-blue-50" @click="closeProofPhoto()" aria-label="Close proof photo preview">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="bg-slate-950 p-2 sm:p-3">
+                        <img x-show="proofPhotoSrc" :src="proofPhotoSrc" alt="Checklist proof photo" class="max-h-[78dvh] w-full rounded object-contain">
+                    </div>
+                </section>
+            </div>
+        </template>
     </div>
 </x-app-layout>
