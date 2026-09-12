@@ -45,6 +45,14 @@ class CheckpointManagementTest extends TestCase
             'username' => 'supervisor',
         ]);
 
+        Checkpoint::create([
+            'code' => 'CP-IT-01',
+            'name' => 'IT',
+            'location' => 'IT Building',
+            'device_uid' => 'ESP32-IT-01',
+            'status' => 'active',
+        ]);
+
         $response = $this
             ->actingAs($supervisor)
             ->get(route('checkpoints.index'));
@@ -55,6 +63,8 @@ class CheckpointManagementTest extends TestCase
             ->assertSee('Create Checkpoint')
             ->assertSee('Checkpoints')
             ->assertSee('Checkpoint Management')
+            ->assertSee('dark:bg-emerald-950/35', false)
+            ->assertSee('dark:text-emerald-200', false)
             ->assertDontSee('Checkpoint List')
             ->assertDontSee(route('checkpoints.create'), false);
     }

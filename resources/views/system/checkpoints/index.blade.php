@@ -56,7 +56,7 @@
                                 <h3 class="truncate text-sm font-semibold text-blue-950">{{ $checkpoint->name }}</h3>
                                 <p class="mt-1 font-mono text-xs text-slate-500">{{ $checkpoint->code }}</p>
                             </div>
-                            <span class="shrink-0 whitespace-nowrap rounded-md px-2 py-1 text-[0.65rem] font-semibold ring-1 {{ $checkpoint->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-600 ring-slate-200' }}">
+                            <span class="shrink-0 whitespace-nowrap rounded-md px-2 py-1 text-[0.65rem] font-semibold ring-1 {{ $checkpoint->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45' : 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60' }}">
                                 {{ ucfirst($checkpoint->status) }}
                             </span>
                         </div>
@@ -107,7 +107,7 @@
                                     <td class="px-5 py-4 text-slate-600">{{ $checkpoint->location }}</td>
                                     <td class="px-5 py-4 font-mono text-slate-700">{{ $checkpoint->device_uid ?? 'None' }}</td>
                                     <td class="px-5 py-4">
-                                        <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $checkpoint->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-600 ring-slate-200' }}">
+                                        <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $checkpoint->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45' : 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60' }}">
                                             {{ ucfirst($checkpoint->status) }}
                                         </span>
                                     </td>
