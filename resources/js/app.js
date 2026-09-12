@@ -2249,22 +2249,22 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         const status = String(value || '').toLowerCase();
 
         if (['active', 'valid', 'verified', 'completed', 'resolved'].includes(status)) {
-            return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
+            return 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45';
         }
 
         if (['pending', 'pending_face', 'pending_selfie', 'pending_checklist', 'open', 'in_progress'].includes(status)) {
-            return 'bg-blue-50 text-blue-700 ring-blue-200';
+            return 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45';
         }
 
         if (['suspicious', 'profile_incomplete', 'medium', 'high'].includes(status)) {
-            return 'bg-amber-50 text-amber-700 ring-amber-200';
+            return 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45';
         }
 
         if (['failed', 'invalid', 'critical'].includes(status)) {
-            return 'bg-red-50 text-red-700 ring-red-200';
+            return 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/35 dark:text-red-200 dark:ring-red-400/45';
         }
 
-        return 'bg-slate-50 text-slate-600 ring-slate-200';
+        return 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60';
     },
 }));
 

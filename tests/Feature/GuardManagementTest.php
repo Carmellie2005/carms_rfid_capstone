@@ -132,6 +132,8 @@ class GuardManagementTest extends TestCase
             ->assertSee('Guard Management')
             ->assertSee('Registered guards, RFID cards, and live face registration status')
             ->assertSee('Guard Profiles')
+            ->assertSee('dark:bg-slate-900', false)
+            ->assertSee('dark:bg-slate-950/45', false)
             ->assertDontSee('Register Guard');
     }
 
