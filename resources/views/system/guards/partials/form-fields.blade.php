@@ -20,7 +20,7 @@
             @if ($guard->exists) data-edit-guard-first-field="{{ $guard->id }}" @endif
             name="employee_no"
             value="{{ $valueFor('employee_no', $guard->employee_no) }}"
-            placeholder="Employee No."
+            placeholder="SG-03"
             class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             required
         >
@@ -29,39 +29,39 @@
 
     <div>
         <label for="{{ $fieldPrefix }}_name" class="sr-only">Full Name</label>
-        <input id="{{ $fieldPrefix }}_name" name="name" value="{{ $valueFor('name', $guard->name) }}" placeholder="Full Name" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+        <input id="{{ $fieldPrefix }}_name" name="name" value="{{ $valueFor('name', $guard->name) }}" placeholder="Juan Dela Cruz" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
         <x-input-error :messages="$errorFor('name')" class="mt-2" />
     </div>
 
     <div>
         <label for="{{ $fieldPrefix }}_email" class="sr-only">Email</label>
-        <input id="{{ $fieldPrefix }}_email" name="email" type="email" value="{{ $valueFor('email', $guard->email) }}" placeholder="Email" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <input id="{{ $fieldPrefix }}_email" name="email" type="email" value="{{ $valueFor('email', $guard->email) }}" placeholder="name@guard.local" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
         <x-input-error :messages="$errorFor('email')" class="mt-2" />
     </div>
 
     <div>
         <label for="{{ $fieldPrefix }}_phone" class="sr-only">Phone</label>
-        <input id="{{ $fieldPrefix }}_phone" name="phone" value="{{ $valueFor('phone', $guard->phone) }}" placeholder="Phone" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <input id="{{ $fieldPrefix }}_phone" name="phone" value="{{ $valueFor('phone', $guard->phone) }}" placeholder="09XX XXX XXXX" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
         <x-input-error :messages="$errorFor('phone')" class="mt-2" />
     </div>
 
     <div>
         <label for="{{ $fieldPrefix }}_rfid_uid" class="sr-only">RFID UID</label>
-        <input id="{{ $fieldPrefix }}_rfid_uid" name="rfid_uid" value="{{ $valueFor('rfid_uid', $guard->rfid_uid) }}" placeholder="RFID UID" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+        <input id="{{ $fieldPrefix }}_rfid_uid" name="rfid_uid" value="{{ $valueFor('rfid_uid', $guard->rfid_uid) }}" placeholder="F33C8D37" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
         <x-input-error :messages="$errorFor('rfid_uid')" class="mt-2" />
     </div>
 
     @if ($faceVerificationEnabled)
         <div>
             <label for="{{ $fieldPrefix }}_face_reference" class="sr-only">Face Reference</label>
-            <input id="{{ $fieldPrefix }}_face_reference" name="face_reference" value="{{ $valueFor('face_reference', $guard->face_reference) }}" placeholder="Face Reference" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <input id="{{ $fieldPrefix }}_face_reference" name="face_reference" value="{{ $valueFor('face_reference', $guard->face_reference) }}" placeholder="face-ref-01" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
             <x-input-error :messages="$errorFor('face_reference')" class="mt-2" />
         </div>
     @endif
 
     <div>
         <label for="{{ $fieldPrefix }}_shift" class="sr-only">Shift</label>
-        <input id="{{ $fieldPrefix }}_shift" name="shift" value="{{ $valueFor('shift', $guard->shift) }}" placeholder="Shift" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <input id="{{ $fieldPrefix }}_shift" name="shift" value="{{ $valueFor('shift', $guard->shift) }}" placeholder="Night Shift" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
         <x-input-error :messages="$errorFor('shift')" class="mt-2" />
     </div>
 
@@ -80,14 +80,14 @@
 
     <div>
         <label for="{{ $fieldPrefix }}_username" class="sr-only">Username or Email</label>
-        <input id="{{ $fieldPrefix }}_username" name="username" type="text" value="{{ $valueFor('username', $guard->user?->username) }}" placeholder="Username or Email" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="username" inputmode="email">
+        <input id="{{ $fieldPrefix }}_username" name="username" type="text" value="{{ $valueFor('username', $guard->user?->username) }}" placeholder="sg-03@guard.local" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="username" inputmode="email">
         <x-input-error :messages="$errorFor('username')" class="mt-2" />
     </div>
 
     <div>
         <label for="{{ $fieldPrefix }}_password" class="sr-only">{{ $passwordRequired ? 'Password' : 'New Password' }}</label>
         <div x-data="{ showPassword: false }" class="relative mt-1">
-            <input id="{{ $fieldPrefix }}_password" name="password" type="password" :type="showPassword ? 'text' : 'password'" placeholder="{{ $passwordRequired ? 'Password' : 'New Password' }}" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500" @required($passwordRequired) autocomplete="new-password">
+            <input id="{{ $fieldPrefix }}_password" name="password" type="password" :type="showPassword ? 'text' : 'password'" placeholder="{{ $passwordRequired ? 'Minimum 8 characters' : 'Leave blank to keep password' }}" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500" @required($passwordRequired) autocomplete="new-password">
             <button
                 type="button"
                 x-on:click="showPassword = ! showPassword"
@@ -115,7 +115,7 @@
     <div>
         <label for="{{ $fieldPrefix }}_password_confirmation" class="sr-only">Confirm Password</label>
         <div x-data="{ showPassword: false }" class="relative mt-1">
-            <input id="{{ $fieldPrefix }}_password_confirmation" name="password_confirmation" type="password" :type="showPassword ? 'text' : 'password'" placeholder="Confirm Password" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500" @required($passwordRequired) autocomplete="new-password">
+            <input id="{{ $fieldPrefix }}_password_confirmation" name="password_confirmation" type="password" :type="showPassword ? 'text' : 'password'" placeholder="Retype password" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500" @required($passwordRequired) autocomplete="new-password">
             <button
                 type="button"
                 x-on:click="showPassword = ! showPassword"
@@ -141,7 +141,7 @@
 
     <div class="md:col-span-2">
         <label for="{{ $fieldPrefix }}_notes" class="sr-only">Notes</label>
-        <textarea id="{{ $fieldPrefix }}_notes" name="notes" rows="3" placeholder="Notes" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ $valueFor('notes', $guard->notes) }}</textarea>
+        <textarea id="{{ $fieldPrefix }}_notes" name="notes" rows="3" placeholder="Optional notes" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ $valueFor('notes', $guard->notes) }}</textarea>
         <x-input-error :messages="$errorFor('notes')" class="mt-2" />
     </div>
 </div>

@@ -227,39 +227,39 @@
                             <div class="grid gap-4 md:grid-cols-2">
                                 <div>
                                     <label for="create_employee_no" class="sr-only">Employee No.</label>
-                                    <input id="create_employee_no" x-ref="createGuardFirstField" name="employee_no" value="{{ old('employee_no', $newGuard->employee_no) }}" placeholder="Employee No." class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                    <input id="create_employee_no" x-ref="createGuardFirstField" name="employee_no" value="{{ old('employee_no', $newGuard->employee_no) }}" placeholder="SG-03" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                                     <x-input-error :messages="$errors->get('employee_no')" class="mt-2" />
                                 </div>
                                 <div>
                                     <label for="create_name" class="sr-only">Full Name</label>
-                                    <input id="create_name" name="name" value="{{ old('name', $newGuard->name) }}" placeholder="Full Name" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                    <input id="create_name" name="name" value="{{ old('name', $newGuard->name) }}" placeholder="Juan Dela Cruz" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                                     <x-input-error :messages="$errors->get('name')" class="mt-2" />
                                 </div>
                                 <div>
                                     <label for="create_email" class="sr-only">Email</label>
-                                    <input id="create_email" name="email" type="email" value="{{ old('email', $newGuard->email) }}" placeholder="Email" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <input id="create_email" name="email" type="email" value="{{ old('email', $newGuard->email) }}" placeholder="name@guard.local" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
                                 </div>
                                 <div>
                                     <label for="create_phone" class="sr-only">Phone</label>
-                                    <input id="create_phone" name="phone" value="{{ old('phone', $newGuard->phone) }}" placeholder="Phone" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <input id="create_phone" name="phone" value="{{ old('phone', $newGuard->phone) }}" placeholder="09XX XXX XXXX" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <x-input-error :messages="$errors->get('phone')" class="mt-2" />
                                 </div>
                                 <div>
                                     <label for="create_rfid_uid" class="sr-only">RFID UID</label>
-                                    <input id="create_rfid_uid" name="rfid_uid" value="{{ old('rfid_uid', $newGuard->rfid_uid) }}" placeholder="RFID UID" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                    <input id="create_rfid_uid" name="rfid_uid" value="{{ old('rfid_uid', $newGuard->rfid_uid) }}" placeholder="F33C8D37" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                                     <x-input-error :messages="$errors->get('rfid_uid')" class="mt-2" />
                                 </div>
                                 @if ($faceVerificationEnabled)
                                 <div>
                                     <label for="create_face_reference" class="sr-only">Face Reference</label>
-                                    <input id="create_face_reference" name="face_reference" value="{{ old('face_reference', $newGuard->face_reference) }}" placeholder="Face Reference" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <input id="create_face_reference" name="face_reference" value="{{ old('face_reference', $newGuard->face_reference) }}" placeholder="face-ref-01" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <x-input-error :messages="$errors->get('face_reference')" class="mt-2" />
                                 </div>
                                 @endif
                                 <div>
                                     <label for="create_shift" class="sr-only">Shift</label>
-                                    <input id="create_shift" name="shift" value="{{ old('shift', $newGuard->shift) }}" placeholder="Shift" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <input id="create_shift" name="shift" value="{{ old('shift', $newGuard->shift) }}" placeholder="Night Shift" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <x-input-error :messages="$errors->get('shift')" class="mt-2" />
                                 </div>
                                 <div>
@@ -275,13 +275,13 @@
                                 </div>
                                 <div>
                                     <label for="create_username" class="sr-only">Username or Email</label>
-                                    <input id="create_username" name="username" type="text" value="{{ old('username', $newGuard->user?->username) }}" placeholder="Username or Email" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="username" inputmode="email">
+                                    <input id="create_username" name="username" type="text" value="{{ old('username', $newGuard->user?->username) }}" placeholder="sg-03@guard.local" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="username" inputmode="email">
                                     <x-input-error :messages="$errors->get('username')" class="mt-2" />
                                 </div>
                                 <div>
                                     <label for="create_password" class="sr-only">Password</label>
                                     <div x-data="{ showPassword: false }" class="relative mt-1">
-                                        <input id="create_password" name="password" type="password" :type="showPassword ? 'text' : 'password'" placeholder="Password" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="new-password">
+                                        <input id="create_password" name="password" type="password" :type="showPassword ? 'text' : 'password'" placeholder="Minimum 8 characters" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="new-password">
                                         <button
                                             type="button"
                                             x-on:click="showPassword = ! showPassword"
@@ -308,7 +308,7 @@
                                 <div>
                                     <label for="create_password_confirmation" class="sr-only">Confirm Password</label>
                                     <div x-data="{ showPassword: false }" class="relative mt-1">
-                                        <input id="create_password_confirmation" name="password_confirmation" type="password" :type="showPassword ? 'text' : 'password'" placeholder="Confirm Password" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="new-password">
+                                        <input id="create_password_confirmation" name="password_confirmation" type="password" :type="showPassword ? 'text' : 'password'" placeholder="Retype password" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="new-password">
                                         <button
                                             type="button"
                                             x-on:click="showPassword = ! showPassword"
@@ -333,7 +333,7 @@
                                 </div>
                                 <div class="md:col-span-2">
                                     <label for="create_notes" class="sr-only">Notes</label>
-                                    <textarea id="create_notes" name="notes" rows="3" placeholder="Notes" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('notes', $newGuard->notes) }}</textarea>
+                                    <textarea id="create_notes" name="notes" rows="3" placeholder="Optional notes" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('notes', $newGuard->notes) }}</textarea>
                                     <x-input-error :messages="$errors->get('notes')" class="mt-2" />
                                 </div>
                             </div>
