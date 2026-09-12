@@ -24,10 +24,10 @@
         ];
 
         $summaryCards = [
-            ['label' => 'Total Issues', 'value' => $summary['total'], 'cardClass' => 'border-blue-100 bg-white', 'labelClass' => 'text-blue-700', 'valueClass' => 'text-blue-950'],
-            ['label' => 'Unregistered RFID', 'value' => $summary['unregistered'], 'cardClass' => 'border-red-100 bg-red-50/60', 'labelClass' => 'text-red-700', 'valueClass' => 'text-red-900'],
-            ['label' => 'Invalid Scans', 'value' => $summary['invalid'], 'cardClass' => 'border-amber-100 bg-amber-50/60', 'labelClass' => 'text-amber-700', 'valueClass' => 'text-amber-900'],
-            ['label' => 'Evidence Review', 'value' => $summary['needsEvidence'], 'cardClass' => 'border-violet-100 bg-violet-50/60', 'labelClass' => 'text-violet-700', 'valueClass' => 'text-violet-900'],
+            ['label' => 'Total Issues', 'value' => $summary['total'], 'labelClass' => 'text-blue-700 dark:text-blue-300', 'valueClass' => 'text-blue-950 dark:text-blue-100'],
+            ['label' => 'Unregistered RFID', 'value' => $summary['unregistered'], 'labelClass' => 'text-red-700 dark:text-red-300', 'valueClass' => 'text-red-900 dark:text-red-100'],
+            ['label' => 'Invalid Scans', 'value' => $summary['invalid'], 'labelClass' => 'text-orange-700 dark:text-orange-300', 'valueClass' => 'text-orange-900 dark:text-orange-100'],
+            ['label' => 'Evidence Review', 'value' => $summary['needsEvidence'], 'labelClass' => 'text-violet-700 dark:text-violet-300', 'valueClass' => 'text-violet-900 dark:text-violet-100'],
         ];
     @endphp
 
@@ -35,8 +35,8 @@
         <div class="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
             <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 @foreach ($summaryCards as $card)
-                    <div class="min-h-[5.75rem] rounded-md border p-3 shadow-sm sm:p-5 {{ $card['cardClass'] }}">
-                        <p class="truncate whitespace-nowrap text-[0.7rem] font-semibold uppercase tracking-wide sm:text-xs {{ $card['labelClass'] }}">{{ $card['label'] }}</p>
+                    <div class="min-h-[5.75rem] rounded-md border border-blue-100 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-5">
+                        <p class="min-h-8 text-[0.68rem] font-bold uppercase leading-4 tracking-wide sm:text-xs {{ $card['labelClass'] }}">{{ $card['label'] }}</p>
                         <p class="mt-2 text-2xl font-semibold sm:text-3xl {{ $card['valueClass'] }}">{{ $card['value'] }}</p>
                     </div>
                 @endforeach

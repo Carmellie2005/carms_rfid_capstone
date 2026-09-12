@@ -79,7 +79,6 @@
             ['label' => 'Patrol Logs', 'href' => route('patrol-logs.index'), 'icon' => 'patrols', 'active' => request()->routeIs('patrol-logs.*')],
             ['label' => 'Scan Issues', 'href' => route('scan-issues.index'), 'icon' => 'scan_issues', 'active' => request()->routeIs('scan-issues.*')],
             ['label' => 'Incidents', 'href' => route('incidents.index'), 'icon' => 'incidents', 'active' => request()->routeIs('incidents.*')],
-            ['label' => 'Readers', 'href' => route('readers.index'), 'icon' => 'readers', 'active' => request()->routeIs('readers.*')],
             ['label' => 'Audit Trail', 'href' => route('audit-logs.index'), 'icon' => 'audit', 'active' => request()->routeIs('audit-logs.*')],
             ['label' => 'Reports', 'href' => route('reports.index'), 'icon' => 'reports', 'active' => request()->routeIs('reports.*')],
         ]
@@ -309,11 +308,6 @@
                     <a href="{{ route('scan-issues.index') }}" class="{{ $linkClasses(request()->routeIs('scan-issues.*')) }}" @click="sidebarOpen = false">
                         {!! $navIcon('scan_issues') !!}
                         <span>Scan Issues</span>
-                    </a>
-
-                    <a href="{{ route('readers.index') }}" class="{{ $linkClasses(request()->routeIs('readers.*')) }}" @click="sidebarOpen = false">
-                        {!! $navIcon('readers') !!}
-                        <span>Reader Status</span>
                     </a>
 
                     <a href="{{ route('audit-logs.index') }}" class="{{ $linkClasses(request()->routeIs('audit-logs.*')) }}" @click="sidebarOpen = false">

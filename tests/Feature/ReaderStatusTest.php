@@ -23,4 +23,18 @@ class ReaderStatusTest extends TestCase
             ->assertSee('RFID Reader Status')
             ->assertDontSee('Manage Checkpoints');
     }
+
+    public function test_reader_status_is_removed_from_supervisor_navigation(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'admin']);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('dashboard'));
+
+        $response
+            ->assertOk()
+            ->assertDontSee('Reader Status')
+            ->assertDontSee(route('readers.index'), false);
+    }
 }
