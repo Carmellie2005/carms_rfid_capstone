@@ -1,4 +1,12 @@
 <x-app-layout>
+    @php
+        $checkpointFormContext = old('_checkpoint_form');
+        $createPanelOpen = $errors->any() && ($checkpointFormContext === 'create' || blank($checkpointFormContext));
+        $editPanelCheckpointId = $errors->any() && \Illuminate\Support\Str::startsWith((string) $checkpointFormContext, 'edit-')
+            ? \Illuminate\Support\Str::after($checkpointFormContext, 'edit-')
+            : '';
+    @endphp
+
     <x-slot name="header">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -20,7 +28,11 @@
 
     <div
         class="py-5 sm:py-8"
-        x-data="checkpointManagementPage({ createModalOpen: @js($errors->any()) })"
+        x-data="checkpointManagementPage({
+            createModalOpen: @js($createPanelOpen),
+            editModalOpen: @js(filled($editPanelCheckpointId)),
+            editCheckpointId: @js((string) $editPanelCheckpointId),
+        })"
         x-on:open-create-checkpoint.window="openCreateCheckpointModal()"
     >
         <div class="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
@@ -28,6 +40,14 @@
                 <div class="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800">{{ session('status') }}</div>
             @endif
 
+            <div
+                class="transition-[grid-template-columns] duration-300 ease-out lg:grid lg:items-start"
+                :class="sidePanelOpen() ? 'lg:grid-cols-[minmax(0,1fr)_minmax(22rem,26rem)] lg:gap-4' : 'lg:grid-cols-[minmax(0,1fr)_0rem] lg:gap-0'"
+            >
+                <div
+                    class="min-w-0 space-y-5 transition-transform duration-300 ease-out"
+                    :class="sidePanelOpen() ? 'lg:-translate-x-2' : 'lg:translate-x-0'"
+                >
             <div class="grid grid-cols-2 gap-3 lg:hidden">
                 @forelse ($checkpoints as $checkpoint)
                     <article class="min-w-0 rounded-md border border-blue-100 bg-white p-3 shadow-sm">
@@ -53,12 +73,8 @@
                         </dl>
 
                         <div class="mt-3 grid grid-cols-2 gap-2">
-                            <a href="{{ route('checkpoints.edit', $checkpoint) }}" class="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">Edit</a>
-                            <form method="POST" action="{{ route('checkpoints.destroy', $checkpoint) }}" onsubmit="return confirm('Remove this checkpoint?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="inline-flex h-9 w-full items-center justify-center whitespace-nowrap rounded-md border border-red-200 px-2 text-xs font-semibold text-red-700 hover:bg-red-50" type="submit">Delete</button>
-                            </form>
+                            <button type="button" data-edit-checkpoint-id="{{ $checkpoint->id }}" x-on:click="openEditCheckpointModal($event.currentTarget.dataset.editCheckpointId)" class="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">Edit</button>
+                            <button type="button" data-delete-action="{{ route('checkpoints.destroy', $checkpoint) }}" data-delete-name="{{ $checkpoint->name }}" x-on:click="openDeleteCheckpointModal($event.currentTarget.dataset.deleteAction, $event.currentTarget.dataset.deleteName)" class="inline-flex h-9 w-full items-center justify-center whitespace-nowrap rounded-md border border-red-200 px-2 text-xs font-semibold text-red-700 hover:bg-red-50">Delete</button>
                         </div>
                     </article>
                 @empty
@@ -66,10 +82,13 @@
                 @endforelse
             </div>
 
-            <div class="hidden overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm lg:block">
+            <div
+                class="hidden rounded-md border border-blue-100 bg-white shadow-sm lg:block"
+                :class="sidePanelOpen() ? 'lg:h-[32rem] lg:max-h-[calc(100vh-12rem)] lg:overflow-auto' : 'overflow-hidden'"
+            >
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-blue-100 text-sm">
-                        <thead class="bg-blue-50/70 text-left text-xs font-semibold uppercase text-blue-800">
+                        <thead class="bg-blue-50/70 text-left text-xs font-extrabold uppercase text-blue-800">
                             <tr>
                                 <th class="px-5 py-3">Checkpoint</th>
                                 <th class="px-5 py-3">Location</th>
@@ -94,12 +113,8 @@
                                     </td>
                                     <td class="px-5 py-4">
                                         <div class="flex justify-end gap-2">
-                                            <a href="{{ route('checkpoints.edit', $checkpoint) }}" class="rounded-md border border-blue-200 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">Edit</a>
-                                            <form method="POST" action="{{ route('checkpoints.destroy', $checkpoint) }}" onsubmit="return confirm('Remove this checkpoint?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="rounded-md border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50" type="submit">Delete</button>
-                                            </form>
+                                            <button type="button" data-edit-checkpoint-id="{{ $checkpoint->id }}" x-on:click="openEditCheckpointModal($event.currentTarget.dataset.editCheckpointId)" class="rounded-md border border-blue-200 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">Edit</button>
+                                            <button type="button" data-delete-action="{{ route('checkpoints.destroy', $checkpoint) }}" data-delete-name="{{ $checkpoint->name }}" x-on:click="openDeleteCheckpointModal($event.currentTarget.dataset.deleteAction, $event.currentTarget.dataset.deleteName)" class="rounded-md border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50">Delete</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -112,20 +127,28 @@
                     </table>
                 </div>
             </div>
+                </div>
 
             <div
                 x-show="createModalOpen"
                 x-cloak
-                x-transition.opacity.duration.200ms
+                x-transition.opacity.duration.150ms
                 x-on:click.self="closeCreateCheckpointModal()"
                 x-on:keydown.escape.window="closeCreateCheckpointModal()"
-                class="fixed inset-0 z-[80] flex items-stretch justify-center overflow-y-auto bg-slate-950/60 p-0 sm:items-center sm:px-4 sm:py-6"
+                class="fixed inset-0 z-[80] flex items-stretch justify-end overflow-hidden bg-slate-950/40 p-0 lg:static lg:z-auto lg:block lg:bg-transparent lg:p-0"
             >
                 <section
+                    x-show="createModalOpen"
                     role="dialog"
-                    aria-modal="true"
+                    x-bind:aria-modal="isCompactPanelViewport() ? 'true' : 'false'"
                     aria-labelledby="create-checkpoint-title"
-                    class="flex max-h-screen w-full flex-col overflow-hidden bg-white shadow-xl sm:max-h-[90vh] sm:max-w-2xl sm:rounded-lg"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="translate-x-full"
+                    x-transition:enter-end="translate-x-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="translate-x-0"
+                    x-transition:leave-end="translate-x-full"
+                    class="ml-auto flex h-full w-full max-w-2xl flex-col overflow-hidden bg-white shadow-xl sm:rounded-l-lg lg:ml-0 lg:h-[32rem] lg:max-h-[calc(100vh-12rem)] lg:max-w-none lg:rounded-md lg:border lg:border-blue-100 lg:shadow-sm"
                 >
                     <header class="flex items-start justify-between gap-4 border-b border-blue-100 px-5 py-4">
                         <div>
@@ -148,41 +171,11 @@
                         @csrf
 
                         <div class="mobile-scroll-area flex-1 overflow-y-auto px-5 py-5">
-                            <div class="grid gap-4 md:grid-cols-2">
-                                <div>
-                                    <label for="create_code" class="block text-sm font-medium text-slate-700">Checkpoint Code</label>
-                                    <input id="create_code" x-ref="createCheckpointFirstField" name="code" value="{{ old('code', $newCheckpoint->code) }}" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
-                                    <x-input-error :messages="$errors->get('code')" class="mt-2" />
-                                </div>
-                                <div>
-                                    <label for="create_name" class="block text-sm font-medium text-slate-700">Checkpoint Name</label>
-                                    <input id="create_name" name="name" value="{{ old('name', $newCheckpoint->name) }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
-                                    <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                                </div>
-                                <div>
-                                    <label for="create_location" class="block text-sm font-medium text-slate-700">Location</label>
-                                    <input id="create_location" name="location" value="{{ old('location', $newCheckpoint->location) }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
-                                    <x-input-error :messages="$errors->get('location')" class="mt-2" />
-                                </div>
-                                <div>
-                                    <label for="create_device_uid" class="block text-sm font-medium text-slate-700">Device UID</label>
-                                    <input id="create_device_uid" name="device_uid" value="{{ old('device_uid', $newCheckpoint->device_uid) }}" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                    <x-input-error :messages="$errors->get('device_uid')" class="mt-2" />
-                                </div>
-                                <div>
-                                    <label for="create_status" class="block text-sm font-medium text-slate-700">Status</label>
-                                    <select id="create_status" name="status" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                        <option value="active" @selected(old('status', $newCheckpoint->status) === 'active')>Active</option>
-                                        <option value="inactive" @selected(old('status', $newCheckpoint->status) === 'inactive')>Inactive</option>
-                                    </select>
-                                    <x-input-error :messages="$errors->get('status')" class="mt-2" />
-                                </div>
-                                <div class="md:col-span-2">
-                                    <label for="create_description" class="block text-sm font-medium text-slate-700">Description</label>
-                                    <textarea id="create_description" name="description" rows="3" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('description', $newCheckpoint->description) }}</textarea>
-                                    <x-input-error :messages="$errors->get('description')" class="mt-2" />
-                                </div>
-                            </div>
+                            @include('system.checkpoints.partials.form-fields', [
+                                'checkpoint' => $newCheckpoint,
+                                'formContext' => 'create',
+                                'fieldPrefix' => 'create_checkpoint',
+                            ])
                         </div>
 
                         <footer class="flex flex-col-reverse gap-2 border-t border-blue-100 px-5 py-4 sm:flex-row sm:justify-end">
@@ -193,6 +186,115 @@
                                 Create Checkpoint
                             </button>
                         </footer>
+                    </form>
+                </section>
+            </div>
+
+            @foreach ($checkpoints as $checkpoint)
+                @php
+                    $editCheckpointFormContext = 'edit-'.$checkpoint->id;
+                @endphp
+
+                <div
+                    x-show="editModalOpen && editCheckpointId === '{{ $checkpoint->id }}'"
+                    x-cloak
+                    x-transition.opacity.duration.150ms
+                    x-on:click.self="closeEditCheckpointModal()"
+                    x-on:keydown.escape.window="closeEditCheckpointModal()"
+                    class="fixed inset-0 z-[80] flex items-stretch justify-end overflow-hidden bg-slate-950/40 p-0 lg:static lg:z-auto lg:block lg:bg-transparent lg:p-0"
+                >
+                    <section
+                        x-show="editModalOpen && editCheckpointId === '{{ $checkpoint->id }}'"
+                        role="dialog"
+                        x-bind:aria-modal="isCompactPanelViewport() ? 'true' : 'false'"
+                        aria-labelledby="edit-checkpoint-title-{{ $checkpoint->id }}"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="translate-x-full"
+                        x-transition:enter-end="translate-x-0"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="translate-x-0"
+                        x-transition:leave-end="translate-x-full"
+                        class="ml-auto flex h-full w-full max-w-2xl flex-col overflow-hidden bg-white shadow-xl sm:rounded-l-lg lg:ml-0 lg:h-[32rem] lg:max-h-[calc(100vh-12rem)] lg:max-w-none lg:rounded-md lg:border lg:border-blue-100 lg:shadow-sm"
+                    >
+                        <header class="flex items-start justify-between gap-4 border-b border-blue-100 px-5 py-4">
+                            <div class="min-w-0">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Checkpoint</p>
+                                <h3 id="edit-checkpoint-title-{{ $checkpoint->id }}" class="mt-1 truncate text-lg font-semibold text-blue-950">Edit Checkpoint</h3>
+                                <p class="mt-1 truncate text-sm text-slate-500">{{ $checkpoint->name }} - {{ $checkpoint->code }}</p>
+                            </div>
+                            <button
+                                type="button"
+                                x-on:click="closeEditCheckpointModal()"
+                                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-100 text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                aria-label="Close edit checkpoint form"
+                            >
+                                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M5.22 5.22a.75.75 0 0 1 1.06 0L10 8.94l3.72-3.72a.75.75 0 1 1 1.06 1.06L11.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06L10 11.06l-3.72 3.72a.75.75 0 0 1-1.06-1.06L8.94 10 5.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </header>
+
+                        <form method="POST" action="{{ route('checkpoints.update', $checkpoint) }}" class="flex min-h-0 flex-1 flex-col">
+                            @csrf
+                            @method('PUT')
+
+                            <div class="mobile-scroll-area flex-1 overflow-y-auto px-5 py-5">
+                                @include('system.checkpoints.partials.form-fields', [
+                                    'checkpoint' => $checkpoint,
+                                    'formContext' => $editCheckpointFormContext,
+                                    'fieldPrefix' => 'edit_checkpoint_'.$checkpoint->id,
+                                ])
+                            </div>
+
+                            <footer class="flex flex-col-reverse gap-2 border-t border-blue-100 px-5 py-4 sm:flex-row sm:justify-end">
+                                <button type="button" x-on:click="closeEditCheckpointModal()" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                    Save Changes
+                                </button>
+                            </footer>
+                        </form>
+                    </section>
+                </div>
+            @endforeach
+            </div>
+
+            <div
+                x-show="deleteModalOpen"
+                x-cloak
+                x-transition.opacity.duration.200ms
+                x-on:click.self="closeDeleteCheckpointModal()"
+                x-on:keydown.escape.window="closeDeleteCheckpointModal()"
+                class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/60 p-4"
+            >
+                <section
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="delete-checkpoint-title"
+                    class="w-full max-w-md overflow-hidden rounded-lg bg-white shadow-2xl"
+                >
+                    <div class="border-b border-red-100 px-5 py-4">
+                        <h3 id="delete-checkpoint-title" class="text-lg font-semibold text-red-700">Delete Checkpoint</h3>
+                        <p class="mt-1 text-sm text-slate-500">This will remove the checkpoint profile and linked reader reference.</p>
+                    </div>
+
+                    <div class="px-5 py-5">
+                        <p class="text-sm text-slate-700">
+                            Are you sure you want to delete
+                            <span class="font-semibold text-slate-950" x-text="deleteCheckpointName"></span>?
+                        </p>
+                    </div>
+
+                    <form method="POST" x-bind:action="deleteCheckpointAction" class="flex flex-col-reverse gap-2 border-t border-red-100 px-5 py-4 sm:flex-row sm:justify-end">
+                        @csrf
+                        @method('DELETE')
+                        <button type="button" x-ref="deleteCheckpointCancelButton" x-on:click="closeDeleteCheckpointModal()" class="inline-flex h-10 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Cancel
+                        </button>
+                        <button type="submit" class="inline-flex h-10 items-center justify-center rounded-md bg-red-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                            Delete Checkpoint
+                        </button>
                     </form>
                 </section>
             </div>

@@ -105,7 +105,7 @@ class AuditLogController extends Controller
                     $query->where('description', 'like', "%{$search}%")
                         ->orWhere('action', 'like', "%{$search}%")
                         ->orWhere('actor_name', 'like', "%{$search}%")
-                        ->orWhere('ip_address', 'like', "%{$search}%");
+                        ->orWhere('properties->diagnostic', 'like', "%{$search}%");
                 });
             });
     }

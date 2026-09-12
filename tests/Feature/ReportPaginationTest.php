@@ -109,6 +109,25 @@ class ReportPaginationTest extends TestCase
             ->assertSee('Report Incident 01');
     }
 
+    public function test_system_report_to_date_is_not_before_from_date(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-09-12 21:30:00', config('app.timezone')));
+
+        $supervisor = User::factory()->create(['role' => 'admin']);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('reports.index', [
+                'from' => '2026-09-10',
+                'to' => '2026-09-05',
+            ]));
+
+        $response
+            ->assertOk()
+            ->assertSeeText('Report period: Sep 10, 2026 to Sep 10, 2026')
+            ->assertSee('x-bind:min="from || null"', false);
+    }
+
     private function createGuard(string $employeeNo, string $rfidUid): Guard
     {
         $user = User::factory()->create([

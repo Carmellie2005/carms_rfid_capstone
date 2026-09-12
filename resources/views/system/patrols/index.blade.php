@@ -29,9 +29,19 @@
     @endphp
 
     <div class="py-5 sm:py-8" x-data="{
+        detailsOpen: false,
+        selectedPatrolId: '',
         proofPhotoOpen: false,
         proofPhotoSrc: '',
         proofPhotoTitle: '',
+        openPatrolDetails(id) {
+            this.selectedPatrolId = String(id || '');
+            this.detailsOpen = Boolean(this.selectedPatrolId);
+        },
+        closePatrolDetails() {
+            this.detailsOpen = false;
+            this.selectedPatrolId = '';
+        },
         openProofPhoto(src, title) {
             this.proofPhotoSrc = src;
             this.proofPhotoTitle = title || 'Checklist proof photo';
@@ -42,8 +52,10 @@
             this.proofPhotoSrc = '';
             this.proofPhotoTitle = '';
         },
-    }">
-        <div class="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
+    }" x-on:keydown.escape.window="if (proofPhotoOpen) { closeProofPhoto() } else if (detailsOpen) { closePatrolDetails() }">
+        <div class="mx-auto max-w-[96rem] px-4 sm:px-6 lg:px-8">
+            <div class="grid gap-5 transition-all duration-300" :class="detailsOpen ? 'lg:grid-cols-[minmax(0,1fr)_27rem]' : 'lg:grid-cols-[minmax(0,1fr)]'">
+                <div class="min-w-0 space-y-5">
             @php
                 $exportQuery = request()->only(['status', 'guard_id', 'checkpoint_id', 'date']);
             @endphp
@@ -165,45 +177,33 @@
                             </div>
                         </dl>
 
-                        @if ($log->checklistResponse)
-                            @php
-                                $mobileFlags = \App\Support\PatrolChecklist::statusSummaries($log->checklistResponse);
-                                $mobileProofPhotos = $log->checklistResponse->proofPhotos;
-                            @endphp
-                            <div class="mt-3 flex flex-wrap gap-1">
-                                @forelse ($mobileFlags as $item)
-                                    <span class="rounded-md px-2 py-1 text-[0.65rem] ring-1 sm:text-xs {{ \App\Support\PatrolChecklist::statusBadgeClasses($item['status']) }}">{{ $item['label'] }}: {{ $item['status_label'] }}</span>
-                                @empty
-                                    <span class="text-xs text-slate-500">No checklist status recorded</span>
-                                @endforelse
+                        <div class="mt-3 grid gap-2 rounded-md bg-slate-50 p-3 text-xs text-slate-600 sm:grid-cols-2 sm:text-sm">
+                            <div class="min-w-0">
+                                <p class="text-[0.65rem] font-bold uppercase tracking-wide text-blue-800 sm:text-xs">Checklist</p>
+                                <p class="mt-1 font-semibold text-slate-800">{{ $log->checklistSummary() }}</p>
+                                @if ($log->checklistPhotoCount() > 0)
+                                    <p class="mt-1 text-xs text-slate-500">{{ $log->checklistPhotoCount() }} proof {{ str('photo')->plural($log->checklistPhotoCount()) }}</p>
+                                @endif
                             </div>
-                            @if ($mobileProofPhotos->isNotEmpty())
-                                <div class="mt-3">
-                                    <p class="text-[0.65rem] font-semibold uppercase text-blue-800 sm:text-xs">Proof Photos</p>
-                                    <div class="mt-2 flex flex-wrap gap-2">
-                                        @foreach ($mobileProofPhotos as $photo)
-                                            @php
-                                                $photoUrl = route('patrol-logs.proof-photos.show', [$log, $photo]);
-                                            @endphp
-                                            <button type="button" class="h-14 w-14 overflow-hidden rounded-md border border-blue-100 bg-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openProofPhoto(@js($photoUrl), @js($photo->item_label))" aria-label="Open {{ $photo->item_label }} proof photo">
-                                                <img src="{{ $photoUrl }}" alt="{{ $photo->item_label }} proof thumbnail" class="h-full w-full object-cover" loading="lazy">
-                                            </button>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-                        @endif
+                            <div class="min-w-0">
+                                <p class="text-[0.65rem] font-bold uppercase tracking-wide text-blue-800 sm:text-xs">Incident</p>
+                                @if ($log->incidentReport)
+                                    <p class="mt-1 truncate font-semibold text-slate-800">{{ $log->incidentReport->category }}</p>
+                                    <p class="text-xs text-slate-500">{{ str($log->incidentReport->status)->replace('_', ' ')->title() }}</p>
+                                @else
+                                    <p class="mt-1 font-semibold text-slate-500">None</p>
+                                @endif
+                            </div>
+                        </div>
 
-                        <div class="mt-3 rounded-md bg-slate-50 p-2 text-xs text-slate-600 sm:p-3 sm:text-sm">
-                            <span class="font-semibold text-slate-800">Incident:</span>
-                            @if ($log->incidentReport)
-                                {{ $log->incidentReport->category }} - {{ str($log->incidentReport->status)->replace('_', ' ')->title() }}
-                                <a href="{{ route('incidents.pdf', $log->incidentReport) }}" class="mt-2 inline-flex items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-50">
-                                    Download PDF
-                                </a>
-                            @else
-                                None
-                            @endif
+                        <div class="mt-3 flex justify-end">
+                            <button type="button" class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-blue-200 bg-white px-3 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openPatrolDetails(@js((string) $log->id))" aria-label="View patrol details for {{ $log->securityGuard?->name ?? 'this patrol log' }}">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
+                                </svg>
+                                View details
+                            </button>
                         </div>
                     </article>
                 @empty
@@ -213,10 +213,10 @@
 
             <div class="hidden overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm lg:block">
                 <div class="overflow-x-auto">
-                    <table class="min-w-[72rem] divide-y divide-blue-100 text-sm">
-                        <thead class="bg-blue-50/70 text-left text-xs font-semibold uppercase text-blue-800">
+                    <table class="w-full min-w-[76rem] divide-y divide-blue-100 text-sm">
+                        <thead class="bg-blue-50/70 text-left text-xs font-extrabold uppercase text-blue-800">
                             <tr>
-                                <th class="px-5 py-3">Scan</th>
+                                <th class="px-5 py-3">Time</th>
                                 <th class="px-5 py-3">Guard</th>
                                 <th class="px-5 py-3">Checkpoint</th>
                                 <th class="px-5 py-3">RFID</th>
@@ -226,6 +226,7 @@
                                 <th class="px-5 py-3">Status</th>
                                 <th class="px-5 py-3">Checklist</th>
                                 <th class="px-5 py-3">Incident</th>
+                                <th class="px-5 py-3 text-center">View</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-blue-50">
@@ -259,49 +260,31 @@
                                         @endif
                                     </td>
                                     <td class="px-5 py-4 text-slate-600">
-                                        @if ($log->checklistResponse)
-                                            @php
-                                                $flags = \App\Support\PatrolChecklist::statusSummaries($log->checklistResponse);
-                                                $proofPhotos = $log->checklistResponse->proofPhotos;
-                                            @endphp
-                                            <div class="flex max-w-xs flex-wrap gap-1">
-                                                @forelse ($flags as $item)
-                                                    <span class="rounded px-2 py-1 text-xs ring-1 {{ \App\Support\PatrolChecklist::statusBadgeClasses($item['status']) }}">{{ $item['label'] }}: {{ $item['status_label'] }}</span>
-                                                @empty
-                                                    <span class="text-xs text-slate-500">No checklist status recorded</span>
-                                                @endforelse
-                                            </div>
-                                            @if ($proofPhotos->isNotEmpty())
-                                                <div class="mt-3 flex max-w-xs flex-wrap gap-2">
-                                                    @foreach ($proofPhotos as $photo)
-                                                        @php
-                                                            $photoUrl = route('patrol-logs.proof-photos.show', [$log, $photo]);
-                                                        @endphp
-                                                        <button type="button" class="h-12 w-12 overflow-hidden rounded-md border border-blue-100 bg-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openProofPhoto(@js($photoUrl), @js($photo->item_label))" aria-label="Open {{ $photo->item_label }} proof photo">
-                                                            <img src="{{ $photoUrl }}" alt="{{ $photo->item_label }} proof thumbnail" class="h-full w-full object-cover" loading="lazy">
-                                                        </button>
-                                                    @endforeach
-                                                </div>
-                                            @endif
-                                        @else
-                                            <span class="text-xs text-slate-500">No checklist</span>
+                                        <div class="font-semibold text-slate-800">{{ $log->checklistSummary() }}</div>
+                                        @if ($log->checklistPhotoCount() > 0)
+                                            <div class="mt-1 text-xs text-slate-500">{{ $log->checklistPhotoCount() }} proof {{ str('photo')->plural($log->checklistPhotoCount()) }}</div>
                                         @endif
                                     </td>
                                     <td class="px-5 py-4 text-slate-600">
                                         @if ($log->incidentReport)
                                             <span class="font-medium text-slate-900">{{ $log->incidentReport->category }}</span>
                                             <div class="text-xs">{{ str($log->incidentReport->status)->replace('_', ' ')->title() }}</div>
-                                            <a href="{{ route('incidents.pdf', $log->incidentReport) }}" class="mt-2 inline-flex items-center justify-center rounded-md border border-blue-200 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-50">
-                                                PDF
-                                            </a>
                                         @else
                                             <span class="text-xs text-slate-500">None</span>
                                         @endif
                                     </td>
+                                    <td class="px-5 py-4 text-center">
+                                        <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-blue-200 bg-white text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openPatrolDetails(@js((string) $log->id))" aria-label="View patrol details for {{ $log->securityGuard?->name ?? 'this patrol log' }}" title="View patrol details">
+                                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
+                                            </svg>
+                                        </button>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ $faceVerificationEnabled ? 8 : 7 }}" class="px-5 py-8 text-center text-slate-500">No patrol logs found.</td>
+                                    <td colspan="{{ $faceVerificationEnabled ? 9 : 8 }}" class="px-5 py-8 text-center text-slate-500">No patrol logs found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -311,6 +294,148 @@
 
             <div class="rounded-md border border-blue-100 bg-white px-5 py-4 shadow-sm">
                 {{ $logs->links() }}
+            </div>
+
+                </div>
+
+                <div x-show="detailsOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[70] bg-slate-950/45 lg:hidden" @click="closePatrolDetails()"></div>
+
+                <aside x-show="detailsOpen" x-cloak x-transition class="fixed inset-x-0 bottom-0 z-[80] max-h-[88dvh] overflow-hidden rounded-t-md border border-blue-100 bg-white shadow-2xl lg:sticky lg:inset-auto lg:top-24 lg:z-auto lg:h-[calc(100dvh-8rem)] lg:max-h-none lg:rounded-md" aria-label="Patrol details panel">
+                    @foreach ($logs as $log)
+                        @php
+                            $detailScanTime = $log->scanned_at?->timezone(config('app.timezone'));
+                            $detailChecklistItems = \App\Support\PatrolChecklist::statusSummaries($log->checklistResponse);
+                            $detailProofPhotos = $log->checklistResponse?->proofPhotos ?? collect();
+                        @endphp
+
+                        <section x-show="selectedPatrolId === @js((string) $log->id)" x-cloak class="flex h-full max-h-[88dvh] flex-col lg:max-h-none">
+                            <div class="flex items-start justify-between gap-3 border-b border-blue-100 px-5 py-4">
+                                <div class="min-w-0">
+                                    <p class="text-xs font-bold uppercase tracking-wide text-blue-700">Patrol Record</p>
+                                    <h3 class="mt-1 text-lg font-bold text-blue-950">Patrol Details</h3>
+                                    <p class="mt-1 truncate text-sm text-slate-500">{{ $log->securityGuard?->name ?? 'Unknown guard' }} - {{ $log->checkpoint?->name ?? 'Unknown checkpoint' }}</p>
+                                </div>
+                                <button type="button" class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-blue-100 bg-white text-slate-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="closePatrolDetails()" aria-label="Close patrol details">
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+                                <dl class="grid gap-3 text-sm">
+                                    <div class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3">
+                                        <dt class="font-bold text-slate-600">Guard</dt>
+                                        <dd class="min-w-0">
+                                            <p class="truncate font-semibold text-blue-950">{{ $log->securityGuard?->name ?? 'Unknown' }}</p>
+                                            <p class="truncate text-xs text-slate-500">{{ $log->securityGuard?->employee_no ?? 'No guard match' }}</p>
+                                        </dd>
+                                    </div>
+                                    <div class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3">
+                                        <dt class="font-bold text-slate-600">Checkpoint</dt>
+                                        <dd class="min-w-0">
+                                            <p class="truncate font-semibold text-blue-950">{{ $log->checkpoint?->name ?? 'Unknown' }}</p>
+                                            <p class="truncate font-mono text-xs text-slate-500">{{ $log->checkpoint_code }}</p>
+                                        </dd>
+                                    </div>
+                                    <div class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3">
+                                        <dt class="font-bold text-slate-600">Time</dt>
+                                        <dd class="text-slate-700">{{ $detailScanTime?->format('M d, Y h:i A') ?? 'No scan time' }}</dd>
+                                    </div>
+                                    <div class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3">
+                                        <dt class="font-bold text-slate-600">RFID</dt>
+                                        <dd class="truncate font-mono text-slate-700">{{ $log->rfid_uid }}</dd>
+                                    </div>
+                                    @if ($faceVerificationEnabled)
+                                        <div class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3">
+                                            <dt class="font-bold text-slate-600">Face</dt>
+                                            <dd class="text-slate-700">{{ str($log->facial_status)->replace('_', ' ')->title() }}</dd>
+                                        </div>
+                                    @endif
+                                    <div class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3">
+                                        <dt class="font-bold text-slate-600">Status</dt>
+                                        <dd>
+                                            <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-bold ring-1 {{ $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
+                                                {{ str($log->status)->replace('_', ' ')->title() }}
+                                            </span>
+                                        </dd>
+                                    </div>
+                                </dl>
+
+                                @if ($log->notes)
+                                    <div class="mt-4 rounded-md border border-blue-100 bg-blue-50/60 p-3 text-sm text-blue-900">
+                                        <p class="font-bold">Note</p>
+                                        <p class="mt-1 text-blue-800">{{ $log->notes }}</p>
+                                    </div>
+                                @endif
+
+                                <div class="mt-5 border-t border-blue-100 pt-4">
+                                    <h4 class="text-base font-bold text-blue-950">Checklist</h4>
+                                    @if ($log->checklistResponse)
+                                        <div class="mt-3 grid gap-2">
+                                            @forelse ($detailChecklistItems as $item)
+                                                <div class="flex items-start justify-between gap-3 rounded-md border border-blue-100 bg-white px-3 py-2">
+                                                    <p class="min-w-0 text-sm font-medium text-slate-700">{{ $item['label'] }}</p>
+                                                    <span class="shrink-0 whitespace-nowrap rounded-md px-2 py-1 text-xs font-bold ring-1 {{ \App\Support\PatrolChecklist::statusBadgeClasses($item['status']) }}">{{ $item['status_label'] }}</span>
+                                                </div>
+                                            @empty
+                                                <p class="rounded-md border border-blue-100 bg-slate-50 px-3 py-2 text-sm text-slate-500">No checklist status recorded.</p>
+                                            @endforelse
+                                        </div>
+
+                                        @if ($log->checklistResponse->remarks)
+                                            <div class="mt-3 rounded-md border border-blue-100 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                                                <p class="font-bold text-slate-700">Remarks</p>
+                                                <p class="mt-1">{{ $log->checklistResponse->remarks }}</p>
+                                            </div>
+                                        @endif
+                                    @else
+                                        <p class="mt-3 rounded-md border border-blue-100 bg-slate-50 px-3 py-2 text-sm text-slate-500">No checklist submitted yet.</p>
+                                    @endif
+                                </div>
+
+                                <div class="mt-5 border-t border-blue-100 pt-4">
+                                    <h4 class="text-base font-bold text-blue-950">Proof Photos ({{ $detailProofPhotos->count() }})</h4>
+                                    @if ($detailProofPhotos->isNotEmpty())
+                                        <div class="mt-3 grid grid-cols-3 gap-2">
+                                            @foreach ($detailProofPhotos as $photo)
+                                                @php
+                                                    $photoUrl = route('patrol-logs.proof-photos.show', [$log, $photo]);
+                                                @endphp
+                                                <button type="button" class="group h-24 overflow-hidden rounded-md border border-blue-100 bg-slate-100 shadow-sm transition hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openProofPhoto(@js($photoUrl), @js($photo->item_label))" aria-label="Open {{ $photo->item_label }} proof photo">
+                                                    <img :src="selectedPatrolId === @js((string) $log->id) ? @js($photoUrl) : ''" alt="{{ $photo->item_label }} proof thumbnail" class="h-full w-full object-cover transition group-hover:scale-105" loading="lazy">
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <p class="mt-3 rounded-md border border-blue-100 bg-slate-50 px-3 py-2 text-sm text-slate-500">No proof photos uploaded.</p>
+                                    @endif
+                                </div>
+
+                                <div class="mt-5 border-t border-blue-100 pt-4">
+                                    <h4 class="text-base font-bold text-blue-950">Incident</h4>
+                                    @if ($log->incidentReport)
+                                        <div class="mt-3 rounded-md border border-amber-100 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                                            <p class="font-bold">{{ $log->incidentReport->category }}</p>
+                                            <p class="mt-1">Status: {{ str($log->incidentReport->status)->replace('_', ' ')->title() }}</p>
+                                            <a href="{{ route('incidents.pdf', $log->incidentReport) }}" class="mt-3 inline-flex h-9 items-center justify-center rounded-md border border-amber-200 bg-white px-3 text-xs font-bold text-amber-800 transition hover:bg-amber-100">
+                                                Download Incident PDF
+                                            </a>
+                                        </div>
+                                    @else
+                                        <p class="mt-3 rounded-md border border-blue-100 bg-slate-50 px-3 py-2 text-sm text-slate-500">No incident report attached.</p>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="border-t border-blue-100 bg-white px-5 py-3">
+                                <button type="button" class="inline-flex h-10 w-full items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="closePatrolDetails()">
+                                    Close
+                                </button>
+                            </div>
+                        </section>
+                    @endforeach
+                </aside>
             </div>
         </div>
 

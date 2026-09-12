@@ -37,7 +37,7 @@
                 </div>
                 <div>
                     <label for="search" class="block text-xs font-semibold uppercase text-blue-800">Search</label>
-                    <input id="search" name="search" value="{{ request('search') }}" placeholder="Actor, action, IP, or description" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <input id="search" name="search" value="{{ request('search') }}" placeholder="Actor, action, or diagnostic" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
                 <div class="flex flex-wrap items-end gap-2 md:col-span-2 xl:col-span-1 xl:self-end xl:justify-end">
                     <button type="submit" class="h-9 rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50">Filter</button>
@@ -53,15 +53,15 @@
 
             <section class="overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm">
                 <div class="hidden overflow-x-auto lg:block">
-                    <table class="min-w-[62rem] divide-y divide-blue-100">
+                    <table class="w-full min-w-[66rem] divide-y divide-blue-100">
                         <thead class="bg-blue-50/70">
                             <tr>
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-blue-800">Time</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-blue-800">Actor</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-blue-800">Action</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-blue-800">Description</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-blue-800">IP</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-blue-800">Details</th>
+                                <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800">Time</th>
+                                <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800">Actor</th>
+                                <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800">Action</th>
+                                <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800">Diagnostic</th>
+                                <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800">Patrol Window</th>
+                                <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800">Result</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-blue-50">
@@ -70,24 +70,16 @@
                                     <td class="px-5 py-4 text-sm text-slate-600">{{ $log->created_at->timezone('Asia/Manila')->format('M d, Y h:i A') }}</td>
                                     <td class="px-5 py-4">
                                         <div class="font-medium text-slate-900">{{ $log->actor_name ?: 'System' }}</div>
-                                        <div class="text-xs text-slate-500">{{ $log->user?->email }}</div>
                                     </td>
                                     <td class="px-5 py-4">
                                         <span class="inline-flex whitespace-nowrap rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-200">
                                             {{ str($log->action)->replace('_', ' ')->title() }}
                                         </span>
                                     </td>
-                                    <td class="max-w-md px-5 py-4 text-sm text-slate-600">{{ $log->description }}</td>
-                                    <td class="px-5 py-4 font-mono text-sm text-slate-600">{{ $log->ip_address ?: 'N/A' }}</td>
+                                    <td class="max-w-md px-5 py-4 text-sm text-slate-600">{{ $log->diagnosticSummary() }}</td>
+                                    <td class="px-5 py-4 text-sm font-semibold text-slate-700">{{ $log->patrolWindowSummary() }}</td>
                                     <td class="px-5 py-4">
-                                        @if ($log->properties)
-                                            <details class="text-sm">
-                                                <summary class="cursor-pointer font-semibold text-blue-700">View</summary>
-                                                <pre class="mt-2 max-w-sm overflow-x-auto rounded-md bg-slate-950 p-3 text-xs text-slate-100">{{ json_encode($log->properties, JSON_PRETTY_PRINT) }}</pre>
-                                            </details>
-                                        @else
-                                            <span class="text-sm text-slate-400">None</span>
-                                        @endif
+                                        <span class="{{ $log->resultBadgeClasses() }}">{{ $log->resultLabel() }}</span>
                                     </td>
                                 </tr>
                             @empty
@@ -111,14 +103,22 @@
                                     {{ str($log->action)->replace('_', ' ')->title() }}
                                 </span>
                             </div>
-                            <p class="mt-3 text-xs text-slate-600 sm:text-sm">{{ $log->description }}</p>
-                            <p class="mt-2 font-mono text-xs text-slate-500">{{ $log->ip_address ?: 'N/A' }}</p>
-                            @if ($log->properties)
-                                <details class="mt-3 text-sm">
-                                    <summary class="cursor-pointer font-semibold text-blue-700">Details</summary>
-                                    <pre class="mt-2 overflow-x-auto rounded-md bg-slate-950 p-3 text-xs text-slate-100">{{ json_encode($log->properties, JSON_PRETTY_PRINT) }}</pre>
-                                </details>
-                            @endif
+                            <dl class="mt-3 grid gap-3 text-xs sm:text-sm">
+                                <div>
+                                    <dt class="font-bold uppercase tracking-wide text-blue-800">Diagnostic</dt>
+                                    <dd class="mt-1 text-slate-600">{{ $log->diagnosticSummary() }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="font-bold uppercase tracking-wide text-blue-800">Patrol Window</dt>
+                                    <dd class="mt-1 font-semibold text-slate-700">{{ $log->patrolWindowSummary() }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="font-bold uppercase tracking-wide text-blue-800">Result</dt>
+                                    <dd class="mt-1">
+                                        <span class="{{ $log->resultBadgeClasses() }}">{{ $log->resultLabel() }}</span>
+                                    </dd>
+                                </div>
+                            </dl>
                         </article>
                     @empty
                         <div class="rounded-md border border-blue-100 px-5 py-8 text-center text-slate-500">No audit records found.</div>

@@ -66,16 +66,16 @@
                 </div>
 
                 <div class="hidden overflow-x-auto lg:block">
-                    <table class="min-w-[72rem] divide-y divide-blue-100">
+                    <table class="w-full min-w-[72rem] divide-y divide-blue-100">
                         <thead class="bg-blue-50/70">
                             <tr>
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-blue-800">Time</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-blue-800">Issue</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-blue-800">RFID / Guard</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-blue-800">Reader</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-blue-800">Status</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-blue-800">Diagnosis</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-blue-800">Action</th>
+                                <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800">Time</th>
+                                <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800">Issue</th>
+                                <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800">RFID / Guard</th>
+                                <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800">Reader</th>
+                                <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800">Status</th>
+                                <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800">Diagnosis</th>
+                                <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800">Action</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-blue-50">

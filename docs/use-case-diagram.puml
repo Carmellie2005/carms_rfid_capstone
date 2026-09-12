@@ -1,0 +1,70 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #67B7FF
+  BorderColor #3182CE
+  FontColor #0F172A
+}
+
+actor "Security Guard" as Guard
+actor "Supervisor / Admin" as Supervisor
+actor "ESP32 RFID Reader" as Reader
+actor "Camera" as Camera
+
+rectangle "Campus RFID Patrol System" {
+  usecase "Log in" as UC_Login
+  usecase "Register Face Data" as UC_RegisterFace
+  usecase "Capture Face Image" as UC_CaptureImage
+  usecase "Scan RFID Card" as UC_Scan
+  usecase "Identify Guard" as UC_Identify
+  usecase "Check Patrol Schedule" as UC_Schedule
+  usecase "Verify Face" as UC_VerifyFace
+  usecase "Capture Live Face" as UC_CaptureFace
+  usecase "Compare Face Descriptor" as UC_CompareFace
+  usecase "Record Patrol Log" as UC_RecordLog
+  usecase "Complete Patrol Checklist" as UC_Checklist
+  usecase "Submit Incident Report" as UC_Incident
+  usecase "Send Reader Heartbeat" as UC_Heartbeat
+  usecase "Manage Guard Accounts" as UC_ManageGuards
+  usecase "Manage Checkpoints" as UC_ManageCheckpoints
+  usecase "Monitor RFID Readers" as UC_MonitorReaders
+  usecase "View Dashboard" as UC_Dashboard
+  usecase "View Scan Issues" as UC_ScanIssues
+  usecase "Generate Reports" as UC_Reports
+  usecase "Manage Notifications" as UC_Notifications
+}
+
+Guard --> UC_Login
+Guard --> UC_RegisterFace
+Guard --> UC_Scan
+Guard --> UC_VerifyFace
+Guard --> UC_Checklist
+Guard --> UC_Incident
+
+Reader --> UC_Scan
+Reader --> UC_Heartbeat
+
+Camera --> UC_CaptureImage
+Camera --> UC_CaptureFace
+
+Supervisor --> UC_Login
+Supervisor --> UC_ManageGuards
+Supervisor --> UC_ManageCheckpoints
+Supervisor --> UC_MonitorReaders
+Supervisor --> UC_Dashboard
+Supervisor --> UC_ScanIssues
+Supervisor --> UC_Reports
+Supervisor --> UC_Notifications
+
+UC_RegisterFace ..> UC_CaptureImage : <<include>>
+UC_Scan ..> UC_Identify : <<include>>
+UC_Scan ..> UC_Schedule : <<include>>
+UC_VerifyFace ..> UC_CaptureFace : <<include>>
+UC_VerifyFace ..> UC_CompareFace : <<include>>
+UC_Checklist ..> UC_VerifyFace : <<include>>
+UC_Checklist ..> UC_RecordLog : <<include>>
+UC_Incident ..> UC_Checklist : <<extend>>
+UC_MonitorReaders ..> UC_Heartbeat : <<include>>
+
+@enduml

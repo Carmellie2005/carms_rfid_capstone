@@ -23,6 +23,10 @@ class ReportController extends Controller
             ? Carbon::parse($request->input('to'), $timezone)
             : now($timezone);
 
+        if ($to->lt($from)) {
+            $to = $from->copy();
+        }
+
         $patrolQuery = PatrolLog::with(['securityGuard', 'checkpoint'])
             ->whereBetween('scanned_at', [$from->copy()->startOfDay(), $to->copy()->endOfDay()]);
 

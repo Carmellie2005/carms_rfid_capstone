@@ -367,7 +367,7 @@
             <div class="mx-auto grid max-w-7xl gap-8 px-4 py-9 sm:px-6 md:grid-cols-[1fr_1.6fr] md:items-start lg:px-8">
                 <div>
                     <p class="text-2xl font-bold tracking-tight text-blue-950 dark:text-white">SLSU Bontoc Patrol</p>
-                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">&copy; {{ now()->year }} All rights reserved.</p>
+                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">{{ now()->year }} All rights reserved.</p>
                 </div>
 
                 <div class="grid gap-x-8 gap-y-3 border-blue-100 md:grid-cols-2 md:border-l md:pl-8 dark:border-slate-700">

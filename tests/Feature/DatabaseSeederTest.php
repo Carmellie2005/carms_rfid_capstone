@@ -21,11 +21,11 @@ class DatabaseSeederTest extends TestCase
         $guard = Guard::where('employee_no', 'TEST-01')->firstOrFail();
 
         $this->assertSame('admin', $supervisor->role);
-        $this->assertTrue(Hash::check('password', $supervisor->password));
+        $this->assertTrue(Hash::check('password123', $supervisor->password));
 
         $this->assertSame('guard', $guardUser->role);
         $this->assertSame('carmela.bihay.hernandez@guard.local', $guardUser->email);
-        $this->assertTrue(Hash::check('password', $guardUser->password));
+        $this->assertTrue(Hash::check('password123', $guardUser->password));
 
         $this->assertSame($guardUser->id, $guard->user_id);
         $this->assertSame('F33C8D37', $guard->rfid_uid);

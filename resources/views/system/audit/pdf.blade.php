@@ -105,22 +105,16 @@
             width: 15%;
         }
 
-        .w-description {
-            width: 27%;
+        .w-diagnostic {
+            width: 31%;
         }
 
-        .w-ip {
+        .w-window {
+            width: 13%;
+        }
+
+        .w-result {
             width: 11%;
-        }
-
-        .w-details {
-            width: 17%;
-        }
-
-        .details {
-            font-family: DejaVu Sans Mono, monospace;
-            font-size: 6.8pt;
-            white-space: pre-wrap;
         }
 
         .muted {
@@ -227,30 +221,22 @@
                     <th class="w-time">Time</th>
                     <th class="w-actor">Actor</th>
                     <th class="w-action">Action</th>
-                    <th class="w-description">Description</th>
-                    <th class="w-ip">IP</th>
-                    <th class="w-details">Details</th>
+                    <th class="w-diagnostic">Diagnostic</th>
+                    <th class="w-window">Patrol Window</th>
+                    <th class="w-result">Result</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($logs as $log)
-                    @php
-                        $details = $log->properties
-                            ? json_encode($log->properties, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
-                            : 'None';
-                    @endphp
                     <tr>
                         <td>{{ $log->created_at->timezone(config('app.timezone'))->format('M d, Y h:i A') }}</td>
                         <td>
                             {{ $log->actor_name ?: 'System' }}
-                            @if ($log->user?->email)
-                                <br><span class="muted">{{ $log->user->email }}</span>
-                            @endif
                         </td>
                         <td>{{ str($log->action)->replace('_', ' ')->title() }}</td>
-                        <td>{{ $log->description }}</td>
-                        <td>{{ $log->ip_address ?: 'N/A' }}</td>
-                        <td class="details">{{ str($details)->limit(360) }}</td>
+                        <td>{{ $log->diagnosticSummary() }}</td>
+                        <td>{{ $log->patrolWindowSummary() }}</td>
+                        <td>{{ $log->resultLabel() }}</td>
                     </tr>
                 @empty
                     <tr>

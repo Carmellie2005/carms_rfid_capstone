@@ -128,13 +128,11 @@
                             <input id="remember_me" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-blue-700 shadow-sm focus:ring-blue-500" name="remember" value="1" @checked(old('remember'))>
                             <span class="ms-2">Remember me</span>
                         </label>
-
-                        @if (Route::has('password.request'))
-                            <a class="text-xs font-semibold text-blue-700 transition hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:text-blue-300 dark:hover:text-blue-100 dark:focus:ring-offset-slate-900" href="{{ route('password.request') }}">
-                                Forgot password?
-                            </a>
-                        @endif
                     </div>
+
+                    <p class="rounded-lg border border-blue-100 bg-blue-50/70 px-3 py-2 text-xs font-medium leading-5 text-blue-800 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-100">
+                        Need help signing in? Contact your supervisor or system administrator.
+                    </p>
 
                     <button
                         type="submit"

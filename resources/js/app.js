@@ -2496,6 +2496,11 @@ Alpine.data('patrolScan', (config = {}) => ({
 
 Alpine.data('guardManagementPage', (config = {}) => ({
     createModalOpen: Boolean(config.createModalOpen),
+    editModalOpen: Boolean(config.editModalOpen),
+    editGuardId: config.editGuardId ? String(config.editGuardId) : '',
+    deleteModalOpen: false,
+    deleteGuardAction: '',
+    deleteGuardName: '',
     recordModalOpen: false,
     recordLoading: false,
     recordError: '',
@@ -2504,16 +2509,50 @@ Alpine.data('guardManagementPage', (config = {}) => ({
     recordPatrols: [],
     recordIncidents: [],
     recordFaceAttempts: [],
+    resizeHandler: null,
 
     init() {
+        this.resizeHandler = () => this.updateBodyScrollLock();
+        window.addEventListener('resize', this.resizeHandler);
+
         this.updateBodyScrollLock();
 
         if (this.createModalOpen) {
             this.$nextTick(() => this.$refs.createGuardFirstField?.focus());
         }
+
+        if (this.editModalOpen && this.editGuardId) {
+            this.$nextTick(() => this.focusEditGuardField());
+        }
+    },
+
+    destroy() {
+        if (this.resizeHandler) {
+            window.removeEventListener('resize', this.resizeHandler);
+        }
+
+        document.body.classList.remove('overflow-y-hidden');
+    },
+
+    sidePanelOpen() {
+        return this.createModalOpen || this.editModalOpen;
+    },
+
+    isCompactPanelViewport() {
+        return window.matchMedia('(max-width: 1023px)').matches;
+    },
+
+    closeSidePanel() {
+        this.createModalOpen = false;
+        this.editModalOpen = false;
+        this.editGuardId = '';
+        this.updateBodyScrollLock();
     },
 
     openCreateGuardModal() {
+        this.editModalOpen = false;
+        this.editGuardId = '';
+        this.deleteModalOpen = false;
         this.recordModalOpen = false;
         this.createModalOpen = true;
         this.updateBodyScrollLock();
@@ -2525,12 +2564,66 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         this.updateBodyScrollLock();
     },
 
+    openEditGuardModal(guardId) {
+        this.createModalOpen = false;
+        this.recordModalOpen = false;
+        this.deleteModalOpen = false;
+        this.editGuardId = String(guardId || '');
+        this.editModalOpen = Boolean(this.editGuardId);
+        this.updateBodyScrollLock();
+        this.$nextTick(() => this.focusEditGuardField());
+    },
+
+    closeEditGuardModal() {
+        this.editModalOpen = false;
+        this.editGuardId = '';
+        this.updateBodyScrollLock();
+    },
+
+    focusEditGuardField() {
+        if (! this.editGuardId) {
+            return;
+        }
+
+        document.querySelector(`[data-edit-guard-first-field="${this.editGuardId}"]`)?.focus();
+    },
+
+    openDeleteGuardModal(action, name) {
+        this.createModalOpen = false;
+        this.editModalOpen = false;
+        this.editGuardId = '';
+        this.recordModalOpen = false;
+        this.deleteGuardAction = action || '';
+        this.deleteGuardName = name || 'this guard';
+        this.deleteModalOpen = true;
+        this.updateBodyScrollLock();
+        this.$nextTick(() => this.$refs.deleteGuardCancelButton?.focus());
+    },
+
+    closeDeleteGuardModal() {
+        this.deleteModalOpen = false;
+        this.deleteGuardAction = '';
+        this.deleteGuardName = '';
+        this.updateBodyScrollLock();
+    },
+
+    submitDeleteGuard() {
+        if (! this.deleteGuardAction) {
+            return;
+        }
+
+        this.$refs.deleteGuardForm?.submit();
+    },
+
     async openGuardRecord(url) {
         if (! url) {
             return;
         }
 
         this.createModalOpen = false;
+        this.editModalOpen = false;
+        this.editGuardId = '';
+        this.deleteModalOpen = false;
         this.recordModalOpen = true;
         this.recordLoading = true;
         this.recordError = '';
@@ -2574,7 +2667,12 @@ Alpine.data('guardManagementPage', (config = {}) => ({
     },
 
     updateBodyScrollLock() {
-        document.body.classList.toggle('overflow-y-hidden', this.createModalOpen || this.recordModalOpen);
+        document.body.classList.toggle(
+            'overflow-y-hidden',
+            this.recordModalOpen
+                || this.deleteModalOpen
+                || (this.isCompactPanelViewport() && this.sidePanelOpen()),
+        );
     },
 
     guardRecordSubtitle() {
@@ -2613,16 +2711,48 @@ Alpine.data('guardManagementPage', (config = {}) => ({
 
 Alpine.data('checkpointManagementPage', (config = {}) => ({
     createModalOpen: Boolean(config.createModalOpen),
+    editModalOpen: Boolean(config.editModalOpen),
+    editCheckpointId: config.editCheckpointId ? String(config.editCheckpointId) : '',
+    deleteModalOpen: false,
+    deleteCheckpointAction: '',
+    deleteCheckpointName: '',
+    resizeHandler: null,
 
     init() {
+        this.resizeHandler = () => this.updateBodyScrollLock();
+        window.addEventListener('resize', this.resizeHandler);
+
         this.updateBodyScrollLock();
 
         if (this.createModalOpen) {
             this.$nextTick(() => this.$refs.createCheckpointFirstField?.focus());
         }
+
+        if (this.editModalOpen && this.editCheckpointId) {
+            this.$nextTick(() => this.focusEditCheckpointField());
+        }
+    },
+
+    destroy() {
+        if (this.resizeHandler) {
+            window.removeEventListener('resize', this.resizeHandler);
+        }
+
+        document.body.classList.remove('overflow-y-hidden');
+    },
+
+    sidePanelOpen() {
+        return this.createModalOpen || this.editModalOpen;
+    },
+
+    isCompactPanelViewport() {
+        return window.matchMedia('(max-width: 1023px)').matches;
     },
 
     openCreateCheckpointModal() {
+        this.editModalOpen = false;
+        this.editCheckpointId = '';
+        this.deleteModalOpen = false;
         this.createModalOpen = true;
         this.updateBodyScrollLock();
         this.$nextTick(() => this.$refs.createCheckpointFirstField?.focus());
@@ -2633,8 +2763,52 @@ Alpine.data('checkpointManagementPage', (config = {}) => ({
         this.updateBodyScrollLock();
     },
 
+    openEditCheckpointModal(checkpointId) {
+        this.createModalOpen = false;
+        this.deleteModalOpen = false;
+        this.editCheckpointId = String(checkpointId || '');
+        this.editModalOpen = Boolean(this.editCheckpointId);
+        this.updateBodyScrollLock();
+        this.$nextTick(() => this.focusEditCheckpointField());
+    },
+
+    closeEditCheckpointModal() {
+        this.editModalOpen = false;
+        this.editCheckpointId = '';
+        this.updateBodyScrollLock();
+    },
+
+    focusEditCheckpointField() {
+        if (! this.editCheckpointId) {
+            return;
+        }
+
+        document.querySelector(`[data-edit-checkpoint-first-field="${this.editCheckpointId}"]`)?.focus();
+    },
+
+    openDeleteCheckpointModal(action, name) {
+        this.createModalOpen = false;
+        this.editModalOpen = false;
+        this.editCheckpointId = '';
+        this.deleteCheckpointAction = action || '';
+        this.deleteCheckpointName = name || 'this checkpoint';
+        this.deleteModalOpen = true;
+        this.updateBodyScrollLock();
+        this.$nextTick(() => this.$refs.deleteCheckpointCancelButton?.focus());
+    },
+
+    closeDeleteCheckpointModal() {
+        this.deleteModalOpen = false;
+        this.deleteCheckpointAction = '';
+        this.deleteCheckpointName = '';
+        this.updateBodyScrollLock();
+    },
+
     updateBodyScrollLock() {
-        document.body.classList.toggle('overflow-y-hidden', this.createModalOpen);
+        document.body.classList.toggle(
+            'overflow-y-hidden',
+            this.deleteModalOpen || (this.isCompactPanelViewport() && this.sidePanelOpen()),
+        );
     },
 }));
 

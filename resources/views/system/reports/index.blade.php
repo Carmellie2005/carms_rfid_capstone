@@ -51,14 +51,29 @@
 
     <div class="py-5 sm:py-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-            <form method="GET" action="{{ route('reports.index') }}" class="grid gap-4 rounded-md border border-blue-100 bg-white p-4 shadow-sm md:grid-cols-[1fr_1fr_auto] print:hidden">
+            <form
+                method="GET"
+                action="{{ route('reports.index') }}"
+                x-data="{
+                    from: @js($from->toDateString()),
+                    to: @js($to->toDateString()),
+                    syncToDate() {
+                        if (this.from && (! this.to || this.to < this.from)) {
+                            this.to = this.from;
+                        }
+                    },
+                }"
+                x-init="syncToDate()"
+                x-on:submit="syncToDate()"
+                class="grid gap-4 rounded-md border border-blue-100 bg-white p-4 shadow-sm md:grid-cols-[1fr_1fr_auto] print:hidden"
+            >
                 <div>
                     <label for="from" class="block text-xs font-semibold uppercase text-blue-800">From</label>
-                    <input id="from" name="from" type="date" value="{{ request('from', $from->toDateString()) }}" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <input id="from" name="from" type="date" value="{{ $from->toDateString() }}" x-model="from" x-on:change="syncToDate()" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
                 <div>
                     <label for="to" class="block text-xs font-semibold uppercase text-blue-800">To</label>
-                    <input id="to" name="to" type="date" value="{{ request('to', $to->toDateString()) }}" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <input id="to" name="to" type="date" value="{{ $to->toDateString() }}" x-model="to" x-bind:min="from || null" x-on:change="syncToDate()" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
                 <div class="flex items-end">
                     <button class="w-full rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800" type="submit">Generate</button>
@@ -135,8 +150,8 @@
                 </div>
 
                 <div class="hidden overflow-x-auto lg:block print:block">
-                    <table class="min-w-[56rem] divide-y divide-blue-100 text-sm">
-                        <thead class="bg-blue-50/70 text-left text-xs font-semibold uppercase text-blue-800">
+                    <table class="w-full min-w-[56rem] divide-y divide-blue-100 text-sm">
+                        <thead class="bg-blue-50/70 text-left text-xs font-extrabold uppercase text-blue-800">
                             <tr>
                                 <th class="whitespace-nowrap px-5 py-3">Date/Time</th>
                                 <th class="whitespace-nowrap px-5 py-3">Guard</th>
@@ -237,8 +252,8 @@
                 </div>
 
                 <div class="hidden overflow-x-auto lg:block print:block">
-                    <table class="min-w-[64rem] divide-y divide-blue-100 text-sm">
-                        <thead class="bg-blue-50/70 text-left text-xs font-semibold uppercase text-blue-800">
+                    <table class="w-full min-w-[64rem] divide-y divide-blue-100 text-sm">
+                        <thead class="bg-blue-50/70 text-left text-xs font-extrabold uppercase text-blue-800">
                             <tr>
                                 <th class="whitespace-nowrap px-5 py-3">Date/Time</th>
                                 <th class="whitespace-nowrap px-5 py-3">Category</th>

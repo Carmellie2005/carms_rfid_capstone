@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Support\PatrolChecklist;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Str;
 
 class PatrolLog extends Model
 {
@@ -62,5 +64,37 @@ class PatrolLog extends Model
     public function notificationReads(): MorphMany
     {
         return $this->morphMany(NotificationRead::class, 'notifiable');
+    }
+
+    public function checklistSummary(): string
+    {
+        if (! $this->checklistResponse) {
+            return 'No checklist yet';
+        }
+
+        $items = PatrolChecklist::statusSummaries($this->checklistResponse);
+
+        if ($items->isEmpty()) {
+            return 'Checklist saved';
+        }
+
+        $issueCount = $items
+            ->where('status', PatrolChecklist::STATUS_ISSUE)
+            ->count();
+
+        if ($issueCount > 0) {
+            return $issueCount.' '.Str::plural('issue', $issueCount).' found';
+        }
+
+        return 'Completed checklist';
+    }
+
+    public function checklistPhotoCount(): int
+    {
+        if (! $this->checklistResponse) {
+            return 0;
+        }
+
+        return $this->checklistResponse->proofPhotos?->count() ?? 0;
     }
 }

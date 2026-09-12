@@ -83,10 +83,13 @@ class FaceVerificationTest extends TestCase
             'area_secure' => 1,
         ]);
 
-        $this->assertSame(
-            array_fill_keys(array_keys(PatrolChecklist::items()), PatrolChecklist::STATUS_NORMAL),
-            $patrolLog->fresh()->checklistResponse?->item_statuses,
-        );
+        $expectedStatuses = array_fill_keys(array_keys(PatrolChecklist::items()), PatrolChecklist::STATUS_NORMAL);
+        $actualStatuses = $patrolLog->fresh()->checklistResponse?->item_statuses ?? [];
+
+        ksort($expectedStatuses);
+        ksort($actualStatuses);
+
+        $this->assertSame($expectedStatuses, $actualStatuses);
 
         $proofPhoto = $patrolLog->fresh()->checklistProofPhotos()->first();
 

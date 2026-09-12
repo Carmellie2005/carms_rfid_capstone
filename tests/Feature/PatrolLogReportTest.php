@@ -45,7 +45,7 @@ class PatrolLogReportTest extends TestCase
             ->assertSee('Print PDF');
     }
 
-    public function test_patrol_logs_page_shows_clickable_checklist_proof_thumbnail(): void
+    public function test_patrol_logs_page_opens_checklist_and_proof_photos_from_details_button(): void
     {
         $guard = $this->createGuard('SG-PROOF', 'RFID-PROOF');
         $patrolLog = $this->createPatrolLog($guard);
@@ -62,6 +62,7 @@ class PatrolLogReportTest extends TestCase
             'sort_order' => 1,
         ]);
         $proofPhotoUrl = route('patrol-logs.proof-photos.show', [$patrolLog, $proofPhoto]);
+        $escapedProofPhotoUrl = str_replace('/', '\\/', $proofPhotoUrl);
 
         $response = $this
             ->actingAs($guard->user)
@@ -69,8 +70,12 @@ class PatrolLogReportTest extends TestCase
 
         $response
             ->assertOk()
+            ->assertSee('View')
+            ->assertSee('View patrol details', false)
+            ->assertSee('openPatrolDetails', false)
+            ->assertSee('Completed checklist')
             ->assertSee('Proof Photos')
-            ->assertSee($proofPhotoUrl, false)
+            ->assertSee($escapedProofPhotoUrl, false)
             ->assertSee('openProofPhoto', false);
 
         $this

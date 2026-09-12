@@ -1,6 +1,11 @@
 <x-app-layout>
     @php
         $faceVerificationEnabled = \App\Support\FaceVerification::enabled();
+        $guardFormContext = old('_guard_form');
+        $createDrawerOpen = $errors->any() && ($guardFormContext === 'create' || blank($guardFormContext));
+        $editDrawerGuardId = $errors->any() && \Illuminate\Support\Str::startsWith((string) $guardFormContext, 'edit-')
+            ? \Illuminate\Support\Str::after($guardFormContext, 'edit-')
+            : '';
     @endphp
 
     <x-slot name="header">
@@ -24,7 +29,11 @@
 
     <div
         class="py-5 sm:py-8"
-        x-data="guardManagementPage({ createModalOpen: @js($errors->any()) })"
+        x-data="guardManagementPage({
+            createModalOpen: @js($createDrawerOpen),
+            editModalOpen: @js(filled($editDrawerGuardId)),
+            editGuardId: @js((string) $editDrawerGuardId),
+        })"
         x-on:open-create-guard.window="openCreateGuardModal()"
     >
         <div class="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
@@ -32,6 +41,14 @@
                 <div class="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800">{{ session('status') }}</div>
             @endif
 
+            <div
+                class="transition-[grid-template-columns] duration-300 ease-out lg:grid lg:items-start"
+                :class="sidePanelOpen() ? 'lg:grid-cols-[minmax(0,1fr)_minmax(24rem,28rem)] lg:gap-4' : 'lg:grid-cols-[minmax(0,1fr)_0rem] lg:gap-0'"
+            >
+                <div
+                    class="min-w-0 space-y-5 transition-transform duration-300 ease-out"
+                    :class="sidePanelOpen() ? 'lg:-translate-x-2' : 'lg:translate-x-0'"
+                >
             <div class="grid grid-cols-2 gap-3 lg:hidden">
                 @forelse ($guards as $guard)
                     @php
@@ -82,12 +99,8 @@
                         </dl>
 
                         <div class="mt-3 grid grid-cols-2 gap-2">
-                            <a href="{{ route('guards.edit', $guard) }}" class="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">Edit</a>
-                            <form method="POST" action="{{ route('guards.destroy', $guard) }}" onsubmit="return confirm('Remove this guard profile?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="inline-flex h-9 w-full items-center justify-center whitespace-nowrap rounded-md border border-red-200 px-2 text-xs font-semibold text-red-700 hover:bg-red-50" type="submit">Delete</button>
-                            </form>
+                            <button type="button" data-edit-guard-id="{{ $guard->id }}" x-on:click="openEditGuardModal($event.currentTarget.dataset.editGuardId)" class="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">Edit</button>
+                            <button type="button" data-delete-action="{{ route('guards.destroy', $guard) }}" data-delete-name="{{ $guard->name }}" x-on:click="openDeleteGuardModal($event.currentTarget.dataset.deleteAction, $event.currentTarget.dataset.deleteName)" class="inline-flex h-9 w-full items-center justify-center whitespace-nowrap rounded-md border border-red-200 px-2 text-xs font-semibold text-red-700 hover:bg-red-50">Delete</button>
                         </div>
                     </article>
                 @empty
@@ -95,10 +108,13 @@
                 @endforelse
             </div>
 
-            <div class="hidden overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm lg:block">
+            <div
+                class="hidden rounded-md border border-blue-100 bg-white shadow-sm lg:block"
+                :class="sidePanelOpen() ? 'lg:h-[42rem] lg:max-h-[calc(100vh-12rem)] lg:overflow-auto' : 'overflow-hidden'"
+            >
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-blue-100 text-sm">
-                        <thead class="bg-blue-50/70 text-left text-xs font-semibold uppercase text-blue-800">
+                        <thead class="bg-blue-50/70 text-left text-xs font-extrabold uppercase text-blue-800">
                             <tr>
                                 <th class="px-5 py-3">Employee</th>
                                 <th class="px-5 py-3">Contact</th>
@@ -149,12 +165,8 @@
                                     </td>
                                     <td class="px-5 py-4">
                                         <div class="flex justify-end gap-2">
-                                            <a href="{{ route('guards.edit', $guard) }}" class="rounded-md border border-blue-200 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">Edit</a>
-                                            <form method="POST" action="{{ route('guards.destroy', $guard) }}" onsubmit="return confirm('Remove this guard profile?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="rounded-md border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50" type="submit">Delete</button>
-                                            </form>
+                                            <button type="button" data-edit-guard-id="{{ $guard->id }}" x-on:click="openEditGuardModal($event.currentTarget.dataset.editGuardId)" class="rounded-md border border-blue-200 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">Edit</button>
+                                            <button type="button" data-delete-action="{{ route('guards.destroy', $guard) }}" data-delete-name="{{ $guard->name }}" x-on:click="openDeleteGuardModal($event.currentTarget.dataset.deleteAction, $event.currentTarget.dataset.deleteName)" class="rounded-md border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50">Delete</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -167,20 +179,28 @@
                     </table>
                 </div>
             </div>
+                </div>
 
             <div
                 x-show="createModalOpen"
                 x-cloak
-                x-transition.opacity.duration.200ms
+                x-transition.opacity.duration.150ms
                 x-on:click.self="closeCreateGuardModal()"
                 x-on:keydown.escape.window="closeCreateGuardModal()"
-                class="fixed inset-0 z-[80] flex items-stretch justify-center overflow-y-auto bg-slate-950/60 p-0 sm:items-center sm:px-4 sm:py-6"
+                class="fixed inset-0 z-[80] flex items-stretch justify-end overflow-hidden bg-slate-950/40 p-0 lg:static lg:z-auto lg:block lg:bg-transparent lg:p-0"
             >
                 <section
+                    x-show="createModalOpen"
                     role="dialog"
-                    aria-modal="true"
+                    x-bind:aria-modal="isCompactPanelViewport() ? 'true' : 'false'"
                     aria-labelledby="create-guard-title"
-                    class="flex max-h-screen w-full flex-col overflow-hidden bg-white shadow-xl sm:max-h-[90vh] sm:max-w-3xl sm:rounded-lg"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="translate-x-full"
+                    x-transition:enter-end="translate-x-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="translate-x-0"
+                    x-transition:leave-end="translate-x-full"
+                    class="ml-auto flex h-full w-full max-w-2xl flex-col overflow-hidden bg-white shadow-xl sm:rounded-l-lg lg:ml-0 lg:h-[42rem] lg:max-h-[calc(100vh-12rem)] lg:max-w-none lg:rounded-md lg:border lg:border-blue-100 lg:shadow-sm"
                 >
                     <header class="flex items-start justify-between gap-4 border-b border-blue-100 px-5 py-4">
                         <div>
@@ -201,6 +221,7 @@
 
                     <form method="POST" action="{{ route('guards.store') }}" class="flex min-h-0 flex-1 flex-col">
                         @csrf
+                        <input type="hidden" name="_guard_form" value="create">
 
                         <div class="mobile-scroll-area flex-1 overflow-y-auto px-5 py-5">
                             <div class="grid gap-4 md:grid-cols-2">
@@ -330,6 +351,118 @@
                 </section>
             </div>
 
+            @foreach ($guards as $guard)
+                @php
+                    $editGuardPasswordRequired = ! $guard->user_id;
+                    $editGuardFormContext = 'edit-'.$guard->id;
+                @endphp
+
+                <div
+                    x-show="editModalOpen && editGuardId === '{{ $guard->id }}'"
+                    x-cloak
+                    x-transition.opacity.duration.150ms
+                    x-on:click.self="closeEditGuardModal()"
+                    x-on:keydown.escape.window="closeEditGuardModal()"
+                    class="fixed inset-0 z-[80] flex items-stretch justify-end overflow-hidden bg-slate-950/40 p-0 lg:static lg:z-auto lg:block lg:bg-transparent lg:p-0"
+                >
+                    <section
+                        x-show="editModalOpen && editGuardId === '{{ $guard->id }}'"
+                        role="dialog"
+                        x-bind:aria-modal="isCompactPanelViewport() ? 'true' : 'false'"
+                        aria-labelledby="edit-guard-title-{{ $guard->id }}"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="translate-x-full"
+                        x-transition:enter-end="translate-x-0"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="translate-x-0"
+                        x-transition:leave-end="translate-x-full"
+                        class="ml-auto flex h-full w-full max-w-2xl flex-col overflow-hidden bg-white shadow-xl sm:rounded-l-lg lg:ml-0 lg:h-[42rem] lg:max-h-[calc(100vh-12rem)] lg:max-w-none lg:rounded-md lg:border lg:border-blue-100 lg:shadow-sm"
+                    >
+                        <header class="flex items-start justify-between gap-4 border-b border-blue-100 px-5 py-4">
+                            <div class="min-w-0">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Guard Profile</p>
+                                <h3 id="edit-guard-title-{{ $guard->id }}" class="mt-1 truncate text-lg font-semibold text-blue-950">Edit Guard</h3>
+                                <p class="mt-1 truncate text-sm text-slate-500">{{ $guard->name }} - {{ $guard->employee_no }}</p>
+                            </div>
+                            <button
+                                type="button"
+                                x-on:click="closeEditGuardModal()"
+                                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-100 text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                aria-label="Close edit guard form"
+                            >
+                                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M5.22 5.22a.75.75 0 0 1 1.06 0L10 8.94l3.72-3.72a.75.75 0 1 1 1.06 1.06L11.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06L10 11.06l-3.72 3.72a.75.75 0 0 1-1.06-1.06L8.94 10 5.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </header>
+
+                        <form method="POST" action="{{ route('guards.update', $guard) }}" class="flex min-h-0 flex-1 flex-col">
+                            @csrf
+                            @method('PUT')
+
+                            <div class="mobile-scroll-area flex-1 overflow-y-auto px-5 py-5">
+                                @include('system.guards.partials.form-fields', [
+                                    'guard' => $guard,
+                                    'faceVerificationEnabled' => $faceVerificationEnabled,
+                                    'passwordRequired' => $editGuardPasswordRequired,
+                                    'formContext' => $editGuardFormContext,
+                                    'fieldPrefix' => 'edit_'.$guard->id,
+                                ])
+                            </div>
+
+                            <footer class="flex flex-col-reverse gap-2 border-t border-blue-100 px-5 py-4 sm:flex-row sm:justify-end">
+                                <button type="button" x-on:click="closeEditGuardModal()" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                    Save Changes
+                                </button>
+                            </footer>
+                        </form>
+                    </section>
+                </div>
+            @endforeach
+            </div>
+
+            <div
+                x-show="deleteModalOpen"
+                x-cloak
+                x-transition.opacity.duration.200ms
+                x-on:click.self="closeDeleteGuardModal()"
+                x-on:keydown.escape.window="closeDeleteGuardModal()"
+                class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/60 p-4"
+            >
+                <section
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="delete-guard-title"
+                    class="w-full max-w-md overflow-hidden rounded-lg bg-white shadow-2xl"
+                >
+                    <div class="border-b border-red-100 px-5 py-4">
+                        <h3 id="delete-guard-title" class="text-lg font-semibold text-red-700">Delete Guard</h3>
+                        <p class="mt-1 text-sm text-slate-500">This will remove the guard profile and linked guard account.</p>
+                    </div>
+
+                    <div class="px-5 py-5">
+                        <p class="text-sm text-slate-700">
+                            Are you sure you want to delete
+                            <span class="font-semibold text-slate-950" x-text="deleteGuardName"></span>?
+                        </p>
+                    </div>
+
+                    <form method="POST" x-ref="deleteGuardForm" x-bind:action="deleteGuardAction" class="flex flex-col-reverse gap-2 border-t border-red-100 px-5 py-4 sm:flex-row sm:justify-end">
+                        @csrf
+                        @method('DELETE')
+                        <button type="button" x-ref="deleteGuardCancelButton" x-on:click="closeDeleteGuardModal()" class="inline-flex h-10 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Cancel
+                        </button>
+                        <button type="submit" class="inline-flex h-10 items-center justify-center rounded-md bg-red-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                            Delete Guard
+                        </button>
+                    </form>
+                </section>
+            </div>
+
             <div
                 x-show="recordModalOpen"
                 x-cloak
@@ -428,7 +561,7 @@
                                 </template>
                                 <div x-show="recordPatrols.length > 0" class="overflow-x-auto rounded-md border border-blue-100">
                                     <table class="min-w-full divide-y divide-blue-100 text-sm">
-                                        <thead class="bg-blue-50/70 text-left text-xs font-semibold uppercase text-blue-800">
+                                        <thead class="bg-blue-50/70 text-left text-xs font-extrabold uppercase text-blue-800">
                                             <tr>
                                                 <th class="px-4 py-3">Date / Time</th>
                                                 <th class="px-4 py-3">Checkpoint</th>

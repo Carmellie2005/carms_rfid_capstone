@@ -38,11 +38,51 @@
         ];
 
         $summaryCards = [
-            ['label' => 'Active Guards', 'value' => $stats['activeGuards'], 'cardClass' => 'border-emerald-100 bg-emerald-50/60', 'labelClass' => 'text-emerald-700', 'valueClass' => 'text-emerald-900'],
-            ['label' => 'Checkpoints', 'value' => $stats['activeCheckpoints'], 'cardClass' => 'border-sky-100 bg-sky-50/60', 'labelClass' => 'text-sky-700', 'valueClass' => 'text-sky-900'],
-            ['label' => 'Today Patrols', 'value' => $stats['todayPatrols'], 'cardClass' => 'border-blue-100 bg-white', 'labelClass' => 'text-blue-700', 'valueClass' => 'text-blue-950'],
-            ['label' => 'Open Incidents', 'value' => $stats['openIncidents'], 'cardClass' => 'border-amber-100 bg-amber-50/60', 'labelClass' => 'text-amber-700', 'valueClass' => 'text-amber-900'],
-            ['label' => 'For Review', 'value' => $stats['suspiciousScans'], 'cardClass' => 'border-red-100 bg-red-50/60', 'labelClass' => 'text-red-700', 'valueClass' => 'text-red-900'],
+            [
+                'label' => 'Active Guards',
+                'value' => $stats['activeGuards'],
+                'cardClass' => 'border-emerald-100 bg-emerald-50/60 dark:border-emerald-400/25 dark:bg-slate-950/80',
+                'labelClass' => 'text-emerald-700 dark:text-emerald-300',
+                'valueClass' => 'text-emerald-900 dark:text-slate-50',
+                'accentClass' => 'bg-emerald-500 dark:bg-emerald-400',
+                'dotClass' => 'bg-emerald-500 ring-4 ring-emerald-500/10 dark:bg-emerald-400 dark:ring-emerald-400/15',
+            ],
+            [
+                'label' => 'Checkpoints',
+                'value' => $stats['activeCheckpoints'],
+                'cardClass' => 'border-sky-100 bg-sky-50/60 dark:border-sky-400/25 dark:bg-slate-950/80',
+                'labelClass' => 'text-sky-700 dark:text-sky-300',
+                'valueClass' => 'text-sky-900 dark:text-slate-50',
+                'accentClass' => 'bg-sky-500 dark:bg-sky-400',
+                'dotClass' => 'bg-sky-500 ring-4 ring-sky-500/10 dark:bg-sky-400 dark:ring-sky-400/15',
+            ],
+            [
+                'label' => 'Today Patrols',
+                'value' => $stats['todayPatrols'],
+                'cardClass' => 'border-blue-100 bg-white dark:border-indigo-400/25 dark:bg-slate-950/80',
+                'labelClass' => 'text-blue-700 dark:text-indigo-300',
+                'valueClass' => 'text-blue-950 dark:text-slate-50',
+                'accentClass' => 'bg-blue-600 dark:bg-indigo-400',
+                'dotClass' => 'bg-blue-600 ring-4 ring-blue-600/10 dark:bg-indigo-400 dark:ring-indigo-400/15',
+            ],
+            [
+                'label' => 'Open Incidents',
+                'value' => $stats['openIncidents'],
+                'cardClass' => 'border-amber-100 bg-amber-50/60 dark:border-amber-400/25 dark:bg-slate-950/80',
+                'labelClass' => 'text-amber-700 dark:text-amber-300',
+                'valueClass' => 'text-amber-900 dark:text-slate-50',
+                'accentClass' => 'bg-amber-500 dark:bg-amber-400',
+                'dotClass' => 'bg-amber-500 ring-4 ring-amber-500/10 dark:bg-amber-400 dark:ring-amber-400/15',
+            ],
+            [
+                'label' => 'For Review',
+                'value' => $stats['suspiciousScans'],
+                'cardClass' => 'border-red-100 bg-red-50/60 dark:border-red-400/25 dark:bg-slate-950/80',
+                'labelClass' => 'text-red-700 dark:text-red-300',
+                'valueClass' => 'text-red-900 dark:text-slate-50',
+                'accentClass' => 'bg-red-500 dark:bg-red-400',
+                'dotClass' => 'bg-red-500 ring-4 ring-red-500/10 dark:bg-red-400 dark:ring-red-400/15',
+            ],
         ];
 
         $scanStatusTotal = collect($analytics['scanStatus']['data'])->sum();
@@ -65,9 +105,15 @@
 
             <section class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
                 @foreach ($summaryCards as $card)
-                    <div class="min-h-[6.25rem] rounded-md border p-3 shadow-sm sm:p-5 {{ $card['cardClass'] }}">
-                        <p class="truncate whitespace-nowrap text-[0.7rem] font-semibold uppercase tracking-wide sm:text-xs {{ $card['labelClass'] }}">{{ $card['label'] }}</p>
-                        <p class="mt-2 text-2xl font-semibold sm:mt-3 sm:text-3xl {{ $card['valueClass'] }}">{{ $card['value'] }}</p>
+                    <div class="relative min-h-[6.25rem] overflow-hidden rounded-md border p-3 shadow-sm transition dark:shadow-[0_18px_45px_rgba(2,6,23,0.25)] sm:p-5 {{ $card['cardClass'] }}">
+                        <span class="absolute inset-x-0 top-0 h-1 {{ $card['accentClass'] }}" aria-hidden="true"></span>
+                        <div class="flex h-full flex-col justify-between gap-3 pt-2">
+                            <div class="flex items-center justify-between gap-3">
+                                <p class="truncate whitespace-nowrap text-[0.7rem] font-semibold uppercase tracking-wide sm:text-xs {{ $card['labelClass'] }}">{{ $card['label'] }}</p>
+                                <span class="h-2.5 w-2.5 shrink-0 rounded-full {{ $card['dotClass'] }}" aria-hidden="true"></span>
+                            </div>
+                            <p class="text-2xl font-semibold sm:text-3xl {{ $card['valueClass'] }}">{{ $card['value'] }}</p>
+                        </div>
                     </div>
                 @endforeach
             </section>
@@ -185,8 +231,8 @@
                     </div>
 
                     <div class="hidden overflow-x-auto lg:block">
-                        <table class="min-w-[48rem] divide-y divide-blue-100 text-sm">
-                            <thead class="bg-blue-50/70 text-left text-xs font-semibold uppercase text-blue-800">
+                        <table class="w-full min-w-[48rem] divide-y divide-blue-100 text-sm">
+                            <thead class="bg-blue-50/70 text-left text-xs font-extrabold uppercase text-blue-800">
                                 <tr>
                                     <th class="whitespace-nowrap px-5 py-3">Guard</th>
                                     <th class="whitespace-nowrap px-5 py-3">Checkpoint</th>
@@ -286,8 +332,8 @@
                 </div>
 
                 <div class="hidden overflow-x-auto lg:block">
-                    <table class="min-w-[56rem] divide-y divide-blue-100 text-sm">
-                        <thead class="bg-blue-50/70 text-left text-xs font-semibold uppercase text-blue-800">
+                    <table class="w-full min-w-[56rem] divide-y divide-blue-100 text-sm">
+                        <thead class="bg-blue-50/70 text-left text-xs font-extrabold uppercase text-blue-800">
                             <tr>
                                 <th class="whitespace-nowrap px-5 py-3">Category</th>
                                 <th class="whitespace-nowrap px-5 py-3">Location</th>

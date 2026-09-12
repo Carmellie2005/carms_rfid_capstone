@@ -51,6 +51,52 @@ class AuditTrailReportTest extends TestCase
             ->assertSee('Print PDF');
     }
 
+    public function test_audit_trail_shows_safe_summaries_without_raw_details(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'admin']);
+        $guard = $this->createGuard('SG-SAFE', 'SECRET-RFID');
+
+        $guard->user->update(['email' => 'audit-secret@example.com']);
+
+        AuditLog::create([
+            'user_id' => $guard->user_id,
+            'actor_name' => $guard->name,
+            'action' => 'rfid_scan_received',
+            'description' => 'RFID scan received from checkpoint reader.',
+            'subject_type' => Guard::class,
+            'subject_id' => $guard->id,
+            'properties' => [
+                'diagnostic' => 'Guard matched checkpoint reader.',
+                'result' => 'pending_checklist',
+                'patrol_window' => '6:00 PM - 5:00 AM',
+                'rfid_uid' => 'SECRET-RFID',
+                'device_uid' => 'SECRET-DEVICE',
+                'before' => ['email' => 'private-before@example.com'],
+            ],
+            'ip_address' => '192.168.50.25',
+        ]);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('audit-logs.index'));
+
+        $response
+            ->assertOk()
+            ->assertSee('Diagnostic')
+            ->assertSee('Patrol Window')
+            ->assertSee('Result')
+            ->assertSee('Guard matched checkpoint reader.')
+            ->assertSee('6:00 PM - 5:00 AM')
+            ->assertSee('Pending Checklist')
+            ->assertDontSee('SECRET-RFID')
+            ->assertDontSee('SECRET-DEVICE')
+            ->assertDontSee('private-before@example.com')
+            ->assertDontSee('audit-secret@example.com')
+            ->assertDontSee('192.168.50.25')
+            ->assertDontSee('<pre', false)
+            ->assertDontSee('Details');
+    }
+
     public function test_supervisor_can_download_guard_audit_trail_pdf(): void
     {
         $supervisor = User::factory()->create(['role' => 'admin']);
