@@ -91,7 +91,7 @@
                 <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-7">
                     @foreach ($summaryCards as $card)
                         <div class="min-h-[5.5rem] rounded-md border p-3 shadow-sm sm:p-4 {{ $card['cardClass'] }}">
-                            <p class="truncate whitespace-nowrap text-[0.7rem] font-semibold uppercase tracking-wide sm:text-xs {{ $card['labelClass'] }}">{{ $card['label'] }}</p>
+                            <p class="min-h-8 text-[0.68rem] font-bold uppercase leading-4 tracking-wide sm:text-[0.72rem] {{ $card['labelClass'] }}">{{ $card['label'] }}</p>
                             <p class="mt-2 text-2xl font-semibold {{ $card['valueClass'] }}">{{ $card['value'] }}</p>
                         </div>
                     @endforeach
