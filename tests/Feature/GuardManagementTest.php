@@ -134,6 +134,7 @@ class GuardManagementTest extends TestCase
             ->assertSee('Guard Profiles')
             ->assertSee('dark:bg-slate-900', false)
             ->assertSee('dark:bg-slate-950/45', false)
+            ->assertSee('break-all', false)
             ->assertDontSee('Register Guard');
     }
 

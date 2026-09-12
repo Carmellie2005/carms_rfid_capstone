@@ -150,7 +150,7 @@
                                         <div class="text-xs">{{ $guard->phone ?? 'No phone' }}</div>
                                     </td>
                                     <td class="px-5 py-4">
-                                        <div class="font-mono text-sm font-semibold text-blue-800">{{ $guard->user?->username ?? 'No account' }}</div>
+                                        <div class="max-w-[13rem] break-all font-mono text-sm font-semibold text-blue-800 dark:text-blue-200">{{ $guard->user?->username ?? 'No account' }}</div>
                                         <div class="text-xs text-slate-500">{{ $guard->user?->role ? ucfirst($guard->user->role) : '' }}</div>
                                     </td>
                                     <td class="px-5 py-4 font-mono text-slate-700">{{ $guard->rfid_uid }}</td>
@@ -505,24 +505,24 @@
 
                         <div x-show="! recordLoading && ! recordError && selectedGuard" class="space-y-6">
                             <div class="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-                                <dl class="grid gap-3 rounded-md border border-blue-100 bg-blue-50/50 p-4 text-sm dark:border-slate-700 dark:bg-slate-950/45 sm:grid-cols-2">
-                                    <div>
+                                <dl class="grid min-w-0 gap-3 rounded-md border border-blue-100 bg-blue-50/50 p-4 text-sm dark:border-slate-700 dark:bg-slate-950/45 sm:grid-cols-2">
+                                    <div class="min-w-0">
                                         <dt class="text-xs font-semibold uppercase tracking-wide text-blue-800 dark:text-blue-300">Contact</dt>
-                                        <dd class="mt-1 text-slate-700 dark:text-slate-200" x-text="selectedGuard?.email || 'No email'"></dd>
+                                        <dd class="mt-1 break-all text-slate-700 dark:text-slate-200" x-text="selectedGuard?.email || 'No email'"></dd>
                                         <dd class="text-xs text-slate-500 dark:text-slate-400" x-text="selectedGuard?.phone || 'No phone'"></dd>
                                     </div>
-                                    <div>
+                                    <div class="min-w-0">
                                         <dt class="text-xs font-semibold uppercase tracking-wide text-blue-800 dark:text-blue-300">Account</dt>
-                                        <dd class="mt-1 font-mono font-semibold text-blue-900 dark:text-blue-100" x-text="selectedGuard?.username || 'No account'"></dd>
+                                        <dd class="mt-1 break-all font-mono font-semibold leading-5 text-blue-900 dark:text-blue-100" x-text="selectedGuard?.username || 'No account'"></dd>
                                         <dd class="text-xs text-slate-500 dark:text-slate-400" x-text="selectedGuard?.role ? selectedGuard.role.charAt(0).toUpperCase() + selectedGuard.role.slice(1) : ''"></dd>
                                     </div>
                                     @if ($faceVerificationEnabled)
-                                    <div>
+                                    <div class="min-w-0">
                                         <dt class="text-xs font-semibold uppercase tracking-wide text-blue-800 dark:text-blue-300">Face Registration</dt>
                                         <dd class="mt-1 text-slate-700 dark:text-slate-200" x-text="selectedGuard?.face_registration || 'Not registered'"></dd>
                                     </div>
                                     @endif
-                                    <div>
+                                    <div class="min-w-0">
                                         <dt class="text-xs font-semibold uppercase tracking-wide text-blue-800 dark:text-blue-300">Shift / Status</dt>
                                         <dd class="mt-1 text-slate-700 dark:text-slate-200" x-text="selectedGuard?.shift || 'Unassigned'"></dd>
                                         <dd class="text-xs text-slate-500 dark:text-slate-400" x-text="selectedGuard?.status_label || 'Unknown'"></dd>
