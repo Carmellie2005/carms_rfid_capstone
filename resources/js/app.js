@@ -358,6 +358,44 @@ function registerServiceWorker() {
     return serviceWorkerRegistrationPromise;
 }
 
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let index = 0; index < rawData.length; index += 1) {
+        outputArray[index] = rawData.charCodeAt(index);
+    }
+
+    return outputArray;
+}
+
+async function pushJson(url, method = 'GET', payload = null) {
+    const response = await fetch(url, {
+        method,
+        credentials: 'same-origin',
+        headers: csrfJsonHeaders(),
+        body: payload ? JSON.stringify(payload) : null,
+    });
+
+    if (! response.ok) {
+        throw new Error('Push request failed.');
+    }
+
+    return response.json();
+}
+
+function pushContentEncoding() {
+    const encodings = window.PushManager?.supportedContentEncodings;
+
+    if (encodings && encodings.includes('aes128gcm')) {
+        return 'aes128gcm';
+    }
+
+    return 'aesgcm';
+}
+
 function notifyPwaInstallPromptListeners() {
     pwaInstallPromptListeners.forEach((listener) => listener(deferredPwaInstallPrompt));
 }
@@ -392,6 +430,152 @@ Alpine.data('pwaLaunchSplash', () => ({
         setTimeout(() => {
             this.visible = false;
         }, PWA_LAUNCH_SPLASH_MS);
+    },
+}));
+
+Alpine.data('pushNotifications', (config = {}) => ({
+    configUrl: config.configUrl,
+    subscribeUrl: config.subscribeUrl,
+    unsubscribeUrl: config.unsubscribeUrl,
+    supported: false,
+    configured: false,
+    subscribed: false,
+    busy: false,
+    permission: 'default',
+    publicKey: '',
+    message: '',
+
+    async init() {
+        this.supported = 'Notification' in window
+            && 'PushManager' in window
+            && canRegisterServiceWorker();
+
+        if (! this.supported) {
+            this.message = 'Phone alerts are not supported on this browser.';
+            return;
+        }
+
+        this.permission = window.Notification.permission;
+
+        try {
+            const pushConfig = await pushJson(this.configUrl);
+            this.publicKey = pushConfig.publicKey || '';
+            this.configured = Boolean(pushConfig.enabled && this.publicKey);
+
+            if (! this.configured) {
+                this.message = 'Phone alerts need server keys.';
+                return;
+            }
+
+            const registration = await registerServiceWorker();
+            const subscription = await registration?.pushManager.getSubscription();
+
+            this.subscribed = Boolean(subscription);
+            this.message = this.subscribed ? 'Phone alerts are active on this device.' : '';
+        } catch {
+            this.message = 'Phone alerts are unavailable right now.';
+        }
+    },
+
+    disabled() {
+        return this.busy || ! this.supported || ! this.configured || this.permission === 'denied';
+    },
+
+    buttonLabel() {
+        if (this.busy) {
+            return 'Updating...';
+        }
+
+        if (this.permission === 'denied') {
+            return 'Phone alerts blocked';
+        }
+
+        if (this.subscribed) {
+            return 'Phone alerts on';
+        }
+
+        return 'Enable phone alerts';
+    },
+
+    async toggle() {
+        if (this.disabled()) {
+            return;
+        }
+
+        if (this.subscribed) {
+            await this.disable();
+            return;
+        }
+
+        await this.enable();
+    },
+
+    async enable() {
+        this.busy = true;
+        this.message = '';
+
+        try {
+            const permission = await window.Notification.requestPermission();
+            this.permission = permission;
+
+            if (permission !== 'granted') {
+                this.message = 'Notifications were not allowed.';
+                return;
+            }
+
+            const registration = await registerServiceWorker();
+
+            if (! registration) {
+                this.message = 'Phone alerts are unavailable right now.';
+                return;
+            }
+
+            let subscription = await registration.pushManager.getSubscription();
+
+            if (! subscription) {
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(this.publicKey),
+                });
+            }
+
+            await pushJson(this.subscribeUrl, 'POST', {
+                ...subscription.toJSON(),
+                contentEncoding: pushContentEncoding(),
+            });
+
+            this.subscribed = true;
+            this.message = 'Phone alerts are active on this device.';
+        } catch {
+            this.message = 'Could not enable phone alerts.';
+        } finally {
+            this.busy = false;
+        }
+    },
+
+    async disable() {
+        this.busy = true;
+        this.message = '';
+
+        try {
+            const registration = await registerServiceWorker();
+            const subscription = await registration?.pushManager.getSubscription();
+
+            if (subscription) {
+                await pushJson(this.unsubscribeUrl, 'DELETE', {
+                    endpoint: subscription.endpoint,
+                });
+
+                await subscription.unsubscribe();
+            }
+
+            this.subscribed = false;
+            this.message = 'Phone alerts are off on this device.';
+        } catch {
+            this.message = 'Could not turn off phone alerts.';
+        } finally {
+            this.busy = false;
+        }
     },
 }));
 

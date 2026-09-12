@@ -30,4 +30,14 @@ class PwaManifestTest extends TestCase
         $this->assertFileExists(public_path('pwa-icon-maskable-192.png'));
         $this->assertFileExists(public_path('pwa-icon-maskable-512.png'));
     }
+
+    public function test_service_worker_handles_push_notifications(): void
+    {
+        $serviceWorker = file_get_contents(public_path('sw.js'));
+
+        $this->assertStringContainsString("self.addEventListener('push'", $serviceWorker);
+        $this->assertStringContainsString('showNotification', $serviceWorker);
+        $this->assertStringContainsString("self.addEventListener('notificationclick'", $serviceWorker);
+        $this->assertStringContainsString('clients.openWindow', $serviceWorker);
+    }
 }

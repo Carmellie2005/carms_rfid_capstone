@@ -16,8 +16,8 @@ class NotificationFeed
     public const DROPDOWN_LIMIT = 5;
     public const PAGE_SIZE = 12;
 
-    private const SUPERVISOR_INCIDENT_STATUSES = ['submitted', 'under_review'];
-    private const SUPERVISOR_PATROL_STATUSES = ['suspicious', 'invalid', 'outside_schedule'];
+    public const SUPERVISOR_INCIDENT_STATUSES = ['submitted', 'under_review'];
+    public const SUPERVISOR_PATROL_STATUSES = ['suspicious', 'invalid', 'outside_schedule'];
     private const GUARD_INCIDENT_STATUSES = [];
     private const GUARD_ACTION_PATROL_STATUSES = ['pending_selfie', 'pending_face', 'pending_checklist', 'profile_incomplete'];
 

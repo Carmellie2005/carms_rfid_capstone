@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bc-patrol-v13';
+const CACHE_NAME = 'bc-patrol-v14';
 const OFFLINE_URL = '/offline.html';
 const CORE_ASSETS = [
     OFFLINE_URL,
@@ -62,6 +62,41 @@ self.addEventListener('fetch', (event) => {
     }
 });
 
+self.addEventListener('push', (event) => {
+    const payload = notificationPayload(event);
+
+    event.waitUntil(
+        self.registration.showNotification(payload.title, {
+            body: payload.body,
+            icon: '/pwa-icon-192.png',
+            badge: '/favicon-32x32.png',
+            tag: payload.tag,
+            data: {
+                url: payload.url,
+            },
+        })
+    );
+});
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+
+    const targetUrl = new URL(event.notification.data?.url || '/', self.location.origin).href;
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then((clientList) => {
+                for (const client of clientList) {
+                    if (client.url === targetUrl && 'focus' in client) {
+                        return client.focus();
+                    }
+                }
+
+                return clients.openWindow(targetUrl);
+            })
+    );
+});
+
 function isCacheableAsset(url) {
     return url.pathname.startsWith('/build/')
         || CORE_ASSETS.includes(url.pathname);
@@ -85,4 +120,31 @@ function cacheFirst(request) {
             return networkResponse;
         });
     });
+}
+
+function notificationPayload(event) {
+    let data = {};
+
+    try {
+        data = event.data ? event.data.json() : {};
+    } catch {
+        data = {};
+    }
+
+    return {
+        title: data.title || 'SLSU Bontoc Patrol',
+        body: data.body || 'A patrol alert needs supervisor review.',
+        tag: data.tag || 'slsu-bontoc-patrol-alert',
+        url: sameOriginUrl(data.url || '/'),
+    };
+}
+
+function sameOriginUrl(path) {
+    try {
+        const url = new URL(path, self.location.origin);
+
+        return url.origin === self.location.origin ? url.pathname + url.search + url.hash : '/';
+    } catch {
+        return '/';
+    }
 }
