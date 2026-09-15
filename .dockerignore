@@ -7,6 +7,11 @@
 .env
 .env.*
 !.env.example
+.env.hostinger.example
+
+README.md
+docs/hostinger-deployment.md
+scripts/hostinger-deploy.sh
 
 node_modules
 vendor
