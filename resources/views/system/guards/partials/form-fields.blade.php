@@ -47,7 +47,18 @@
 
     <div>
         <label for="{{ $fieldPrefix }}_rfid_uid" class="sr-only">RFID UID</label>
-        <input id="{{ $fieldPrefix }}_rfid_uid" name="rfid_uid" value="{{ $valueFor('rfid_uid', $guard->rfid_uid) }}" placeholder="F33C8D37" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+        <div class="mt-1 flex gap-2">
+            <input id="{{ $fieldPrefix }}_rfid_uid" name="rfid_uid" value="{{ $valueFor('rfid_uid', $guard->rfid_uid) }}" placeholder="F33C8D37" class="block min-w-0 flex-1 rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+            <button
+                type="button"
+                x-on:click="startRfidEnrollment('{{ $fieldPrefix }}_rfid_uid')"
+                x-bind:disabled="rfidEnrollmentBusy"
+                class="inline-flex h-11 shrink-0 items-center justify-center rounded-md border border-blue-200 px-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-70 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
+            >
+                <span x-text="isRfidEnrollmentActive('{{ $fieldPrefix }}_rfid_uid') ? 'Waiting' : 'Scan Card'">Scan Card</span>
+            </button>
+        </div>
+        <p x-show="rfidEnrollmentStatus('{{ $fieldPrefix }}_rfid_uid')" x-text="rfidEnrollmentStatus('{{ $fieldPrefix }}_rfid_uid')" class="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400"></p>
         <x-input-error :messages="$errorFor('rfid_uid')" class="mt-2" />
     </div>
 

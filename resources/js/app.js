@@ -2451,6 +2451,13 @@ Alpine.data('guardManagementPage', (config = {}) => ({
     recordIncidents: [],
     recordFaceAttempts: [],
     resizeHandler: null,
+    rfidEnrollmentLatestUrl: config.rfidEnrollmentLatestUrl || '',
+    rfidEnrollmentInputId: '',
+    rfidEnrollmentStartedAt: '',
+    rfidEnrollmentMessage: '',
+    rfidEnrollmentBusy: false,
+    rfidEnrollmentTimer: null,
+    rfidEnrollmentTimeoutTimer: null,
 
     init() {
         this.resizeHandler = () => this.updateBodyScrollLock();
@@ -2472,6 +2479,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
             window.removeEventListener('resize', this.resizeHandler);
         }
 
+        this.stopRfidEnrollment();
         document.body.classList.remove('overflow-y-hidden');
     },
 
@@ -2487,6 +2495,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         this.createModalOpen = false;
         this.editModalOpen = false;
         this.editGuardId = '';
+        this.stopRfidEnrollment();
         this.updateBodyScrollLock();
     },
 
@@ -2495,6 +2504,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         this.editGuardId = '';
         this.deleteModalOpen = false;
         this.recordModalOpen = false;
+        this.stopRfidEnrollment();
         this.createModalOpen = true;
         this.updateBodyScrollLock();
         this.$nextTick(() => this.$refs.createGuardFirstField?.focus());
@@ -2502,6 +2512,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
 
     closeCreateGuardModal() {
         this.createModalOpen = false;
+        this.stopRfidEnrollment();
         this.updateBodyScrollLock();
     },
 
@@ -2509,6 +2520,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         this.createModalOpen = false;
         this.recordModalOpen = false;
         this.deleteModalOpen = false;
+        this.stopRfidEnrollment();
         this.editGuardId = String(guardId || '');
         this.editModalOpen = Boolean(this.editGuardId);
         this.updateBodyScrollLock();
@@ -2518,6 +2530,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
     closeEditGuardModal() {
         this.editModalOpen = false;
         this.editGuardId = '';
+        this.stopRfidEnrollment();
         this.updateBodyScrollLock();
     },
 
@@ -2534,6 +2547,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         this.editModalOpen = false;
         this.editGuardId = '';
         this.recordModalOpen = false;
+        this.stopRfidEnrollment();
         this.deleteGuardAction = action || '';
         this.deleteGuardName = name || 'this guard';
         this.deleteModalOpen = true;
@@ -2573,6 +2587,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         this.recordPatrols = [];
         this.recordIncidents = [];
         this.recordFaceAttempts = [];
+        this.stopRfidEnrollment();
         this.updateBodyScrollLock();
 
         try {
@@ -2605,6 +2620,106 @@ Alpine.data('guardManagementPage', (config = {}) => ({
     closeGuardRecord() {
         this.recordModalOpen = false;
         this.updateBodyScrollLock();
+    },
+
+    startRfidEnrollment(inputId) {
+        if (! this.rfidEnrollmentLatestUrl || ! inputId) {
+            this.rfidEnrollmentMessage = 'RFID enrollment is unavailable right now.';
+            return;
+        }
+
+        this.stopRfidEnrollment();
+        this.rfidEnrollmentInputId = inputId;
+        this.rfidEnrollmentStartedAt = new Date().toISOString();
+        this.rfidEnrollmentMessage = 'Waiting for card tap on enrollment reader...';
+        this.rfidEnrollmentBusy = true;
+
+        this.pollRfidEnrollment();
+        this.rfidEnrollmentTimer = window.setInterval(() => this.pollRfidEnrollment(), 1200);
+        this.rfidEnrollmentTimeoutTimer = window.setTimeout(() => {
+            if (this.rfidEnrollmentBusy && this.rfidEnrollmentInputId === inputId) {
+                this.rfidEnrollmentBusy = false;
+                this.clearRfidEnrollmentTimers();
+                this.rfidEnrollmentMessage = 'No card captured. Tap Scan Card to try again.';
+            }
+        }, 45000);
+    },
+
+    async pollRfidEnrollment() {
+        if (! this.rfidEnrollmentBusy || ! this.rfidEnrollmentInputId) {
+            return;
+        }
+
+        try {
+            const url = new URL(this.rfidEnrollmentLatestUrl, window.location.origin);
+            url.searchParams.set('since', this.rfidEnrollmentStartedAt);
+
+            const response = await fetch(url, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (! response.ok) {
+                throw new Error(data.message || 'RFID enrollment scan could not be checked.');
+            }
+
+            if (data.rfid_uid) {
+                this.applyRfidEnrollmentUid(data.rfid_uid, data.device_uid);
+            }
+        } catch {
+            this.rfidEnrollmentBusy = false;
+            this.clearRfidEnrollmentTimers();
+            this.rfidEnrollmentMessage = 'Could not check the enrollment reader right now.';
+        }
+    },
+
+    applyRfidEnrollmentUid(rfidUid, deviceUid = null) {
+        const input = document.getElementById(this.rfidEnrollmentInputId);
+
+        if (input) {
+            input.value = rfidUid;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+            input.focus();
+        }
+
+        this.rfidEnrollmentBusy = false;
+        this.clearRfidEnrollmentTimers();
+        this.rfidEnrollmentMessage = deviceUid
+            ? `Captured ${rfidUid} from ${deviceUid}.`
+            : `Captured ${rfidUid}.`;
+    },
+
+    stopRfidEnrollment() {
+        this.clearRfidEnrollmentTimers();
+        this.rfidEnrollmentBusy = false;
+        this.rfidEnrollmentInputId = '';
+        this.rfidEnrollmentStartedAt = '';
+        this.rfidEnrollmentMessage = '';
+    },
+
+    clearRfidEnrollmentTimers() {
+        if (this.rfidEnrollmentTimer) {
+            window.clearInterval(this.rfidEnrollmentTimer);
+            this.rfidEnrollmentTimer = null;
+        }
+
+        if (this.rfidEnrollmentTimeoutTimer) {
+            window.clearTimeout(this.rfidEnrollmentTimeoutTimer);
+            this.rfidEnrollmentTimeoutTimer = null;
+        }
+    },
+
+    isRfidEnrollmentActive(inputId) {
+        return this.rfidEnrollmentBusy && this.rfidEnrollmentInputId === inputId;
+    },
+
+    rfidEnrollmentStatus(inputId) {
+        return this.rfidEnrollmentInputId === inputId ? this.rfidEnrollmentMessage : '';
     },
 
     updateBodyScrollLock() {

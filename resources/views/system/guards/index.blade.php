@@ -33,6 +33,7 @@
             createModalOpen: @js($createDrawerOpen),
             editModalOpen: @js(filled($editDrawerGuardId)),
             editGuardId: @js((string) $editDrawerGuardId),
+            rfidEnrollmentLatestUrl: @js(route('guards.rfid-enrollment.latest')),
         })"
         x-on:open-create-guard.window="openCreateGuardModal()"
     >
@@ -238,7 +239,18 @@
                                 </div>
                                 <div>
                                     <label for="create_rfid_uid" class="sr-only">RFID UID</label>
-                                    <input id="create_rfid_uid" name="rfid_uid" value="{{ old('rfid_uid', $newGuard->rfid_uid) }}" placeholder="F33C8D37" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                    <div class="mt-1 flex gap-2">
+                                        <input id="create_rfid_uid" name="rfid_uid" value="{{ old('rfid_uid', $newGuard->rfid_uid) }}" placeholder="F33C8D37" class="block min-w-0 flex-1 rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                        <button
+                                            type="button"
+                                            x-on:click="startRfidEnrollment('create_rfid_uid')"
+                                            x-bind:disabled="rfidEnrollmentBusy"
+                                            class="inline-flex h-11 shrink-0 items-center justify-center rounded-md border border-blue-200 px-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-70 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
+                                        >
+                                            <span x-text="isRfidEnrollmentActive('create_rfid_uid') ? 'Waiting' : 'Scan Card'">Scan Card</span>
+                                        </button>
+                                    </div>
+                                    <p x-show="rfidEnrollmentStatus('create_rfid_uid')" x-text="rfidEnrollmentStatus('create_rfid_uid')" class="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400"></p>
                                     <x-input-error :messages="$errors->get('rfid_uid')" class="mt-2" />
                                 </div>
                                 @if ($faceVerificationEnabled)
