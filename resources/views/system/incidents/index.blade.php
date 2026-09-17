@@ -23,7 +23,30 @@
         ];
     @endphp
 
-    <div class="py-5 sm:py-8">
+    <div
+        class="py-5 sm:py-8"
+        x-data="{
+            pdfPreviewOpen: false,
+            pdfPreviewUrl: '',
+            pdfDownloadUrl: '',
+            pdfPreviewTitle: 'Incident PDF Preview',
+            openIncidentPdfPreview(previewUrl, downloadUrl, title) {
+                this.pdfPreviewUrl = previewUrl;
+                this.pdfDownloadUrl = downloadUrl;
+                this.pdfPreviewTitle = title || 'Incident PDF Preview';
+                this.pdfPreviewOpen = true;
+                document.body.classList.add('overflow-y-hidden');
+                this.$nextTick(() => this.$refs.incidentPdfCloseButton?.focus());
+            },
+            closeIncidentPdfPreview() {
+                this.pdfPreviewOpen = false;
+                this.pdfPreviewUrl = '';
+                this.pdfDownloadUrl = '';
+                document.body.classList.remove('overflow-y-hidden');
+            },
+        }"
+        x-on:keydown.escape.window="pdfPreviewOpen && closeIncidentPdfPreview()"
+    >
         <div class="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
             @if (session('status'))
                 <div class="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800">{{ session('status') }}</div>
@@ -62,6 +85,9 @@
                 @forelse ($incidents as $incident)
                     @php
                         $incidentTime = $incident->incident_at?->timezone(config('app.timezone'));
+                        $incidentPdfDownloadUrl = route('incidents.pdf', $incident);
+                        $incidentPdfPreviewUrl = route('incidents.pdf', ['incidentReport' => $incident, 'preview' => 1]);
+                        $incidentPdfTitle = 'Incident Report - '.($incident->category ?: 'Incident');
                     @endphp
                     <article class="rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
                         <div class="grid gap-5 lg:grid-cols-[1fr_360px]">
@@ -76,9 +102,19 @@
                                             {{ str($incident->status)->replace('_', ' ')->title() }}
                                         </span>
                                     </div>
-                                    <a href="{{ route('incidents.pdf', $incident) }}" class="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                                        Download PDF
-                                    </a>
+                                    <div class="flex shrink-0 flex-wrap items-center gap-2">
+                                        <button
+                                            type="button"
+                                            data-skip-global-loader="true"
+                                            x-on:click="openIncidentPdfPreview(@js($incidentPdfPreviewUrl), @js($incidentPdfDownloadUrl), @js($incidentPdfTitle))"
+                                            class="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950"
+                                        >
+                                            Print PDF
+                                        </button>
+                                        <a href="{{ $incidentPdfDownloadUrl }}" class="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950">
+                                            Download PDF
+                                        </a>
+                                    </div>
                                 </div>
                                 <dl class="mt-4 grid gap-3 text-sm text-slate-600 sm:grid-cols-3">
                                     <div>
@@ -147,5 +183,74 @@
 
             <x-pagination-panel :paginator="$incidents" label="incident reports" page-label="Incident reports page" class="rounded-md border border-blue-100 bg-white px-4 py-3 shadow-sm" />
         </div>
+
+        <div
+            x-show="pdfPreviewOpen"
+            x-cloak
+            x-transition.opacity.duration.150ms
+            class="fixed inset-0 z-[80] bg-slate-950/60"
+            x-on:click="closeIncidentPdfPreview()"
+            aria-hidden="true"
+        ></div>
+
+        <section
+            x-show="pdfPreviewOpen"
+            x-cloak
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 translate-y-3 scale-[0.98]"
+            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+            x-transition:leave-end="opacity-0 translate-y-3 scale-[0.98]"
+            class="fixed inset-0 z-[85] flex items-center justify-center p-3 sm:p-6"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="incident-pdf-preview-title"
+        >
+            <div class="flex h-[min(92dvh,56rem)] w-full max-w-5xl flex-col overflow-hidden rounded-md border border-blue-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900" x-on:click.stop>
+                <div class="flex shrink-0 items-start justify-between gap-3 border-b border-blue-100 px-4 py-3 dark:border-slate-800 sm:px-5">
+                    <div class="min-w-0">
+                        <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">PDF Preview</p>
+                        <h3 id="incident-pdf-preview-title" class="mt-1 truncate text-base font-semibold text-blue-950 dark:text-blue-100" x-text="pdfPreviewTitle"></h3>
+                    </div>
+                    <button
+                        type="button"
+                        x-ref="incidentPdfCloseButton"
+                        x-on:click="closeIncidentPdfPreview()"
+                        class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-blue-100 text-slate-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
+                        aria-label="Close PDF preview"
+                    >
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="min-h-0 flex-1 bg-slate-100 dark:bg-slate-950">
+                    <iframe
+                        x-bind:src="pdfPreviewOpen ? pdfPreviewUrl : 'about:blank'"
+                        title="Incident report PDF preview"
+                        class="h-full w-full border-0 bg-white"
+                    ></iframe>
+                </div>
+
+                <div class="flex shrink-0 flex-col gap-2 border-t border-blue-100 px-4 py-3 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-end sm:px-5">
+                    <a
+                        x-bind:href="pdfPreviewUrl"
+                        target="_blank"
+                        rel="noopener"
+                        class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 px-4 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
+                    >
+                        Open / Print
+                    </a>
+                    <a
+                        x-bind:href="pdfDownloadUrl"
+                        class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    >
+                        Download PDF
+                    </a>
+                </div>
+            </div>
+        </section>
     </div>
 </x-app-layout>

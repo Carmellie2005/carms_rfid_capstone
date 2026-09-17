@@ -63,7 +63,13 @@ class IncidentReportController extends Controller
             'letterheadDataUri' => $this->letterheadDataUri(),
         ])->setPaper('a4');
 
-        return $pdf->download($this->pdfFilename($incidentReport));
+        $filename = $this->pdfFilename($incidentReport);
+
+        if ($request->boolean('print') || $request->boolean('preview')) {
+            return $pdf->stream($filename);
+        }
+
+        return $pdf->download($filename);
     }
 
     public function image(Request $request, IncidentReport $incidentReport, IncidentReportImage $incidentReportImage): Response

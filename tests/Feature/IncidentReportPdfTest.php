@@ -29,6 +29,39 @@ class IncidentReportPdfTest extends TestCase
         $this->assertStringContainsString('incident-report-security-concern', $response->headers->get('content-disposition'));
     }
 
+    public function test_supervisor_can_preview_incident_report_pdf_inline(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'admin']);
+        $incident = $this->createIncidentReport();
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('incidents.pdf', ['incidentReport' => $incident, 'preview' => 1]));
+
+        $response->assertOk();
+        $this->assertStringContainsString('application/pdf', $response->headers->get('content-type'));
+        $this->assertStringContainsString('inline', $response->headers->get('content-disposition'));
+    }
+
+    public function test_incident_reports_page_has_print_pdf_preview_action(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'admin']);
+        $incident = $this->createIncidentReport();
+        $previewUrl = route('incidents.pdf', ['incidentReport' => $incident, 'preview' => 1]);
+        $escapedPreviewUrl = str_replace('/', '\\/', $previewUrl);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('incidents.index'));
+
+        $response
+            ->assertOk()
+            ->assertSee('Print PDF')
+            ->assertSee('PDF Preview')
+            ->assertSee('openIncidentPdfPreview', false)
+            ->assertSee($escapedPreviewUrl, false);
+    }
+
     public function test_guard_can_download_own_incident_report_pdf(): void
     {
         $guardUser = User::factory()->create(['role' => 'guard']);
