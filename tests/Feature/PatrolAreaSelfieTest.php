@@ -234,10 +234,10 @@ class PatrolAreaSelfieTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Guard Account Security')
+            ->assertSee('Password Required')
             ->assertSee('Change Temporary Password')
             ->assertSee('temporary_password_current_password', false)
-            ->assertSee('Save New Password')
+            ->assertSee('Save Password')
             ->assertSee('aria-label="Show current password"', false)
             ->assertSee('aria-label="Show new password"', false)
             ->assertSee('aria-label="Show confirm password"', false)

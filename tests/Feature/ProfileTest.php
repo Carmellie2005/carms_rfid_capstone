@@ -34,7 +34,7 @@ class ProfileTest extends TestCase
         $response
             ->assertOk()
             ->assertDontSee('Update Password')
-            ->assertDontSee('Guard Account Security')
+            ->assertDontSee('Password Required')
             ->assertDontSee('Delete Account');
     }
 
@@ -51,7 +51,7 @@ class ProfileTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertDontSee('Guard Account Security')
+            ->assertDontSee('Password Required')
             ->assertDontSee('Change Temporary Password')
             ->assertDontSee('Update Password');
     }
@@ -79,12 +79,12 @@ class ProfileTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Guard Account Security')
+            ->assertSee('Password Required')
             ->assertSee('Change Temporary Password')
-            ->assertSee('At least 8 characters.')
-            ->assertSee('Avoid your name, birthday, or employee number.')
+            ->assertSee('Set your own password to continue.')
+            ->assertSee('Use 8+ characters and keep it private.')
             ->assertSee('temporary_password_current_password', false)
-            ->assertSee('Save New Password')
+            ->assertSee('Save Password')
             ->assertSee('aria-label="Show current password"', false)
             ->assertSee('aria-label="Show new password"', false)
             ->assertSee('aria-label="Show confirm password"', false)
