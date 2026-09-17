@@ -267,6 +267,7 @@
             border-top: 1px solid #000000;
             color: #000000;
             font-size: 11pt;
+            font-weight: 700;
             padding-top: 5px;
         }
     </style>
@@ -292,6 +293,7 @@
         $reviewNotes = $incident->admin_notes ?: 'No supervisor review notes recorded.';
         $actionTaken = $incident->action_taken ?: 'No action recorded.';
         $resolvedDateLabel = $resolvedDate?->format('M d, Y h:i A') ?? 'Not yet resolved';
+        $supervisorName = 'Ryan P. Tomol';
     @endphp
 
     @if ($letterheadDataUri)
@@ -432,11 +434,11 @@
     <div class="section">
         <div class="signature-row">
             <div class="signature">
-                <div class="signature-line">&nbsp;</div>
+                <div class="signature-line">{{ $guardName }}</div>
                 Reporting Security Guard
             </div>
             <div class="signature">
-                <div class="signature-line">&nbsp;</div>
+                <div class="signature-line">{{ $supervisorName }}</div>
                 Supervisor
             </div>
             <div class="clear"></div>
