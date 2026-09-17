@@ -34,4 +34,22 @@ class DatabaseSeederTest extends TestCase
         $this->assertSame('Night Shift', $guard->shift);
         $this->assertSame('active', $guard->status);
     }
+
+    public function test_seeder_does_not_reset_existing_guard_password_requirement(): void
+    {
+        $this->seed();
+
+        $guardUser = User::where('username', 'carmela.bihay.hernandez')->firstOrFail();
+        $guardUser->forceFill([
+            'password' => Hash::make('my-own-password'),
+            'must_change_password' => false,
+        ])->save();
+
+        $this->seed();
+
+        $guardUser->refresh();
+
+        $this->assertTrue(Hash::check('my-own-password', $guardUser->password));
+        $this->assertFalse($guardUser->must_change_password);
+    }
 }

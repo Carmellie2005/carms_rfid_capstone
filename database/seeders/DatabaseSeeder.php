@@ -22,14 +22,21 @@ class DatabaseSeeder extends Seeder
             ?? User::where('name', 'Security Admin')->where('role', 'admin')->first()
             ?? new User();
 
+        $isNewSupervisor = ! $supervisor->exists;
+
         $supervisor->forceFill([
             'name' => 'Security Supervisor',
             'username' => 'supervisor',
             'email' => 'security.supervisor@campuspatrol.local',
-            'password' => Hash::make($defaultPassword),
             'must_change_password' => false,
             'role' => 'admin',
-        ])->save();
+        ]);
+
+        if ($isNewSupervisor) {
+            $supervisor->password = Hash::make($defaultPassword);
+        }
+
+        $supervisor->save();
 
         User::where('name', 'Security Admin')
             ->where('id', '!=', $supervisor->id)
@@ -121,16 +128,21 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($guards as $guard) {
-            $guardAccount = User::updateOrCreate(
-                ['username' => $guard['username']],
-                [
-                    'name' => $guard['name'],
-                    'email' => $guard['email'],
-                    'password' => Hash::make($guard['password']),
-                    'must_change_password' => true,
-                    'role' => 'guard',
-                ],
-            );
+            $guardAccount = User::firstOrNew(['username' => $guard['username']]);
+            $isNewGuardAccount = ! $guardAccount->exists;
+
+            $guardAccount->forceFill([
+                'name' => $guard['name'],
+                'email' => $guard['email'],
+                'role' => 'guard',
+            ]);
+
+            if ($isNewGuardAccount) {
+                $guardAccount->password = Hash::make($guard['password']);
+                $guardAccount->must_change_password = true;
+            }
+
+            $guardAccount->save();
 
             $guard['user_id'] = $guardAccount->id;
             unset($guard['username'], $guard['password']);
