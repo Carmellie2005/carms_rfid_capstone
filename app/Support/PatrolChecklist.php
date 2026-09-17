@@ -18,7 +18,6 @@ class PatrolChecklist
         'cctv_alarm_checked' => 'CCTV/security equipment area checked',
         'no_unauthorized_person' => 'No suspicious person, item, or vehicle observed',
         'safety_hazard' => 'No damage, obstruction, leak, or safety hazard observed',
-        'area_secure' => 'Area condition recorded with photo proof',
     ];
 
     public const STATUS_OPTIONS = [

@@ -1540,6 +1540,7 @@ Alpine.data('patrolScan', (config = {}) => ({
     selectedChecklistPhoto: null,
     pendingScan: config.pendingScan || null,
     pendingScanUrl: config.pendingScanUrl,
+    cancelScanUrl: config.cancelScanUrl,
     csrfRefreshUrl: config.csrfRefreshUrl || '/csrf-token',
     guardName: config.guardName || '',
     guardEmployeeNo: config.guardEmployeeNo || '',
@@ -1561,6 +1562,9 @@ Alpine.data('patrolScan', (config = {}) => ({
     areaSelfieLastPosition: null,
     areaSelfieUnmirrorFrontCamera: true,
     pollingTimer: null,
+    cancelScanModalOpen: false,
+    cancellingScan: false,
+    cancelScanError: '',
     checklistModalOpen: config.openChecklist || false,
     incidentModalOpen: config.openIncident || false,
     cameraOpen: false,
@@ -1890,7 +1894,7 @@ Alpine.data('patrolScan', (config = {}) => ({
         return `${shortened}...`;
     },
 
-    clearAreaSelfie() {
+    clearAreaSelfieFields() {
         this.areaSelfieCapture = '';
         this.areaSelfieCapturedAt = '';
         this.areaSelfieLatitude = '';
@@ -1899,6 +1903,10 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.areaSelfieError = '';
         this.areaSelfieMessage = '';
         this.areaSelfieLastPosition = null;
+    },
+
+    clearAreaSelfie() {
+        this.clearAreaSelfieFields();
         this.scanMessage = this.pendingScan
             ? 'RFID accepted. Take the required area selfie.'
             : 'Waiting for your ESP32 checkpoint scan.';
@@ -1970,6 +1978,92 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.$nextTick(() => document.getElementById('doors_locked_normal')?.focus());
     },
 
+    openCancelScanModal() {
+        if (! this.pendingScan || this.submittingPatrol || this.cancellingScan) {
+            return;
+        }
+
+        this.cancelScanError = '';
+        this.cancelScanModalOpen = true;
+    },
+
+    closeCancelScanModal() {
+        if (this.cancellingScan) {
+            return;
+        }
+
+        this.cancelScanModalOpen = false;
+        this.cancelScanError = '';
+    },
+
+    async cancelPendingScan() {
+        if (! this.patrolLogId || this.cancellingScan) {
+            return;
+        }
+
+        this.cancellingScan = true;
+        this.cancelScanError = '';
+
+        try {
+            const body = JSON.stringify({ patrol_log_id: this.patrolLogId });
+            let response = await fetch(this.cancelScanUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: csrfJsonHeaders(),
+                body,
+            });
+
+            if (response.status === 419 && await refreshCsrfToken(this.csrfRefreshUrl)) {
+                response = await fetch(this.cancelScanUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: csrfJsonHeaders(),
+                    body,
+                });
+            }
+
+            const data = await response.json().catch(() => ({}));
+
+            if (! response.ok) {
+                throw new Error(data.message || 'The pending scan could not be cancelled.');
+            }
+
+            this.resetAfterPendingScanCancelled(data.message || 'Pending scan cancelled. Scan your RFID again when ready.');
+        } catch (error) {
+            this.cancelScanError = error?.message || 'The pending scan could not be cancelled.';
+        } finally {
+            this.cancellingScan = false;
+        }
+    },
+
+    clearChecklistPhotos() {
+        Object.keys(this.checklistPhotoPreviews).forEach((field) => this.removeChecklistPhoto(field));
+        this.checklistPhotoError = '';
+    },
+
+    resetAfterPendingScanCancelled(message) {
+        this.stopCamera();
+        this.clearAreaSelfieFields();
+        this.clearChecklistPhotos();
+        this.clearIncidentReport();
+        this.pendingScan = null;
+        this.patrolLogId = '';
+        this.scanMessage = message;
+        this.verificationMessage = '';
+        this.areaSelfieCameraOpen = false;
+        this.checklistModalOpen = false;
+        this.incidentModalOpen = false;
+        this.cancelScanModalOpen = false;
+        this.cancelScanError = '';
+
+        if (this.pollingTimer) {
+            clearInterval(this.pollingTimer);
+            this.pollingTimer = null;
+        }
+
+        this.startPolling();
+    },
+
     checklistPhotoCount() {
         return Object.keys(this.checklistPhotoPreviews).length;
     },
@@ -1978,8 +2072,24 @@ Alpine.data('patrolScan', (config = {}) => ({
         return this.$refs[`checklistPhoto_${field}`];
     },
 
+    checklistStatus(field) {
+        return document.querySelector(`input[name="checklist_statuses[${field}]"]:checked`)?.value || 'normal';
+    },
+
+    isChecklistIssue(field) {
+        return this.checklistStatus(field) === 'issue';
+    },
+
+    handleChecklistStatusChange(field, event) {
+        this.checklistPhotoError = '';
+
+        if (event?.target?.value !== 'issue') {
+            this.removeChecklistPhoto(field);
+        }
+    },
+
     takeChecklistPhoto(field) {
-        if (this.submittingPatrol) {
+        if (this.submittingPatrol || ! this.isChecklistIssue(field)) {
             return;
         }
 
@@ -2110,7 +2220,7 @@ Alpine.data('patrolScan', (config = {}) => ({
 
         this.incidentModalOpen = false;
         this.checklistModalOpen = true;
-        this.$nextTick(() => document.getElementById('area_secure')?.focus());
+        this.$nextTick(() => document.getElementById('doors_locked_normal')?.focus());
     },
 
     handleIncidentToggle(event) {

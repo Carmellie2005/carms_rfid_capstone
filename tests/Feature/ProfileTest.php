@@ -31,7 +31,37 @@ class ProfileTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertDontSee('Update Password')
+            ->assertSee('Update Password')
+            ->assertDontSee('Delete Account');
+    }
+
+    public function test_guard_with_temporary_password_sees_password_change_guide(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'guard',
+            'username' => 'temporary.password',
+            'must_change_password' => true,
+        ]);
+
+        Guard::create([
+            'user_id' => $user->id,
+            'employee_no' => 'SG-TEMP',
+            'name' => 'Temporary Password Guard',
+            'rfid_uid' => 'RFID-TEMP',
+            'shift' => 'Night Shift',
+            'status' => 'active',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/profile');
+
+        $response
+            ->assertOk()
+            ->assertSee('Change Your Password Before Scanning')
+            ->assertSee('Use at least 8 characters.')
+            ->assertSee('Avoid your name, birthday, or employee number.')
+            ->assertSee('Update Password')
             ->assertDontSee('Delete Account');
     }
 

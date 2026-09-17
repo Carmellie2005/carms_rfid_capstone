@@ -35,6 +35,7 @@ const char* API_URL = "https://carms-rfid-capstone.onrender.com/api/rfid-scan";
 const unsigned long SCAN_COOLDOWN_MS = 3000;
 const int WIFI_CONNECT_ATTEMPTS = 40;
 const int HTTP_TIMEOUT_MS = 65000;
+const int BUZZER_BOOST_GAP_MS = 35;
 
 LiquidCrystal_I2C lcd(0x27, LCD_COLUMNS, LCD_ROWS);
 MFRC522 rfid(RFID_SS_PIN, RFID_RST_PIN);
@@ -43,6 +44,10 @@ String lastUid = "";
 unsigned long lastScanTime = 0;
 
 void playTone(int frequency, int durationMs) {
+  if (frequency <= 0 || durationMs <= 0) {
+    return;
+  }
+
   int halfPeriodUs = 1000000L / frequency / 2;
   long cycles = (long) frequency * durationMs / 1000;
 
@@ -56,31 +61,44 @@ void playTone(int frequency, int durationMs) {
   digitalWrite(BUZZER_PIN, LOW);
 }
 
+void playStrongTone(int frequency, int durationMs) {
+  // The GPIO is already full swing; repeated pulses make the alert stronger to hear.
+  playTone(frequency, durationMs);
+  delay(BUZZER_BOOST_GAP_MS);
+  playTone(frequency, durationMs / 2);
+}
+
 void successBeep() {
-  playTone(2200, 150);
+  playStrongTone(2600, 180);
+  delay(60);
+  playStrongTone(3200, 130);
   delay(80);
 }
 
 void failedBeep() {
-  playTone(900, 120);
-  delay(90);
-  playTone(900, 120);
+  playStrongTone(1200, 170);
+  delay(80);
+  playStrongTone(900, 170);
+  delay(80);
+  playStrongTone(1200, 170);
   delay(80);
 }
 
 void unknownRfidBeep() {
-  playTone(650, 80);
-  delay(70);
-  playTone(650, 80);
-  delay(70);
-  playTone(650, 80);
+  playStrongTone(850, 130);
+  delay(65);
+  playStrongTone(850, 130);
+  delay(65);
+  playStrongTone(850, 130);
+  delay(65);
+  playStrongTone(850, 130);
   delay(80);
 }
 
 void readyBeep() {
-  playTone(1800, 60);
+  playStrongTone(2000, 80);
   delay(60);
-  playTone(2400, 60);
+  playStrongTone(2800, 80);
   delay(80);
 }
 

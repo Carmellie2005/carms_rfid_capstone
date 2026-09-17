@@ -7,6 +7,7 @@ use App\Models\Checkpoint;
 use App\Models\Guard;
 use App\Models\PatrolLog;
 use App\Models\User;
+use App\Support\PatrolChecklist;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -50,12 +51,18 @@ class PatrolLogReportTest extends TestCase
         $guard = $this->createGuard('SG-PROOF', 'RFID-PROOF');
         $patrolLog = $this->createPatrolLog($guard);
         $checklist = $patrolLog->checklistResponse()->create([
-            'area_secure' => true,
+            'item_statuses' => [
+                'doors_locked' => PatrolChecklist::STATUS_NORMAL,
+                'lighting_ok' => PatrolChecklist::STATUS_ISSUE,
+                'cctv_alarm_checked' => PatrolChecklist::STATUS_NORMAL,
+                'no_unauthorized_person' => PatrolChecklist::STATUS_NORMAL,
+                'safety_hazard' => PatrolChecklist::STATUS_NORMAL,
+            ],
         ]);
         $proofPhoto = $checklist->proofPhotos()->create([
             'patrol_log_id' => $patrolLog->id,
-            'item_key' => 'area_secure',
-            'item_label' => 'Area condition recorded with photo proof',
+            'item_key' => 'lighting_ok',
+            'item_label' => 'Lighting and visibility checked',
             'image_path' => 'checklist-proof-photos/missing.jpg',
             'mime_type' => 'image/jpeg',
             'image_data' => base64_encode('proof-photo'),
@@ -73,7 +80,7 @@ class PatrolLogReportTest extends TestCase
             ->assertSee('View')
             ->assertSee('View patrol details', false)
             ->assertSee('openPatrolDetails', false)
-            ->assertSee('Completed checklist')
+            ->assertSee('1 issue found')
             ->assertSee('Patrol Photos')
             ->assertSee($escapedProofPhotoUrl, false)
             ->assertSee('openProofPhoto', false);

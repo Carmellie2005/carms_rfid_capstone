@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             'username' => 'supervisor',
             'email' => 'security.supervisor@campuspatrol.local',
             'password' => Hash::make($defaultPassword),
+            'must_change_password' => false,
             'role' => 'admin',
         ])->save();
 
@@ -126,6 +127,7 @@ class DatabaseSeeder extends Seeder
                     'name' => $guard['name'],
                     'email' => $guard['email'],
                     'password' => Hash::make($guard['password']),
+                    'must_change_password' => true,
                     'role' => 'guard',
                 ],
             );

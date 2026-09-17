@@ -1,70 +1,106 @@
 @startuml
 left to right direction
+
+skinparam shadowing false
 skinparam packageStyle rectangle
+skinparam actorStyle awesome
 skinparam usecase {
-  BackgroundColor #67B7FF
-  BorderColor #3182CE
+  BackgroundColor #EFF6FF
+  BorderColor #2563EB
+  FontColor #0F172A
+}
+skinparam rectangle {
+  BorderColor #CBD5E1
   FontColor #0F172A
 }
 
+actor "Supervisor" as Supervisor
 actor "Security Guard" as Guard
-actor "Supervisor / Admin" as Supervisor
-actor "ESP32 RFID Reader" as Reader
-actor "Camera" as Camera
 
-rectangle "Campus RFID Patrol System" {
-  usecase "Log in" as UC_Login
-  usecase "Register Face Data" as UC_RegisterFace
-  usecase "Capture Face Image" as UC_CaptureImage
-  usecase "Scan RFID Card" as UC_Scan
-  usecase "Identify Guard" as UC_Identify
-  usecase "Check Patrol Schedule" as UC_Schedule
-  usecase "Verify Face" as UC_VerifyFace
-  usecase "Capture Live Face" as UC_CaptureFace
-  usecase "Compare Face Descriptor" as UC_CompareFace
-  usecase "Record Patrol Log" as UC_RecordLog
+rectangle "SLSU Bontoc Patrol System" {
+  usecase "Log In" as UC_Login
+  usecase "Manage Profile Settings" as UC_Profile
+  usecase "View Notifications" as UC_Notifications
+  usecase "Mark Notifications\nas Read" as UC_ReadNotifications
+
+  usecase "Scan Checkpoint" as UC_ScanCheckpoint
+  usecase "Scan RFID Card" as UC_ScanRfid
+  usecase "Take Area Selfie\nwith GPS Stamp" as UC_AreaSelfie
   usecase "Complete Patrol Checklist" as UC_Checklist
-  usecase "Submit Incident Report" as UC_Incident
-  usecase "Send Reader Heartbeat" as UC_Heartbeat
-  usecase "Manage Guard Accounts" as UC_ManageGuards
-  usecase "Manage Checkpoints" as UC_ManageCheckpoints
-  usecase "Monitor RFID Readers" as UC_MonitorReaders
+  usecase "Attach Checklist\nProof Photos" as UC_ProofPhotos
+  usecase "Submit Patrol Record" as UC_SubmitPatrol
+  usecase "Submit Incident Report" as UC_SubmitIncident
+  usecase "View My Patrol Logs" as UC_MyPatrolLogs
+  usecase "Download Own Patrol\nor Incident PDF" as UC_GuardPdf
+
   usecase "View Dashboard" as UC_Dashboard
-  usecase "View Scan Issues" as UC_ScanIssues
+  usecase "Manage Guard Profiles" as UC_ManageGuards
+  usecase "Add Guard" as UC_AddGuard
+  usecase "Edit Guard" as UC_EditGuard
+  usecase "Delete Guard" as UC_DeleteGuard
+  usecase "View Guard Records" as UC_GuardRecords
+
+  usecase "Manage Checkpoints" as UC_ManageCheckpoints
+  usecase "Add Checkpoint" as UC_AddCheckpoint
+  usecase "Edit Checkpoint" as UC_EditCheckpoint
+  usecase "Delete Checkpoint" as UC_DeleteCheckpoint
+
+  usecase "Monitor Patrol Logs" as UC_PatrolLogs
+  usecase "View Patrol Details,\nChecklist, and Photos" as UC_PatrolDetails
+  usecase "Review Scan Issues" as UC_ScanIssues
+  usecase "Review Incident Reports" as UC_IncidentReports
+  usecase "Update Incident Status" as UC_UpdateIncident
   usecase "Generate Reports" as UC_Reports
-  usecase "Manage Notifications" as UC_Notifications
+  usecase "Filter Report Date Range" as UC_DateFilter
+  usecase "Download or Print PDF" as UC_Pdf
+  usecase "View Audit Trail" as UC_AuditTrail
+  usecase "Enable Phone Alerts" as UC_PhoneAlerts
 }
 
-Guard --> UC_Login
-Guard --> UC_RegisterFace
-Guard --> UC_Scan
-Guard --> UC_VerifyFace
-Guard --> UC_Checklist
-Guard --> UC_Incident
-
-Reader --> UC_Scan
-Reader --> UC_Heartbeat
-
-Camera --> UC_CaptureImage
-Camera --> UC_CaptureFace
-
 Supervisor --> UC_Login
+Supervisor --> UC_Profile
+Supervisor --> UC_Notifications
+Supervisor --> UC_Dashboard
 Supervisor --> UC_ManageGuards
 Supervisor --> UC_ManageCheckpoints
-Supervisor --> UC_MonitorReaders
-Supervisor --> UC_Dashboard
+Supervisor --> UC_PatrolLogs
 Supervisor --> UC_ScanIssues
+Supervisor --> UC_IncidentReports
 Supervisor --> UC_Reports
-Supervisor --> UC_Notifications
+Supervisor --> UC_AuditTrail
+Supervisor --> UC_PhoneAlerts
 
-UC_RegisterFace ..> UC_CaptureImage : <<include>>
-UC_Scan ..> UC_Identify : <<include>>
-UC_Scan ..> UC_Schedule : <<include>>
-UC_VerifyFace ..> UC_CaptureFace : <<include>>
-UC_VerifyFace ..> UC_CompareFace : <<include>>
-UC_Checklist ..> UC_VerifyFace : <<include>>
-UC_Checklist ..> UC_RecordLog : <<include>>
-UC_Incident ..> UC_Checklist : <<extend>>
-UC_MonitorReaders ..> UC_Heartbeat : <<include>>
+Guard --> UC_Login
+Guard --> UC_Profile
+Guard --> UC_Notifications
+Guard --> UC_ScanCheckpoint
+Guard --> UC_MyPatrolLogs
+Guard --> UC_GuardPdf
+
+UC_Notifications ..> UC_ReadNotifications : <<include>>
+
+UC_ScanCheckpoint ..> UC_ScanRfid : <<include>>
+UC_ScanCheckpoint ..> UC_AreaSelfie : <<include>>
+UC_ScanCheckpoint ..> UC_Checklist : <<include>>
+UC_ScanCheckpoint ..> UC_SubmitPatrol : <<include>>
+UC_ProofPhotos ..> UC_Checklist : <<extend>>
+UC_SubmitIncident ..> UC_ScanCheckpoint : <<extend>>
+UC_GuardPdf ..> UC_MyPatrolLogs : <<include>>
+
+UC_ManageGuards ..> UC_AddGuard : <<include>>
+UC_ManageGuards ..> UC_EditGuard : <<include>>
+UC_ManageGuards ..> UC_DeleteGuard : <<include>>
+UC_ManageGuards ..> UC_GuardRecords : <<include>>
+
+UC_ManageCheckpoints ..> UC_AddCheckpoint : <<include>>
+UC_ManageCheckpoints ..> UC_EditCheckpoint : <<include>>
+UC_ManageCheckpoints ..> UC_DeleteCheckpoint : <<include>>
+
+UC_PatrolLogs ..> UC_PatrolDetails : <<include>>
+UC_IncidentReports ..> UC_UpdateIncident : <<include>>
+UC_Reports ..> UC_DateFilter : <<include>>
+UC_Reports ..> UC_Pdf : <<include>>
+UC_PatrolLogs ..> UC_Pdf : <<extend>>
+UC_IncidentReports ..> UC_Pdf : <<extend>>
 
 @enduml

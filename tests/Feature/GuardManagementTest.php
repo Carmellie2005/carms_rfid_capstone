@@ -56,6 +56,54 @@ class GuardManagementTest extends TestCase
 
         $this->assertSame('RFID-NO-UPLOAD', $guard->rfid_uid);
         $this->assertSame(0, $guard->faceDescriptors()->count());
+        $this->assertTrue($guard->user()->firstOrFail()->must_change_password);
+    }
+
+    public function test_supervisor_password_reset_requires_guard_to_change_password(): void
+    {
+        $supervisor = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'supervisor',
+        ]);
+        $guardUser = User::factory()->create([
+            'role' => 'guard',
+            'username' => 'reset.guard',
+            'email' => 'reset.guard@example.com',
+            'must_change_password' => false,
+        ]);
+        $guard = Guard::create([
+            'user_id' => $guardUser->id,
+            'employee_no' => 'SG-RESET',
+            'name' => 'Reset Guard',
+            'email' => 'reset.guard@example.com',
+            'phone' => '09171234567',
+            'rfid_uid' => 'RFID-RESET',
+            'shift' => 'Night Shift',
+            'status' => 'active',
+        ]);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->put(route('guards.update', $guard), [
+                'employee_no' => 'SG-RESET',
+                'name' => 'Reset Guard',
+                'email' => 'reset.guard@example.com',
+                'phone' => '09171234567',
+                'rfid_uid' => 'RFID-RESET',
+                'face_reference' => null,
+                'shift' => 'Night Shift',
+                'status' => 'active',
+                'notes' => null,
+                'username' => 'reset.guard',
+                'password' => 'new-password',
+                'password_confirmation' => 'new-password',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('guards.index'));
+
+        $this->assertTrue($guardUser->refresh()->must_change_password);
     }
 
     public function test_supervisor_can_create_guard_with_email_as_username(): void

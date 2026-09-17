@@ -22,10 +22,12 @@ class DatabaseSeederTest extends TestCase
 
         $this->assertSame('admin', $supervisor->role);
         $this->assertTrue(Hash::check('password123', $supervisor->password));
+        $this->assertFalse($supervisor->must_change_password);
 
         $this->assertSame('guard', $guardUser->role);
         $this->assertSame('carmela.bihay.hernandez@guard.local', $guardUser->email);
         $this->assertTrue(Hash::check('password123', $guardUser->password));
+        $this->assertTrue($guardUser->must_change_password);
 
         $this->assertSame($guardUser->id, $guard->user_id);
         $this->assertSame('F33C8D37', $guard->rfid_uid);

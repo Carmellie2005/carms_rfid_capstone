@@ -277,6 +277,7 @@ class GuardController extends Controller
 
         if (filled($accountData['password'])) {
             $user->password = Hash::make($accountData['password']);
+            $user->must_change_password = true;
         }
 
         $user->save();

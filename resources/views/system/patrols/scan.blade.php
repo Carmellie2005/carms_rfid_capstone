@@ -21,6 +21,7 @@
         $openChecklist = ((($errors->any() && old('patrol_log_id') && $pendingSelfieCaptured) || $pendingSelfieCaptured) && ! $openIncident);
         $patrolScheduleOpen = (bool) ($patrolScheduleOpen ?? true);
         $patrolScheduleTestingMode = (bool) ($patrolScheduleTestingMode ?? false);
+        $mustChangePassword = (bool) ($mustChangePassword ?? false);
         $patrolScheduleMessage = $patrolScheduleMessage ?? 'Guard patrol scanning is only available during the assigned patrol schedule.';
         $patrolTestingNotice = $patrolTestingNotice ?? 'Testing mode is active, so patrol scanning is open anytime for demo/testing.';
         $scanWaitingMessage = $patrolScheduleTestingMode
@@ -81,7 +82,7 @@
                 </div>
             @endif
 
-            @if ($patrolScheduleTestingMode)
+            @if (! $mustChangePassword && $patrolScheduleTestingMode)
                 <div class="flex items-center gap-3 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800 dark:border-blue-400/30 dark:bg-blue-950/50 dark:text-blue-100">
                     <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-blue-700 ring-1 ring-blue-100 dark:bg-blue-900 dark:text-blue-100 dark:ring-blue-400/30">
                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -90,13 +91,47 @@
                     </span>
                     <span>{{ $patrolTestingNotice }}</span>
                 </div>
-            @elseif (! $patrolScheduleOpen)
+            @elseif (! $mustChangePassword && ! $patrolScheduleOpen)
                 <div class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
                     Patrol scanning is open only from {{ $patrolScheduleLabel }}. Next patrol window starts {{ $patrolScheduleNextOpen }}.
                 </div>
             @endif
 
-            @if ($guardProfile)
+            @if ($guardProfile && $mustChangePassword)
+                <section class="rounded-md border border-amber-200 bg-white p-4 shadow-sm dark:border-amber-400/35 dark:bg-slate-900 sm:p-5">
+                    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <div class="max-w-2xl">
+                            <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-200">Password Required</p>
+                            <h3 class="mt-1 text-xl font-semibold text-blue-950 dark:text-white">Change your temporary password before scanning</h3>
+                            <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                                Your supervisor assigned this login. Create your own password first, then return here to scan your RFID card and continue patrol.
+                            </p>
+                        </div>
+                        <a href="{{ route('profile.edit') }}#update-password" class="inline-flex h-11 w-full items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">
+                            Open Profile Settings
+                        </a>
+                    </div>
+
+                    <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        <div class="rounded-md border border-amber-100 bg-amber-50/70 p-3 dark:border-amber-400/25 dark:bg-amber-950/35">
+                            <p class="text-xs font-semibold uppercase text-amber-700 dark:text-amber-200">Length</p>
+                            <p class="mt-1 text-sm font-medium text-slate-700 dark:text-slate-200">Use at least 8 characters.</p>
+                        </div>
+                        <div class="rounded-md border border-amber-100 bg-amber-50/70 p-3 dark:border-amber-400/25 dark:bg-amber-950/35">
+                            <p class="text-xs font-semibold uppercase text-amber-700 dark:text-amber-200">Mix</p>
+                            <p class="mt-1 text-sm font-medium text-slate-700 dark:text-slate-200">Add letters, numbers, or symbols.</p>
+                        </div>
+                        <div class="rounded-md border border-amber-100 bg-amber-50/70 p-3 dark:border-amber-400/25 dark:bg-amber-950/35">
+                            <p class="text-xs font-semibold uppercase text-amber-700 dark:text-amber-200">Avoid</p>
+                            <p class="mt-1 text-sm font-medium text-slate-700 dark:text-slate-200">Do not use your name, birthday, or employee number.</p>
+                        </div>
+                        <div class="rounded-md border border-amber-100 bg-amber-50/70 p-3 dark:border-amber-400/25 dark:bg-amber-950/35">
+                            <p class="text-xs font-semibold uppercase text-amber-700 dark:text-amber-200">Privacy</p>
+                            <p class="mt-1 text-sm font-medium text-slate-700 dark:text-slate-200">Keep it private after changing it.</p>
+                        </div>
+                    </div>
+                </section>
+            @elseif ($guardProfile)
             <form
                 method="POST"
                 action="{{ route('patrol.store') }}"
@@ -107,6 +142,7 @@
                     incident: @js((bool) $incidentDefault),
                     pendingScan: @js($pendingScan),
                     pendingScanUrl: @js(route('patrol.pending-scan', [], false)),
+                    cancelScanUrl: @js(route('patrol.cancel', [], false)),
                     csrfRefreshUrl: @js(route('csrf.refresh', [], false)),
                     guardName: @js($guardName),
                     guardEmployeeNo: @js($guardEmployeeNo),
@@ -230,18 +266,24 @@
                                     <p class="mt-4 text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">Step 2</p>
                                     <h3 class="mt-1 text-lg font-semibold text-blue-950">Area Selfie</h3>
                                     <p class="mx-auto mt-1 max-w-sm text-sm leading-5 text-slate-500">Take a photo at the checkpoint area. Allow location when asked so GPS can be stamped on the saved photo.</p>
-                                    <button type="button" class="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-blue-700 px-5 text-base font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300 sm:w-auto sm:min-w-56" @click="openAreaSelfieCamera()" :disabled="cameraOpening || submittingPatrol">
-                                        <svg x-show="! cameraOpening" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                            <path d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                                            <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
-                                        </svg>
-                                        <svg x-show="cameraOpening" x-cloak class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
-                                        </svg>
-                                        <span x-text="cameraOpening ? 'Opening...' : 'Take Photo'"></span>
-                                    </button>
+                                    <div class="mt-5 grid gap-2 sm:grid-cols-2">
+                                        <button type="button" class="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-blue-700 px-5 text-base font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="openAreaSelfieCamera()" :disabled="cameraOpening || submittingPatrol || cancellingScan">
+                                            <svg x-show="! cameraOpening" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                <path d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                                                <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
+                                            </svg>
+                                            <svg x-show="cameraOpening" x-cloak class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                                            </svg>
+                                            <span x-text="cameraOpening ? 'Opening...' : 'Take Photo'"></span>
+                                        </button>
+                                        <button type="button" class="inline-flex h-12 w-full items-center justify-center rounded-md border border-red-200 bg-white px-5 text-base font-semibold text-red-700 shadow-sm transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60" @click="openCancelScanModal()" :disabled="submittingPatrol || cancellingScan">
+                                            Cancel Scan
+                                        </button>
+                                    </div>
                                     <p x-show="areaSelfieMessage && ! areaSelfieCameraOpen" x-cloak class="mt-3 text-sm font-semibold text-blue-800" x-text="areaSelfieMessage"></p>
+                                    <p x-show="cancelScanError" x-cloak class="mt-3 text-sm font-semibold text-red-700" x-text="cancelScanError"></p>
                                     <p x-show="cameraError || areaSelfieError" x-cloak class="mt-3 text-sm font-semibold text-red-700" x-text="cameraError || areaSelfieError"></p>
                                     <x-input-error :messages="$errors->get('area_selfie_capture')" class="mt-2" />
                                     <x-input-error :messages="$errors->get('area_selfie_latitude')" class="mt-2" />
@@ -303,14 +345,18 @@
                                             <dd class="mt-1 text-sm font-semibold text-slate-900" x-text="areaSelfieCapturedLabel()"></dd>
                                         </div>
                                     </dl>
-                                    <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                                    <div class="mt-3 grid gap-2 sm:grid-cols-3">
                                         <button type="button" class="inline-flex h-11 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="clearAreaSelfie()" :disabled="submittingPatrol">
                                             Retake Photo
+                                        </button>
+                                        <button type="button" class="inline-flex h-11 items-center justify-center rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60" @click="openCancelScanModal()" :disabled="submittingPatrol || cancellingScan">
+                                            Cancel Scan
                                         </button>
                                         <button type="button" class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="continueToChecklist()" :disabled="submittingPatrol">
                                             Continue to Checklist
                                         </button>
                                     </div>
+                                    <p x-show="cancelScanError" x-cloak class="mt-3 text-sm font-semibold text-red-700" x-text="cancelScanError"></p>
                                 </div>
                             </div>
                         </div>
@@ -398,7 +444,7 @@
                                                     <div class="mt-3 grid grid-cols-3 gap-1.5">
                                                         @foreach ($checklistStatusOptions as $statusValue => $statusLabel)
                                                             <label for="{{ $field }}_{{ $statusValue }}" class="cursor-pointer">
-                                                                <input id="{{ $field }}_{{ $statusValue }}" type="radio" name="checklist_statuses[{{ $field }}]" value="{{ $statusValue }}" class="peer sr-only" required @checked($selectedChecklistStatus === $statusValue) @change="checklistPhotoError = ''">
+                                                                <input id="{{ $field }}_{{ $statusValue }}" type="radio" name="checklist_statuses[{{ $field }}]" value="{{ $statusValue }}" class="peer sr-only" required @checked($selectedChecklistStatus === $statusValue) @change="handleChecklistStatusChange('{{ $field }}', $event)">
                                                                 <span class="flex min-h-9 items-center justify-center rounded-md border border-slate-200 bg-white px-1.5 text-center text-[0.65rem] font-semibold leading-tight text-slate-600 transition peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-800 peer-focus:ring-2 peer-focus:ring-blue-500 peer-focus:ring-offset-1 sm:text-xs">
                                                                     {{ $statusLabel }}
                                                                 </span>
@@ -407,7 +453,7 @@
                                                     </div>
                                                 </div>
 
-                                                <button type="button" class="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60" :class="checklistPhotoPreviews['{{ $field }}'] ? 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'border-blue-200 bg-white text-blue-700 hover:bg-blue-50'" @click="takeChecklistPhoto('{{ $field }}')" :disabled="submittingPatrol" :aria-label="(checklistPhotoPreviews['{{ $field }}'] ? 'Retake proof photo for ' : 'Take proof photo for ') + @js($label)" :title="(checklistPhotoPreviews['{{ $field }}'] ? 'Retake proof photo for ' : 'Take proof photo for ') + @js($label)">
+                                                <button type="button" x-show="isChecklistIssue('{{ $field }}') || checklistPhotoPreviews['{{ $field }}']" x-cloak class="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60" :class="checklistPhotoPreviews['{{ $field }}'] ? 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'border-blue-200 bg-white text-blue-700 hover:bg-blue-50'" @click="takeChecklistPhoto('{{ $field }}')" :disabled="submittingPatrol || ! isChecklistIssue('{{ $field }}')" :aria-label="(checklistPhotoPreviews['{{ $field }}'] ? 'Retake proof photo for ' : 'Take proof photo for ') + @js($label)" :title="(checklistPhotoPreviews['{{ $field }}'] ? 'Retake proof photo for ' : 'Take proof photo for ') + @js($label)">
                                                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                                         <path d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
                                                         <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
@@ -636,6 +682,27 @@
                         Submitting patrol record
                         <x-slot name="description">Please wait while the checkpoint visit is saved.</x-slot>
                     </x-brand-spinner>
+                </div>
+
+                <div x-show="cancelScanModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[95] flex items-center justify-center bg-slate-950/55 p-4" x-on:click.self="closeCancelScanModal()" x-on:keydown.escape.window="cancelScanModalOpen && closeCancelScanModal()">
+                    <section class="w-full max-w-md rounded-md border border-blue-100 bg-white p-5 shadow-2xl">
+                        <p class="text-xs font-bold uppercase tracking-wide text-red-700">Cancel Scan</p>
+                        <h3 class="mt-1 text-lg font-bold text-blue-950">Cancel this pending scan?</h3>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">This will remove the current RFID scan from patrol records and return the screen to waiting for a new scan.</p>
+                        <p x-show="cancelScanError" x-cloak class="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700" x-text="cancelScanError"></p>
+                        <div class="mt-5 grid gap-2 sm:grid-cols-2">
+                            <button type="button" class="inline-flex h-11 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="closeCancelScanModal()" :disabled="cancellingScan">
+                                Keep Scan
+                            </button>
+                            <button type="button" class="inline-flex h-11 items-center justify-center rounded-md bg-red-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-red-300" @click="cancelPendingScan()" :disabled="cancellingScan">
+                                <svg x-show="cancellingScan" x-cloak class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                                </svg>
+                                <span x-text="cancellingScan ? 'Cancelling...' : 'Cancel Scan'"></span>
+                            </button>
+                        </div>
+                    </section>
                 </div>
             </form>
             @endif

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Checkpoint;
 use App\Models\Guard;
+use App\Models\AuditLog;
 use App\Models\IncidentReport;
 use App\Models\PatrolLog;
 use App\Models\User;
@@ -54,6 +55,34 @@ class PatrolAreaSelfieTest extends TestCase
         ]);
     }
 
+    public function test_rfid_scan_requires_guard_to_change_temporary_password(): void
+    {
+        [$user, $guard, $checkpoint] = $this->guardAndCheckpoint();
+        $user->update(['must_change_password' => true]);
+
+        $response = $this->postJson(route('api.rfid-scan'), [
+            'rfid_uid' => 'F33C8D37',
+            'device_uid' => 'ESP32-IT-01',
+        ]);
+
+        $response
+            ->assertStatus(423)
+            ->assertJson([
+                'message' => 'Change the temporary guard password before scanning checkpoints.',
+                'status' => 'profile_incomplete',
+            ]);
+
+        $this->assertDatabaseHas('patrol_logs', [
+            'guard_id' => $guard->id,
+            'checkpoint_id' => $checkpoint->id,
+            'rfid_uid' => 'F33C8D37',
+            'checkpoint_code' => 'CP-IT-01',
+            'rfid_status' => 'profile_incomplete',
+            'facial_status' => 'not_started',
+            'status' => 'profile_incomplete',
+        ]);
+    }
+
     public function test_guard_can_complete_patrol_after_area_selfie_and_checklist(): void
     {
         Storage::fake('public');
@@ -91,7 +120,6 @@ class PatrolAreaSelfieTest extends TestCase
             'cctv_alarm_checked' => 1,
             'no_unauthorized_person' => 1,
             'safety_hazard' => 1,
-            'area_secure' => 1,
         ]);
         $this->assertDatabaseCount('checklist_proof_photos', 0);
     }
@@ -116,6 +144,33 @@ class PatrolAreaSelfieTest extends TestCase
         $this->assertDatabaseCount('checklist_responses', 0);
     }
 
+    public function test_guard_can_cancel_pending_area_selfie_scan_without_saving_patrol_record(): void
+    {
+        [$user, $guard, $patrolLog] = $this->pendingAreaSelfiePatrol();
+
+        $response = $this
+            ->actingAs($user)
+            ->postJson(route('patrol.cancel'), [
+                'patrol_log_id' => $patrolLog->id,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJson([
+                'message' => 'Pending scan cancelled. Scan your RFID again when ready.',
+            ]);
+
+        $this->assertDatabaseMissing('patrol_logs', ['id' => $patrolLog->id]);
+        $this->assertDatabaseHas('audit_logs', [
+            'user_id' => $user->id,
+            'subject_type' => Guard::class,
+            'subject_id' => $guard->id,
+            'action' => 'patrol_scan_cancelled',
+        ]);
+        $this->assertSame(0, PatrolLog::whereKey($patrolLog->id)->count());
+        $this->assertSame('cancelled', AuditLog::where('action', 'patrol_scan_cancelled')->first()?->properties['result']);
+    }
+
     public function test_issue_found_checklist_item_requires_its_own_proof_photo(): void
     {
         Storage::fake('public');
@@ -131,7 +186,7 @@ class PatrolAreaSelfieTest extends TestCase
                 'patrol_log_id' => $patrolLog->id,
                 ...$this->areaSelfiePayload(),
                 ...$checklistStatuses,
-                ...$this->checklistProofPhotos('area_secure'),
+                ...$this->checklistProofPhotos('doors_locked'),
             ]);
 
         $response
@@ -157,6 +212,7 @@ class PatrolAreaSelfieTest extends TestCase
             ->assertSee('Take Photo')
             ->assertSee('Take a photo at the checkpoint area')
             ->assertSee('Retake Photo')
+            ->assertSee('Cancel Scan')
             ->assertSee('area_selfie_capture', false)
             ->assertSee('areaSelfieCameraOpen', false)
             ->assertSee('openAreaSelfieCamera()', false)
@@ -165,6 +221,24 @@ class PatrolAreaSelfieTest extends TestCase
             ->assertDontSee('Start Face Verification')
             ->assertDontSee('Face Verify')
             ->assertDontSee('face-verification-circle');
+    }
+
+    public function test_guard_with_temporary_password_sees_password_prompt_before_scan_form(): void
+    {
+        [$user] = $this->pendingAreaSelfiePatrol();
+        $user->update(['must_change_password' => true]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get(route('patrol.scan'));
+
+        $response
+            ->assertOk()
+            ->assertSee('Change your temporary password before scanning')
+            ->assertSee('Open Profile Settings')
+            ->assertSee(route('profile.edit').'#update-password', false)
+            ->assertDontSee('Listening for ESP32 scan')
+            ->assertDontSee('Take Photo');
     }
 
     public function test_pending_scan_payload_reports_area_selfie_step(): void

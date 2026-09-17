@@ -27,15 +27,18 @@ class GuardPatrolController extends Controller
 {
     public function create(): View
     {
-        $guardProfile = auth()->user()?->guardProfile;
+        $user = auth()->user();
+        $guardProfile = $user?->guardProfile;
+        $mustChangePassword = (bool) $user?->must_change_password;
         $patrolScheduleOpen = PatrolSchedule::isOpen();
-        $pendingPatrol = $guardProfile && $patrolScheduleOpen
+        $pendingPatrol = $guardProfile && ! $mustChangePassword && $patrolScheduleOpen
             ? $this->latestPendingPatrolFor($guardProfile)
             : null;
 
         return view('system.patrols.scan', [
             'checkpoints' => Checkpoint::where('status', 'active')->orderBy('name')->get(),
             'guardProfile' => $guardProfile,
+            'mustChangePassword' => $mustChangePassword,
             'pendingPatrol' => $pendingPatrol,
             'patrolScheduleOpen' => $patrolScheduleOpen,
             'patrolScheduleTestingMode' => PatrolSchedule::isTestingMode(),
@@ -48,12 +51,21 @@ class GuardPatrolController extends Controller
 
     public function pendingScan(Request $request): JsonResponse
     {
-        $guard = $request->user()?->guardProfile;
+        $user = $request->user();
+        $guard = $user?->guardProfile;
 
         if (! $guard) {
             return response()->json([
                 'pending' => false,
                 'message' => 'Signed-in account is not linked to a guard profile.',
+            ], 403);
+        }
+
+        if ($user?->must_change_password) {
+            return response()->json([
+                'pending' => false,
+                'message' => 'Change your temporary password before scanning a checkpoint.',
+                'patrol_log' => null,
             ], 403);
         }
 
@@ -80,6 +92,19 @@ class GuardPatrolController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $user = $request->user();
+        $guard = $user?->guardProfile;
+
+        if (! $guard) {
+            return back()->with('warning', 'Signed-in account is not linked to an active guard profile.');
+        }
+
+        if ($user?->must_change_password) {
+            return redirect()
+                ->route('profile.edit')
+                ->with('warning', 'Change your temporary password before scanning a checkpoint.');
+        }
+
         $data = $request->validate([
             'patrol_log_id' => ['required', 'integer', 'exists:patrol_logs,id'],
             'area_selfie_capture' => ['required', 'string'],
@@ -101,12 +126,6 @@ class GuardPatrolController extends Controller
             'incident_camera_images' => ['nullable', 'array', 'max:3'],
             'incident_camera_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
         ]);
-
-        $guard = $request->user()?->guardProfile;
-
-        if (! $guard) {
-            return back()->with('warning', 'Signed-in account is not linked to an active guard profile.');
-        }
 
         if (! PatrolSchedule::isOpen()) {
             return back()
@@ -237,6 +256,52 @@ class GuardPatrolController extends Controller
         return redirect()->route('patrol.scan')->with('status', 'Checkpoint visit recorded successfully.');
     }
 
+    public function cancel(Request $request): JsonResponse|RedirectResponse
+    {
+        $data = $request->validate([
+            'patrol_log_id' => ['required', 'integer'],
+        ]);
+
+        $guard = $request->user()?->guardProfile;
+
+        if (! $guard) {
+            return $this->cancelResponse($request, 'Signed-in account is not linked to an active guard profile.', 403);
+        }
+
+        $patrolLog = PatrolLog::with(['checkpoint', 'checklistProofPhotos'])
+            ->whereKey($data['patrol_log_id'])
+            ->where('guard_id', $guard->id)
+            ->where('rfid_status', 'valid')
+            ->whereIn('facial_status', ['pending', 'not_required'])
+            ->whereIn('status', ['pending_face', 'pending_selfie', 'pending_checklist'])
+            ->first();
+
+        if (! $patrolLog) {
+            return $this->cancelResponse($request, 'No pending scan is available to cancel.', 404);
+        }
+
+        $checkpoint = $patrolLog->checkpoint;
+
+        AuditLogger::record(
+            'patrol_scan_cancelled',
+            'Pending RFID checkpoint scan cancelled by guard before patrol submission.',
+            $guard,
+            [
+                'guard_id' => $guard->id,
+                'employee_no' => $guard->employee_no,
+                'patrol_log_id' => $patrolLog->id,
+                'checkpoint_id' => $checkpoint?->id,
+                'checkpoint_code' => $patrolLog->checkpoint_code,
+                'result' => 'cancelled',
+            ]
+        );
+
+        $this->deletePendingPatrolArtifacts($patrolLog);
+        $patrolLog->delete();
+
+        return $this->cancelResponse($request, 'Pending scan cancelled. Scan your RFID again when ready.');
+    }
+
     private function latestPendingPatrolFor(Guard $guard): ?PatrolLog
     {
         $latestPatrolLog = PatrolLog::with(['securityGuard', 'checkpoint'])
@@ -351,14 +416,42 @@ class GuardPatrolController extends Controller
             return [];
         }
 
+        $issueFields = PatrolChecklist::issueFieldsFromRequest($request);
+
         return collect(PatrolChecklist::fields())
-            ->filter(fn (string $field) => ($files[$field] ?? null) instanceof UploadedFile && $files[$field]->isValid())
+            ->filter(fn (string $field) => $issueFields->contains($field)
+                && ($files[$field] ?? null) instanceof UploadedFile
+                && $files[$field]->isValid())
             ->map(fn (string $field) => [
                 'field' => $field,
                 'file' => $files[$field],
             ])
             ->values()
             ->all();
+    }
+
+    private function deletePendingPatrolArtifacts(PatrolLog $patrolLog): void
+    {
+        if ($patrolLog->area_selfie_path) {
+            Storage::disk('public')->delete($patrolLog->area_selfie_path);
+        }
+
+        foreach ($patrolLog->checklistProofPhotos as $proofPhoto) {
+            if ($proofPhoto->image_path) {
+                Storage::disk('public')->delete($proofPhoto->image_path);
+            }
+        }
+    }
+
+    private function cancelResponse(Request $request, string $message, int $status = 200): JsonResponse|RedirectResponse
+    {
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $message], $status);
+        }
+
+        $flashKey = $status >= 400 ? 'warning' : 'status';
+
+        return redirect()->route('patrol.scan')->with($flashKey, $message);
     }
 
     private function storeChecklistProofPhotos(ChecklistResponse $checklistResponse, array $checklistProofPhotoFiles): void

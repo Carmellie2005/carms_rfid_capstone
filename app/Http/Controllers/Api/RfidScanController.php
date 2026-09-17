@@ -48,7 +48,7 @@ class RfidScanController extends Controller
             ? Carbon::parse($data['scanned_at'])->timezone(config('app.timezone'))
             : now(config('app.timezone'));
 
-        $matchedGuard = Guard::where('rfid_uid', $rfidUid)->first();
+        $matchedGuard = Guard::with('user')->where('rfid_uid', $rfidUid)->first();
         $guard = $matchedGuard?->status === 'active' ? $matchedGuard : null;
 
         $matchedCheckpoint = Checkpoint::where(function ($query) use ($checkpointToken) {
@@ -56,8 +56,10 @@ class RfidScanController extends Controller
         })->first();
         $checkpoint = $matchedCheckpoint?->status === 'active' ? $matchedCheckpoint : null;
 
-        $isValid = $guard && $checkpoint;
-        $diagnostic = $this->scanDiagnostic($matchedGuard, $guard, $matchedCheckpoint, $checkpoint, $isValid);
+        $requiresPasswordChange = (bool) $guard?->user?->must_change_password;
+        $registeredActiveScan = (bool) ($guard && $checkpoint);
+        $isValid = $registeredActiveScan && ! $requiresPasswordChange;
+        $diagnostic = $this->scanDiagnostic($matchedGuard, $guard, $matchedCheckpoint, $checkpoint, $registeredActiveScan, $requiresPasswordChange);
 
         if (! PatrolSchedule::isOpen()) {
             $scheduleMessage = PatrolSchedule::closedMessage();
@@ -112,17 +114,24 @@ class RfidScanController extends Controller
                 ]);
         }
 
+        $patrolStatus = match (true) {
+            $isValid => 'pending_selfie',
+            $registeredActiveScan && $requiresPasswordChange => 'profile_incomplete',
+            default => 'invalid',
+        };
+
         $patrolLog = PatrolLog::create([
             'guard_id' => $matchedGuard?->id ?? $this->unknownGuard()->id,
             'checkpoint_id' => $matchedCheckpoint?->id,
             'rfid_uid' => $rfidUid,
             'checkpoint_code' => $matchedCheckpoint?->code ?? $checkpointToken,
-            'rfid_status' => $isValid ? 'valid' : 'invalid',
-            'facial_status' => $isValid ? 'not_required' : 'not_started',
-            'status' => match (true) {
-                $isValid => 'pending_selfie',
+            'rfid_status' => match ($patrolStatus) {
+                'pending_selfie' => 'valid',
+                'profile_incomplete' => 'profile_incomplete',
                 default => 'invalid',
             },
+            'facial_status' => $isValid ? 'not_required' : 'not_started',
+            'status' => $patrolStatus,
             'scanned_at' => $scannedAt,
             'notes' => $diagnostic,
         ]);
@@ -144,6 +153,7 @@ class RfidScanController extends Controller
         return response()->json([
             'message' => match (true) {
                 $isValid => 'RFID scan accepted. Take the required area selfie.',
+                $registeredActiveScan && $requiresPasswordChange => 'Change the temporary guard password before scanning checkpoints.',
                 default => 'RFID scan recorded as invalid.',
             },
             'diagnostic' => $diagnostic,
@@ -156,6 +166,7 @@ class RfidScanController extends Controller
             'checkpoint' => $checkpoint?->only(['id', 'code', 'name', 'location']),
         ], match (true) {
             $isValid => 201,
+            $registeredActiveScan && $requiresPasswordChange => 423,
             default => 422,
         });
     }
@@ -200,9 +211,13 @@ class RfidScanController extends Controller
         return null;
     }
 
-    private function scanDiagnostic(?Guard $matchedGuard, ?Guard $guard, ?Checkpoint $matchedCheckpoint, ?Checkpoint $checkpoint, bool $isValid): string
+    private function scanDiagnostic(?Guard $matchedGuard, ?Guard $guard, ?Checkpoint $matchedCheckpoint, ?Checkpoint $checkpoint, bool $registeredActiveScan, bool $requiresPasswordChange): string
     {
-        if ($isValid) {
+        if ($registeredActiveScan && $requiresPasswordChange) {
+            return 'Guard must change the temporary password before checkpoint scanning is accepted.';
+        }
+
+        if ($registeredActiveScan) {
             return 'RFID accepted by hardware API; awaiting area selfie.';
         }
 
