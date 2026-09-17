@@ -256,18 +256,17 @@
         .signature {
             float: left;
             text-align: center;
-            width: 30%;
+            width: 45%;
         }
 
         .signature + .signature {
-            margin-left: 5%;
+            margin-left: 10%;
         }
 
         .signature-line {
             border-top: 1px solid #000000;
             color: #000000;
             font-size: 11pt;
-            font-weight: 700;
             padding-top: 5px;
         }
     </style>
@@ -293,8 +292,6 @@
         $reviewNotes = $incident->admin_notes ?: 'No supervisor review notes recorded.';
         $actionTaken = $incident->action_taken ?: 'No action recorded.';
         $resolvedDateLabel = $resolvedDate?->format('M d, Y h:i A') ?? 'Not yet resolved';
-        $supervisorName = 'Ryan P. Tomol';
-        $supervisorOffice = 'Safety and Security Services';
     @endphp
 
     @if ($letterheadDataUri)
@@ -385,7 +382,7 @@
 
     <div class="document-title">
         <h1 class="report-title">Security Incident Report</h1>
-        <div class="report-subtitle">Evidence, Review, and Certification</div>
+        <div class="report-subtitle">Evidence and Supervisor Review</div>
     </div>
 
     <div class="section">
@@ -433,19 +430,14 @@
     </div>
 
     <div class="section">
-        <h2 class="section-title">Certification</h2>
         <div class="signature-row">
             <div class="signature">
-                <div class="signature-line">{{ $guardName }}</div>
-                Reporting security guard
+                <div class="signature-line">&nbsp;</div>
+                Reporting Security Guard
             </div>
             <div class="signature">
-                <div class="signature-line">{{ $supervisorName }}</div>
-                Head, {{ $supervisorOffice }}
-            </div>
-            <div class="signature">
-                <div class="signature-line">{{ $resolvedDate?->format('M d, Y') ?? '' }}</div>
-                Date reviewed
+                <div class="signature-line">&nbsp;</div>
+                Supervisor
             </div>
             <div class="clear"></div>
         </div>
