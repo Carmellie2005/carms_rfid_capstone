@@ -238,6 +238,9 @@ class PatrolAreaSelfieTest extends TestCase
             ->assertSee('Change Temporary Password')
             ->assertSee('temporary_password_current_password', false)
             ->assertSee('Save New Password')
+            ->assertSee('aria-label="Show current password"', false)
+            ->assertSee('aria-label="Show new password"', false)
+            ->assertSee('aria-label="Show confirm password"', false)
             ->assertDontSee('Listening for ESP32 scan')
             ->assertDontSee('Take Photo');
     }

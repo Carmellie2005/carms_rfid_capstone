@@ -85,6 +85,9 @@ class ProfileTest extends TestCase
             ->assertSee('Avoid your name, birthday, or employee number.')
             ->assertSee('temporary_password_current_password', false)
             ->assertSee('Save New Password')
+            ->assertSee('aria-label="Show current password"', false)
+            ->assertSee('aria-label="Show new password"', false)
+            ->assertSee('aria-label="Show confirm password"', false)
             ->assertSee('Update Password')
             ->assertDontSee('Delete Account');
     }
@@ -125,7 +128,10 @@ class ProfileTest extends TestCase
             ->assertSee('Night Shift')
             ->assertSee('Apr 12, 1998')
             ->assertSee('Completed')
-            ->assertSee('Update Password');
+            ->assertSee('Update Password')
+            ->assertSee('aria-label="Show current password"', false)
+            ->assertSee('aria-label="Show new password"', false)
+            ->assertSee('aria-label="Show confirm password"', false);
     }
 
     public function test_missing_profile_photo_falls_back_to_guard_icon(): void

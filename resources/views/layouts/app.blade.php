@@ -118,19 +118,19 @@
                             <div class="grid gap-3 md:grid-cols-3">
                                 <div>
                                     <x-input-label for="temporary_password_current_password" :value="__('Current Password')" class="sr-only" />
-                                    <x-text-input id="temporary_password_current_password" name="current_password" type="password" class="mt-1 block w-full" placeholder="{{ __('Current Password') }}" autocomplete="current-password" required autofocus />
+                                    <x-password-input id="temporary_password_current_password" name="current_password" placeholder="{{ __('Current Password') }}" autocomplete="current-password" :required="true" :autofocus="true" show-label="Show current password" hide-label="Hide current password" />
                                     <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
                                 </div>
 
                                 <div>
                                     <x-input-label for="temporary_password_password" :value="__('New Password')" class="sr-only" />
-                                    <x-text-input id="temporary_password_password" name="password" type="password" class="mt-1 block w-full" placeholder="{{ __('New Password') }}" autocomplete="new-password" required />
+                                    <x-password-input id="temporary_password_password" name="password" placeholder="{{ __('New Password') }}" autocomplete="new-password" :required="true" show-label="Show new password" hide-label="Hide new password" />
                                     <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
                                 </div>
 
                                 <div>
                                     <x-input-label for="temporary_password_password_confirmation" :value="__('Confirm Password')" class="sr-only" />
-                                    <x-text-input id="temporary_password_password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" placeholder="{{ __('Confirm Password') }}" autocomplete="new-password" required />
+                                    <x-password-input id="temporary_password_password_confirmation" name="password_confirmation" placeholder="{{ __('Confirm Password') }}" autocomplete="new-password" :required="true" show-label="Show confirm password" hide-label="Hide confirm password" />
                                     <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
                                 </div>
                             </div>
