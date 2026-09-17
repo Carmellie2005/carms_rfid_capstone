@@ -86,6 +86,46 @@
             text-align: center;
         }
 
+        .control-table,
+        .report-table {
+            border-collapse: collapse;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        .control-table td,
+        .report-table td {
+            border: 1px solid #000000;
+            color: #000000;
+            min-height: 44px;
+            padding: 7px 8px 8px;
+            vertical-align: top;
+        }
+
+        .control-table td {
+            width: 33.333%;
+        }
+
+        .report-table .half {
+            width: 50%;
+        }
+
+        .field-label-boxed {
+            color: #000000;
+            display: block;
+            font-size: 9pt;
+            font-weight: 700;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .field-value-boxed {
+            color: #000000;
+            font-size: 11pt;
+            font-weight: 700;
+            min-height: 18px;
+        }
+
         .section {
             margin-top: 15px;
             page-break-inside: avoid;
@@ -150,8 +190,27 @@
             white-space: normal;
         }
 
+        .narrative-box {
+            border: 1px solid #000000;
+            color: #000000;
+            font-size: 11pt;
+            line-height: 1.55;
+            min-height: 210px;
+            padding: 10px 12px;
+            text-align: justify;
+            white-space: normal;
+        }
+
         .narrative-compact {
             min-height: 48px;
+        }
+
+        .review-box {
+            min-height: 58px;
+        }
+
+        .secondary-page {
+            page-break-before: always;
         }
 
         .evidence {
@@ -175,6 +234,13 @@
             font-size: 9pt;
             font-weight: 700;
             margin-bottom: 5px;
+            text-align: left;
+        }
+
+        .evidence-note {
+            color: #000000;
+            font-size: 9pt;
+            margin-top: 6px;
             text-align: left;
         }
 
@@ -220,6 +286,12 @@
         $checkpointName = $incident->checkpoint?->name ?? 'Unassigned';
         $checkpointCode = $incident->checkpoint?->code ?? $patrol?->checkpoint_code ?? 'Not recorded';
         $location = $incident->checkpoint?->name ?? $incident->location ?? 'Unassigned';
+        $locationCheckpoint = $checkpointCode !== 'Not recorded'
+            ? $location.' - '.$checkpointCode
+            : $location;
+        $reviewNotes = $incident->admin_notes ?: 'No supervisor review notes recorded.';
+        $actionTaken = $incident->action_taken ?: 'No action recorded.';
+        $resolvedDateLabel = $resolvedDate?->format('M d, Y h:i A') ?? 'Not yet resolved';
         $supervisorName = 'Ryan P. Tomol';
         $supervisorOffice = 'Safety and Security Services';
     @endphp
@@ -232,113 +304,131 @@
     @endif
 
     <div class="document-title">
-        <h1 class="report-title">Security incident report</h1>
-        <div class="report-subtitle">SLSU Bontoc Patrol incident documentation</div>
+        <h1 class="report-title">Security Incident Report</h1>
+        <div class="report-subtitle">Incident Documentation for Checkpoint Patrol Monitoring</div>
     </div>
 
-    <div class="control-line">
-        Report no. {{ $reportNumber }} | Generated {{ $generatedAt->format('M d, Y h:i A') }} | Status {{ $status }}
+    <table class="control-table">
+        <tr>
+            <td>
+                <span class="field-label-boxed">Report No.</span>
+                <div class="field-value-boxed">{{ $reportNumber }}</div>
+            </td>
+            <td>
+                <span class="field-label-boxed">Status</span>
+                <div class="field-value-boxed">{{ $status }}</div>
+            </td>
+            <td>
+                <span class="field-label-boxed">Generated</span>
+                <div class="field-value-boxed">{{ $generatedAt->format('M d, Y h:i A') }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="section">
+        <h2 class="section-title">Incident Summary</h2>
+        <table class="report-table">
+            <tr>
+                <td class="half">
+                    <span class="field-label-boxed">Category</span>
+                    <div class="field-value-boxed">{{ $category }}</div>
+                </td>
+                <td class="half">
+                    <span class="field-label-boxed">Priority</span>
+                    <div class="field-value-boxed">{{ $priority }}</div>
+                </td>
+            </tr>
+            <tr>
+                <td class="half">
+                    <span class="field-label-boxed">Incident Date / Time</span>
+                    <div class="field-value-boxed">{{ $incidentDate }}</div>
+                </td>
+                <td class="half">
+                    <span class="field-label-boxed">Reported Date / Time</span>
+                    <div class="field-value-boxed">{{ $reportedDate }}</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <span class="field-label-boxed">Location / Checkpoint</span>
+                    <div class="field-value-boxed">{{ $locationCheckpoint }}</div>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <div class="section">
-        <h2 class="section-title">Incident summary</h2>
-        <div class="field-row">
-            <div class="field">
-                <span class="field-label">Category</span>
-                <div class="field-value">{{ $category }}</div>
-            </div>
-            <div class="field">
-                <span class="field-label">Priority</span>
-                <div class="field-value">{{ $priority }}</div>
-            </div>
-            <div class="clear"></div>
-        </div>
-        <div class="field-row">
-            <div class="field">
-                <span class="field-label">Date/time</span>
-                <div class="field-value">{{ $incidentDate }}</div>
-            </div>
-            <div class="field">
-                <span class="field-label">Reported at</span>
-                <div class="field-value">{{ $reportedDate }}</div>
-            </div>
-            <div class="clear"></div>
-        </div>
-        <div class="field-row">
-            <div class="field field-full">
-                <span class="field-label">Location</span>
-                <div class="field-value">{{ $location }}</div>
-            </div>
-        </div>
+        <h2 class="section-title">Reporting Guard</h2>
+        <table class="report-table">
+            <tr>
+                <td class="half">
+                    <span class="field-label-boxed">Security Guard</span>
+                    <div class="field-value-boxed">{{ $guardName }}</div>
+                </td>
+                <td class="half">
+                    <span class="field-label-boxed">Employee No.</span>
+                    <div class="field-value-boxed">{{ $employeeNo }}</div>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <div class="section">
-        <h2 class="section-title">Reporting details</h2>
-        <div class="field-row">
-            <div class="field">
-                <span class="field-label">Security guard</span>
-                <div class="field-value">{{ $guardName }}</div>
-            </div>
-            <div class="field">
-                <span class="field-label">Employee no.</span>
-                <div class="field-value">{{ $employeeNo }}</div>
-            </div>
-            <div class="clear"></div>
-        </div>
-        <div class="field-row">
-            <div class="field">
-                <span class="field-label">Checkpoint</span>
-                <div class="field-value">{{ $checkpointName }}</div>
-            </div>
-            <div class="field">
-                <span class="field-label">Checkpoint code</span>
-                <div class="field-value">{{ $checkpointCode }}</div>
-            </div>
-            <div class="clear"></div>
-        </div>
-    </div>
-
-    <div class="section">
-        <h2 class="section-title">Narrative of incident</h2>
-        <div class="narrative">
+        <h2 class="section-title">Narrative of Incident</h2>
+        <div class="narrative-box">
             {!! nl2br(e($incident->description ?: 'No description provided.')) !!}
         </div>
     </div>
 
-    <div class="section">
-        <h2 class="section-title">Review and action</h2>
-        <div class="field-row">
-            <div class="field field-full">
-                <span class="field-label">Review notes</span>
-                <div class="narrative narrative-compact">{!! nl2br(e($incident->admin_notes ?: 'No admin notes recorded.')) !!}</div>
-            </div>
-        </div>
-        <div class="field-row">
-            <div class="field field-full">
-                <span class="field-label">Action taken</span>
-                <div class="narrative narrative-compact">{!! nl2br(e($incident->action_taken ?: 'No action recorded.')) !!}</div>
-            </div>
-        </div>
-        <div class="field-row">
-            <div class="field field-full">
-                <span class="field-label">Resolved at</span>
-                <div class="field-value">{{ $resolvedDate?->format('M d, Y h:i A') ?? 'Not resolved' }}</div>
-            </div>
-        </div>
+    <div class="secondary-page"></div>
+
+    <div class="document-title">
+        <h1 class="report-title">Security Incident Report</h1>
+        <div class="report-subtitle">Evidence, Review, and Certification</div>
     </div>
 
     <div class="section">
-        <h2 class="section-title">Image evidence</h2>
+        <h2 class="section-title">Evidence</h2>
         @if (! empty($imageDataUris))
             @foreach ($imageDataUris as $imageDataUri)
                 <div class="evidence">
-                    <div class="evidence-caption">Image {{ $loop->iteration }}</div>
+                    <div class="evidence-caption">Incident Photo Evidence {{ $loop->iteration }}</div>
                     <img src="{{ $imageDataUri }}" alt="Incident image evidence {{ $loop->iteration }}">
                 </div>
             @endforeach
         @else
-            <p class="muted">No image evidence attached.</p>
+            <div class="evidence">
+                <div class="evidence-caption">Incident Photo Evidence</div>
+                <p class="muted">No image evidence attached.</p>
+            </div>
         @endif
+        <div class="evidence-note">
+            Only incident-related photos should be included. Checklist proof photos are not required here unless they directly support the incident.
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Supervisor Review and Action</h2>
+        <table class="report-table">
+            <tr>
+                <td>
+                    <span class="field-label-boxed">Review Notes</span>
+                    <div class="review-box">{!! nl2br(e($reviewNotes)) !!}</div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="field-label-boxed">Action Taken</span>
+                    <div class="review-box">{!! nl2br(e($actionTaken)) !!}</div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="field-label-boxed">Resolved Date / Time</span>
+                    <div class="field-value-boxed">{{ $resolvedDateLabel }}</div>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <div class="section">
