@@ -184,12 +184,12 @@ class DatabaseSeeder extends Seeder
                 'description' => 'RFID checkpoint for the Campus Canteen patrol area.',
             ],
             [
-                'code' => 'CP-AG-01',
-                'name' => 'AG',
-                'location' => 'AG',
-                'device_uid' => 'ESP32-AG-01',
+                'code' => 'CP-GH-01',
+                'name' => 'Guard House',
+                'location' => 'GH',
+                'device_uid' => 'ESP32-GH-01',
                 'status' => 'active',
-                'description' => 'RFID checkpoint for the AG patrol area.',
+                'description' => 'RFID checkpoint for the Guard House patrol area.',
             ],
         ];
 
@@ -197,7 +197,7 @@ class DatabaseSeeder extends Seeder
             Checkpoint::updateOrCreate(['code' => $checkpoint['code']], $checkpoint);
         }
 
-        Checkpoint::whereIn('code', ['CP-GATE', 'CP-LAB', 'CP-PARK', 'CP-SSC-01', 'CP-FH-01', 'CP-BD-01'])
+        Checkpoint::whereIn('code', ['CP-GATE', 'CP-LAB', 'CP-PARK', 'CP-SSC-01', 'CP-FH-01', 'CP-BD-01', 'CP-AG-01'])
             ->update(['status' => 'inactive']);
     }
 }

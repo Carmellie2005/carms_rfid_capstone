@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Guard;
+use App\Models\Checkpoint;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -51,5 +52,29 @@ class DatabaseSeederTest extends TestCase
 
         $this->assertTrue(Hash::check('my-own-password', $guardUser->password));
         $this->assertFalse($guardUser->must_change_password);
+    }
+
+    public function test_seeder_replaces_ag_with_guard_house_checkpoint(): void
+    {
+        Checkpoint::create([
+            'code' => 'CP-AG-01',
+            'name' => 'AG',
+            'location' => 'AG',
+            'device_uid' => 'ESP32-AG-01',
+            'status' => 'active',
+        ]);
+
+        $this->seed();
+
+        $this->assertDatabaseHas('checkpoints', [
+            'code' => 'CP-GH-01',
+            'name' => 'Guard House',
+            'location' => 'GH',
+            'device_uid' => 'ESP32-GH-01',
+            'status' => 'active',
+        ]);
+
+        $this->assertSame('inactive', Checkpoint::where('code', 'CP-AG-01')->firstOrFail()->status);
+        $this->assertFalse(Checkpoint::where('code', 'CP-AG-01')->where('status', 'active')->exists());
     }
 }
