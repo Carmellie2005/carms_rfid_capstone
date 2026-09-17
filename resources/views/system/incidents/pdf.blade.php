@@ -122,7 +122,7 @@
         .field-value-boxed {
             color: #000000;
             font-size: 11pt;
-            font-weight: 700;
+            font-weight: 400;
             min-height: 18px;
         }
 
@@ -267,6 +267,7 @@
             border-top: 1px solid #000000;
             color: #000000;
             font-size: 11pt;
+            font-weight: 700;
             padding-top: 5px;
         }
     </style>
