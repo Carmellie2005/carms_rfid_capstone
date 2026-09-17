@@ -234,9 +234,10 @@ class PatrolAreaSelfieTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Change your temporary password before scanning')
-            ->assertSee('Open Profile Settings')
-            ->assertSee(route('profile.edit').'#update-password', false)
+            ->assertSee('Guard Account Security')
+            ->assertSee('Change Temporary Password')
+            ->assertSee('temporary_password_current_password', false)
+            ->assertSee('Save New Password')
             ->assertDontSee('Listening for ESP32 scan')
             ->assertDontSee('Take Photo');
     }

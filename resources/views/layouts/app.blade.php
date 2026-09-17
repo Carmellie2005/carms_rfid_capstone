@@ -35,6 +35,8 @@
             $user = Auth::user();
             $role = $user->role ?? 'admin';
             $isSupervisor = $role === 'admin';
+            $isGuard = $role === 'guard';
+            $requiresGuardPasswordChange = $isGuard && (bool) $user?->must_change_password;
             $roleLabel = $role === 'admin' ? 'Supervisor' : ucfirst($role);
             $today = now()->timezone('Asia/Manila')->format('l, F d, Y');
             $mobileToday = now()->timezone('Asia/Manila')->format('M d, Y');
@@ -90,6 +92,57 @@
                     <x-slot name="description">Please wait a moment.</x-slot>
                 </x-brand-spinner>
             </div>
+
+            @if ($requiresGuardPasswordChange)
+                <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="temporary-password-title">
+                    <section class="mobile-scroll-area max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-md border border-blue-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+                        <div class="border-b border-blue-100 px-4 py-4 dark:border-slate-800 sm:px-5">
+                            <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Guard Account Security</p>
+                            <h2 id="temporary-password-title" class="mt-1 text-xl font-semibold text-blue-950 dark:text-white">Change Temporary Password</h2>
+                            <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                                Your supervisor assigned this login password. Create your own password before using checkpoint scanning.
+                            </p>
+                        </div>
+
+                        <form method="POST" action="{{ route('password.update') }}" data-skip-global-loader="true" class="space-y-4 px-4 py-4 sm:px-5">
+                            @csrf
+                            @method('put')
+
+                            <div class="grid gap-2 text-xs font-medium text-slate-600 dark:text-slate-300 sm:grid-cols-2">
+                                <span class="rounded-md border border-blue-100 bg-blue-50/60 px-3 py-2 dark:border-blue-400/25 dark:bg-blue-950/35">At least 8 characters.</span>
+                                <span class="rounded-md border border-blue-100 bg-blue-50/60 px-3 py-2 dark:border-blue-400/25 dark:bg-blue-950/35">Better with letters, numbers, or symbols.</span>
+                                <span class="rounded-md border border-blue-100 bg-blue-50/60 px-3 py-2 dark:border-blue-400/25 dark:bg-blue-950/35">Avoid your name, birthday, or employee number.</span>
+                                <span class="rounded-md border border-blue-100 bg-blue-50/60 px-3 py-2 dark:border-blue-400/25 dark:bg-blue-950/35">Do not share it with anyone.</span>
+                            </div>
+
+                            <div class="grid gap-3 md:grid-cols-3">
+                                <div>
+                                    <x-input-label for="temporary_password_current_password" :value="__('Current Password')" class="sr-only" />
+                                    <x-text-input id="temporary_password_current_password" name="current_password" type="password" class="mt-1 block w-full" placeholder="{{ __('Current Password') }}" autocomplete="current-password" required autofocus />
+                                    <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
+                                </div>
+
+                                <div>
+                                    <x-input-label for="temporary_password_password" :value="__('New Password')" class="sr-only" />
+                                    <x-text-input id="temporary_password_password" name="password" type="password" class="mt-1 block w-full" placeholder="{{ __('New Password') }}" autocomplete="new-password" required />
+                                    <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
+                                </div>
+
+                                <div>
+                                    <x-input-label for="temporary_password_password_confirmation" :value="__('Confirm Password')" class="sr-only" />
+                                    <x-text-input id="temporary_password_password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" placeholder="{{ __('Confirm Password') }}" autocomplete="new-password" required />
+                                    <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-2 border-t border-blue-100 pt-4 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
+                                <p class="text-xs leading-5 text-slate-500 dark:text-slate-400">This cannot be skipped. After saving, checkpoint scanning will be available.</p>
+                                <x-primary-button class="justify-center">{{ __('Save New Password') }}</x-primary-button>
+                            </div>
+                        </form>
+                    </section>
+                </div>
+            @endif
 
             @include('layouts.navigation')
 

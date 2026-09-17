@@ -23,7 +23,9 @@ class ProfileTest extends TestCase
 
     public function test_profile_page_is_displayed(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'role' => 'admin',
+        ]);
 
         $response = $this
             ->actingAs($user)
@@ -31,8 +33,27 @@ class ProfileTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Update Password')
+            ->assertDontSee('Update Password')
+            ->assertDontSee('Guard Account Security')
             ->assertDontSee('Delete Account');
+    }
+
+    public function test_supervisor_does_not_see_guard_temporary_password_modal(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'admin',
+            'must_change_password' => true,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/profile');
+
+        $response
+            ->assertOk()
+            ->assertDontSee('Guard Account Security')
+            ->assertDontSee('Change Temporary Password')
+            ->assertDontSee('Update Password');
     }
 
     public function test_guard_with_temporary_password_sees_password_change_guide(): void
@@ -58,9 +79,12 @@ class ProfileTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Change Your Password Before Scanning')
-            ->assertSee('Use at least 8 characters.')
+            ->assertSee('Guard Account Security')
+            ->assertSee('Change Temporary Password')
+            ->assertSee('At least 8 characters.')
             ->assertSee('Avoid your name, birthday, or employee number.')
+            ->assertSee('temporary_password_current_password', false)
+            ->assertSee('Save New Password')
             ->assertSee('Update Password')
             ->assertDontSee('Delete Account');
     }
@@ -100,7 +124,8 @@ class ProfileTest extends TestCase
             ->assertSee('RFID-TEST')
             ->assertSee('Night Shift')
             ->assertSee('Apr 12, 1998')
-            ->assertSee('Completed');
+            ->assertSee('Completed')
+            ->assertSee('Update Password');
     }
 
     public function test_missing_profile_photo_falls_back_to_guard_icon(): void
