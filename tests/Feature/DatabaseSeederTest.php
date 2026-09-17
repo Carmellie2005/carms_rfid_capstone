@@ -77,4 +77,25 @@ class DatabaseSeederTest extends TestCase
         $this->assertSame('inactive', Checkpoint::where('code', 'CP-AG-01')->firstOrFail()->status);
         $this->assertFalse(Checkpoint::where('code', 'CP-AG-01')->where('status', 'active')->exists());
     }
+
+    public function test_seeder_uses_updated_checkpoint_names_and_devices(): void
+    {
+        $this->seed();
+
+        $this->assertDatabaseHas('checkpoints', [
+            'code' => 'CP-IT-01',
+            'name' => 'BITS',
+            'location' => 'BITS',
+            'device_uid' => 'ESP32-IT-01',
+            'status' => 'active',
+        ]);
+
+        $this->assertDatabaseHas('checkpoints', [
+            'code' => 'CP-FI-01',
+            'name' => 'Tilapia Hatchery',
+            'location' => 'Tilapia Hatchery',
+            'device_uid' => 'ESP32-TH-01',
+            'status' => 'active',
+        ]);
+    }
 }

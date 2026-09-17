@@ -153,11 +153,11 @@ class DatabaseSeeder extends Seeder
         $checkpoints = [
             [
                 'code' => 'CP-IT-01',
-                'name' => 'IT',
-                'location' => 'IT',
+                'name' => 'BITS',
+                'location' => 'BITS',
                 'device_uid' => 'ESP32-IT-01',
                 'status' => 'active',
-                'description' => 'RFID checkpoint for the IT patrol area.',
+                'description' => 'RFID checkpoint for the BITS patrol area.',
             ],
             [
                 'code' => 'CP-MPC-01',
@@ -169,11 +169,11 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'code' => 'CP-FI-01',
-                'name' => 'FI',
-                'location' => 'FI',
-                'device_uid' => 'ESP32-FI-01',
+                'name' => 'Tilapia Hatchery',
+                'location' => 'Tilapia Hatchery',
+                'device_uid' => 'ESP32-TH-01',
                 'status' => 'active',
-                'description' => 'RFID checkpoint for the FI patrol area.',
+                'description' => 'RFID checkpoint for the Tilapia Hatchery patrol area.',
             ],
             [
                 'code' => 'CP-CAN-01',
