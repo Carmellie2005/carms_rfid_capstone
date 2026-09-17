@@ -51,4 +51,43 @@ class PasswordUpdateTest extends TestCase
             ->assertSessionHasErrorsIn('updatePassword', 'current_password')
             ->assertRedirect('/profile');
     }
+
+    public function test_guard_can_replace_temporary_password_without_retyping_current_password(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'guard',
+            'must_change_password' => true,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->from('/patrol/scan')
+            ->put(route('password.temporary.update'), [
+                'password' => 'new-guard-password',
+                'password_confirmation' => 'new-guard-password',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/patrol/scan');
+
+        $this->assertTrue(Hash::check('new-guard-password', $user->refresh()->password));
+        $this->assertFalse($user->must_change_password);
+    }
+
+    public function test_temporary_password_route_is_only_for_guard_accounts_that_must_change_password(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'admin',
+            'must_change_password' => true,
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->put(route('password.temporary.update'), [
+                'password' => 'new-admin-password',
+                'password_confirmation' => 'new-admin-password',
+            ])
+            ->assertForbidden();
+    }
 }

@@ -34,7 +34,7 @@ class ProfileTest extends TestCase
         $response
             ->assertOk()
             ->assertDontSee('Update Password')
-            ->assertDontSee('Password Required')
+            ->assertDontSee('Before you continue')
             ->assertDontSee('Delete Account');
     }
 
@@ -51,14 +51,15 @@ class ProfileTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertDontSee('Password Required')
-            ->assertDontSee('Change Temporary Password')
+            ->assertDontSee('Before you continue')
+            ->assertDontSee('Hi,')
             ->assertDontSee('Update Password');
     }
 
     public function test_guard_with_temporary_password_sees_password_change_guide(): void
     {
         $user = User::factory()->create([
+            'name' => 'Carmela Hernandez',
             'role' => 'guard',
             'username' => 'temporary.password',
             'must_change_password' => true,
@@ -79,15 +80,15 @@ class ProfileTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Password Required')
-            ->assertSee('Change Temporary Password')
-            ->assertSee('Set your own password to continue.')
+            ->assertSee('Welcome')
+            ->assertSee('Hi, Carmela!')
+            ->assertSee('Before you continue, set your own password for this guard account.')
             ->assertSee('Use 8+ characters and keep it private.')
-            ->assertSee('temporary_password_current_password', false)
+            ->assertSee(route('password.temporary.update'), false)
             ->assertSee('Save Password')
-            ->assertSee('aria-label="Show current password"', false)
             ->assertSee('aria-label="Show new password"', false)
             ->assertSee('aria-label="Show confirm password"', false)
+            ->assertDontSee('temporary_password_current_password', false)
             ->assertSee('Update Password')
             ->assertDontSee('Delete Account');
     }

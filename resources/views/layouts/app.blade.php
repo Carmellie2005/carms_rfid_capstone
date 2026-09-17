@@ -37,6 +37,10 @@
             $isSupervisor = $role === 'admin';
             $isGuard = $role === 'guard';
             $requiresGuardPasswordChange = $isGuard && (bool) $user?->must_change_password;
+            $guardWelcomeName = $isGuard
+                ? trim(\Illuminate\Support\Str::of($user?->name ?: 'there')->before(' ')->toString())
+                : null;
+            $guardWelcomeName = filled($guardWelcomeName) ? $guardWelcomeName : 'there';
             $roleLabel = $role === 'admin' ? 'Supervisor' : ucfirst($role);
             $today = now()->timezone('Asia/Manila')->format('l, F d, Y');
             $mobileToday = now()->timezone('Asia/Manila')->format('M d, Y');
@@ -94,15 +98,31 @@
             </div>
 
             @if ($requiresGuardPasswordChange)
-                <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="temporary-password-title">
-                    <section class="mobile-scroll-area max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-md border border-blue-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+                <div
+                    x-data="{ ready: false }"
+                    x-init="$nextTick(() => ready = true)"
+                    x-show="ready"
+                    x-cloak
+                    x-transition.opacity.duration.200ms
+                    class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="temporary-password-title"
+                >
+                    <section
+                        x-show="ready"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 translate-y-3 scale-[0.98]"
+                        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                        class="mobile-scroll-area max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-md border border-blue-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+                    >
                         <div class="border-b border-blue-100 px-4 py-4 dark:border-slate-800">
-                            <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Password Required</p>
-                            <h2 id="temporary-password-title" class="mt-1 text-lg font-semibold text-blue-950 dark:text-white">Change Temporary Password</h2>
-                            <p class="mt-1 text-sm leading-5 text-slate-600 dark:text-slate-300">Set your own password to continue.</p>
+                            <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Welcome</p>
+                            <h2 id="temporary-password-title" class="mt-1 text-lg font-semibold text-blue-950 dark:text-white">Hi, {{ $guardWelcomeName }}!</h2>
+                            <p class="mt-1 text-sm leading-5 text-slate-600 dark:text-slate-300">Before you continue, set your own password for this guard account.</p>
                         </div>
 
-                        <form method="POST" action="{{ route('password.update') }}" data-skip-global-loader="true" class="space-y-3 px-4 py-4">
+                        <form method="POST" action="{{ route('password.temporary.update') }}" data-skip-global-loader="true" class="space-y-3 px-4 py-4">
                             @csrf
                             @method('put')
 
@@ -112,14 +132,8 @@
 
                             <div class="space-y-3">
                                 <div>
-                                    <x-input-label for="temporary_password_current_password" :value="__('Current Password')" class="sr-only" />
-                                    <x-password-input id="temporary_password_current_password" name="current_password" placeholder="{{ __('Current Password') }}" autocomplete="current-password" :required="true" :autofocus="true" show-label="Show current password" hide-label="Hide current password" class="h-11 text-sm" />
-                                    <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
-                                </div>
-
-                                <div>
                                     <x-input-label for="temporary_password_password" :value="__('New Password')" class="sr-only" />
-                                    <x-password-input id="temporary_password_password" name="password" placeholder="{{ __('New Password') }}" autocomplete="new-password" :required="true" show-label="Show new password" hide-label="Hide new password" class="h-11 text-sm" />
+                                    <x-password-input id="temporary_password_password" name="password" placeholder="{{ __('New Password') }}" autocomplete="new-password" :required="true" :autofocus="true" show-label="Show new password" hide-label="Hide new password" class="h-11 text-sm" />
                                     <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
                                 </div>
 

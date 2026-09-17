@@ -27,4 +27,25 @@ class PasswordController extends Controller
 
         return back()->with('status', 'password-updated');
     }
+
+    /**
+     * Replace a supervisor-assigned temporary guard password after login.
+     */
+    public function updateTemporary(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        abort_unless($user->role === 'guard' && $user->must_change_password, 403);
+
+        $validated = $request->validateWithBag('updatePassword', [
+            'password' => ['required', Password::defaults(), 'confirmed'],
+        ]);
+
+        $user->update([
+            'password' => Hash::make($validated['password']),
+            'must_change_password' => false,
+        ]);
+
+        return back()->with('status', 'password-updated');
+    }
 }
