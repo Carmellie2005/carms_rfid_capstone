@@ -11,6 +11,20 @@
             src: url("{{ 'file:///'.str_replace('\\', '/', public_path('fonts/poppins-regular.ttf')) }}") format("truetype");
         }
 
+        @font-face {
+            font-family: "Aptos";
+            font-style: normal;
+            font-weight: 400;
+            src: url("{{ 'file:///'.str_replace('\\', '/', public_path('fonts/aptos-regular.ttf')) }}") format("truetype");
+        }
+
+        @font-face {
+            font-family: "Aptos";
+            font-style: normal;
+            font-weight: 700;
+            src: url("{{ 'file:///'.str_replace('\\', '/', public_path('fonts/aptos-bold.ttf')) }}") format("truetype");
+        }
+
         @page {
             margin: 0;
             size: 612pt 936pt;
@@ -22,10 +36,12 @@
 
         body {
             color: #000000;
-            font-family: Aptos, Calibri, "DejaVu Sans", sans-serif;
+            font-family: "Aptos", Calibri, "DejaVu Sans", sans-serif;
             font-size: 7.6pt;
+            letter-spacing: 0;
             line-height: 1.2;
             margin: 0;
+            word-spacing: 0;
         }
 
         .page {
