@@ -8,16 +8,17 @@
 #include <LiquidCrystal_I2C.h>
 
 // Change these when the device is deployed to another WiFi or hotspot.
-const char* WIFI_SSID = "carmspisowifi";
+const char* WIFI_SSID = "255.255.255.252";
 const char* WIFI_PASSWORD = "87654321";
 
 // Render-hosted Laravel API URL.
 const char* API_URL = "https://carms-rfid-capstone.onrender.com/api/rfid-scan";
 
-// IT checkpoint reader device ID. Change this per checkpoint reader:
+// Guard House checkpoint reader device ID. Change this per checkpoint reader:
 // IT = ESP32-IT-01, MPC = ESP32-MPC-01, FI = ESP32-FI-01,
-// Campus Canteen = ESP32-CAN-01, AG = ESP32-AG-01.
-#define DEVICE_UID "ESP32-IT-01"
+// Campus Canteen = ESP32-CAN-01, AG = ESP32-AG-01,
+// Guard House = ESP32-GH-01.
+#define DEVICE_UID "ESP32-GH-01"
 
 // MFRC522 RFID pins.
 #define RFID_SS_PIN 5
@@ -29,13 +30,16 @@ const char* API_URL = "https://carms-rfid-capstone.onrender.com/api/rfid-scan";
 #define LCD_COLUMNS 16
 #define LCD_ROWS 2
 
-// Two-pin buzzer: + to GPIO 26, - to GND.
+// Three-pin low-level active buzzer:
+// VCC -> 3.3V/5V, GND -> GND, I/O -> GPIO 26.
+// LOW = ON, HIGH = OFF.
 #define BUZZER_PIN 26
+#define BUZZER_ON LOW
+#define BUZZER_OFF HIGH
 
 const unsigned long SCAN_COOLDOWN_MS = 3000;
 const int WIFI_CONNECT_ATTEMPTS = 40;
 const int HTTP_TIMEOUT_MS = 65000;
-const int BUZZER_BOOST_GAP_MS = 35;
 
 LiquidCrystal_I2C lcd(0x27, LCD_COLUMNS, LCD_ROWS);
 MFRC522 rfid(RFID_SS_PIN, RFID_RST_PIN);
@@ -43,63 +47,33 @@ MFRC522 rfid(RFID_SS_PIN, RFID_RST_PIN);
 String lastUid = "";
 unsigned long lastScanTime = 0;
 
-void playTone(int frequency, int durationMs) {
-  if (frequency <= 0 || durationMs <= 0) {
-    return;
-  }
-
-  int halfPeriodUs = 1000000L / frequency / 2;
-  long cycles = (long) frequency * durationMs / 1000;
-
-  for (long i = 0; i < cycles; i++) {
-    digitalWrite(BUZZER_PIN, HIGH);
-    delayMicroseconds(halfPeriodUs);
-    digitalWrite(BUZZER_PIN, LOW);
-    delayMicroseconds(halfPeriodUs);
-  }
-
-  digitalWrite(BUZZER_PIN, LOW);
+void buzzerOff() {
+  digitalWrite(BUZZER_PIN, BUZZER_OFF);
 }
 
-void playStrongTone(int frequency, int durationMs) {
-  // The GPIO is already full swing; repeated pulses make the alert stronger to hear.
-  playTone(frequency, durationMs);
-  delay(BUZZER_BOOST_GAP_MS);
-  playTone(frequency, durationMs / 2);
+void beep(int times, int onTimeMs, int offTimeMs) {
+  for (int i = 0; i < times; i++) {
+    digitalWrite(BUZZER_PIN, BUZZER_ON);
+    delay(onTimeMs);
+    buzzerOff();
+    delay(offTimeMs);
+  }
 }
 
 void successBeep() {
-  playStrongTone(2600, 180);
-  delay(60);
-  playStrongTone(3200, 130);
-  delay(80);
+  beep(1, 220, 100);
 }
 
 void failedBeep() {
-  playStrongTone(1200, 170);
-  delay(80);
-  playStrongTone(900, 170);
-  delay(80);
-  playStrongTone(1200, 170);
-  delay(80);
+  beep(3, 80, 100);
 }
 
 void unknownRfidBeep() {
-  playStrongTone(850, 130);
-  delay(65);
-  playStrongTone(850, 130);
-  delay(65);
-  playStrongTone(850, 130);
-  delay(65);
-  playStrongTone(850, 130);
-  delay(80);
+  beep(4, 70, 90);
 }
 
 void readyBeep() {
-  playStrongTone(2000, 80);
-  delay(60);
-  playStrongTone(2800, 80);
-  delay(80);
+  beep(2, 60, 80);
 }
 
 String fitLcdText(String text) {
@@ -370,7 +344,7 @@ void setup() {
   delay(1000);
 
   pinMode(BUZZER_PIN, OUTPUT);
-  digitalWrite(BUZZER_PIN, LOW);
+  buzzerOff();
 
   Wire.begin(LCD_SDA_PIN, LCD_SCL_PIN);
   lcd.init();
@@ -379,7 +353,7 @@ void setup() {
   lcdMessage("Campus RFID", "Starting...");
 
   Serial.println("Campus RFID Patrol System");
-  Serial.println("IT Building Checkpoint");
+  Serial.println("Guard House Checkpoint");
 
   SPI.begin();
   rfid.PCD_Init();

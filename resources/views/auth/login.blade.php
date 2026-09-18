@@ -34,12 +34,17 @@
             <div
                 x-show="loggingIn"
                 x-cloak
-                x-transition.opacity.duration.150ms
-                class="fixed inset-0 z-50 flex items-center justify-center bg-white/80 p-4 backdrop-blur-sm dark:bg-slate-950/80"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-white/75 px-4 backdrop-blur-md dark:bg-slate-950/80"
             >
-                <x-brand-spinner class="w-full max-w-sm rounded-xl border border-blue-100 bg-white p-6 text-blue-950 shadow-2xl dark:border-slate-800 dark:bg-slate-900 dark:text-blue-100">
+                <x-brand-spinner dots class="brand-spinner-floating text-blue-950 dark:text-blue-100">
                     Signing in
-                    <x-slot name="description">Please wait while your account is being verified.</x-slot>
+                    <x-slot name="description">Verifying your account...</x-slot>
                 </x-brand-spinner>
             </div>
 
