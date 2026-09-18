@@ -74,7 +74,7 @@
 
         .core-values {
             font-family: "Poppins", Aptos, Calibri, "DejaVu Sans", sans-serif;
-            font-size: 5.9pt;
+            font-size: 6pt;
             font-weight: 400;
             left: 104.7pt;
             line-height: 1;
