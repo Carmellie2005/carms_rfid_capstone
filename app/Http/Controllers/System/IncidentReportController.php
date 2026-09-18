@@ -60,8 +60,8 @@ class IncidentReportController extends Controller
             'generatedAt' => now(config('app.timezone')),
             'imageDataUris' => $this->imageDataUris($incidentReport),
             'incident' => $incidentReport,
-            'letterheadDataUri' => $this->letterheadDataUri(),
-        ])->setPaper('a4');
+            'incidentFormDataUri' => $this->incidentFormDataUri(),
+        ])->setPaper([0, 0, 612, 936]);
 
         $filename = $this->pdfFilename($incidentReport);
 
@@ -171,9 +171,9 @@ class IncidentReportController extends Controller
         return sprintf('data:%s;base64,%s', $mimeType, base64_encode($contents));
     }
 
-    private function letterheadDataUri(): ?string
+    private function incidentFormDataUri(): ?string
     {
-        $path = public_path('images/pdf-letterhead.png');
+        $path = public_path('images/security-incident-report-format.png');
 
         if (! file_exists($path)) {
             return null;

@@ -5,7 +5,7 @@
     <title>Incident Report {{ str_pad((string) $incident->id, 6, '0', STR_PAD_LEFT) }}</title>
     <style>
         @page {
-            margin: 200px 58px 135px;
+            margin: 0;
         }
 
         * {
@@ -14,261 +14,198 @@
 
         body {
             color: #000000;
-            font-family: "Cambria Black", Cambria, Georgia, serif;
-            font-size: 11pt;
-            line-height: 1.5;
+            font-family: DejaVu Sans, Arial, sans-serif;
+            font-size: 9.5pt;
+            line-height: 1.3;
             margin: 0;
         }
 
-        @if (file_exists(public_path('fonts/poppins-regular.woff')))
-            @@font-face {
-                font-family: "Poppins";
-                font-style: normal;
-                font-weight: 400;
-                src: url("data:font/woff;base64,{{ base64_encode(file_get_contents(public_path('fonts/poppins-regular.woff'))) }}") format("woff");
-            }
-        @endif
-
-        @if (file_exists(public_path('fonts/cambria-bold.ttf')))
-            @@font-face {
-                font-family: "Cambria Black";
-                font-style: normal;
-                font-weight: 900;
-                src: url("data:font/truetype;base64,{{ base64_encode(file_get_contents(public_path('fonts/cambria-bold.ttf'))) }}") format("truetype");
-            }
-        @endif
-
-        .letterhead-page {
-            height: 1123px;
-            left: -58px;
-            position: fixed;
-            top: -200px;
-            width: 795px;
-            z-index: -1000;
+        .page {
+            height: 936px;
+            overflow: hidden;
+            page-break-after: always;
+            position: relative;
+            width: 612px;
         }
 
-        .core-values {
-            color: #000000;
-            font-family: "Poppins", DejaVu Sans, sans-serif;
-            font-size: 8.5px;
-            font-weight: 400;
-            left: 38px;
-            line-height: 1.2;
-            position: fixed;
-            right: 0;
-            top: -39px;
-            white-space: nowrap;
+        .page:last-child {
+            page-break-after: auto;
         }
 
-        .document-title {
-            border-bottom: 1px solid #000000;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            text-align: center;
+        .page-background {
+            height: 936px;
+            left: 0;
+            position: absolute;
+            top: 0;
+            width: 612px;
+            z-index: 0;
         }
 
-        .report-title {
-            color: #000000;
-            font-family: "Cambria Black", Cambria, Georgia, serif;
-            font-size: 11pt;
-            font-weight: 900;
-            margin: 0;
-        }
-
-        .report-subtitle {
-            color: #000000;
-            font-size: 11pt;
-            margin-top: 2px;
-        }
-
-        .control-line {
-            margin-bottom: 14px;
-            text-align: center;
-        }
-
-        .control-table,
-        .report-table {
-            border-collapse: collapse;
-            margin-bottom: 12px;
-            width: 100%;
-        }
-
-        .control-table td,
-        .report-table td {
-            border: 1px solid #000000;
-            color: #000000;
-            min-height: 44px;
-            padding: 7px 8px 8px;
-            vertical-align: top;
-        }
-
-        .control-table td {
-            width: 33.333%;
-        }
-
-        .report-table .half {
-            width: 50%;
-        }
-
-        .field-label-boxed {
-            color: #000000;
-            display: block;
-            font-size: 9pt;
+        .page-title {
+            font-size: 12pt;
             font-weight: 700;
+            left: 72px;
+            letter-spacing: 0;
+            position: absolute;
+            text-align: center;
+            text-transform: uppercase;
+            top: 118px;
+            width: 468px;
+            z-index: 1;
+        }
+
+        .field {
+            overflow: hidden;
+            padding: 7px 9px;
+            position: absolute;
+            z-index: 1;
+        }
+
+        .label {
+            display: block;
+            font-size: 7.8pt;
+            font-weight: 700;
+            line-height: 1.15;
             margin-bottom: 4px;
             text-transform: uppercase;
         }
 
-        .field-value-boxed {
-            color: #000000;
-            font-size: 11pt;
+        .value {
+            display: block;
+            font-size: 9.5pt;
             font-weight: 400;
-            min-height: 18px;
+            line-height: 1.28;
         }
 
-        .section {
-            margin-top: 15px;
-            page-break-inside: avoid;
+        .value-small {
+            font-size: 8.5pt;
         }
 
-        .section-title {
-            border-bottom: 1px solid #000000;
-            color: #000000;
-            font-size: 11pt;
+        .person-name {
             font-weight: 700;
-            margin: 0 0 8px;
-            padding-bottom: 2px;
-            text-transform: none;
         }
 
-        .field-row {
-            clear: both;
-            margin-bottom: 8px;
+        .multiline {
+            font-size: 9.2pt;
+            line-height: 1.36;
+            text-align: justify;
         }
 
-        .field {
-            float: left;
-            width: 48%;
+        .note {
+            font-size: 8.3pt;
+            line-height: 1.28;
         }
 
-        .field + .field {
-            margin-left: 4%;
+        .triple-a {
+            height: 59px;
+            left: 72px;
+            top: 160px;
+            width: 156px;
         }
 
-        .field-full {
-            float: none;
+        .triple-b {
+            height: 59px;
+            left: 228px;
+            top: 160px;
+            width: 156px;
+        }
+
+        .triple-c {
+            height: 59px;
+            left: 384px;
+            top: 160px;
+            width: 156px;
+        }
+
+        .half-left-row-1 {
+            height: 44px;
+            left: 72px;
+            top: 235px;
+            width: 234px;
+        }
+
+        .half-right-row-1 {
+            height: 44px;
+            left: 306px;
+            top: 235px;
+            width: 234px;
+        }
+
+        .half-left-row-2 {
+            height: 44px;
+            left: 72px;
+            top: 279px;
+            width: 234px;
+        }
+
+        .half-right-row-2 {
+            height: 44px;
+            left: 306px;
+            top: 279px;
+            width: 234px;
+        }
+
+        .middle-full {
+            height: 44px;
+            left: 72px;
+            top: 323px;
+            width: 468px;
+        }
+
+        .wide-left {
+            height: 45px;
+            left: 72px;
+            top: 382px;
+            width: 234px;
+        }
+
+        .wide-right {
+            height: 45px;
+            left: 306px;
+            top: 382px;
+            width: 234px;
+        }
+
+        .large-box {
+            height: 249px;
+            left: 72px;
+            top: 458px;
+            width: 468px;
+        }
+
+        .footer-note {
+            font-size: 7.8pt;
+            left: 72px;
+            line-height: 1.25;
+            position: absolute;
+            top: 715px;
+            width: 468px;
+            z-index: 1;
+        }
+
+        .photo-table {
+            border-collapse: collapse;
+            margin-top: 5px;
             width: 100%;
         }
 
-        .field-label {
-            color: #000000;
-            display: block;
-            font-size: 11pt;
-            font-weight: 700;
-            margin-bottom: 1px;
-        }
-
-        .field-value {
-            border-bottom: 1px solid #000000;
-            color: #000000;
-            font-size: 11pt;
-            min-height: 20px;
-            padding: 0 3px 2px;
-        }
-
-        .clear {
-            clear: both;
-        }
-
-        .narrative {
-            border-bottom: 1px solid #000000;
-            color: #000000;
-            font-size: 11pt;
-            line-height: 1.55;
-            min-height: 88px;
-            padding: 2px 3px 10px;
-            white-space: normal;
-        }
-
-        .narrative-box {
-            border: 1px solid #000000;
-            color: #000000;
-            font-size: 11pt;
-            line-height: 1.55;
-            min-height: 210px;
-            padding: 10px 12px;
-            text-align: justify;
-            white-space: normal;
-        }
-
-        .narrative-compact {
-            min-height: 48px;
-        }
-
-        .review-box {
-            min-height: 58px;
-        }
-
-        .secondary-page {
-            page-break-before: always;
-        }
-
-        .evidence {
-            border: 1px solid #000000;
-            color: #000000;
-            font-size: 11pt;
-            margin-bottom: 10px;
-            min-height: 165px;
-            padding: 8px;
+        .photo-table td {
+            height: 92px;
+            padding: 2px;
             text-align: center;
-            page-break-inside: avoid;
+            vertical-align: middle;
+            width: 50%;
         }
 
-        .evidence img {
-            height: auto;
-            max-height: 240px;
+        .photo-table img {
+            max-height: 88px;
             max-width: 100%;
         }
 
-        .evidence-caption {
+        .empty-evidence {
             font-size: 9pt;
-            font-weight: 700;
-            margin-bottom: 5px;
-            text-align: left;
-        }
-
-        .evidence-note {
-            color: #000000;
-            font-size: 9pt;
-            margin-top: 6px;
-            text-align: left;
-        }
-
-        .muted {
-            color: #000000;
-            font-size: 11pt;
-        }
-
-        .signature-row {
-            margin-top: 46px;
-        }
-
-        .signature {
-            float: left;
+            margin-top: 48px;
             text-align: center;
-            width: 45%;
-        }
-
-        .signature + .signature {
-            margin-left: 10%;
-        }
-
-        .signature-line {
-            border-top: 1px solid #000000;
-            color: #000000;
-            font-size: 11pt;
-            font-weight: 700;
-            padding-top: 5px;
         }
     </style>
 </head>
@@ -294,155 +231,139 @@
         $actionTaken = $incident->action_taken ?: 'No action recorded.';
         $resolvedDateLabel = $resolvedDate?->format('M d, Y h:i A') ?? 'Not yet resolved';
         $supervisorName = 'Ryan P. Tomol';
+        $evidenceImages = collect($imageDataUris)->take(4)->values();
+        $narrative = $incident->description ?: 'No description provided.';
     @endphp
 
-    @if ($letterheadDataUri)
-        <img class="letterhead-page" src="{{ $letterheadDataUri }}" alt="">
-        <div class="core-values">
-            Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality
+    <section class="page">
+        @if ($incidentFormDataUri)
+            <img class="page-background" src="{{ $incidentFormDataUri }}" alt="">
+        @endif
+
+        <div class="page-title">Security Incident Report</div>
+
+        <div class="field triple-a">
+            <span class="label">Report No.</span>
+            <span class="value">{{ $reportNumber }}</span>
         </div>
-    @endif
-
-    <div class="document-title">
-        <h1 class="report-title">Security Incident Report</h1>
-        <div class="report-subtitle">Incident Documentation for Checkpoint Patrol Monitoring</div>
-    </div>
-
-    <table class="control-table">
-        <tr>
-            <td>
-                <span class="field-label-boxed">Report No.</span>
-                <div class="field-value-boxed">{{ $reportNumber }}</div>
-            </td>
-            <td>
-                <span class="field-label-boxed">Status</span>
-                <div class="field-value-boxed">{{ $status }}</div>
-            </td>
-            <td>
-                <span class="field-label-boxed">Generated</span>
-                <div class="field-value-boxed">{{ $generatedAt->format('M d, Y h:i A') }}</div>
-            </td>
-        </tr>
-    </table>
-
-    <div class="section">
-        <h2 class="section-title">Incident Summary</h2>
-        <table class="report-table">
-            <tr>
-                <td class="half">
-                    <span class="field-label-boxed">Category</span>
-                    <div class="field-value-boxed">{{ $category }}</div>
-                </td>
-                <td class="half">
-                    <span class="field-label-boxed">Priority</span>
-                    <div class="field-value-boxed">{{ $priority }}</div>
-                </td>
-            </tr>
-            <tr>
-                <td class="half">
-                    <span class="field-label-boxed">Incident Date / Time</span>
-                    <div class="field-value-boxed">{{ $incidentDate }}</div>
-                </td>
-                <td class="half">
-                    <span class="field-label-boxed">Reported Date / Time</span>
-                    <div class="field-value-boxed">{{ $reportedDate }}</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <span class="field-label-boxed">Location / Checkpoint</span>
-                    <div class="field-value-boxed">{{ $locationCheckpoint }}</div>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="section">
-        <h2 class="section-title">Reporting Guard</h2>
-        <table class="report-table">
-            <tr>
-                <td class="half">
-                    <span class="field-label-boxed">Security Guard</span>
-                    <div class="field-value-boxed">{{ $guardName }}</div>
-                </td>
-                <td class="half">
-                    <span class="field-label-boxed">Employee No.</span>
-                    <div class="field-value-boxed">{{ $employeeNo }}</div>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="section">
-        <h2 class="section-title">Narrative of Incident</h2>
-        <div class="narrative-box">
-            {!! nl2br(e($incident->description ?: 'No description provided.')) !!}
+        <div class="field triple-b">
+            <span class="label">Status</span>
+            <span class="value">{{ $status }}</span>
         </div>
-    </div>
+        <div class="field triple-c">
+            <span class="label">Generated</span>
+            <span class="value value-small">{{ $generatedAt->format('M d, Y h:i A') }}</span>
+        </div>
 
-    <div class="secondary-page"></div>
+        <div class="field half-left-row-1">
+            <span class="label">Category</span>
+            <span class="value">{{ $category }}</span>
+        </div>
+        <div class="field half-right-row-1">
+            <span class="label">Priority</span>
+            <span class="value">{{ $priority }}</span>
+        </div>
+        <div class="field half-left-row-2">
+            <span class="label">Incident Date / Time</span>
+            <span class="value value-small">{{ $incidentDate }}</span>
+        </div>
+        <div class="field half-right-row-2">
+            <span class="label">Reported Date / Time</span>
+            <span class="value value-small">{{ $reportedDate }}</span>
+        </div>
+        <div class="field middle-full">
+            <span class="label">Location / Checkpoint</span>
+            <span class="value">{{ $locationCheckpoint }}</span>
+        </div>
+        <div class="field wide-left">
+            <span class="label">Reporting Guard</span>
+            <span class="value person-name">{{ $guardName }}</span>
+        </div>
+        <div class="field wide-right">
+            <span class="label">Employee No.</span>
+            <span class="value">{{ $employeeNo }}</span>
+        </div>
+        <div class="field large-box">
+            <span class="label">Narrative of Incident</span>
+            <div class="value multiline">{!! nl2br(e($narrative)) !!}</div>
+        </div>
+    </section>
 
-    <div class="document-title">
-        <h1 class="report-title">Security Incident Report</h1>
-        <div class="report-subtitle">Evidence and Supervisor Review</div>
-    </div>
+    <section class="page">
+        @if ($incidentFormDataUri)
+            <img class="page-background" src="{{ $incidentFormDataUri }}" alt="">
+        @endif
 
-    <div class="section">
-        <h2 class="section-title">Evidence</h2>
-        @if (! empty($imageDataUris))
-            @foreach ($imageDataUris as $imageDataUri)
-                <div class="evidence">
-                    <div class="evidence-caption">Incident Photo Evidence {{ $loop->iteration }}</div>
-                    <img src="{{ $imageDataUri }}" alt="Incident image evidence {{ $loop->iteration }}">
-                </div>
-            @endforeach
-        @else
-            <div class="evidence">
-                <div class="evidence-caption">Incident Photo Evidence</div>
-                <p class="muted">No image evidence attached.</p>
+        <div class="page-title">Evidence and Supervisor Review</div>
+
+        <div class="field triple-a">
+            <span class="label">Report No.</span>
+            <span class="value">{{ $reportNumber }}</span>
+        </div>
+        <div class="field triple-b">
+            <span class="label">Photo Evidence</span>
+            <span class="value">{{ count($imageDataUris) }} attached</span>
+        </div>
+        <div class="field triple-c">
+            <span class="label">Status</span>
+            <span class="value">{{ $status }}</span>
+        </div>
+
+        <div class="field half-left-row-1">
+            <span class="label">Review Notes</span>
+            <span class="value value-small">{{ $reviewNotes }}</span>
+        </div>
+        <div class="field half-right-row-1">
+            <span class="label">Action Taken</span>
+            <span class="value value-small">{{ $actionTaken }}</span>
+        </div>
+        <div class="field half-left-row-2">
+            <span class="label">Resolved Date / Time</span>
+            <span class="value value-small">{{ $resolvedDateLabel }}</span>
+        </div>
+        <div class="field half-right-row-2">
+            <span class="label">Security Office</span>
+            <span class="value value-small">Security and Safety Office</span>
+        </div>
+        <div class="field middle-full">
+            <span class="label">Evidence Note</span>
+            <span class="value value-small">Only incident-related photos are included. Routine checklist photos are not required unless they directly support the incident.</span>
+        </div>
+        <div class="field wide-left">
+            <span class="label">Reporting Guard</span>
+            <span class="value person-name">{{ $guardName }}</span>
+        </div>
+        <div class="field wide-right">
+            <span class="label">Supervisor</span>
+            <span class="value person-name">{{ $supervisorName }}</span>
+        </div>
+        <div class="field large-box">
+            <span class="label">Evidence (Photo)</span>
+            @if ($evidenceImages->isNotEmpty())
+                <table class="photo-table">
+                    @foreach ($evidenceImages->chunk(2) as $row)
+                        <tr>
+                            @foreach ($row as $imageDataUri)
+                                <td>
+                                    <img src="{{ $imageDataUri }}" alt="Incident image evidence {{ $loop->parent->iteration }}-{{ $loop->iteration }}">
+                                </td>
+                            @endforeach
+                            @if ($row->count() === 1)
+                                <td></td>
+                            @endif
+                        </tr>
+                    @endforeach
+                </table>
+            @else
+                <div class="empty-evidence">No image evidence attached.</div>
+            @endif
+        </div>
+
+        @if (count($imageDataUris) > 4)
+            <div class="footer-note">
+                {{ count($imageDataUris) - 4 }} additional incident photo(s) are stored in the system record.
             </div>
         @endif
-        <div class="evidence-note">
-            Only incident-related photos should be included. Checklist proof photos are not required here unless they directly support the incident.
-        </div>
-    </div>
-
-    <div class="section">
-        <h2 class="section-title">Supervisor Review and Action</h2>
-        <table class="report-table">
-            <tr>
-                <td>
-                    <span class="field-label-boxed">Review Notes</span>
-                    <div class="review-box">{!! nl2br(e($reviewNotes)) !!}</div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <span class="field-label-boxed">Action Taken</span>
-                    <div class="review-box">{!! nl2br(e($actionTaken)) !!}</div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <span class="field-label-boxed">Resolved Date / Time</span>
-                    <div class="field-value-boxed">{{ $resolvedDateLabel }}</div>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="section">
-        <div class="signature-row">
-            <div class="signature">
-                <div class="signature-line">{{ $guardName }}</div>
-                Reporting Security Guard
-            </div>
-            <div class="signature">
-                <div class="signature-line">{{ $supervisorName }}</div>
-                Supervisor
-            </div>
-            <div class="clear"></div>
-        </div>
-    </div>
+    </section>
 </body>
 </html>
