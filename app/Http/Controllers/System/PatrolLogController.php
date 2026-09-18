@@ -47,9 +47,10 @@ class PatrolLogController extends Controller
             ? Checkpoint::find($request->integer('checkpoint_id'))
             : null;
 
+        $recordLimit = 500;
         $logs = $this->patrolLogQuery($request, $isSupervisor, $guardProfile)
             ->latest('scanned_at')
-            ->limit(500)
+            ->limit($recordLimit)
             ->get();
 
         $summary = [
@@ -57,13 +58,14 @@ class PatrolLogController extends Controller
             'valid' => $logs->where('status', 'valid')->count(),
             'suspicious' => $logs->where('status', 'suspicious')->count(),
             'invalid' => $logs->where('status', 'invalid')->count(),
-            'pending_face' => $logs->where('status', 'pending_face')->count(),
             'pending_selfie' => $logs->whereIn('status', ['pending_selfie', 'pending_face'])->count(),
             'pending_checklist' => $logs->where('status', 'pending_checklist')->count(),
             'profile_incomplete' => $logs->where('status', 'profile_incomplete')->count(),
             'outside_schedule' => $logs->where('status', 'outside_schedule')->count(),
             'expired' => $logs->where('status', 'expired')->count(),
             'incidents' => $logs->filter(fn ($log) => $log->incidentReport)->count(),
+            'with_area_selfie' => $logs->filter(fn (PatrolLog $log) => filled($log->area_selfie_path) || filled($log->area_selfie_image_data))->count(),
+            'with_checklist' => $logs->filter(fn (PatrolLog $log) => $log->checklistResponse)->count(),
         ];
 
         File::ensureDirectoryExists(storage_path('fonts'));
@@ -74,6 +76,8 @@ class PatrolLogController extends Controller
             'isSupervisor' => $isSupervisor,
             'letterheadDataUri' => $this->letterheadDataUri(),
             'logs' => $logs,
+            'recordLimit' => $recordLimit,
+            'reportPeriod' => $this->reportPeriodLabel($logs, $request),
             'selectedGuard' => $selectedGuard,
             'summary' => $summary,
         ])->setPaper('a4');
@@ -210,6 +214,32 @@ class PatrolLogController extends Controller
             ->replace('_', ' ')
             ->title()
             ->toString();
+    }
+
+    private function reportPeriodLabel($logs, Request $request): string
+    {
+        if ($request->filled('date')) {
+            return Carbon::parse($request->date('date')->toDateString(), config('app.timezone'))
+                ->format('M d, Y');
+        }
+
+        $scanTimes = $logs
+            ->pluck('scanned_at')
+            ->filter()
+            ->sort();
+
+        if ($scanTimes->isEmpty()) {
+            return 'No scan dates';
+        }
+
+        $first = $scanTimes->first()->copy()->timezone(config('app.timezone'));
+        $last = $scanTimes->last()->copy()->timezone(config('app.timezone'));
+
+        if ($first->isSameDay($last)) {
+            return $first->format('M d, Y');
+        }
+
+        return $first->format('M d, Y').' to '.$last->format('M d, Y');
     }
 
     private function letterheadDataUri(): ?string
