@@ -15,8 +15,8 @@
 
         body {
             color: #000000;
-            font-family: "Times New Roman", DejaVu Serif, serif;
-            font-size: 7.6pt;
+            font-family: Aptos, Calibri, "DejaVu Sans", sans-serif;
+            font-size: 12pt;
             line-height: 1.2;
             margin: 0;
         }
@@ -85,19 +85,19 @@
 
         .label {
             display: block;
-            font-size: 5.5pt;
+            font-size: 12pt;
             font-weight: 700;
             letter-spacing: 0;
-            line-height: 1.15;
+            line-height: 1.1;
             margin-bottom: 3pt;
             text-transform: uppercase;
         }
 
         .value {
             display: block;
-            font-size: 6.6pt;
+            font-size: 12pt;
             font-weight: 400;
-            line-height: 1.25;
+            line-height: 1.1;
         }
 
         .name-value {
@@ -106,7 +106,7 @@
 
         .narrative-label,
         .evidence-label {
-            font-size: 7.7pt;
+            font-size: 12pt;
             font-weight: 700;
             left: 71.3pt;
             position: absolute;
@@ -114,8 +114,8 @@
         }
 
         .narrative-text {
-            font-size: 7.4pt;
-            line-height: 1.45;
+            font-size: 12pt;
+            line-height: 1.2;
             padding: 9pt 10pt;
             text-align: justify;
         }
@@ -232,7 +232,7 @@
         }
 
         .empty-evidence {
-            font-size: 7.2pt;
+            font-size: 12pt;
             padding-top: 92pt;
             text-align: center;
         }
@@ -261,11 +261,11 @@
         .review-notes .value,
         .action-taken .value,
         .resolved-date .value {
-            font-size: 6.4pt;
+            font-size: 12pt;
         }
 
         .signature-name {
-            font-size: 7.2pt;
+            font-size: 12pt;
             font-weight: 700;
             position: absolute;
             text-align: center;
@@ -274,7 +274,7 @@
         }
 
         .signature-label {
-            font-size: 7.1pt;
+            font-size: 12pt;
             font-weight: 400;
             position: absolute;
             text-align: center;
@@ -298,7 +298,7 @@
         }
 
         .office-label {
-            font-size: 7.1pt;
+            font-size: 12pt;
             left: 252.1pt;
             position: absolute;
             top: 603pt;
