@@ -4,6 +4,13 @@
     <meta charset="utf-8">
     <title>Incident Report {{ str_pad((string) $incident->id, 6, '0', STR_PAD_LEFT) }}</title>
     <style>
+        @font-face {
+            font-family: "Poppins";
+            font-style: normal;
+            font-weight: 400;
+            src: url("{{ 'file:///'.str_replace('\\', '/', public_path('fonts/poppins-regular.woff')) }}") format("woff");
+        }
+
         @page {
             margin: 0;
             size: 612pt 936pt;
@@ -66,6 +73,7 @@
         }
 
         .core-values {
+            font-family: "Poppins", Aptos, Calibri, "DejaVu Sans", sans-serif;
             font-size: 5.9pt;
             font-weight: 400;
             left: 104.7pt;
