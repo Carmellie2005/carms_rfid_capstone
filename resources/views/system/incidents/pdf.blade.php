@@ -22,7 +22,7 @@
 
         body {
             color: #000000;
-            font-family: "Times New Roman", DejaVu Serif, serif;
+            font-family: Aptos, Calibri, "DejaVu Sans", sans-serif;
             font-size: 7.6pt;
             line-height: 1.2;
             margin: 0;
