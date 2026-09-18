@@ -12,17 +12,17 @@
         }
 
         @font-face {
-            font-family: "Aptos";
+            font-family: "Calibri";
             font-style: normal;
             font-weight: 400;
-            src: url("{{ 'file:///'.str_replace('\\', '/', public_path('fonts/aptos-regular.ttf')) }}") format("truetype");
+            src: url("{{ 'file:///'.str_replace('\\', '/', storage_path('fonts/calibri_normal_9a5a9d05ec04a6ad109cf6dc929a5838.ttf')) }}") format("truetype");
         }
 
         @font-face {
-            font-family: "Aptos";
+            font-family: "Calibri";
             font-style: normal;
             font-weight: 700;
-            src: url("{{ 'file:///'.str_replace('\\', '/', public_path('fonts/aptos-bold.ttf')) }}") format("truetype");
+            src: url("{{ 'file:///'.str_replace('\\', '/', storage_path('fonts/calibri_bold_606836eb88dfcf370258af3515c0027b.ttf')) }}") format("truetype");
         }
 
         @page {
@@ -36,7 +36,7 @@
 
         body {
             color: #000000;
-            font-family: "Aptos", Calibri, "DejaVu Sans", sans-serif;
+            font-family: "Calibri", "DejaVu Sans", sans-serif;
             font-size: 7.6pt;
             letter-spacing: 0;
             line-height: 1.2;
@@ -89,7 +89,7 @@
         }
 
         .core-values {
-            font-family: "Poppins", Aptos, Calibri, "DejaVu Sans", sans-serif;
+            font-family: "Poppins", "Calibri", "DejaVu Sans", sans-serif;
             font-size: 6pt;
             font-weight: 400;
             left: 104.7pt;
