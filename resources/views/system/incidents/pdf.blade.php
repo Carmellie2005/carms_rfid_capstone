@@ -49,7 +49,7 @@
             letter-spacing: 0;
             position: absolute;
             text-align: center;
-            top: 87pt;
+            top: 114.8pt;
             width: 612pt;
             z-index: 1;
         }
@@ -60,8 +60,19 @@
             left: 0;
             position: absolute;
             text-align: center;
-            top: 101pt;
+            top: 129.4pt;
             width: 612pt;
+            z-index: 1;
+        }
+
+        .core-values {
+            font-size: 5.9pt;
+            font-weight: 400;
+            left: 104.7pt;
+            line-height: 1;
+            position: absolute;
+            top: 87.3pt;
+            white-space: nowrap;
             z-index: 1;
         }
 
@@ -191,7 +202,7 @@
         }
 
         .evidence-label {
-            top: 87pt;
+            top: 115.1pt;
         }
 
         .evidence-box {
@@ -326,6 +337,7 @@
             <img class="page-background" src="{{ $incidentFormPageOneDataUri }}" alt="">
         @endif
 
+        <div class="core-values">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</div>
         <div class="html-title">Security Incident Report</div>
         <div class="html-subtitle">Incident Documentation for Checkpoint Patrol Monitoring</div>
 
@@ -379,6 +391,7 @@
             <img class="page-background" src="{{ $incidentFormPageTwoDataUri }}" alt="">
         @endif
 
+        <div class="core-values">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</div>
         <div class="evidence-label">Evidence (Photo):</div>
 
         <div class="field evidence-box">
