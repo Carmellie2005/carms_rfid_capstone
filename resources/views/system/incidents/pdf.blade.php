@@ -8,7 +8,7 @@
             font-family: "Poppins";
             font-style: normal;
             font-weight: 400;
-            src: url("{{ 'file:///'.str_replace('\\', '/', public_path('fonts/poppins-regular.woff')) }}") format("woff");
+            src: url("{{ 'file:///'.str_replace('\\', '/', public_path('fonts/poppins-regular.ttf')) }}") format("truetype");
         }
 
         @page {
@@ -77,6 +77,7 @@
             font-size: 6pt;
             font-weight: 400;
             left: 104.7pt;
+            letter-spacing: -0.01em;
             line-height: 1;
             position: absolute;
             top: 87.3pt;
@@ -199,7 +200,7 @@
         }
 
         .narrative-label {
-            top: 413.15pt;
+            top: 441.6pt;
         }
 
         .narrative-box {
@@ -307,9 +308,11 @@
 
         .office-label {
             font-size: 7.1pt;
-            left: 252.1pt;
+            left: 245pt;
             position: absolute;
+            text-align: center;
             top: 603pt;
+            width: 130pt;
             z-index: 1;
         }
     </style>
