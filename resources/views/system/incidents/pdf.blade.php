@@ -6,6 +6,7 @@
     <style>
         @page {
             margin: 0;
+            size: 612pt 936pt;
         }
 
         * {
@@ -14,18 +15,18 @@
 
         body {
             color: #000000;
-            font-family: DejaVu Sans, Arial, sans-serif;
-            font-size: 9.5pt;
-            line-height: 1.3;
+            font-family: "Times New Roman", DejaVu Serif, serif;
+            font-size: 7.6pt;
+            line-height: 1.2;
             margin: 0;
         }
 
         .page {
-            height: 936px;
+            height: 936pt;
             overflow: hidden;
             page-break-after: always;
             position: relative;
-            width: 612px;
+            width: 612pt;
         }
 
         .page:last-child {
@@ -33,179 +34,264 @@
         }
 
         .page-background {
-            height: 936px;
+            height: 936pt;
             left: 0;
             position: absolute;
             top: 0;
-            width: 612px;
+            width: 612pt;
             z-index: 0;
         }
 
-        .page-title {
-            font-size: 12pt;
+        .html-title {
+            font-size: 8.7pt;
             font-weight: 700;
-            left: 72px;
+            left: 0;
             letter-spacing: 0;
             position: absolute;
             text-align: center;
-            text-transform: uppercase;
-            top: 118px;
-            width: 468px;
+            top: 87pt;
+            width: 612pt;
+            z-index: 1;
+        }
+
+        .html-subtitle {
+            font-size: 7.8pt;
+            font-weight: 400;
+            left: 0;
+            position: absolute;
+            text-align: center;
+            top: 101pt;
+            width: 612pt;
             z-index: 1;
         }
 
         .field {
             overflow: hidden;
-            padding: 7px 9px;
+            padding: 4.5pt 5.2pt;
             position: absolute;
             z-index: 1;
         }
 
         .label {
             display: block;
-            font-size: 7.8pt;
+            font-size: 5.5pt;
             font-weight: 700;
+            letter-spacing: 0;
             line-height: 1.15;
-            margin-bottom: 4px;
+            margin-bottom: 3pt;
             text-transform: uppercase;
         }
 
         .value {
             display: block;
-            font-size: 9.5pt;
+            font-size: 6.6pt;
             font-weight: 400;
-            line-height: 1.28;
+            line-height: 1.25;
         }
 
-        .value-small {
-            font-size: 8.5pt;
-        }
-
-        .person-name {
+        .name-value {
             font-weight: 700;
         }
 
-        .multiline {
-            font-size: 9.2pt;
-            line-height: 1.36;
-            text-align: justify;
-        }
-
-        .note {
-            font-size: 8.3pt;
-            line-height: 1.28;
-        }
-
-        .triple-a {
-            height: 59px;
-            left: 72px;
-            top: 160px;
-            width: 156px;
-        }
-
-        .triple-b {
-            height: 59px;
-            left: 228px;
-            top: 160px;
-            width: 156px;
-        }
-
-        .triple-c {
-            height: 59px;
-            left: 384px;
-            top: 160px;
-            width: 156px;
-        }
-
-        .half-left-row-1 {
-            height: 44px;
-            left: 72px;
-            top: 235px;
-            width: 234px;
-        }
-
-        .half-right-row-1 {
-            height: 44px;
-            left: 306px;
-            top: 235px;
-            width: 234px;
-        }
-
-        .half-left-row-2 {
-            height: 44px;
-            left: 72px;
-            top: 279px;
-            width: 234px;
-        }
-
-        .half-right-row-2 {
-            height: 44px;
-            left: 306px;
-            top: 279px;
-            width: 234px;
-        }
-
-        .middle-full {
-            height: 44px;
-            left: 72px;
-            top: 323px;
-            width: 468px;
-        }
-
-        .wide-left {
-            height: 45px;
-            left: 72px;
-            top: 382px;
-            width: 234px;
-        }
-
-        .wide-right {
-            height: 45px;
-            left: 306px;
-            top: 382px;
-            width: 234px;
-        }
-
-        .large-box {
-            height: 249px;
-            left: 72px;
-            top: 458px;
-            width: 468px;
-        }
-
-        .footer-note {
-            font-size: 7.8pt;
-            left: 72px;
-            line-height: 1.25;
+        .narrative-label,
+        .evidence-label {
+            font-size: 7.7pt;
+            font-weight: 700;
+            left: 71.3pt;
             position: absolute;
-            top: 715px;
-            width: 468px;
             z-index: 1;
         }
 
-        .photo-table {
+        .narrative-text {
+            font-size: 7.4pt;
+            line-height: 1.45;
+            padding: 9pt 10pt;
+            text-align: justify;
+        }
+
+        .report-no {
+            height: 58.56pt;
+            left: 72.5pt;
+            top: 160.37pt;
+            width: 155.35pt;
+        }
+
+        .status {
+            height: 58.56pt;
+            left: 228.34pt;
+            top: 160.37pt;
+            width: 155.57pt;
+        }
+
+        .generated {
+            height: 58.56pt;
+            left: 384.38pt;
+            top: 160.37pt;
+            width: 155.33pt;
+        }
+
+        .category {
+            height: 43.94pt;
+            left: 72.5pt;
+            top: 234.77pt;
+            width: 233.38pt;
+        }
+
+        .priority {
+            height: 43.94pt;
+            left: 306.36pt;
+            top: 234.77pt;
+            width: 233.35pt;
+        }
+
+        .incident-date {
+            height: 43.92pt;
+            left: 72.5pt;
+            top: 279.19pt;
+            width: 233.38pt;
+        }
+
+        .reported-date {
+            height: 43.92pt;
+            left: 306.36pt;
+            top: 279.19pt;
+            width: 233.35pt;
+        }
+
+        .location {
+            height: 43.94pt;
+            left: 72.5pt;
+            top: 323.6pt;
+            width: 467.21pt;
+        }
+
+        .guard {
+            height: 43.92pt;
+            left: 72.5pt;
+            top: 383.38pt;
+            width: 233.38pt;
+        }
+
+        .employee {
+            height: 43.92pt;
+            left: 306.36pt;
+            top: 383.38pt;
+            width: 233.35pt;
+        }
+
+        .narrative-label {
+            top: 413.15pt;
+        }
+
+        .narrative-box {
+            height: 249.17pt;
+            left: 72.5pt;
+            top: 457.56pt;
+            width: 467.21pt;
+        }
+
+        .evidence-label {
+            top: 87pt;
+        }
+
+        .evidence-box {
+            height: 234.55pt;
+            left: 72.5pt;
+            padding: 10pt 12pt;
+            top: 131.07pt;
+            width: 467.21pt;
+        }
+
+        .photo-grid {
             border-collapse: collapse;
-            margin-top: 5px;
             width: 100%;
         }
 
-        .photo-table td {
-            height: 92px;
-            padding: 2px;
+        .photo-grid td {
+            height: 102pt;
+            padding: 3pt;
             text-align: center;
             vertical-align: middle;
             width: 50%;
         }
 
-        .photo-table img {
-            max-height: 88px;
+        .photo-grid img {
+            max-height: 98pt;
             max-width: 100%;
         }
 
         .empty-evidence {
-            font-size: 9pt;
-            margin-top: 48px;
+            font-size: 7.2pt;
+            padding-top: 92pt;
             text-align: center;
+        }
+
+        .review-notes {
+            height: 43.94pt;
+            left: 72.5pt;
+            top: 410.5pt;
+            width: 467.21pt;
+        }
+
+        .action-taken {
+            height: 43.92pt;
+            left: 72.5pt;
+            top: 455.16pt;
+            width: 467.21pt;
+        }
+
+        .resolved-date {
+            height: 43.94pt;
+            left: 72.5pt;
+            top: 499.56pt;
+            width: 467.21pt;
+        }
+
+        .review-notes .value,
+        .action-taken .value,
+        .resolved-date .value {
+            font-size: 6.4pt;
+        }
+
+        .signature-name {
+            font-size: 7.2pt;
+            font-weight: 700;
+            position: absolute;
+            text-align: center;
+            top: 570pt;
+            z-index: 1;
+        }
+
+        .signature-label {
+            font-size: 7.1pt;
+            font-weight: 400;
+            position: absolute;
+            text-align: center;
+            top: 588pt;
+            z-index: 1;
+        }
+
+        .guard-signature {
+            left: 80pt;
+            width: 150pt;
+        }
+
+        .supervisor-signature {
+            left: 245pt;
+            width: 130pt;
+        }
+
+        .reviewed-signature {
+            left: 385pt;
+            width: 125pt;
+        }
+
+        .office-label {
+            font-size: 7.1pt;
+            left: 252.1pt;
+            position: absolute;
+            top: 603pt;
+            z-index: 1;
         }
     </style>
 </head>
@@ -221,7 +307,6 @@
         $patrol = $incident->patrolLog;
         $guardName = $incident->securityGuard?->name ?? 'Unknown';
         $employeeNo = $incident->securityGuard?->employee_no ?? 'Not recorded';
-        $checkpointName = $incident->checkpoint?->name ?? 'Unassigned';
         $checkpointCode = $incident->checkpoint?->code ?? $patrol?->checkpoint_code ?? 'Not recorded';
         $location = $incident->checkpoint?->name ?? $incident->location ?? 'Unassigned';
         $locationCheckpoint = $checkpointCode !== 'Not recorded'
@@ -230,117 +315,75 @@
         $reviewNotes = $incident->admin_notes ?: 'No supervisor review notes recorded.';
         $actionTaken = $incident->action_taken ?: 'No action recorded.';
         $resolvedDateLabel = $resolvedDate?->format('M d, Y h:i A') ?? 'Not yet resolved';
+        $reviewedDateLabel = $resolvedDate?->format('M d, Y') ?? $generatedAt->format('M d, Y');
         $supervisorName = 'Ryan P. Tomol';
         $evidenceImages = collect($imageDataUris)->take(4)->values();
         $narrative = $incident->description ?: 'No description provided.';
     @endphp
 
     <section class="page">
-        @if ($incidentFormDataUri)
-            <img class="page-background" src="{{ $incidentFormDataUri }}" alt="">
+        @if ($incidentFormPageOneDataUri)
+            <img class="page-background" src="{{ $incidentFormPageOneDataUri }}" alt="">
         @endif
 
-        <div class="page-title">Security Incident Report</div>
+        <div class="html-title">Security Incident Report</div>
+        <div class="html-subtitle">Incident Documentation for Checkpoint Patrol Monitoring</div>
 
-        <div class="field triple-a">
+        <div class="field report-no">
             <span class="label">Report No.</span>
             <span class="value">{{ $reportNumber }}</span>
         </div>
-        <div class="field triple-b">
-            <span class="label">Status</span>
+        <div class="field status">
+            <span class="label">Status:</span>
             <span class="value">{{ $status }}</span>
         </div>
-        <div class="field triple-c">
-            <span class="label">Generated</span>
-            <span class="value value-small">{{ $generatedAt->format('M d, Y h:i A') }}</span>
+        <div class="field generated">
+            <span class="label">Generated:</span>
+            <span class="value">{{ $generatedAt->format('M d, Y h:i A') }}</span>
         </div>
-
-        <div class="field half-left-row-1">
-            <span class="label">Category</span>
+        <div class="field category">
+            <span class="label">Category:</span>
             <span class="value">{{ $category }}</span>
         </div>
-        <div class="field half-right-row-1">
-            <span class="label">Priority</span>
+        <div class="field priority">
+            <span class="label">Priority:</span>
             <span class="value">{{ $priority }}</span>
         </div>
-        <div class="field half-left-row-2">
-            <span class="label">Incident Date / Time</span>
-            <span class="value value-small">{{ $incidentDate }}</span>
+        <div class="field incident-date">
+            <span class="label">Incident Date / Time:</span>
+            <span class="value">{{ $incidentDate }}</span>
         </div>
-        <div class="field half-right-row-2">
-            <span class="label">Reported Date / Time</span>
-            <span class="value value-small">{{ $reportedDate }}</span>
+        <div class="field reported-date">
+            <span class="label">Reported Date / Time:</span>
+            <span class="value">{{ $reportedDate }}</span>
         </div>
-        <div class="field middle-full">
-            <span class="label">Location / Checkpoint</span>
+        <div class="field location">
+            <span class="label">Location / Checkpoint:</span>
             <span class="value">{{ $locationCheckpoint }}</span>
         </div>
-        <div class="field wide-left">
-            <span class="label">Reporting Guard</span>
-            <span class="value person-name">{{ $guardName }}</span>
+        <div class="field guard">
+            <span class="label">Security Guard:</span>
+            <span class="value name-value">{{ $guardName }}</span>
         </div>
-        <div class="field wide-right">
+        <div class="field employee">
             <span class="label">Employee No.</span>
             <span class="value">{{ $employeeNo }}</span>
         </div>
-        <div class="field large-box">
-            <span class="label">Narrative of Incident</span>
-            <div class="value multiline">{!! nl2br(e($narrative)) !!}</div>
-        </div>
+
+        <div class="narrative-label">Narrative of Incident:</div>
+        <div class="field narrative-box narrative-text">{!! nl2br(e($narrative)) !!}</div>
     </section>
 
     <section class="page">
-        @if ($incidentFormDataUri)
-            <img class="page-background" src="{{ $incidentFormDataUri }}" alt="">
+        @if ($incidentFormPageTwoDataUri)
+            <img class="page-background" src="{{ $incidentFormPageTwoDataUri }}" alt="">
         @endif
 
-        <div class="page-title">Evidence and Supervisor Review</div>
+        <div class="evidence-label">Evidence (Photo):</div>
 
-        <div class="field triple-a">
-            <span class="label">Report No.</span>
-            <span class="value">{{ $reportNumber }}</span>
-        </div>
-        <div class="field triple-b">
-            <span class="label">Photo Evidence</span>
-            <span class="value">{{ count($imageDataUris) }} attached</span>
-        </div>
-        <div class="field triple-c">
-            <span class="label">Status</span>
-            <span class="value">{{ $status }}</span>
-        </div>
-
-        <div class="field half-left-row-1">
-            <span class="label">Review Notes</span>
-            <span class="value value-small">{{ $reviewNotes }}</span>
-        </div>
-        <div class="field half-right-row-1">
-            <span class="label">Action Taken</span>
-            <span class="value value-small">{{ $actionTaken }}</span>
-        </div>
-        <div class="field half-left-row-2">
-            <span class="label">Resolved Date / Time</span>
-            <span class="value value-small">{{ $resolvedDateLabel }}</span>
-        </div>
-        <div class="field half-right-row-2">
-            <span class="label">Security Office</span>
-            <span class="value value-small">Security and Safety Office</span>
-        </div>
-        <div class="field middle-full">
-            <span class="label">Evidence Note</span>
-            <span class="value value-small">Only incident-related photos are included. Routine checklist photos are not required unless they directly support the incident.</span>
-        </div>
-        <div class="field wide-left">
-            <span class="label">Reporting Guard</span>
-            <span class="value person-name">{{ $guardName }}</span>
-        </div>
-        <div class="field wide-right">
-            <span class="label">Supervisor</span>
-            <span class="value person-name">{{ $supervisorName }}</span>
-        </div>
-        <div class="field large-box">
-            <span class="label">Evidence (Photo)</span>
+        <div class="field evidence-box">
             @if ($evidenceImages->isNotEmpty())
-                <table class="photo-table">
+                <table class="photo-grid">
                     @foreach ($evidenceImages->chunk(2) as $row)
                         <tr>
                             @foreach ($row as $imageDataUri)
@@ -359,11 +402,26 @@
             @endif
         </div>
 
-        @if (count($imageDataUris) > 4)
-            <div class="footer-note">
-                {{ count($imageDataUris) - 4 }} additional incident photo(s) are stored in the system record.
-            </div>
-        @endif
+        <div class="field review-notes">
+            <span class="label">Review Notes:</span>
+            <span class="value">{{ $reviewNotes }}</span>
+        </div>
+        <div class="field action-taken">
+            <span class="label">Action Taken:</span>
+            <span class="value">{{ $actionTaken }}</span>
+        </div>
+        <div class="field resolved-date">
+            <span class="label">Resolved Date / Time:</span>
+            <span class="value">{{ $resolvedDateLabel }}</span>
+        </div>
+
+        <div class="signature-name guard-signature">{{ $guardName }}</div>
+        <div class="signature-name supervisor-signature">{{ $supervisorName }}</div>
+        <div class="signature-name reviewed-signature">{{ $reviewedDateLabel }}</div>
+        <div class="signature-label guard-signature">Reporting Guard</div>
+        <div class="signature-label supervisor-signature">Supervisor</div>
+        <div class="signature-label reviewed-signature">Date Reviewed</div>
+        <div class="office-label">Security and Safety Office</div>
     </section>
 </body>
 </html>
