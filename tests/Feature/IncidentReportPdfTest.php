@@ -154,15 +154,46 @@ class IncidentReportPdfTest extends TestCase
         $this->assertStringContainsString('application/pdf', $response->headers->get('content-type'));
     }
 
-    public function test_incident_report_pdf_handles_long_review_notes_and_action_taken(): void
+    public function test_incident_report_pdf_omits_admin_notes_and_limits_action_taken_summary(): void
+    {
+        $description = collect(range(1, 35))
+            ->map(fn (int $number) => 'desc'.$number)
+            ->implode(' ');
+        $actionTaken = collect(range(1, 35))
+            ->map(fn (int $number) => 'act'.$number)
+            ->implode(' ');
+        $incident = $this->createIncidentReport(description: $description);
+        $incident->update([
+            'admin_notes' => 'Internal supervisor note should not appear in the printed incident report.',
+            'action_taken' => $actionTaken,
+            'status' => 'resolved',
+            'resolved_at' => now(),
+        ]);
+
+        $html = view('system.incidents.pdf', [
+            'generatedAt' => now(),
+            'imageDataUris' => [],
+            'incident' => $incident->fresh()->load(['securityGuard', 'checkpoint', 'patrolLog', 'images']),
+            'incidentFormPageOneDataUri' => null,
+            'incidentFormPageTwoDataUri' => null,
+        ])->render();
+
+        $this->assertStringContainsString('Incident Description / Summary:', $html);
+        $this->assertStringContainsString('Narrative of Incident Details', $html);
+        $this->assertStringContainsString('act30', $html);
+        $this->assertStringNotContainsString('act31', $html);
+        $this->assertStringNotContainsString('Review Notes:', $html);
+        $this->assertStringNotContainsString('Internal supervisor note should not appear', $html);
+    }
+
+    public function test_incident_report_pdf_handles_long_description_and_action_taken(): void
     {
         $supervisor = User::factory()->create(['role' => 'admin']);
-        $incident = $this->createIncidentReport();
+        $incident = $this->createIncidentReport(description: str_repeat(
+            'The reporting guard documented a checkpoint concern for supervisor reference. ',
+            30
+        ));
         $incident->update([
-            'admin_notes' => str_repeat(
-                'The supervisor reviewed the submitted incident details and confirmed that the attached evidence is clear. ',
-                24
-            ),
             'action_taken' => str_repeat(
                 'The security office coordinated the concern with the responsible personnel and documented the corrective action for follow-up. ',
                 30

@@ -354,8 +354,8 @@
         }
 
         .review-flow .value {
-            font-size: 10.5pt;
-            line-height: 1.2;
+            font-size: 11pt;
+            line-height: 1.25;
             text-align: justify;
         }
 
@@ -363,47 +363,11 @@
             text-align: left;
         }
 
-        .review-flow-compact .review-flow-field {
-            padding: 4pt 6pt 4.5pt;
-        }
-
-        .review-flow-compact .label {
-            font-size: 9.5pt;
-            margin-bottom: 2pt;
-        }
-
-        .review-flow-compact .value {
-            font-size: 8.8pt;
-            line-height: 1.12;
-        }
-
-        .review-flow-dense .review-flow-field {
-            padding: 3pt 5pt 3.5pt;
-        }
-
-        .review-flow-dense .label {
-            font-size: 8.2pt;
-            margin-bottom: 1.2pt;
-        }
-
-        .review-flow-dense .value {
-            font-size: 6.8pt;
-            line-height: 1.05;
-        }
-
         .review-signatures {
             border-collapse: collapse;
-            margin-top: 18pt;
+            margin-top: 32pt;
             table-layout: fixed;
             width: 100%;
-        }
-
-        .review-flow-compact .review-signatures {
-            margin-top: 12pt;
-        }
-
-        .review-flow-dense .review-signatures {
-            margin-top: 8pt;
         }
 
         .review-signatures td {
@@ -414,14 +378,6 @@
             text-align: center;
             vertical-align: bottom;
             width: 33.333%;
-        }
-
-        .review-flow-compact .review-signatures td {
-            font-size: 9.5pt;
-        }
-
-        .review-flow-dense .review-signatures td {
-            font-size: 7.8pt;
         }
 
         .signature-name {
@@ -457,7 +413,6 @@
         $locationCheckpoint = $checkpointCode !== 'Not recorded'
             ? $location.' - '.$checkpointCode
             : $location;
-        $reviewNotes = $incident->admin_notes ?: 'No supervisor review notes recorded.';
         $actionTaken = $incident->action_taken ?: 'No action recorded.';
         $resolvedDateLabel = $resolvedDate?->format('M d, Y h:i A') ?? 'Not yet resolved';
         $reviewedDateLabel = $resolvedDate?->format('M d, Y') ?? $generatedAt->format('M d, Y');
@@ -465,10 +420,33 @@
         $evidenceImages = collect($imageDataUris)->take(4)->values();
         $narrative = $incident->description ?: 'No description provided.';
         $normalizeText = fn (string $value): string => trim(preg_replace("/\r\n|\r/", "\n", $value));
+        $plainText = fn (string $value): string => trim(preg_replace('/\s+/u', ' ', $normalizeText($value)));
+        $words = function (string $value) use ($plainText): array {
+            $value = $plainText($value);
+
+            return $value === ''
+                ? []
+                : preg_split('/\s+/u', $value, -1, PREG_SPLIT_NO_EMPTY);
+        };
         $textLength = fn (string $value): int => function_exists('mb_strlen') ? mb_strlen($value) : strlen($value);
         $textSlice = fn (string $value, int $start, ?int $length = null): string => function_exists('mb_substr')
             ? mb_substr($value, $start, $length)
             : substr($value, $start, $length);
+        $limitWords = function (string $text, int $limit, string $fallback) use ($plainText, $words): string {
+            $text = $plainText($text);
+
+            if ($text === '') {
+                return $fallback;
+            }
+
+            $wordList = $words($text);
+
+            if (count($wordList) <= $limit) {
+                return $text;
+            }
+
+            return implode(' ', array_slice($wordList, 0, $limit));
+        };
         $splitText = function (string $text, int $firstLimit, int $continuationLimit, string $fallback) use ($normalizeText, $textLength, $textSlice): array {
             $chunks = [];
             $remaining = $normalizeText($text);
@@ -501,13 +479,12 @@
 
             return $chunks !== [] ? $chunks : [$fallback];
         };
-        $narrativeChunks = collect($splitText($narrative, 950, 2200, 'No description provided.'));
-        $firstNarrativeChunk = $narrativeChunks->first();
-        $continuationNarrativeChunks = $narrativeChunks->slice(1)->values();
-        $reviewFlowLength = $textLength($normalizeText($reviewNotes).' '.$normalizeText($actionTaken));
-        $reviewFlowDensity = $reviewFlowLength > 1800
-            ? 'dense'
-            : ($reviewFlowLength > 700 ? 'compact' : 'normal');
+        $incidentDescriptionSummary = $limitWords($narrative, 30, 'No description provided.');
+        $actionTakenSummary = $limitWords($actionTaken, 30, 'No action recorded.');
+        $narrativeWordCount = count($words($narrative));
+        $narrativeDetailChunks = $narrativeWordCount > 30
+            ? collect($splitText($narrative, 2200, 2200, 'No description provided.'))
+            : collect();
     @endphp
 
     <section class="page">
@@ -560,19 +537,19 @@
             <span class="value">{{ $employeeNo }}</span>
         </div>
 
-        <div class="narrative-label">Narrative of Incident:</div>
-        <div class="field narrative-box narrative-text">{!! nl2br(e($firstNarrativeChunk)) !!}</div>
+        <div class="narrative-label">Incident Description / Summary:</div>
+        <div class="field narrative-box narrative-text">{!! nl2br(e($incidentDescriptionSummary)) !!}</div>
     </section>
 
-    @foreach ($continuationNarrativeChunks as $continuationIndex => $continuationNarrative)
+    @foreach ($narrativeDetailChunks as $continuationIndex => $continuationNarrative)
         <section class="page">
             <div class="core-values">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</div>
             <div class="continuation-title">Security Incident Report</div>
-            <div class="continuation-subtitle">Narrative of Incident Continuation</div>
+            <div class="continuation-subtitle">Narrative of Incident Details</div>
             <div class="continuation-meta">Report No.: {{ $reportNumber }} &nbsp; | &nbsp; Security Guard: {{ $guardName }}</div>
-            <div class="continuation-label">Narrative of Incident (continued):</div>
+            <div class="continuation-label">Narrative of Incident:</div>
             <div class="continuation-box">{!! nl2br(e($continuationNarrative)) !!}</div>
-            <div class="continuation-footer">Narrative continuation page {{ $continuationIndex + 1 }} of {{ $continuationNarrativeChunks->count() }}</div>
+            <div class="continuation-footer">Narrative details page {{ $continuationIndex + 1 }} of {{ $narrativeDetailChunks->count() }}</div>
         </section>
     @endforeach
 
@@ -605,14 +582,10 @@
             @endif
         </div>
 
-        <div class="review-flow review-flow-{{ $reviewFlowDensity }}">
-            <div class="review-flow-field">
-                <span class="label">Review Notes:</span>
-                <span class="value">{!! nl2br(e($reviewNotes)) !!}</span>
-            </div>
+        <div class="review-flow">
             <div class="review-flow-field">
                 <span class="label">Action Taken:</span>
-                <span class="value">{!! nl2br(e($actionTaken)) !!}</span>
+                <span class="value">{!! nl2br(e($actionTakenSummary)) !!}</span>
             </div>
             <div class="review-flow-field resolved-field">
                 <span class="label">Resolved Date / Time:</span>
