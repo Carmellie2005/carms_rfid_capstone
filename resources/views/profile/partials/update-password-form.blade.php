@@ -1,6 +1,6 @@
 <section>
     <header>
-        <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">
+        <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700 dark:text-white">
             {{ __('Account Security') }}
         </p>
 
@@ -13,10 +13,10 @@
         </p>
 
         <div class="mt-3 grid gap-2 text-xs font-medium text-slate-600 dark:text-slate-300 sm:grid-cols-2">
-            <span class="rounded-md border border-blue-100 bg-blue-50/50 px-3 py-2 dark:border-blue-400/25 dark:bg-blue-950/35">At least 8 characters.</span>
-            <span class="rounded-md border border-blue-100 bg-blue-50/50 px-3 py-2 dark:border-blue-400/25 dark:bg-blue-950/35">Better with letters, numbers, or symbols.</span>
-            <span class="rounded-md border border-blue-100 bg-blue-50/50 px-3 py-2 dark:border-blue-400/25 dark:bg-blue-950/35">Avoid your name, birthday, or employee number.</span>
-            <span class="rounded-md border border-blue-100 bg-blue-50/50 px-3 py-2 dark:border-blue-400/25 dark:bg-blue-950/35">Do not share it with anyone.</span>
+            <span class="rounded-md border border-blue-100 bg-blue-50/50 px-3 py-2 dark:border-slate-700 dark:bg-slate-950/45 dark:text-slate-100">At least 8 characters.</span>
+            <span class="rounded-md border border-blue-100 bg-blue-50/50 px-3 py-2 dark:border-slate-700 dark:bg-slate-950/45 dark:text-slate-100">Better with letters, numbers, or symbols.</span>
+            <span class="rounded-md border border-blue-100 bg-blue-50/50 px-3 py-2 dark:border-slate-700 dark:bg-slate-950/45 dark:text-slate-100">Avoid your name, birthday, or employee number.</span>
+            <span class="rounded-md border border-blue-100 bg-blue-50/50 px-3 py-2 dark:border-slate-700 dark:bg-slate-950/45 dark:text-slate-100">Do not share it with anyone.</span>
         </div>
     </header>
 

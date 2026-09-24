@@ -47,27 +47,27 @@
 
 <section>
     <header>
-        <h2 class="text-base font-semibold text-blue-950">
+        <h2 class="text-base font-semibold text-blue-950 dark:text-white">
             {{ __('Profile Information') }}
         </h2>
 
-        <p class="mt-1 text-xs text-slate-600">
+        <p class="mt-1 text-xs text-slate-600 dark:text-slate-300">
             {{ __('Personal account details and verification status.') }}
         </p>
 
         @if ($isGuard)
-            <div class="mt-3 grid gap-3 border-y border-blue-100 py-2 {{ $faceVerificationEnabled ? 'sm:grid-cols-2' : '' }}">
+            <div class="mt-3 grid gap-3 border-y border-blue-100 py-2 dark:border-slate-700 {{ $faceVerificationEnabled ? 'sm:grid-cols-2' : '' }}">
                 <div>
-                    <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Profile Completion</p>
-                    <p class="mt-0.5 text-lg font-bold text-blue-950">{{ $profileCompletionPercent }}%</p>
-                    <p class="text-xs font-semibold {{ $profileCompletionPercent === 100 ? 'text-emerald-700' : 'text-amber-700' }}">
+                    <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">Profile Completion</p>
+                    <p class="mt-0.5 text-lg font-bold text-blue-950 dark:text-white">{{ $profileCompletionPercent }}%</p>
+                    <p class="text-xs font-semibold {{ $profileCompletionPercent === 100 ? 'text-emerald-700 dark:text-emerald-200' : 'text-amber-700 dark:text-amber-200' }}">
                         {{ $profileCompletionPercent === 100 ? 'Complete' : 'Needs updates' }}
                     </p>
                 </div>
                 @if ($faceVerificationEnabled)
                 <div>
-                    <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Face Registration</p>
-                    <p class="mt-1 text-xs font-semibold {{ $hasProcessedFaceRegistration ? 'text-emerald-700' : 'text-amber-700' }}">{{ $faceDataLabel }}</p>
+                    <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">Face Registration</p>
+                    <p class="mt-1 text-xs font-semibold {{ $hasProcessedFaceRegistration ? 'text-emerald-700 dark:text-emerald-200' : 'text-amber-700 dark:text-amber-200' }}">{{ $faceDataLabel }}</p>
                 </div>
                 @endif
             </div>
@@ -97,11 +97,11 @@
         @method('patch')
 
         @if ($faceVerificationEnabled && $isGuard)
-            <div class="border-t border-blue-100 pt-4">
+            <div class="border-t border-blue-100 pt-4 dark:border-slate-700">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                        <h3 class="text-sm font-semibold text-blue-950">Face Registration</h3>
-                        <p class="mt-1 text-xs text-slate-600">One-time face reference for checkpoint verification.</p>
+                        <h3 class="text-sm font-semibold text-blue-950 dark:text-white">Face Registration</h3>
+                        <p class="mt-1 text-xs text-slate-600 dark:text-slate-300">One-time face reference for checkpoint verification.</p>
                     </div>
                     <span class="inline-flex w-fit rounded-md px-2.5 py-1 text-[0.68rem] font-semibold ring-1 {{ $hasProcessedFaceRegistration ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : ($hasFaceRegistration ? 'bg-amber-50 text-amber-700 ring-amber-200' : 'bg-red-50 text-red-700 ring-red-200') }}">
                         {{ $hasProcessedFaceRegistration ? 'Ready' : ($hasFaceRegistration ? 'Needs face data' : 'Required') }}
@@ -346,79 +346,79 @@
         </div>
 
         @if ($isSupervisor)
-            <div class="border-t border-blue-100 pt-4">
-                <h3 class="text-sm font-semibold text-blue-950">Office Information</h3>
+            <div class="border-t border-blue-100 pt-4 dark:border-slate-700">
+                <h3 class="text-sm font-semibold text-blue-950 dark:text-white">Office Information</h3>
                 <dl class="mt-3 grid gap-3 md:grid-cols-2">
-                    <div class="border-b border-blue-100 pb-2">
-                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Position</dt>
-                        <dd class="mt-1 text-sm font-semibold text-slate-800">Head / Supervisor</dd>
+                    <div class="border-b border-blue-100 pb-2 dark:border-slate-700">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">Position</dt>
+                        <dd class="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">Head / Supervisor</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-2">
-                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Office</dt>
-                        <dd class="mt-1 text-sm font-semibold text-slate-800">Security and Safety Services Office</dd>
+                    <div class="border-b border-blue-100 pb-2 dark:border-slate-700">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">Office</dt>
+                        <dd class="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">Security and Safety Services Office</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-2">
-                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Role in System</dt>
-                        <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $roleLabel }}</dd>
+                    <div class="border-b border-blue-100 pb-2 dark:border-slate-700">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">Role in System</dt>
+                        <dd class="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{{ $roleLabel }}</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-2">
-                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Birthday</dt>
-                        <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $user->birthday?->format('M d, Y') ?? 'Not set' }}</dd>
+                    <div class="border-b border-blue-100 pb-2 dark:border-slate-700">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">Birthday</dt>
+                        <dd class="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{{ $user->birthday?->format('M d, Y') ?? 'Not set' }}</dd>
                     </div>
                     <div class="md:col-span-2">
-                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Account Status</dt>
-                        <dd class="mt-1 text-sm font-semibold text-emerald-700">Active</dd>
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">Account Status</dt>
+                        <dd class="mt-1 text-sm font-semibold text-emerald-700 dark:text-emerald-200">Active</dd>
                     </div>
                 </dl>
             </div>
         @elseif ($isGuard && $guardProfile)
-            <div class="border-t border-blue-100 pt-4">
-                <h3 class="text-sm font-semibold text-blue-950">Guard Information</h3>
+            <div class="border-t border-blue-100 pt-4 dark:border-slate-700">
+                <h3 class="text-sm font-semibold text-blue-950 dark:text-white">Guard Information</h3>
                 <dl class="mt-3 grid gap-3 md:grid-cols-2">
-                    <div class="border-b border-blue-100 pb-2">
-                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Position</dt>
-                        <dd class="mt-1 text-sm font-semibold text-slate-800">Security Guard</dd>
+                    <div class="border-b border-blue-100 pb-2 dark:border-slate-700">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">Position</dt>
+                        <dd class="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">Security Guard</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-2">
-                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Office</dt>
-                        <dd class="mt-1 text-sm font-semibold text-slate-800">Security and Safety Services Office</dd>
+                    <div class="border-b border-blue-100 pb-2 dark:border-slate-700">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">Office</dt>
+                        <dd class="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">Security and Safety Services Office</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-2">
-                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Employee No.</dt>
-                        <dd class="mt-1 font-mono text-sm font-semibold text-slate-800">{{ $guardProfile->employee_no }}</dd>
+                    <div class="border-b border-blue-100 pb-2 dark:border-slate-700">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">Employee No.</dt>
+                        <dd class="mt-1 font-mono text-sm font-semibold text-slate-800 dark:text-slate-100">{{ $guardProfile->employee_no }}</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-2">
-                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">RFID UID</dt>
-                        <dd class="mt-1 font-mono text-sm font-semibold text-slate-800">{{ $guardProfile->rfid_uid }}</dd>
+                    <div class="border-b border-blue-100 pb-2 dark:border-slate-700">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">RFID UID</dt>
+                        <dd class="mt-1 font-mono text-sm font-semibold text-slate-800 dark:text-slate-100">{{ $guardProfile->rfid_uid }}</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-2">
-                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Assigned Shift</dt>
-                        <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $guardProfile->shift ?: 'Unassigned' }}</dd>
+                    <div class="border-b border-blue-100 pb-2 dark:border-slate-700">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">Assigned Shift</dt>
+                        <dd class="mt-1 text-sm font-semibold text-slate-800 dark:text-white">{{ $guardProfile->shift ?: 'Unassigned' }}</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-2">
-                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Birthday</dt>
-                        <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $user->birthday?->format('M d, Y') ?? 'Not set' }}</dd>
+                    <div class="border-b border-blue-100 pb-2 dark:border-slate-700">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">Birthday</dt>
+                        <dd class="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{{ $user->birthday?->format('M d, Y') ?? 'Not set' }}</dd>
                     </div>
-                    <div class="border-b border-blue-100 pb-2">
-                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Account Status</dt>
-                        <dd class="mt-1 text-sm font-semibold {{ $guardProfile->status === 'active' ? 'text-emerald-700' : 'text-slate-600' }}">{{ ucfirst($guardProfile->status) }}</dd>
+                    <div class="border-b border-blue-100 pb-2 dark:border-slate-700">
+                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">Account Status</dt>
+                        <dd class="mt-1 text-sm font-semibold {{ $guardProfile->status === 'active' ? 'text-emerald-700 dark:text-emerald-200' : 'text-slate-600 dark:text-slate-300' }}">{{ ucfirst($guardProfile->status) }}</dd>
                     </div>
                     @if ($faceVerificationEnabled)
-                        <div class="border-b border-blue-100 pb-2 md:border-b-0 md:pb-0">
-                            <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Face Reference</dt>
-                            <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $guardProfile->face_reference ?: 'Not set' }}</dd>
+                        <div class="border-b border-blue-100 pb-2 dark:border-slate-700 md:border-b-0 md:pb-0">
+                            <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">Face Reference</dt>
+                            <dd class="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{{ $guardProfile->face_reference ?: 'Not set' }}</dd>
                         </div>
                         <div>
-                            <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">Live Face Registration</dt>
-                            <dd class="mt-1 text-sm font-semibold text-slate-800">{{ $hasProcessedFaceRegistration ? 'Completed' : 'Not registered' }}</dd>
+                            <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">Live Face Registration</dt>
+                            <dd class="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{{ $hasProcessedFaceRegistration ? 'Completed' : 'Not registered' }}</dd>
                         </div>
                     @endif
                 </dl>
             </div>
         @elseif ($isGuard)
-            <div class="border-t border-blue-100 pt-4">
-                <h3 class="text-sm font-semibold text-blue-950">Guard Information</h3>
-                <p class="mt-2 text-xs text-amber-700">This account is not linked to a guard profile yet.</p>
+            <div class="border-t border-blue-100 pt-4 dark:border-slate-700">
+                <h3 class="text-sm font-semibold text-blue-950 dark:text-white">Guard Information</h3>
+                <p class="mt-2 text-xs text-amber-700 dark:text-amber-200">This account is not linked to a guard profile yet.</p>
             </div>
         @endif
 

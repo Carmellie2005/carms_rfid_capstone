@@ -11,8 +11,8 @@
     <x-slot name="header">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="text-xl font-semibold leading-tight text-blue-950">{{ __('Guard Management') }}</h2>
-                <p class="mt-1 text-sm text-blue-600">{{ $faceVerificationEnabled ? 'Registered guards, RFID cards, and live face registration status' : 'Registered guards, RFID cards, shifts, and login accounts' }}</p>
+                <h2 class="text-xl font-semibold leading-tight text-blue-950 dark:text-white">{{ __('Guard Management') }}</h2>
+                <p class="mt-1 text-sm text-blue-600 dark:text-slate-200">{{ $faceVerificationEnabled ? 'Registered guards, RFID cards, and live face registration status' : 'Registered guards, RFID cards, shifts, and login accounts' }}</p>
             </div>
             <button
                 type="button"
@@ -39,7 +39,7 @@
     >
         <div class="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
             @if (session('status'))
-                <div class="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800">{{ session('status') }}</div>
+                <div class="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800 dark:border-slate-700 dark:bg-slate-900 dark:text-white">{{ session('status') }}</div>
             @endif
 
             <div
@@ -55,63 +55,63 @@
                     @php
                         $hasLiveFaceRegistration = \App\Support\FaceVerification::hasCompleteRegistration($guard->faceDescriptors);
                     @endphp
-                    <article class="min-w-0 rounded-md border border-blue-100 bg-white p-3 shadow-sm">
+                    <article class="min-w-0 rounded-md border border-blue-100 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                         <div class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
                                 <button
                                     type="button"
                                     data-records-url="{{ route('guards.records', $guard) }}"
                                     x-on:click="openGuardRecord($event.currentTarget.dataset.recordsUrl)"
-                                    class="block max-w-full truncate text-left text-sm font-semibold text-blue-950 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                    class="block max-w-full truncate text-left text-sm font-semibold text-blue-950 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:text-white dark:hover:text-blue-100 dark:focus:ring-offset-slate-900"
                                 >
                                     {{ $guard->name }}
                                 </button>
-                                <p class="mt-1 truncate text-xs text-slate-500">{{ $guard->employee_no }}</p>
+                                <p class="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">{{ $guard->employee_no }}</p>
                             </div>
                             <span class="shrink-0 whitespace-nowrap rounded-md px-2 py-1 text-[0.65rem] font-semibold ring-1 {{ $guard->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45' : 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60' }}">
                                 {{ ucfirst($guard->status) }}
                             </span>
                         </div>
 
-                        <dl class="mt-3 grid gap-2 text-xs text-slate-600">
+                        <dl class="mt-3 grid gap-2 text-xs text-slate-600 dark:text-slate-200">
                             <div class="min-w-0">
-                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">RFID UID</dt>
+                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-white">RFID UID</dt>
                                 <dd class="mt-1 truncate font-mono">{{ $guard->rfid_uid }}</dd>
                             </div>
                             @if ($faceVerificationEnabled)
                             <div>
-                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Face Registration</dt>
+                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-white">Face Registration</dt>
                                 <dd class="mt-1 whitespace-nowrap">{{ $hasLiveFaceRegistration ? 'Registered' : 'Not registered' }}</dd>
                             </div>
                             @endif
                             <div class="min-w-0">
-                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Contact</dt>
+                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-white">Contact</dt>
                                 <dd class="mt-1 truncate">{{ $guard->email ?? 'No email' }}</dd>
-                                <dd class="truncate text-xs text-slate-500">{{ $guard->phone ?? 'No phone' }}</dd>
+                                <dd class="truncate text-xs text-slate-500 dark:text-slate-400">{{ $guard->phone ?? 'No phone' }}</dd>
                             </div>
                             <div class="min-w-0">
-                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Shift</dt>
-                                <dd class="mt-1 truncate">{{ $guard->shift ?? 'Unassigned' }}</dd>
+                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-white">Shift</dt>
+                                <dd class="mt-1 truncate dark:text-white">{{ $guard->shift ?? 'Unassigned' }}</dd>
                             </div>
                         </dl>
 
                         <div class="mt-3 grid grid-cols-2 gap-2">
-                            <button type="button" data-edit-guard-id="{{ $guard->id }}" x-on:click="openEditGuardModal($event.currentTarget.dataset.editGuardId)" class="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">Edit</button>
+                            <button type="button" data-edit-guard-id="{{ $guard->id }}" x-on:click="openEditGuardModal($event.currentTarget.dataset.editGuardId)" class="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-2 text-xs font-semibold text-blue-700 hover:bg-blue-50 dark:border-slate-700 dark:text-white dark:hover:bg-slate-800">Edit</button>
                             <button type="button" data-delete-action="{{ route('guards.destroy', $guard) }}" data-delete-name="{{ $guard->name }}" x-on:click="openDeleteGuardModal($event.currentTarget.dataset.deleteAction, $event.currentTarget.dataset.deleteName)" class="inline-flex h-9 w-full items-center justify-center whitespace-nowrap rounded-md border border-red-200 px-2 text-xs font-semibold text-red-700 hover:bg-red-50">Delete</button>
                         </div>
                     </article>
                 @empty
-                    <div class="col-span-2 rounded-md border border-blue-100 bg-white px-5 py-8 text-center text-slate-500 shadow-sm">No guards registered.</div>
+                    <div class="col-span-2 rounded-md border border-blue-100 bg-white px-5 py-8 text-center text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">No guards registered.</div>
                 @endforelse
             </div>
 
             <div
-                class="hidden rounded-md border border-blue-100 bg-white shadow-sm lg:block"
+                class="hidden rounded-md border border-blue-100 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900 lg:block"
                 :class="sidePanelOpen() ? 'lg:h-[42rem] lg:max-h-[calc(100vh-12rem)] lg:overflow-auto' : 'overflow-hidden'"
             >
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-blue-100 text-sm">
-                        <thead class="bg-blue-50/70 text-left text-xs font-extrabold uppercase text-blue-800">
+                    <table class="min-w-full divide-y divide-blue-100 text-sm dark:divide-slate-700">
+                        <thead class="bg-blue-50/70 text-left text-xs font-extrabold uppercase text-blue-800 dark:bg-slate-950/60 dark:text-white">
                             <tr>
                                 <th class="px-5 py-3">Employee</th>
                                 <th class="px-5 py-3">Contact</th>
@@ -124,32 +124,32 @@
                                 <th class="px-5 py-3 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-blue-50">
+                        <tbody class="divide-y divide-blue-50 dark:divide-slate-800">
                             @forelse ($guards as $guard)
                                 @php
                                     $hasLiveFaceRegistration = \App\Support\FaceVerification::hasCompleteRegistration($guard->faceDescriptors);
                                 @endphp
-                                <tr>
+                                <tr class="dark:text-slate-100">
                                     <td class="px-5 py-4">
                                         <button
                                             type="button"
                                             data-records-url="{{ route('guards.records', $guard) }}"
                                             x-on:click="openGuardRecord($event.currentTarget.dataset.recordsUrl)"
-                                            class="text-left font-medium text-slate-900 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                            class="text-left font-medium text-slate-900 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:text-white dark:hover:text-blue-100 dark:focus:ring-offset-slate-900"
                                         >
                                             {{ $guard->name }}
                                         </button>
-                                        <div class="text-xs text-slate-500">{{ $guard->employee_no }}</div>
+                                        <div class="text-xs text-slate-500 dark:text-slate-400">{{ $guard->employee_no }}</div>
                                     </td>
-                                    <td class="px-5 py-4 text-slate-600">
+                                    <td class="px-5 py-4 text-slate-600 dark:text-slate-200">
                                         <div>{{ $guard->email ?? 'No email' }}</div>
                                         <div class="text-xs">{{ $guard->phone ?? 'No phone' }}</div>
                                     </td>
-                                    <td class="px-5 py-4 font-mono text-slate-700">{{ $guard->rfid_uid }}</td>
+                                    <td class="px-5 py-4 font-mono text-slate-700 dark:text-slate-100">{{ $guard->rfid_uid }}</td>
                                     @if ($faceVerificationEnabled)
-                                        <td class="px-5 py-4 text-slate-600">{{ $hasLiveFaceRegistration ? 'Registered' : 'Not registered' }}</td>
+                                        <td class="px-5 py-4 text-slate-600 dark:text-slate-200">{{ $hasLiveFaceRegistration ? 'Registered' : 'Not registered' }}</td>
                                     @endif
-                                    <td class="px-5 py-4 text-slate-600">{{ $guard->shift ?? 'Unassigned' }}</td>
+                                    <td class="px-5 py-4 text-slate-600 dark:text-white">{{ $guard->shift ?? 'Unassigned' }}</td>
                                     <td class="px-5 py-4">
                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $guard->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45' : 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60' }}">
                                             {{ ucfirst($guard->status) }}
@@ -157,14 +157,14 @@
                                     </td>
                                     <td class="px-5 py-4">
                                         <div class="flex justify-end gap-2">
-                                            <button type="button" data-edit-guard-id="{{ $guard->id }}" x-on:click="openEditGuardModal($event.currentTarget.dataset.editGuardId)" class="rounded-md border border-blue-200 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">Edit</button>
+                                            <button type="button" data-edit-guard-id="{{ $guard->id }}" x-on:click="openEditGuardModal($event.currentTarget.dataset.editGuardId)" class="rounded-md border border-blue-200 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50 dark:border-slate-700 dark:text-white dark:hover:bg-slate-800">Edit</button>
                                             <button type="button" data-delete-action="{{ route('guards.destroy', $guard) }}" data-delete-name="{{ $guard->name }}" x-on:click="openDeleteGuardModal($event.currentTarget.dataset.deleteAction, $event.currentTarget.dataset.deleteName)" class="rounded-md border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50">Delete</button>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ $faceVerificationEnabled ? 7 : 6 }}" class="px-5 py-8 text-center text-slate-500">No guards registered.</td>
+                                    <td colspan="{{ $faceVerificationEnabled ? 7 : 6 }}" class="px-5 py-8 text-center text-slate-500 dark:text-slate-300">No guards registered.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -192,17 +192,17 @@
                     x-transition:leave="transition ease-in duration-150"
                     x-transition:leave-start="translate-x-0"
                     x-transition:leave-end="translate-x-full"
-                    class="ml-auto flex h-full w-full max-w-2xl flex-col overflow-hidden bg-white shadow-xl sm:rounded-l-lg lg:ml-0 lg:h-[42rem] lg:max-h-[calc(100vh-12rem)] lg:max-w-none lg:rounded-md lg:border lg:border-blue-100 lg:shadow-sm"
+                    class="ml-auto flex h-full w-full max-w-2xl flex-col overflow-hidden bg-white shadow-xl dark:bg-slate-900 sm:rounded-l-lg lg:ml-0 lg:h-[42rem] lg:max-h-[calc(100vh-12rem)] lg:max-w-none lg:rounded-md lg:border lg:border-blue-100 lg:shadow-sm lg:dark:border-slate-700"
                 >
-                    <header class="flex items-start justify-between gap-4 border-b border-blue-100 px-5 py-4">
+                    <header class="flex items-start justify-between gap-4 border-b border-blue-100 px-5 py-4 dark:border-slate-700">
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Guard Profile</p>
-                            <h3 id="create-guard-title" class="mt-1 text-lg font-semibold text-blue-950">New Guard</h3>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-white">Guard Profile</p>
+                            <h3 id="create-guard-title" class="mt-1 text-lg font-semibold text-blue-950 dark:text-white">New Guard</h3>
                         </div>
                         <button
                             type="button"
                             x-on:click="closeCreateGuardModal()"
-                            class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-100 text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-100 text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                             aria-label="Close new guard form"
                         >
                             <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -219,33 +219,33 @@
                             <div class="grid gap-4 md:grid-cols-2">
                                 <div>
                                     <label for="create_employee_no" class="sr-only">Employee No.</label>
-                                    <input id="create_employee_no" x-ref="createGuardFirstField" name="employee_no" value="{{ old('employee_no', $newGuard->employee_no) }}" placeholder="SG-03" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                    <input id="create_employee_no" x-ref="createGuardFirstField" name="employee_no" value="{{ old('employee_no', $newGuard->employee_no) }}" placeholder="SG-03" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required>
                                     <x-input-error :messages="$errors->get('employee_no')" class="mt-2" />
                                 </div>
                                 <div>
                                     <label for="create_name" class="sr-only">Full Name</label>
-                                    <input id="create_name" name="name" value="{{ old('name', $newGuard->name) }}" placeholder="Juan Dela Cruz" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                    <input id="create_name" name="name" value="{{ old('name', $newGuard->name) }}" placeholder="Juan Dela Cruz" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required>
                                     <x-input-error :messages="$errors->get('name')" class="mt-2" />
                                 </div>
                                 <div>
                                     <label for="create_email" class="sr-only">Email</label>
-                                    <input id="create_email" name="email" type="email" value="{{ old('email', $newGuard->email) }}" placeholder="first.last@localguard.com" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <input id="create_email" name="email" type="email" value="{{ old('email', $newGuard->email) }}" placeholder="first.last@localguard.com" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500">
                                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
                                 </div>
                                 <div>
                                     <label for="create_phone" class="sr-only">Phone</label>
-                                    <input id="create_phone" name="phone" value="{{ old('phone', $newGuard->phone) }}" placeholder="09XX XXX XXXX" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <input id="create_phone" name="phone" value="{{ old('phone', $newGuard->phone) }}" placeholder="09XX XXX XXXX" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500">
                                     <x-input-error :messages="$errors->get('phone')" class="mt-2" />
                                 </div>
                                 <div>
                                     <label for="create_rfid_uid" class="sr-only">RFID UID</label>
                                     <div class="mt-1 flex gap-2">
-                                        <input id="create_rfid_uid" name="rfid_uid" value="{{ old('rfid_uid', $newGuard->rfid_uid) }}" placeholder="F33C8D37" class="block min-w-0 flex-1 rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                        <input id="create_rfid_uid" name="rfid_uid" value="{{ old('rfid_uid', $newGuard->rfid_uid) }}" placeholder="F33C8D37" class="block min-w-0 flex-1 rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required>
                                         <button
                                             type="button"
                                             x-on:click="startRfidEnrollment('create_rfid_uid')"
                                             x-bind:disabled="rfidEnrollmentBusy"
-                                            class="inline-flex h-11 shrink-0 items-center justify-center rounded-md border border-blue-200 px-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-70 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
+                                            class="inline-flex h-11 shrink-0 items-center justify-center rounded-md border border-blue-200 px-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-70 dark:border-slate-700 dark:text-white dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
                                         >
                                             <span x-text="isRfidEnrollmentActive('create_rfid_uid') ? 'Waiting' : 'Scan Card'">Scan Card</span>
                                         </button>
@@ -256,35 +256,35 @@
                                 @if ($faceVerificationEnabled)
                                 <div>
                                     <label for="create_face_reference" class="sr-only">Face Reference</label>
-                                    <input id="create_face_reference" name="face_reference" value="{{ old('face_reference', $newGuard->face_reference) }}" placeholder="face-ref-01" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <input id="create_face_reference" name="face_reference" value="{{ old('face_reference', $newGuard->face_reference) }}" placeholder="face-ref-01" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500">
                                     <x-input-error :messages="$errors->get('face_reference')" class="mt-2" />
                                 </div>
                                 @endif
                                 <div>
                                     <label for="create_shift" class="sr-only">Shift</label>
-                                    <input id="create_shift" name="shift" value="{{ old('shift', $newGuard->shift) }}" placeholder="Night Shift" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <input id="create_shift" name="shift" value="{{ $newGuard->shift ?: 'Night Shift' }}" placeholder="Night Shift" class="mt-1 block w-full rounded-md border-slate-300 bg-slate-100 text-slate-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500" readonly aria-readonly="true">
                                     <x-input-error :messages="$errors->get('shift')" class="mt-2" />
                                 </div>
                                 <div>
-                                    <label for="create_status" class="block text-sm font-medium text-slate-700">Status</label>
-                                    <select id="create_status" name="status" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <label for="create_status" class="block text-sm font-medium text-slate-700 dark:text-white">Status</label>
+                                    <select id="create_status" name="status" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
                                         <option value="active" @selected(old('status', $newGuard->status) === 'active')>Active</option>
                                         <option value="inactive" @selected(old('status', $newGuard->status) === 'inactive')>Inactive</option>
                                     </select>
                                     <x-input-error :messages="$errors->get('status')" class="mt-2" />
                                 </div>
-                                <div class="border-t border-blue-100 pt-4 md:col-span-2">
-                                    <h4 class="text-base font-semibold text-blue-950">Login Account</h4>
+                                <div class="border-t border-blue-100 pt-4 dark:border-slate-700 md:col-span-2">
+                                    <h4 class="text-base font-semibold text-blue-950 dark:text-white">Login Account</h4>
                                 </div>
                                 <div>
                                     <label for="create_username" class="sr-only">Username or Email</label>
-                                    <input id="create_username" name="username" type="text" value="{{ old('username', $newGuard->user?->username) }}" placeholder="first.last@localguard.com" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="username" inputmode="email">
+                                    <input id="create_username" name="username" type="text" value="{{ old('username', $newGuard->user?->username) }}" placeholder="first.last@localguard.com" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required autocomplete="username" inputmode="email">
                                     <x-input-error :messages="$errors->get('username')" class="mt-2" />
                                 </div>
                                 <div>
                                     <label for="create_password" class="sr-only">Password</label>
                                     <div x-data="{ showPassword: false }" class="relative mt-1">
-                                        <input id="create_password" name="password" type="password" :type="showPassword ? 'text' : 'password'" placeholder="8+ characters" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="new-password">
+                                        <input id="create_password" name="password" type="password" :type="showPassword ? 'text' : 'password'" placeholder="8+ characters" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required autocomplete="new-password">
                                         <button
                                             type="button"
                                             x-on:click="showPassword = ! showPassword"
@@ -292,7 +292,7 @@
                                             title="Show password"
                                             :aria-label="showPassword ? 'Hide password' : 'Show password'"
                                             :title="showPassword ? 'Hide password' : 'Show password'"
-                                            class="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center rounded-r-md text-slate-400 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                                            class="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center rounded-r-md text-slate-400 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:text-slate-300 dark:hover:text-white"
                                         >
                                             <svg x-show="! showPassword" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                                 <path d="M2.75 12s3.25-6.25 9.25-6.25S21.25 12 21.25 12 18 18.25 12 18.25 2.75 12 2.75 12Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
@@ -311,7 +311,7 @@
                                 <div>
                                     <label for="create_password_confirmation" class="sr-only">Confirm Password</label>
                                     <div x-data="{ showPassword: false }" class="relative mt-1">
-                                        <input id="create_password_confirmation" name="password_confirmation" type="password" :type="showPassword ? 'text' : 'password'" placeholder="Retype password" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="new-password">
+                                        <input id="create_password_confirmation" name="password_confirmation" type="password" :type="showPassword ? 'text' : 'password'" placeholder="Retype password" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required autocomplete="new-password">
                                         <button
                                             type="button"
                                             x-on:click="showPassword = ! showPassword"
@@ -319,7 +319,7 @@
                                             title="Show confirm password"
                                             :aria-label="showPassword ? 'Hide confirm password' : 'Show confirm password'"
                                             :title="showPassword ? 'Hide confirm password' : 'Show confirm password'"
-                                            class="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center rounded-r-md text-slate-400 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                                            class="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center rounded-r-md text-slate-400 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:text-slate-300 dark:hover:text-white"
                                         >
                                             <svg x-show="! showPassword" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                                 <path d="M2.75 12s3.25-6.25 9.25-6.25S21.25 12 21.25 12 18 18.25 12 18.25 2.75 12 2.75 12Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
@@ -336,14 +336,14 @@
                                 </div>
                                 <div class="md:col-span-2">
                                     <label for="create_notes" class="sr-only">Notes</label>
-                                    <textarea id="create_notes" name="notes" rows="3" placeholder="Optional notes" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('notes', $newGuard->notes) }}</textarea>
+                                    <textarea id="create_notes" name="notes" rows="3" placeholder="Optional notes" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500">{{ old('notes', $newGuard->notes) }}</textarea>
                                     <x-input-error :messages="$errors->get('notes')" class="mt-2" />
                                 </div>
                             </div>
                         </div>
 
-                        <footer class="flex flex-col-reverse gap-2 border-t border-blue-100 px-5 py-4 sm:flex-row sm:justify-end">
-                            <button type="button" x-on:click="closeCreateGuardModal()" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <footer class="flex flex-col-reverse gap-2 border-t border-blue-100 px-5 py-4 dark:border-slate-700 sm:flex-row sm:justify-end">
+                            <button type="button" x-on:click="closeCreateGuardModal()" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900">
                                 Cancel
                             </button>
                             <button type="submit" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
@@ -379,18 +379,18 @@
                         x-transition:leave="transition ease-in duration-150"
                         x-transition:leave-start="translate-x-0"
                         x-transition:leave-end="translate-x-full"
-                        class="ml-auto flex h-full w-full max-w-2xl flex-col overflow-hidden bg-white shadow-xl sm:rounded-l-lg lg:ml-0 lg:h-[42rem] lg:max-h-[calc(100vh-12rem)] lg:max-w-none lg:rounded-md lg:border lg:border-blue-100 lg:shadow-sm"
+                        class="ml-auto flex h-full w-full max-w-2xl flex-col overflow-hidden bg-white shadow-xl dark:bg-slate-900 sm:rounded-l-lg lg:ml-0 lg:h-[42rem] lg:max-h-[calc(100vh-12rem)] lg:max-w-none lg:rounded-md lg:border lg:border-blue-100 lg:shadow-sm lg:dark:border-slate-700"
                     >
-                        <header class="flex items-start justify-between gap-4 border-b border-blue-100 px-5 py-4">
+                        <header class="flex items-start justify-between gap-4 border-b border-blue-100 px-5 py-4 dark:border-slate-700">
                             <div class="min-w-0">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Guard Profile</p>
-                                <h3 id="edit-guard-title-{{ $guard->id }}" class="mt-1 truncate text-lg font-semibold text-blue-950">Edit Guard</h3>
-                                <p class="mt-1 truncate text-sm text-slate-500">{{ $guard->name }} - {{ $guard->employee_no }}</p>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-white">Guard Profile</p>
+                                <h3 id="edit-guard-title-{{ $guard->id }}" class="mt-1 truncate text-lg font-semibold text-blue-950 dark:text-white">Edit Guard</h3>
+                                <p class="mt-1 truncate text-sm text-slate-500 dark:text-slate-300">{{ $guard->name }} - {{ $guard->employee_no }}</p>
                             </div>
                             <button
                                 type="button"
                                 x-on:click="closeEditGuardModal()"
-                                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-100 text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-100 text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                                 aria-label="Close edit guard form"
                             >
                                 <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -413,8 +413,8 @@
                                 ])
                             </div>
 
-                            <footer class="flex flex-col-reverse gap-2 border-t border-blue-100 px-5 py-4 sm:flex-row sm:justify-end">
-                                <button type="button" x-on:click="closeEditGuardModal()" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            <footer class="flex flex-col-reverse gap-2 border-t border-blue-100 px-5 py-4 dark:border-slate-700 sm:flex-row sm:justify-end">
+                                <button type="button" x-on:click="closeEditGuardModal()" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900">
                                     Cancel
                                 </button>
                                 <button type="submit" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
@@ -482,15 +482,15 @@
                 >
                     <header class="flex items-start justify-between gap-4 border-b border-blue-100 px-5 py-4 dark:border-slate-700">
                         <div class="min-w-0">
-                            <p class="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Guard Records</p>
-                            <h3 id="guard-record-title" class="mt-1 truncate text-lg font-semibold text-blue-950 dark:text-slate-100" x-text="selectedGuard?.name || 'Guard records'"></h3>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-white">Guard Records</p>
+                            <h3 id="guard-record-title" class="mt-1 truncate text-lg font-semibold text-blue-950 dark:text-white" x-text="selectedGuard?.name || 'Guard records'"></h3>
                             <p class="mt-1 text-sm text-slate-500 dark:text-slate-400" x-show="selectedGuard" x-text="guardRecordSubtitle()"></p>
                         </div>
                         <button
                             type="button"
                             x-ref="recordCloseButton"
                             x-on:click="closeGuardRecord()"
-                            class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-100 text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-100"
+                            class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-100 text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                             aria-label="Close guard records"
                         >
                             <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -500,7 +500,7 @@
                     </header>
 
                     <div class="flex-1 overflow-y-auto px-5 py-5">
-                        <div x-show="recordLoading" class="rounded-md border border-blue-100 bg-blue-50 px-4 py-6 text-center text-sm font-medium text-blue-800 dark:border-blue-400/30 dark:bg-blue-950/35 dark:text-blue-100">
+                        <div x-show="recordLoading" class="rounded-md border border-blue-100 bg-blue-50 px-4 py-6 text-center text-sm font-medium text-blue-800 dark:border-slate-700 dark:bg-slate-950/45 dark:text-white">
                             Loading guard records...
                         </div>
 
@@ -509,8 +509,8 @@
                         <div x-show="! recordLoading && ! recordError && selectedGuard" class="space-y-6">
                             <div class="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
                                 <div class="rounded-md border border-blue-100 bg-white p-3 dark:border-slate-700 dark:bg-slate-950/45">
-                                    <p class="text-xs font-semibold uppercase tracking-wide text-blue-800 dark:text-blue-300">Total Scans</p>
-                                    <p class="mt-2 text-2xl font-semibold text-blue-950 dark:text-blue-100" x-text="recordStats.total_scans ?? 0"></p>
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-blue-800 dark:text-white">Total Scans</p>
+                                    <p class="mt-2 text-2xl font-semibold text-blue-950 dark:text-white" x-text="recordStats.total_scans ?? 0"></p>
                                 </div>
                                 <div class="rounded-md border border-blue-100 bg-white p-3 dark:border-slate-700 dark:bg-slate-950/45">
                                     <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Completed</p>
@@ -528,7 +528,7 @@
 
                             <section>
                                 <div class="mb-3 flex items-center justify-between gap-3">
-                                    <h4 class="text-sm font-semibold uppercase tracking-wide text-blue-800 dark:text-blue-300">Recent Patrol Scans</h4>
+                                    <h4 class="text-sm font-semibold uppercase tracking-wide text-blue-800 dark:text-white">Recent Patrol Scans</h4>
                                     @if ($faceVerificationEnabled)
                                     <span class="text-xs text-slate-500 dark:text-slate-400" x-text="`${recordStats.failed_face_attempts ?? 0} failed face attempt${(recordStats.failed_face_attempts ?? 0) === 1 ? '' : 's'}`"></span>
                                     @endif
@@ -538,7 +538,7 @@
                                 </template>
                                 <div x-show="recordPatrols.length > 0" class="overflow-x-auto rounded-md border border-blue-100 dark:border-slate-700">
                                     <table class="min-w-full divide-y divide-blue-100 text-sm dark:divide-slate-700">
-                                        <thead class="bg-blue-50/70 text-left text-xs font-extrabold uppercase text-blue-800 dark:bg-slate-950/60 dark:text-blue-300">
+                                        <thead class="bg-blue-50/70 text-left text-xs font-extrabold uppercase text-blue-800 dark:bg-slate-950/60 dark:text-white">
                                             <tr>
                                                 <th class="px-4 py-3">Date / Time</th>
                                                 <th class="px-4 py-3">Checkpoint</th>
@@ -576,7 +576,7 @@
                             </section>
 
                             <section>
-                                <h4 class="mb-3 text-sm font-semibold uppercase tracking-wide text-blue-800 dark:text-blue-300">Recent Incident Reports</h4>
+                                <h4 class="mb-3 text-sm font-semibold uppercase tracking-wide text-blue-800 dark:text-white">Recent Incident Reports</h4>
                                 <template x-if="recordIncidents.length === 0">
                                     <p class="rounded-md border border-blue-100 px-4 py-5 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">No incident reports recorded.</p>
                                 </template>
@@ -598,7 +598,7 @@
 
                             @if ($faceVerificationEnabled)
                             <section>
-                                <h4 class="mb-3 text-sm font-semibold uppercase tracking-wide text-blue-800 dark:text-blue-300">Recent Face Verification Attempts</h4>
+                                <h4 class="mb-3 text-sm font-semibold uppercase tracking-wide text-blue-800 dark:text-white">Recent Face Verification Attempts</h4>
                                 <template x-if="recordFaceAttempts.length === 0">
                                     <p class="rounded-md border border-blue-100 px-4 py-5 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">No face verification attempts recorded.</p>
                                 </template>

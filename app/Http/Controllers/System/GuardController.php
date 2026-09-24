@@ -229,7 +229,6 @@ class GuardController extends Controller
             'phone' => ['nullable', 'string', 'max:30'],
             'rfid_uid' => ['required', 'string', 'max:100', Rule::unique('guards', 'rfid_uid')->ignore($guardId)],
             'face_reference' => ['nullable', 'string', 'max:255'],
-            'shift' => ['nullable', 'string', 'max:100'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'notes' => ['nullable', 'string', 'max:2000'],
             'username' => ['required', 'string', 'max:255', new UsernameOrEmail, Rule::unique('users', 'username')->ignore($userId), Rule::unique('users', 'email')->ignore($userId)],
@@ -245,14 +244,13 @@ class GuardController extends Controller
             'phone',
             'rfid_uid',
             'face_reference',
-            'shift',
             'status',
             'notes',
         ])->all();
 
         $guardData['email'] = filled($guardData['email'] ?? null) ? Str::lower(trim($guardData['email'])) : null;
         $guardData['rfid_uid'] = strtoupper(trim($guardData['rfid_uid']));
-        $guardData['shift'] = filled($guardData['shift'] ?? null) ? trim($guardData['shift']) : self::DEFAULT_SHIFT;
+        $guardData['shift'] = self::DEFAULT_SHIFT;
 
         return [
             'guard' => $guardData,

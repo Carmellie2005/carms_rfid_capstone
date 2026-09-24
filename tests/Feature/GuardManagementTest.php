@@ -59,6 +59,58 @@ class GuardManagementTest extends TestCase
         $this->assertTrue($guard->user()->firstOrFail()->must_change_password);
     }
 
+    public function test_guard_shift_is_locked_to_night_shift(): void
+    {
+        $supervisor = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'supervisor',
+        ]);
+
+        $this
+            ->actingAs($supervisor)
+            ->post(route('guards.store'), [
+                'employee_no' => 'SG-LOCKED-SHIFT',
+                'name' => 'Locked Shift Guard',
+                'email' => 'locked.shift@example.com',
+                'phone' => '09171234567',
+                'rfid_uid' => 'RFID-LOCKED-SHIFT',
+                'face_reference' => null,
+                'shift' => 'Day Shift',
+                'status' => 'active',
+                'notes' => null,
+                'username' => 'locked.shift',
+                'password' => 'password',
+                'password_confirmation' => 'password',
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('guards.index'));
+
+        $guard = Guard::where('employee_no', 'SG-LOCKED-SHIFT')->firstOrFail();
+
+        $this->assertSame('Night Shift', $guard->shift);
+
+        $this
+            ->actingAs($supervisor)
+            ->put(route('guards.update', $guard), [
+                'employee_no' => 'SG-LOCKED-SHIFT',
+                'name' => 'Locked Shift Guard',
+                'email' => 'locked.shift@example.com',
+                'phone' => '09171234567',
+                'rfid_uid' => 'RFID-LOCKED-SHIFT',
+                'face_reference' => null,
+                'shift' => 'Day Shift',
+                'status' => 'active',
+                'notes' => null,
+                'username' => 'locked.shift',
+                'password' => null,
+                'password_confirmation' => null,
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('guards.index'));
+
+        $this->assertSame('Night Shift', $guard->refresh()->shift);
+    }
+
     public function test_supervisor_password_reset_requires_guard_to_change_password(): void
     {
         $supervisor = User::factory()->create([

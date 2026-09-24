@@ -21,7 +21,7 @@
             name="employee_no"
             value="{{ $valueFor('employee_no', $guard->employee_no) }}"
             placeholder="SG-03"
-            class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500"
             required
         >
         <x-input-error :messages="$errorFor('employee_no')" class="mt-2" />
@@ -29,31 +29,31 @@
 
     <div>
         <label for="{{ $fieldPrefix }}_name" class="sr-only">Full Name</label>
-        <input id="{{ $fieldPrefix }}_name" name="name" value="{{ $valueFor('name', $guard->name) }}" placeholder="Juan Dela Cruz" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+        <input id="{{ $fieldPrefix }}_name" name="name" value="{{ $valueFor('name', $guard->name) }}" placeholder="Juan Dela Cruz" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required>
         <x-input-error :messages="$errorFor('name')" class="mt-2" />
     </div>
 
     <div>
         <label for="{{ $fieldPrefix }}_email" class="sr-only">Email</label>
-        <input id="{{ $fieldPrefix }}_email" name="email" type="email" value="{{ $valueFor('email', $guard->email) }}" placeholder="first.last@localguard.com" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <input id="{{ $fieldPrefix }}_email" name="email" type="email" value="{{ $valueFor('email', $guard->email) }}" placeholder="first.last@localguard.com" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500">
         <x-input-error :messages="$errorFor('email')" class="mt-2" />
     </div>
 
     <div>
         <label for="{{ $fieldPrefix }}_phone" class="sr-only">Phone</label>
-        <input id="{{ $fieldPrefix }}_phone" name="phone" value="{{ $valueFor('phone', $guard->phone) }}" placeholder="09XX XXX XXXX" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <input id="{{ $fieldPrefix }}_phone" name="phone" value="{{ $valueFor('phone', $guard->phone) }}" placeholder="09XX XXX XXXX" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500">
         <x-input-error :messages="$errorFor('phone')" class="mt-2" />
     </div>
 
     <div>
         <label for="{{ $fieldPrefix }}_rfid_uid" class="sr-only">RFID UID</label>
         <div class="mt-1 flex gap-2">
-            <input id="{{ $fieldPrefix }}_rfid_uid" name="rfid_uid" value="{{ $valueFor('rfid_uid', $guard->rfid_uid) }}" placeholder="F33C8D37" class="block min-w-0 flex-1 rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+            <input id="{{ $fieldPrefix }}_rfid_uid" name="rfid_uid" value="{{ $valueFor('rfid_uid', $guard->rfid_uid) }}" placeholder="F33C8D37" class="block min-w-0 flex-1 rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required>
             <button
                 type="button"
                 x-on:click="startRfidEnrollment('{{ $fieldPrefix }}_rfid_uid')"
                 x-bind:disabled="rfidEnrollmentBusy"
-                class="inline-flex h-11 shrink-0 items-center justify-center rounded-md border border-blue-200 px-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-70 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
+                class="inline-flex h-11 shrink-0 items-center justify-center rounded-md border border-blue-200 px-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-70 dark:border-slate-700 dark:text-white dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
             >
                 <span x-text="isRfidEnrollmentActive('{{ $fieldPrefix }}_rfid_uid') ? 'Waiting' : 'Scan Card'">Scan Card</span>
             </button>
@@ -65,40 +65,40 @@
     @if ($faceVerificationEnabled)
         <div>
             <label for="{{ $fieldPrefix }}_face_reference" class="sr-only">Face Reference</label>
-            <input id="{{ $fieldPrefix }}_face_reference" name="face_reference" value="{{ $valueFor('face_reference', $guard->face_reference) }}" placeholder="face-ref-01" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <input id="{{ $fieldPrefix }}_face_reference" name="face_reference" value="{{ $valueFor('face_reference', $guard->face_reference) }}" placeholder="face-ref-01" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500">
             <x-input-error :messages="$errorFor('face_reference')" class="mt-2" />
         </div>
     @endif
 
     <div>
         <label for="{{ $fieldPrefix }}_shift" class="sr-only">Shift</label>
-        <input id="{{ $fieldPrefix }}_shift" name="shift" value="{{ $valueFor('shift', $guard->shift) }}" placeholder="Night Shift" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <input id="{{ $fieldPrefix }}_shift" name="shift" value="{{ $guard->shift ?: 'Night Shift' }}" placeholder="Night Shift" class="mt-1 block w-full rounded-md border-slate-300 bg-slate-100 text-slate-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500" readonly aria-readonly="true">
         <x-input-error :messages="$errorFor('shift')" class="mt-2" />
     </div>
 
     <div>
-        <label for="{{ $fieldPrefix }}_status" class="block text-sm font-medium text-slate-700">Status</label>
-        <select id="{{ $fieldPrefix }}_status" name="status" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <label for="{{ $fieldPrefix }}_status" class="block text-sm font-medium text-slate-700 dark:text-white">Status</label>
+        <select id="{{ $fieldPrefix }}_status" name="status" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
             <option value="active" @selected($valueFor('status', $guard->status) === 'active')>Active</option>
             <option value="inactive" @selected($valueFor('status', $guard->status) === 'inactive')>Inactive</option>
         </select>
         <x-input-error :messages="$errorFor('status')" class="mt-2" />
     </div>
 
-    <div class="border-t border-blue-100 pt-5 md:col-span-2">
-        <h4 class="text-base font-semibold text-blue-950">Login Account</h4>
+    <div class="border-t border-blue-100 pt-5 dark:border-slate-700 md:col-span-2">
+        <h4 class="text-base font-semibold text-blue-950 dark:text-white">Login Account</h4>
     </div>
 
     <div>
         <label for="{{ $fieldPrefix }}_username" class="sr-only">Username or Email</label>
-        <input id="{{ $fieldPrefix }}_username" name="username" type="text" value="{{ $valueFor('username', $guard->user?->username) }}" placeholder="first.last@localguard.com" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500" required autocomplete="username" inputmode="email">
+        <input id="{{ $fieldPrefix }}_username" name="username" type="text" value="{{ $valueFor('username', $guard->user?->username) }}" placeholder="first.last@localguard.com" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required autocomplete="username" inputmode="email">
         <x-input-error :messages="$errorFor('username')" class="mt-2" />
     </div>
 
     <div>
         <label for="{{ $fieldPrefix }}_password" class="sr-only">{{ $passwordRequired ? 'Password' : 'New Password' }}</label>
         <div x-data="{ showPassword: false }" class="relative mt-1">
-            <input id="{{ $fieldPrefix }}_password" name="password" type="password" :type="showPassword ? 'text' : 'password'" placeholder="{{ $passwordRequired ? '8+ characters' : 'Keep current password' }}" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500" @required($passwordRequired) autocomplete="new-password">
+            <input id="{{ $fieldPrefix }}_password" name="password" type="password" :type="showPassword ? 'text' : 'password'" placeholder="{{ $passwordRequired ? '8+ characters' : 'Keep current password' }}" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" @required($passwordRequired) autocomplete="new-password">
             <button
                 type="button"
                 x-on:click="showPassword = ! showPassword"
@@ -106,7 +106,7 @@
                 title="Show password"
                 :aria-label="showPassword ? 'Hide password' : 'Show password'"
                 :title="showPassword ? 'Hide password' : 'Show password'"
-                class="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center rounded-r-md text-slate-400 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                class="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center rounded-r-md text-slate-400 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:text-slate-300 dark:hover:text-white"
             >
                 <svg x-show="! showPassword" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M2.75 12s3.25-6.25 9.25-6.25S21.25 12 21.25 12 18 18.25 12 18.25 2.75 12 2.75 12Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
@@ -126,7 +126,7 @@
     <div>
         <label for="{{ $fieldPrefix }}_password_confirmation" class="sr-only">Confirm Password</label>
         <div x-data="{ showPassword: false }" class="relative mt-1">
-            <input id="{{ $fieldPrefix }}_password_confirmation" name="password_confirmation" type="password" :type="showPassword ? 'text' : 'password'" placeholder="Retype password" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500" @required($passwordRequired) autocomplete="new-password">
+            <input id="{{ $fieldPrefix }}_password_confirmation" name="password_confirmation" type="password" :type="showPassword ? 'text' : 'password'" placeholder="Retype password" class="block w-full rounded-md border-slate-300 pr-11 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" @required($passwordRequired) autocomplete="new-password">
             <button
                 type="button"
                 x-on:click="showPassword = ! showPassword"
@@ -134,7 +134,7 @@
                 title="Show confirm password"
                 :aria-label="showPassword ? 'Hide confirm password' : 'Show confirm password'"
                 :title="showPassword ? 'Hide confirm password' : 'Show confirm password'"
-                class="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center rounded-r-md text-slate-400 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                class="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center rounded-r-md text-slate-400 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:text-slate-300 dark:hover:text-white"
             >
                 <svg x-show="! showPassword" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M2.75 12s3.25-6.25 9.25-6.25S21.25 12 21.25 12 18 18.25 12 18.25 2.75 12 2.75 12Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
@@ -152,7 +152,7 @@
 
     <div class="md:col-span-2">
         <label for="{{ $fieldPrefix }}_notes" class="sr-only">Notes</label>
-        <textarea id="{{ $fieldPrefix }}_notes" name="notes" rows="3" placeholder="Optional notes" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ $valueFor('notes', $guard->notes) }}</textarea>
+        <textarea id="{{ $fieldPrefix }}_notes" name="notes" rows="3" placeholder="Optional notes" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500">{{ $valueFor('notes', $guard->notes) }}</textarea>
         <x-input-error :messages="$errorFor('notes')" class="mt-2" />
     </div>
 </div>

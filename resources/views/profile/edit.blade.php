@@ -6,7 +6,7 @@
 
     <x-slot name="header">
         <div>
-            <h2 class="text-lg font-semibold leading-tight text-blue-950">
+            <h2 class="text-lg font-semibold leading-tight text-blue-950 dark:text-white">
                 @if ($isSupervisor)
                     {{ __('Supervisor Profile Settings') }}
                 @elseif ($isGuard)
@@ -15,7 +15,7 @@
                     {{ __('Profile Settings') }}
                 @endif
             </h2>
-            <p class="mt-1 text-xs text-blue-600">
+            <p class="mt-1 text-xs text-blue-600 dark:text-slate-200">
                 @if ($isSupervisor)
                     {{ __('Head / Supervisor, Security and Safety Services Office') }}
                 @elseif ($isGuard)
@@ -35,12 +35,12 @@
                 </div>
             @endif
 
-            <div class="rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-4">
+            <div class="rounded-md border border-blue-100 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-4">
                 @include('profile.partials.update-profile-information-form')
             </div>
 
             @if ($isGuard)
-                <div id="update-password" class="scroll-mt-24 rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-4">
+                <div id="update-password" class="scroll-mt-24 rounded-md border border-blue-100 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-4">
                     @include('profile.partials.update-password-form')
                 </div>
             @endif
