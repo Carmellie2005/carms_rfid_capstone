@@ -353,6 +353,11 @@
             font-size: 11pt;
         }
 
+        .review-notes .value,
+        .action-taken .value {
+            line-height: 1.15;
+        }
+
         .signature-name {
             font-size: 11pt;
             font-weight: 700;
@@ -422,16 +427,18 @@
         $supervisorName = 'Ryan P. Tomol';
         $evidenceImages = collect($imageDataUris)->take(4)->values();
         $narrative = $incident->description ?: 'No description provided.';
+        $normalizeText = fn (string $value): string => trim(preg_replace("/\r\n|\r/", "\n", $value));
+        $singleLineText = fn (string $value): string => trim(preg_replace('/\s+/u', ' ', $normalizeText($value)));
         $textLength = fn (string $value): int => function_exists('mb_strlen') ? mb_strlen($value) : strlen($value);
         $textSlice = fn (string $value, int $start, ?int $length = null): string => function_exists('mb_substr')
             ? mb_substr($value, $start, $length)
             : substr($value, $start, $length);
-        $splitNarrative = function (string $text) use ($textLength, $textSlice): array {
+        $splitText = function (string $text, int $firstLimit, int $continuationLimit, string $fallback) use ($normalizeText, $textLength, $textSlice): array {
             $chunks = [];
-            $remaining = trim(preg_replace("/\r\n|\r/", "\n", $text));
+            $remaining = $normalizeText($text);
 
             while ($remaining !== '') {
-                $limit = $chunks === [] ? 950 : 2200;
+                $limit = $chunks === [] ? $firstLimit : $continuationLimit;
 
                 if ($textLength($remaining) <= $limit) {
                     $chunks[] = $remaining;
@@ -456,11 +463,60 @@
                 $chunks[] = $chunk;
             }
 
-            return $chunks !== [] ? $chunks : ['No description provided.'];
+            return $chunks !== [] ? $chunks : [$fallback];
         };
-        $narrativeChunks = collect($splitNarrative($narrative));
+        $previewText = function (string $text, int $limit = 70) use ($singleLineText, $textLength, $textSlice): string {
+            $text = $singleLineText($text);
+
+            if ($textLength($text) <= $limit) {
+                return $text;
+            }
+
+            $slice = $textSlice($text, 0, $limit);
+            $breakAt = $textLength($slice);
+
+            if (preg_match('/^(.{1,'.$limit.'})(?:\s+|$)/us', $text, $matches)) {
+                $breakAt = max(1, $textLength($matches[1]));
+            }
+
+            return rtrim(trim($textSlice($text, 0, $breakAt)), '.,;:').'...';
+        };
+        $narrativeChunks = collect($splitText($narrative, 950, 2200, 'No description provided.'));
         $firstNarrativeChunk = $narrativeChunks->first();
         $continuationNarrativeChunks = $narrativeChunks->slice(1)->values();
+        $reviewNotesPreviewLimit = 70;
+        $actionTakenPreviewLimit = 70;
+        $reviewNotesNeedsContinuation = $textLength($singleLineText($reviewNotes)) > $reviewNotesPreviewLimit;
+        $actionTakenNeedsContinuation = $textLength($singleLineText($actionTaken)) > $actionTakenPreviewLimit;
+        $reviewNotesPreview = $previewText($reviewNotes, $reviewNotesPreviewLimit);
+        $actionTakenPreview = $previewText($actionTaken, $actionTakenPreviewLimit);
+        $reviewActionContinuationSections = [];
+        $appendContinuationSections = function (string $label, string $text, string $fallback) use (&$reviewActionContinuationSections, $splitText): void {
+            $chunks = $splitText($text, 2200, 2200, $fallback);
+            $total = count($chunks);
+
+            foreach ($chunks as $index => $chunk) {
+                $pageNumber = $index + 1;
+                $reviewActionContinuationSections[] = [
+                    'subtitle' => $label.' Continuation',
+                    'label' => $pageNumber === 1 ? $label.' (full text):' : $label.' (continued):',
+                    'text' => $chunk,
+                    'page' => $pageNumber,
+                    'total' => $total,
+                    'footer' => $label.' continuation page',
+                ];
+            }
+        };
+
+        if ($reviewNotesNeedsContinuation) {
+            $appendContinuationSections('Review Notes', $reviewNotes, 'No supervisor review notes recorded.');
+        }
+
+        if ($actionTakenNeedsContinuation) {
+            $appendContinuationSections('Action Taken', $actionTaken, 'No action recorded.');
+        }
+
+        $reviewActionContinuationSections = collect($reviewActionContinuationSections);
     @endphp
 
     <section class="page">
@@ -560,11 +616,11 @@
 
         <div class="field review-notes">
             <span class="label">Review Notes:</span>
-            <span class="value">{{ $reviewNotes }}</span>
+            <span class="value">{{ $reviewNotesPreview }}</span>
         </div>
         <div class="field action-taken">
             <span class="label">Action Taken:</span>
-            <span class="value">{{ $actionTaken }}</span>
+            <span class="value">{{ $actionTakenPreview }}</span>
         </div>
         <div class="field resolved-date">
             <span class="label">Resolved Date / Time:</span>
@@ -579,5 +635,17 @@
         <div class="signature-label reviewed-signature">Date Reviewed</div>
         <div class="office-label">Security and Safety Office</div>
     </section>
+
+    @foreach ($reviewActionContinuationSections as $section)
+        <section class="page">
+            <div class="core-values">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</div>
+            <div class="continuation-title">Security Incident Report</div>
+            <div class="continuation-subtitle">{{ $section['subtitle'] }}</div>
+            <div class="continuation-meta">Report No.: {{ $reportNumber }} &nbsp; | &nbsp; Security Guard: {{ $guardName }}</div>
+            <div class="continuation-label">{{ $section['label'] }}</div>
+            <div class="continuation-box">{!! nl2br(e($section['text'])) !!}</div>
+            <div class="continuation-footer">{{ $section['footer'] }} {{ $section['page'] }} of {{ $section['total'] }}</div>
+        </section>
+    @endforeach
 </body>
 </html>

@@ -154,6 +154,31 @@ class IncidentReportPdfTest extends TestCase
         $this->assertStringContainsString('application/pdf', $response->headers->get('content-type'));
     }
 
+    public function test_incident_report_pdf_handles_long_review_notes_and_action_taken(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'admin']);
+        $incident = $this->createIncidentReport();
+        $incident->update([
+            'admin_notes' => str_repeat(
+                'The supervisor reviewed the submitted incident details and confirmed that the attached evidence is clear. ',
+                24
+            ),
+            'action_taken' => str_repeat(
+                'The security office coordinated the concern with the responsible personnel and documented the corrective action for follow-up. ',
+                30
+            ),
+            'status' => 'resolved',
+            'resolved_at' => now(),
+        ]);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('incidents.pdf', $incident));
+
+        $response->assertOk();
+        $this->assertStringContainsString('application/pdf', $response->headers->get('content-type'));
+    }
+
     private function createIncidentReport(?Guard $guard = null, ?string $description = null): IncidentReport
     {
         $guard ??= $this->createGuard(User::factory()->create(['role' => 'guard']), 'G-001');
