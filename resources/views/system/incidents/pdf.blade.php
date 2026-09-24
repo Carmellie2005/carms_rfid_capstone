@@ -37,7 +37,7 @@
         body {
             color: #000000;
             font-family: "Calibri", "DejaVu Sans", sans-serif;
-            font-size: 12pt;
+            font-size: 11pt;
             letter-spacing: 0;
             line-height: 1.2;
             margin: 0;
@@ -66,7 +66,7 @@
         }
 
         .html-title {
-            font-size: 12pt;
+            font-size: 11pt;
             font-weight: 700;
             left: 0;
             letter-spacing: 0;
@@ -78,7 +78,7 @@
         }
 
         .html-subtitle {
-            font-size: 12pt;
+            font-size: 11pt;
             font-weight: 400;
             left: 0;
             position: absolute;
@@ -110,7 +110,7 @@
 
         .label {
             display: block;
-            font-size: 12pt;
+            font-size: 11pt;
             font-weight: 700;
             letter-spacing: 0;
             line-height: 1.15;
@@ -120,7 +120,7 @@
 
         .value {
             display: block;
-            font-size: 12pt;
+            font-size: 11pt;
             font-weight: 400;
             line-height: 1.25;
         }
@@ -131,7 +131,7 @@
 
         .narrative-label,
         .evidence-label {
-            font-size: 12pt;
+            font-size: 11pt;
             font-weight: 700;
             left: 71.3pt;
             position: absolute;
@@ -139,7 +139,7 @@
         }
 
         .narrative-text {
-            font-size: 12pt;
+            font-size: 11pt;
             line-height: 1.45;
             padding: 9pt 10pt;
             text-align: justify;
@@ -257,7 +257,7 @@
         }
 
         .empty-evidence {
-            font-size: 12pt;
+            font-size: 11pt;
             padding-top: 92pt;
             text-align: center;
         }
@@ -286,11 +286,11 @@
         .review-notes .value,
         .action-taken .value,
         .resolved-date .value {
-            font-size: 12pt;
+            font-size: 11pt;
         }
 
         .signature-name {
-            font-size: 12pt;
+            font-size: 11pt;
             font-weight: 700;
             position: absolute;
             text-align: center;
@@ -299,7 +299,7 @@
         }
 
         .signature-label {
-            font-size: 12pt;
+            font-size: 11pt;
             font-weight: 400;
             position: absolute;
             text-align: center;
@@ -323,7 +323,7 @@
         }
 
         .office-label {
-            font-size: 12pt;
+            font-size: 11pt;
             left: 245pt;
             position: absolute;
             text-align: center;
