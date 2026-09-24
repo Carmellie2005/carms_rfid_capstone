@@ -7,15 +7,11 @@ use App\Models\ChecklistProofPhoto;
 use App\Models\Checkpoint;
 use App\Models\Guard;
 use App\Models\PatrolLog;
-use App\Support\AuditLogger;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PatrolLogController extends Controller
@@ -36,65 +32,6 @@ class PatrolLogController extends Controller
             'checkpoints' => Checkpoint::orderBy('name')->get(),
             'isSupervisor' => $isSupervisor,
         ]);
-    }
-
-    public function downloadPdf(Request $request): Response
-    {
-        $isSupervisor = $request->user()->role === 'admin';
-        $guardProfile = $request->user()->guardProfile;
-        $selectedGuard = $this->selectedGuard($request, $isSupervisor, $guardProfile);
-        $selectedCheckpoint = $request->filled('checkpoint_id')
-            ? Checkpoint::find($request->integer('checkpoint_id'))
-            : null;
-
-        $recordLimit = 500;
-        $logs = $this->patrolLogQuery($request, $isSupervisor, $guardProfile)
-            ->latest('scanned_at')
-            ->limit($recordLimit)
-            ->get();
-
-        $summary = [
-            'total' => $logs->count(),
-            'valid' => $logs->where('status', 'valid')->count(),
-            'suspicious' => $logs->where('status', 'suspicious')->count(),
-            'invalid' => $logs->where('status', 'invalid')->count(),
-            'pending_selfie' => $logs->whereIn('status', ['pending_selfie', 'pending_face'])->count(),
-            'pending_checklist' => $logs->where('status', 'pending_checklist')->count(),
-            'profile_incomplete' => $logs->where('status', 'profile_incomplete')->count(),
-            'outside_schedule' => $logs->where('status', 'outside_schedule')->count(),
-            'expired' => $logs->where('status', 'expired')->count(),
-            'incidents' => $logs->filter(fn ($log) => $log->incidentReport)->count(),
-            'with_area_selfie' => $logs->filter(fn (PatrolLog $log) => filled($log->area_selfie_path) || filled($log->area_selfie_image_data))->count(),
-            'with_checklist' => $logs->filter(fn (PatrolLog $log) => $log->checklistResponse)->count(),
-        ];
-
-        File::ensureDirectoryExists(storage_path('fonts'));
-
-        $pdf = Pdf::loadView('system.patrols.pdf', [
-            'filters' => $this->activeFilters($request, $isSupervisor, $selectedGuard, $selectedCheckpoint),
-            'generatedAt' => now()->timezone(config('app.timezone')),
-            'isSupervisor' => $isSupervisor,
-            'letterheadDataUri' => $this->letterheadDataUri(),
-            'logs' => $logs,
-            'recordLimit' => $recordLimit,
-            'reportPeriod' => $this->reportPeriodLabel($logs, $request),
-            'selectedGuard' => $selectedGuard,
-            'summary' => $summary,
-        ])->setPaper('a4');
-
-        AuditLogger::record('patrol_logs_exported', 'Patrol logs PDF report exported.', $selectedGuard, [
-            'guard_id' => $selectedGuard?->id,
-            'filters' => $request->only(['status', 'guard_id', 'checkpoint_id', 'date']),
-            'record_count' => $logs->count(),
-        ]);
-
-        $filename = $this->pdfFilename($selectedGuard);
-
-        if ($request->boolean('print')) {
-            return $pdf->stream($filename);
-        }
-
-        return $pdf->download($filename);
     }
 
     public function areaSelfie(Request $request, PatrolLog $patrolLog): Response
@@ -163,19 +100,6 @@ class PatrolLogController extends Controller
             });
     }
 
-    private function selectedGuard(Request $request, bool $isSupervisor, ?Guard $guardProfile): ?Guard
-    {
-        if (! $isSupervisor) {
-            return $guardProfile;
-        }
-
-        if (! $request->filled('guard_id')) {
-            return null;
-        }
-
-        return Guard::find($request->integer('guard_id'));
-    }
-
     private function ensureCanViewPatrolLog(Request $request, PatrolLog $patrolLog): void
     {
         if ($request->user()->role === 'admin') {
@@ -187,78 +111,4 @@ class PatrolLogController extends Controller
         abort_unless($guardId && $patrolLog->guard_id === $guardId, 403);
     }
 
-    private function activeFilters(Request $request, bool $isSupervisor, ?Guard $selectedGuard, ?Checkpoint $selectedCheckpoint): array
-    {
-        return [
-            'guard' => match (true) {
-                (bool) $selectedGuard => "{$selectedGuard->name} ({$selectedGuard->employee_no})",
-                $isSupervisor && $request->filled('guard_id') => 'Unknown guard',
-                $isSupervisor => 'All guards',
-                default => 'My patrol logs',
-            },
-            'status' => $request->filled('status') ? $this->labelFor($request->status) : 'All statuses',
-            'checkpoint' => $selectedCheckpoint
-                ? "{$selectedCheckpoint->code} - {$selectedCheckpoint->name}"
-                : ($request->filled('checkpoint_id') ? 'Unknown checkpoint' : 'All checkpoints'),
-            'date' => $request->filled('date') ? $request->date : 'All dates',
-        ];
-    }
-
-    private function labelFor(?string $value): string
-    {
-        if ($value === 'pending_face') {
-            return 'Pending Selfie';
-        }
-
-        return Str::of($value ?: 'unknown')
-            ->replace('_', ' ')
-            ->title()
-            ->toString();
-    }
-
-    private function reportPeriodLabel($logs, Request $request): string
-    {
-        if ($request->filled('date')) {
-            return Carbon::parse($request->date('date')->toDateString(), config('app.timezone'))
-                ->format('M d, Y');
-        }
-
-        $scanTimes = $logs
-            ->pluck('scanned_at')
-            ->filter()
-            ->sort();
-
-        if ($scanTimes->isEmpty()) {
-            return 'No scan dates';
-        }
-
-        $first = $scanTimes->first()->copy()->timezone(config('app.timezone'));
-        $last = $scanTimes->last()->copy()->timezone(config('app.timezone'));
-
-        if ($first->isSameDay($last)) {
-            return $first->format('M d, Y');
-        }
-
-        return $first->format('M d, Y').' to '.$last->format('M d, Y');
-    }
-
-    private function letterheadDataUri(): ?string
-    {
-        $path = public_path('images/pdf-letterhead.png');
-
-        if (! file_exists($path)) {
-            return null;
-        }
-
-        return 'data:image/png;base64,'.base64_encode(file_get_contents($path));
-    }
-
-    private function pdfFilename(?Guard $guard): string
-    {
-        $guardPart = $guard
-            ? Str::slug($guard->employee_no.'-'.$guard->name)
-            : 'all-guards';
-
-        return sprintf('patrol-logs-%s-%s.pdf', $guardPart, now(config('app.timezone'))->format('Ymd-His'));
-    }
 }

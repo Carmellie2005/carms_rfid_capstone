@@ -55,10 +55,6 @@
         },
     }" x-on:keydown.escape.window="if (proofPhotoOpen) { closeProofPhoto() } else if (detailsOpen) { closePatrolDetails() }">
         <div class="mx-auto max-w-[96rem] space-y-5 px-4 sm:px-6 lg:px-8">
-            @php
-                $exportQuery = request()->only(['status', 'guard_id', 'checkpoint_id', 'date']);
-            @endphp
-
             <form method="GET" action="{{ route('patrol-logs.index') }}" class="grid gap-3 rounded-md border border-blue-100 bg-white p-3 shadow-sm {{ $isSupervisor ? 'md:grid-cols-2 xl:grid-cols-[minmax(150px,0.8fr)_minmax(170px,1fr)_minmax(150px,0.8fr)_minmax(140px,0.75fr)_auto]' : 'md:grid-cols-2 xl:grid-cols-[minmax(150px,0.8fr)_minmax(150px,0.8fr)_minmax(140px,0.75fr)_auto]' }}">
                 <div>
                     <label for="status" class="block text-xs font-semibold uppercase text-blue-800">Status</label>
@@ -96,12 +92,6 @@
                 <div class="flex flex-wrap items-end gap-2 {{ $isSupervisor ? 'md:col-span-2 xl:col-span-1' : 'md:col-span-2 xl:col-span-1' }} xl:self-end xl:justify-end">
                     <button class="h-9 rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50" type="submit">Filter</button>
                     <a href="{{ route('patrol-logs.index') }}" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">Clear</a>
-                    <a href="{{ route('patrol-logs.pdf', $exportQuery) }}" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">
-                        Download PDF
-                    </a>
-                    <a href="{{ route('patrol-logs.pdf', array_merge($exportQuery, ['print' => 1])) }}" target="_blank" rel="noopener" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">
-                        Print PDF
-                    </a>
                 </div>
             </form>
 

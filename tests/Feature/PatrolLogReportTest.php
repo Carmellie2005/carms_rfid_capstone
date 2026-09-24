@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\AuditLog;
 use App\Models\Checkpoint;
 use App\Models\Guard;
 use App\Models\PatrolLog;
@@ -16,22 +15,7 @@ class PatrolLogReportTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_supervisor_can_download_patrol_logs_pdf(): void
-    {
-        $supervisor = User::factory()->create(['role' => 'admin']);
-        $guard = $this->createGuard('SG-PDF-1', 'RFID-PDF-1');
-        $this->createPatrolLog($guard);
-
-        $response = $this
-            ->actingAs($supervisor)
-            ->get(route('patrol-logs.pdf'));
-
-        $response->assertOk();
-        $this->assertStringContainsString('application/pdf', $response->headers->get('content-type'));
-        $this->assertStringContainsString('patrol-logs-all-guards', $response->headers->get('content-disposition'));
-    }
-
-    public function test_guard_patrol_logs_page_has_date_filter_and_pdf_actions(): void
+    public function test_guard_patrol_logs_page_has_date_filter_without_pdf_actions(): void
     {
         $guard = $this->createGuard('SG-FILTER', 'RFID-FILTER');
 
@@ -42,8 +26,8 @@ class PatrolLogReportTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('Date Filter')
-            ->assertSee('Download PDF')
-            ->assertSee('Print PDF');
+            ->assertDontSee('Download PDF')
+            ->assertDontSee('Print PDF');
     }
 
     public function test_patrol_logs_page_opens_checklist_and_proof_photos_from_details_button(): void
@@ -91,26 +75,6 @@ class PatrolLogReportTest extends TestCase
             ->assertOk()
             ->assertHeader('Content-Type', 'image/jpeg')
             ->assertContent('proof-photo');
-    }
-
-    public function test_guard_pdf_export_only_includes_own_patrol_logs(): void
-    {
-        $guard = $this->createGuard('SG-OWN', 'RFID-OWN');
-        $otherGuard = $this->createGuard('SG-OTHER', 'RFID-OTHER');
-
-        $this->createPatrolLog($guard);
-        $this->createPatrolLog($otherGuard);
-
-        $response = $this
-            ->actingAs($guard->user)
-            ->get(route('patrol-logs.pdf', ['guard_id' => $otherGuard->id]));
-
-        $response->assertOk();
-
-        $export = AuditLog::where('action', 'patrol_logs_exported')->firstOrFail();
-
-        $this->assertSame($guard->id, $export->subject_id);
-        $this->assertSame(1, $export->properties['record_count']);
     }
 
     public function test_my_patrol_logs_show_and_filter_manila_scan_time(): void
