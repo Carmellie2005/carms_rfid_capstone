@@ -1,5 +1,6 @@
 .git
 .github
+.agents
 .idea
 .vscode
 .fleet
@@ -10,14 +11,20 @@
 .env.hostinger.example
 
 README.md
-docs/hostinger-deployment.md
-scripts/hostinger-deploy.sh
+docs
+hardware
+scripts
+render.yaml
+tests
+phpunit.xml
 
 node_modules
 vendor
 public/build
 public/hot
 public/storage
+public/diagrams
+public/diagrams.zip
 
 storage/app/public/*
 !storage/app/public/.gitignore

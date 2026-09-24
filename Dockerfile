@@ -13,6 +13,8 @@ RUN npm run build
 FROM php:8.2-apache-bookworm
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+ENV APP_ENV=production
+ENV APP_DEBUG=false
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -31,11 +33,14 @@ RUN apt-get update \
         gd \
         intl \
         mbstring \
+        opcache \
         pdo_mysql \
         pdo_pgsql \
         pgsql \
         zip \
     && a2enmod rewrite headers \
+    && echo "ServerName localhost" > /etc/apache2/conf-available/servername.conf \
+    && a2enconf servername \
     && sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/sites-available/*.conf \
     && sed -ri -e "s!/var/www/!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
     && rm -rf /var/lib/apt/lists/*
@@ -55,20 +60,25 @@ RUN COMPOSER_ALLOW_SUPERUSER=1 composer install \
 
 COPY . .
 COPY --from=frontend /app/public/build ./public/build
-COPY docker/render-start.sh /usr/local/bin/render-start.sh
+COPY docker/dokploy-start.sh /usr/local/bin/dokploy-start.sh
 
 RUN COMPOSER_ALLOW_SUPERUSER=1 composer dump-autoload --optimize \
+    && php artisan package:discover --ansi \
     && mkdir -p storage/app/public storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R ug+rwx storage bootstrap/cache \
-    && chmod +x /usr/local/bin/render-start.sh \
+    && chmod +x /usr/local/bin/dokploy-start.sh \
     && { \
         echo "upload_max_filesize=10M"; \
         echo "post_max_size=12M"; \
         echo "memory_limit=256M"; \
         echo "max_execution_time=120"; \
+        echo "opcache.enable=1"; \
+        echo "opcache.validate_timestamps=0"; \
+        echo "opcache.memory_consumption=128"; \
+        echo "opcache.max_accelerated_files=10000"; \
     } > /usr/local/etc/php/conf.d/campus-patrol.ini
 
-EXPOSE 10000
+EXPOSE 80
 
-CMD ["/usr/local/bin/render-start.sh"]
+CMD ["/usr/local/bin/dokploy-start.sh"]

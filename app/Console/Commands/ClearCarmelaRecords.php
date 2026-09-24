@@ -71,7 +71,7 @@ class ClearCarmelaRecords extends Command
 
         if (! $this->option('force')) {
             $this->warn('Dry run only. No records were deleted.');
-            $this->line('Run php artisan guard:clear-carmela-records --force in Render Shell to delete these records.');
+            $this->line('Run php artisan guard:clear-carmela-records --force in the production shell to delete these records.');
 
             return self::SUCCESS;
         }
