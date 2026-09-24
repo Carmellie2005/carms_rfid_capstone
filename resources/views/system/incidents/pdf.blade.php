@@ -341,7 +341,8 @@
         $category = $incident->category ?? 'Uncategorized';
         $incidentDate = $incident->incident_at?->timezone(config('app.timezone'))->format('M d, Y h:i A') ?? 'Not recorded';
         $reportedDate = $incident->reported_at?->timezone(config('app.timezone'))->format('M d, Y h:i A') ?? 'Not recorded';
-        $resolvedDate = $incident->resolved_at?->timezone(config('app.timezone'));
+        $resolvedDate = $incident->resolved_at ?: ($incident->status === 'resolved' ? $incident->updated_at : null);
+        $resolvedDate = $resolvedDate?->timezone(config('app.timezone'));
         $patrol = $incident->patrolLog;
         $guardName = $incident->securityGuard?->name ?? 'Unknown';
         $employeeNo = $incident->securityGuard?->employee_no ?? 'Not recorded';

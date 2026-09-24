@@ -36,18 +36,25 @@ class IncidentReportController extends Controller
 
     public function update(Request $request, IncidentReport $incidentReport): RedirectResponse
     {
-        $before = $incidentReport->only(['status', 'admin_notes']);
+        $before = $incidentReport->only(['status', 'admin_notes', 'action_taken', 'resolved_at']);
 
         $data = $request->validate([
             'status' => ['required', Rule::in(['submitted', 'under_review', 'resolved'])],
             'admin_notes' => ['nullable', 'string', 'max:2000'],
+            'action_taken' => ['nullable', 'required_if:status,resolved', 'string', 'max:2000'],
         ]);
+
+        if ($data['status'] === 'resolved') {
+            $data['resolved_at'] = $incidentReport->resolved_at ?? now(config('app.timezone'));
+        } else {
+            $data['resolved_at'] = null;
+        }
 
         $incidentReport->update($data);
 
         AuditLogger::record('incident_updated', 'Incident report review status updated.', $incidentReport, [
             'before' => $before,
-            'after' => $incidentReport->only(['status', 'admin_notes']),
+            'after' => $incidentReport->only(['status', 'admin_notes', 'action_taken', 'resolved_at']),
         ]);
 
         return redirect()->route('incidents.index')->with('status', 'Incident report updated.');

@@ -155,6 +155,11 @@
                                         <span class="font-semibold">Admin notes:</span> {{ $incident->admin_notes }}
                                     </div>
                                 @endif
+                                @if ($incident->action_taken)
+                                    <div class="mt-3 rounded-md bg-emerald-50 p-3 text-sm text-emerald-900">
+                                        <span class="font-semibold">Action taken:</span> {{ $incident->action_taken }}
+                                    </div>
+                                @endif
                             </div>
 
                             <form method="POST" action="{{ route('incidents.update', $incident) }}" class="rounded-md border border-blue-100 p-4">
@@ -171,6 +176,12 @@
                                 <div class="mt-3">
                                     <label for="admin_notes-{{ $incident->id }}" class="sr-only">Admin Notes</label>
                                     <textarea id="admin_notes-{{ $incident->id }}" name="admin_notes" rows="4" placeholder="Admin Notes" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('admin_notes', $incident->admin_notes) }}</textarea>
+                                </div>
+                                <div class="mt-3">
+                                    <label for="action_taken-{{ $incident->id }}" class="block text-sm font-medium text-slate-700">Action Taken</label>
+                                    <textarea id="action_taken-{{ $incident->id }}" name="action_taken" rows="4" placeholder="Required when marking the report as resolved" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('action_taken', $incident->action_taken) }}</textarea>
+                                    <p class="mt-1 text-xs text-slate-500">Use this to record what was done, such as repairs, inspection, referral, or security response.</p>
+                                    <x-input-error :messages="$errors->get('action_taken')" class="mt-2" />
                                 </div>
                                 <button class="mt-4 w-full rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800" type="submit">Update Report</button>
                             </form>
