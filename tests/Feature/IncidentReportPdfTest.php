@@ -137,7 +137,24 @@ class IncidentReportPdfTest extends TestCase
             ->assertForbidden();
     }
 
-    private function createIncidentReport(?Guard $guard = null): IncidentReport
+    public function test_incident_report_pdf_handles_long_narrative(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'admin']);
+        $longNarrative = str_repeat(
+            'The reporting guard observed damage at the assigned checkpoint and documented the condition for supervisor review. ',
+            45
+        );
+        $incident = $this->createIncidentReport(description: $longNarrative);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('incidents.pdf', $incident));
+
+        $response->assertOk();
+        $this->assertStringContainsString('application/pdf', $response->headers->get('content-type'));
+    }
+
+    private function createIncidentReport(?Guard $guard = null, ?string $description = null): IncidentReport
     {
         $guard ??= $this->createGuard(User::factory()->create(['role' => 'guard']), 'G-001');
 
@@ -171,7 +188,7 @@ class IncidentReportPdfTest extends TestCase
             'severity' => 'medium',
             'incident_at' => now(),
             'reported_at' => now(),
-            'description' => 'Suspicious activity was observed during patrol.',
+            'description' => $description ?? 'Suspicious activity was observed during patrol.',
             'status' => 'submitted',
         ]);
     }

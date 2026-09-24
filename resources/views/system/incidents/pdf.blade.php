@@ -145,6 +145,70 @@
             text-align: justify;
         }
 
+        .continuation-title {
+            font-size: 11pt;
+            font-weight: 700;
+            left: 0;
+            position: absolute;
+            text-align: center;
+            top: 114.8pt;
+            width: 612pt;
+            z-index: 1;
+        }
+
+        .continuation-subtitle {
+            font-size: 11pt;
+            left: 0;
+            position: absolute;
+            text-align: center;
+            top: 129.4pt;
+            width: 612pt;
+            z-index: 1;
+        }
+
+        .continuation-meta {
+            font-size: 10pt;
+            left: 72.5pt;
+            position: absolute;
+            top: 160pt;
+            width: 467.21pt;
+            z-index: 1;
+        }
+
+        .continuation-label {
+            font-size: 11pt;
+            font-weight: 700;
+            left: 72.5pt;
+            position: absolute;
+            top: 188pt;
+            z-index: 1;
+        }
+
+        .continuation-box {
+            border: 0.75pt solid #4b5563;
+            font-size: 11pt;
+            height: 600pt;
+            left: 72.5pt;
+            line-height: 1.45;
+            padding: 18pt 20pt;
+            position: absolute;
+            text-align: justify;
+            top: 214pt;
+            width: 467.21pt;
+            z-index: 1;
+        }
+
+        .continuation-footer {
+            bottom: 67pt;
+            color: #4b5563;
+            font-size: 9pt;
+            left: 72.5pt;
+            position: absolute;
+            text-align: center;
+            width: 467.21pt;
+            z-index: 1;
+        }
+
         .report-no {
             height: 58.56pt;
             left: 72.5pt;
@@ -358,6 +422,45 @@
         $supervisorName = 'Ryan P. Tomol';
         $evidenceImages = collect($imageDataUris)->take(4)->values();
         $narrative = $incident->description ?: 'No description provided.';
+        $textLength = fn (string $value): int => function_exists('mb_strlen') ? mb_strlen($value) : strlen($value);
+        $textSlice = fn (string $value, int $start, ?int $length = null): string => function_exists('mb_substr')
+            ? mb_substr($value, $start, $length)
+            : substr($value, $start, $length);
+        $splitNarrative = function (string $text) use ($textLength, $textSlice): array {
+            $chunks = [];
+            $remaining = trim(preg_replace("/\r\n|\r/", "\n", $text));
+
+            while ($remaining !== '') {
+                $limit = $chunks === [] ? 950 : 2200;
+
+                if ($textLength($remaining) <= $limit) {
+                    $chunks[] = $remaining;
+                    break;
+                }
+
+                $slice = $textSlice($remaining, 0, $limit);
+                $breakAt = $textLength($slice);
+
+                if (preg_match('/^(.{1,'.$limit.'})(?:\s+|$)/us', $remaining, $matches)) {
+                    $breakAt = max(1, $textLength($matches[1]));
+                }
+
+                $chunk = trim($textSlice($remaining, 0, $breakAt));
+                $remaining = trim($textSlice($remaining, $breakAt));
+
+                if ($chunk === '') {
+                    $chunk = trim($textSlice($remaining, 0, $limit));
+                    $remaining = trim($textSlice($remaining, $limit));
+                }
+
+                $chunks[] = $chunk;
+            }
+
+            return $chunks !== [] ? $chunks : ['No description provided.'];
+        };
+        $narrativeChunks = collect($splitNarrative($narrative));
+        $firstNarrativeChunk = $narrativeChunks->first();
+        $continuationNarrativeChunks = $narrativeChunks->slice(1)->values();
     @endphp
 
     <section class="page">
@@ -411,8 +514,20 @@
         </div>
 
         <div class="narrative-label">Narrative of Incident:</div>
-        <div class="field narrative-box narrative-text">{!! nl2br(e($narrative)) !!}</div>
+        <div class="field narrative-box narrative-text">{!! nl2br(e($firstNarrativeChunk)) !!}</div>
     </section>
+
+    @foreach ($continuationNarrativeChunks as $continuationIndex => $continuationNarrative)
+        <section class="page">
+            <div class="core-values">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</div>
+            <div class="continuation-title">Security Incident Report</div>
+            <div class="continuation-subtitle">Narrative of Incident Continuation</div>
+            <div class="continuation-meta">Report No.: {{ $reportNumber }} &nbsp; | &nbsp; Security Guard: {{ $guardName }}</div>
+            <div class="continuation-label">Narrative of Incident (continued):</div>
+            <div class="continuation-box">{!! nl2br(e($continuationNarrative)) !!}</div>
+            <div class="continuation-footer">Narrative continuation page {{ $continuationIndex + 1 }} of {{ $continuationNarrativeChunks->count() }}</div>
+        </section>
+    @endforeach
 
     <section class="page">
         @if ($incidentFormPageTwoDataUri)
