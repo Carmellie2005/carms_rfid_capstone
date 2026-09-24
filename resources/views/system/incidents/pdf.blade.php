@@ -326,79 +326,116 @@
             text-align: center;
         }
 
-        .review-notes {
-            height: 43.94pt;
+        .review-flow {
+            background: #ffffff;
             left: 72.5pt;
+            position: absolute;
             top: 410.5pt;
             width: 467.21pt;
+            z-index: 2;
         }
 
-        .action-taken {
-            height: 43.92pt;
-            left: 72.5pt;
-            top: 455.16pt;
-            width: 467.21pt;
+        .review-flow-field {
+            border: 0.75pt solid #555555;
+            border-bottom: 0;
+            padding: 5pt 7pt 6pt;
         }
 
-        .resolved-date {
-            height: 43.94pt;
-            left: 72.5pt;
-            top: 499.56pt;
-            width: 467.21pt;
+        .review-flow-field:last-of-type {
+            border-bottom: 0.75pt solid #555555;
         }
 
-        .review-notes .value,
-        .action-taken .value,
-        .resolved-date .value {
+        .review-flow-normal .review-flow-field {
+            min-height: 43.92pt;
+        }
+
+        .review-flow .label {
+            margin-bottom: 3pt;
+        }
+
+        .review-flow .value {
+            font-size: 10.5pt;
+            line-height: 1.2;
+            text-align: justify;
+        }
+
+        .review-flow .resolved-field .value {
+            text-align: left;
+        }
+
+        .review-flow-compact .review-flow-field {
+            padding: 4pt 6pt 4.5pt;
+        }
+
+        .review-flow-compact .label {
+            font-size: 9.5pt;
+            margin-bottom: 2pt;
+        }
+
+        .review-flow-compact .value {
+            font-size: 8.8pt;
+            line-height: 1.12;
+        }
+
+        .review-flow-dense .review-flow-field {
+            padding: 3pt 5pt 3.5pt;
+        }
+
+        .review-flow-dense .label {
+            font-size: 8.2pt;
+            margin-bottom: 1.2pt;
+        }
+
+        .review-flow-dense .value {
+            font-size: 6.8pt;
+            line-height: 1.05;
+        }
+
+        .review-signatures {
+            border-collapse: collapse;
+            margin-top: 18pt;
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        .review-flow-compact .review-signatures {
+            margin-top: 12pt;
+        }
+
+        .review-flow-dense .review-signatures {
+            margin-top: 8pt;
+        }
+
+        .review-signatures td {
+            border: 0;
             font-size: 11pt;
+            line-height: 1.15;
+            padding: 0 8pt;
+            text-align: center;
+            vertical-align: bottom;
+            width: 33.333%;
         }
 
-        .review-notes .value,
-        .action-taken .value {
-            line-height: 1.15;
+        .review-flow-compact .review-signatures td {
+            font-size: 9.5pt;
+        }
+
+        .review-flow-dense .review-signatures td {
+            font-size: 7.8pt;
         }
 
         .signature-name {
-            font-size: 11pt;
+            border-top: 0.75pt solid #111111;
+            display: block;
             font-weight: 700;
-            position: absolute;
-            text-align: center;
-            top: 570pt;
-            z-index: 1;
+            margin-bottom: 3pt;
+            padding-top: 3pt;
         }
 
-        .signature-label {
-            font-size: 11pt;
-            font-weight: 400;
-            position: absolute;
-            text-align: center;
-            top: 588pt;
-            z-index: 1;
-        }
-
-        .guard-signature {
-            left: 80pt;
-            width: 150pt;
-        }
-
-        .supervisor-signature {
-            left: 245pt;
-            width: 130pt;
-        }
-
-        .reviewed-signature {
-            left: 385pt;
-            width: 125pt;
-        }
-
+        .signature-label,
         .office-label {
-            font-size: 11pt;
-            left: 245pt;
-            position: absolute;
-            text-align: center;
-            top: 603pt;
-            width: 130pt;
-            z-index: 1;
+            display: block;
+            font-weight: 400;
         }
     </style>
 </head>
@@ -428,7 +465,6 @@
         $evidenceImages = collect($imageDataUris)->take(4)->values();
         $narrative = $incident->description ?: 'No description provided.';
         $normalizeText = fn (string $value): string => trim(preg_replace("/\r\n|\r/", "\n", $value));
-        $singleLineText = fn (string $value): string => trim(preg_replace('/\s+/u', ' ', $normalizeText($value)));
         $textLength = fn (string $value): int => function_exists('mb_strlen') ? mb_strlen($value) : strlen($value);
         $textSlice = fn (string $value, int $start, ?int $length = null): string => function_exists('mb_substr')
             ? mb_substr($value, $start, $length)
@@ -468,43 +504,10 @@
         $narrativeChunks = collect($splitText($narrative, 950, 2200, 'No description provided.'));
         $firstNarrativeChunk = $narrativeChunks->first();
         $continuationNarrativeChunks = $narrativeChunks->slice(1)->values();
-        $reviewNotesDisplayLimit = 70;
-        $actionTakenDisplayLimit = 70;
-        $reviewNotesNeedsContinuation = $textLength($singleLineText($reviewNotes)) > $reviewNotesDisplayLimit;
-        $actionTakenNeedsContinuation = $textLength($singleLineText($actionTaken)) > $actionTakenDisplayLimit;
-        $reviewNotesDisplay = $reviewNotesNeedsContinuation
-            ? 'Full review notes are shown on the continuation page.'
-            : $singleLineText($reviewNotes);
-        $actionTakenDisplay = $actionTakenNeedsContinuation
-            ? 'Full action taken is shown on the continuation page.'
-            : $singleLineText($actionTaken);
-        $reviewActionContinuationSections = [];
-        $appendContinuationSections = function (string $label, string $text, string $fallback) use (&$reviewActionContinuationSections, $splitText): void {
-            $chunks = $splitText($text, 2200, 2200, $fallback);
-            $total = count($chunks);
-
-            foreach ($chunks as $index => $chunk) {
-                $pageNumber = $index + 1;
-                $reviewActionContinuationSections[] = [
-                    'subtitle' => $label.' Continuation',
-                    'label' => $pageNumber === 1 ? $label.' (full text):' : $label.' (continued):',
-                    'text' => $chunk,
-                    'page' => $pageNumber,
-                    'total' => $total,
-                    'footer' => $label.' continuation page',
-                ];
-            }
-        };
-
-        if ($reviewNotesNeedsContinuation) {
-            $appendContinuationSections('Review Notes', $reviewNotes, 'No supervisor review notes recorded.');
-        }
-
-        if ($actionTakenNeedsContinuation) {
-            $appendContinuationSections('Action Taken', $actionTaken, 'No action recorded.');
-        }
-
-        $reviewActionContinuationSections = collect($reviewActionContinuationSections);
+        $reviewFlowLength = $textLength($normalizeText($reviewNotes).' '.$normalizeText($actionTaken));
+        $reviewFlowDensity = $reviewFlowLength > 1800
+            ? 'dense'
+            : ($reviewFlowLength > 700 ? 'compact' : 'normal');
     @endphp
 
     <section class="page">
@@ -602,38 +605,38 @@
             @endif
         </div>
 
-        <div class="field review-notes">
-            <span class="label">Review Notes:</span>
-            <span class="value">{{ $reviewNotesDisplay }}</span>
-        </div>
-        <div class="field action-taken">
-            <span class="label">Action Taken:</span>
-            <span class="value">{{ $actionTakenDisplay }}</span>
-        </div>
-        <div class="field resolved-date">
-            <span class="label">Resolved Date / Time:</span>
-            <span class="value">{{ $resolvedDateLabel }}</span>
-        </div>
+        <div class="review-flow review-flow-{{ $reviewFlowDensity }}">
+            <div class="review-flow-field">
+                <span class="label">Review Notes:</span>
+                <span class="value">{!! nl2br(e($reviewNotes)) !!}</span>
+            </div>
+            <div class="review-flow-field">
+                <span class="label">Action Taken:</span>
+                <span class="value">{!! nl2br(e($actionTaken)) !!}</span>
+            </div>
+            <div class="review-flow-field resolved-field">
+                <span class="label">Resolved Date / Time:</span>
+                <span class="value">{{ $resolvedDateLabel }}</span>
+            </div>
 
-        <div class="signature-name guard-signature">{{ $guardName }}</div>
-        <div class="signature-name supervisor-signature">{{ $supervisorName }}</div>
-        <div class="signature-name reviewed-signature">{{ $reviewedDateLabel }}</div>
-        <div class="signature-label guard-signature">Reporting Guard</div>
-        <div class="signature-label supervisor-signature">Supervisor</div>
-        <div class="signature-label reviewed-signature">Date Reviewed</div>
-        <div class="office-label">Security and Safety Office</div>
+            <table class="review-signatures">
+                <tr>
+                    <td>
+                        <span class="signature-name">{{ $guardName }}</span>
+                        <span class="signature-label">Reporting Guard</span>
+                    </td>
+                    <td>
+                        <span class="signature-name">{{ $supervisorName }}</span>
+                        <span class="signature-label">Supervisor</span>
+                        <span class="office-label">Security and Safety Office</span>
+                    </td>
+                    <td>
+                        <span class="signature-name">{{ $reviewedDateLabel }}</span>
+                        <span class="signature-label">Date Reviewed</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
     </section>
-
-    @foreach ($reviewActionContinuationSections as $section)
-        <section class="page">
-            <div class="core-values">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</div>
-            <div class="continuation-title">Security Incident Report</div>
-            <div class="continuation-subtitle">{{ $section['subtitle'] }}</div>
-            <div class="continuation-meta">Report No.: {{ $reportNumber }} &nbsp; | &nbsp; Security Guard: {{ $guardName }}</div>
-            <div class="continuation-label">{{ $section['label'] }}</div>
-            <div class="continuation-box">{!! nl2br(e($section['text'])) !!}</div>
-            <div class="continuation-footer">{{ $section['footer'] }} {{ $section['page'] }} of {{ $section['total'] }}</div>
-        </section>
-    @endforeach
 </body>
 </html>
