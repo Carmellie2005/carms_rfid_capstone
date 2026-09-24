@@ -14,6 +14,7 @@
     </x-slot>
 
     @php
+        $currentGuardProfile = auth()->user()?->guardProfile;
         $statusClasses = [
             'valid' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45',
             'suspicious' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45',
@@ -184,6 +185,11 @@
                                 @if ($log->incidentReport)
                                     <p class="mt-1 truncate font-semibold text-slate-800">{{ $log->incidentReport->category }}</p>
                                     <p class="text-xs text-slate-500">{{ str($log->incidentReport->status)->replace('_', ' ')->title() }}</p>
+                                    @if (! $isSupervisor && $log->incidentReport->canBeEditedByGuard($currentGuardProfile))
+                                        <a href="{{ route('guard.incidents.edit', $log->incidentReport) }}" class="mt-2 inline-flex h-8 items-center justify-center rounded-md border border-amber-200 bg-white px-3 text-xs font-bold text-amber-800 transition hover:bg-amber-100">
+                                            Edit Incident
+                                        </a>
+                                    @endif
                                 @else
                                     <p class="mt-1 font-semibold text-slate-500">None</p>
                                 @endif
@@ -257,6 +263,11 @@
                                         @if ($log->incidentReport)
                                             <span class="font-medium text-slate-900">{{ $log->incidentReport->category }}</span>
                                             <div class="text-xs">{{ str($log->incidentReport->status)->replace('_', ' ')->title() }}</div>
+                                            @if (! $isSupervisor && $log->incidentReport->canBeEditedByGuard($currentGuardProfile))
+                                                <a href="{{ route('guard.incidents.edit', $log->incidentReport) }}" class="mt-2 inline-flex h-8 items-center justify-center rounded-md border border-amber-200 bg-white px-3 text-xs font-bold text-amber-800 transition hover:bg-amber-100">
+                                                    Edit
+                                                </a>
+                                            @endif
                                         @else
                                             <span class="text-xs text-slate-500">None</span>
                                         @endif
@@ -400,9 +411,16 @@
                                         <div class="mt-3 rounded-md border border-amber-100 bg-amber-50 px-3 py-2 text-sm text-amber-900">
                                             <p class="font-bold">{{ $log->incidentReport->category }}</p>
                                             <p class="mt-1">Status: {{ str($log->incidentReport->status)->replace('_', ' ')->title() }}</p>
-                                            <a href="{{ route('incidents.pdf', $log->incidentReport) }}" class="mt-3 inline-flex h-9 items-center justify-center rounded-md border border-amber-200 bg-white px-3 text-xs font-bold text-amber-800 transition hover:bg-amber-100">
-                                                Download Incident PDF
-                                            </a>
+                                            <div class="mt-3 flex flex-wrap gap-2">
+                                                <a href="{{ route('incidents.pdf', $log->incidentReport) }}" class="inline-flex h-9 items-center justify-center rounded-md border border-amber-200 bg-white px-3 text-xs font-bold text-amber-800 transition hover:bg-amber-100">
+                                                    Download Incident PDF
+                                                </a>
+                                                @if (! $isSupervisor && $log->incidentReport->canBeEditedByGuard($currentGuardProfile))
+                                                    <a href="{{ route('guard.incidents.edit', $log->incidentReport) }}" class="inline-flex h-9 items-center justify-center rounded-md bg-amber-700 px-3 text-xs font-bold text-white transition hover:bg-amber-800">
+                                                        Edit Incident
+                                                    </a>
+                                                @endif
+                                            </div>
                                         </div>
                                     @else
                                         <p class="mt-3 rounded-md border border-blue-100 bg-slate-50 px-3 py-2 text-sm text-slate-500">No incident report attached.</p>

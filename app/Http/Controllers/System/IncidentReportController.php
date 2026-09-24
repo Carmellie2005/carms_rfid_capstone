@@ -6,10 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\IncidentReport;
 use App\Models\IncidentReportImage;
 use App\Support\AuditLogger;
+use App\Support\ImageCompressor;
+use App\Support\PatrolChecklist;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -47,6 +51,109 @@ class IncidentReportController extends Controller
         ]);
 
         return redirect()->route('incidents.index')->with('status', 'Incident report updated.');
+    }
+
+    public function editForGuard(Request $request, IncidentReport $incidentReport): View
+    {
+        $this->ensureGuardCanEditIncident($request, $incidentReport);
+
+        $incidentReport->load(['checkpoint', 'patrolLog', 'images']);
+
+        return view('system.incidents.guard-edit', [
+            'incident' => $incidentReport,
+            'incidentCategories' => PatrolChecklist::incidentCategories(),
+            'priorityOptions' => [
+                'low' => 'Low',
+                'normal' => 'Normal',
+                'high' => 'High',
+                'critical' => 'Critical',
+            ],
+        ]);
+    }
+
+    public function updateForGuard(Request $request, IncidentReport $incidentReport): RedirectResponse
+    {
+        $this->ensureGuardCanEditIncident($request, $incidentReport);
+
+        $incidentReport->load('images');
+
+        $data = $request->validate([
+            'category' => ['required', 'string', 'max:100', Rule::in(PatrolChecklist::incidentCategories())],
+            'priority' => ['required', Rule::in(['low', 'normal', 'high', 'critical'])],
+            'description' => ['required', 'string', 'max:3000'],
+            'remove_image_ids' => ['nullable', 'array'],
+            'remove_image_ids.*' => ['integer'],
+            'incident_images' => ['nullable', 'array', 'max:3'],
+            'incident_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
+            'incident_camera_images' => ['nullable', 'array', 'max:3'],
+            'incident_camera_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
+        ]);
+
+        $removeImageIds = collect($data['remove_image_ids'] ?? [])
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+        $imagesToRemove = $incidentReport->images
+            ->whereIn('id', $removeImageIds)
+            ->values();
+        $newImageFiles = $this->incidentImageFiles($request);
+        $legacyImageCount = $incidentReport->images->isEmpty() && filled($incidentReport->image_path) ? 1 : 0;
+        $remainingImageCount = $incidentReport->images->count() - $imagesToRemove->count() + $legacyImageCount;
+        $totalImageCount = $remainingImageCount + count($newImageFiles);
+
+        if ($totalImageCount < 1) {
+            return back()
+                ->withInput()
+                ->withErrors(['incident_images' => 'Keep at least one incident image or attach a new one before saving.']);
+        }
+
+        if ($totalImageCount > 3) {
+            return back()
+                ->withInput()
+                ->withErrors(['incident_images' => 'Keep up to 3 incident images only. Remove an existing image before adding another.']);
+        }
+
+        $before = $incidentReport->only(['category', 'priority', 'severity', 'description', 'image_path']);
+
+        DB::transaction(function () use ($data, $incidentReport, $imagesToRemove, $newImageFiles, $remainingImageCount): void {
+            $incidentReport->update([
+                'title' => $data['category'],
+                'incident_type' => $data['category'],
+                'category' => $data['category'],
+                'priority' => $data['priority'],
+                'severity' => $this->severityFromPriority($data['priority']),
+                'description' => $data['description'],
+            ]);
+
+            foreach ($imagesToRemove as $image) {
+                $this->deleteIncidentImage($image);
+            }
+
+            $this->storeIncidentImages($incidentReport, $newImageFiles, $remainingImageCount);
+            $this->reorderIncidentImages($incidentReport);
+
+            $firstImagePath = $incidentReport->images()
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->value('image_path');
+
+            $incidentReport->update([
+                'image_path' => $firstImagePath ?: $incidentReport->image_path,
+            ]);
+        });
+
+        $incidentReport->refresh();
+
+        AuditLogger::record('incident_guard_updated', 'Incident report updated by reporting guard before supervisor review.', $incidentReport, [
+            'before' => $before,
+            'after' => $incidentReport->only(['category', 'priority', 'severity', 'description', 'image_path']),
+            'removed_images' => $imagesToRemove->count(),
+            'added_images' => count($newImageFiles),
+        ]);
+
+        return redirect()
+            ->route('patrol-logs.index')
+            ->with('status', 'Incident report updated successfully.');
     }
 
     public function downloadPdf(Request $request, IncidentReport $incidentReport): Response
@@ -107,6 +214,112 @@ class IncidentReportController extends Controller
         $guardId = $request->user()->guardProfile?->id;
 
         abort_unless($guardId && $incidentReport->guard_id === $guardId, 403);
+    }
+
+    private function ensureGuardCanEditIncident(Request $request, IncidentReport $incidentReport): void
+    {
+        abort_unless($request->user()?->role === 'guard', 403);
+
+        abort_unless($incidentReport->canBeEditedByGuard($request->user()->guardProfile), 403);
+    }
+
+    private function incidentImageFiles(Request $request): array
+    {
+        return collect([
+            ...$this->uploadedFilesWithSource($request->file('incident_images', []), 'upload'),
+            ...$this->uploadedFilesWithSource($request->file('incident_camera_images', []), 'camera'),
+        ])
+            ->filter(fn ($item) => $item['file'] instanceof UploadedFile && $item['file']->isValid())
+            ->values()
+            ->all();
+    }
+
+    private function uploadedFilesWithSource(mixed $files, string $source): array
+    {
+        if ($files instanceof UploadedFile) {
+            return [['file' => $files, 'source' => $source]];
+        }
+
+        if (! is_array($files)) {
+            return [];
+        }
+
+        return collect($files)
+            ->flatten()
+            ->filter(fn ($file) => $file instanceof UploadedFile)
+            ->map(fn (UploadedFile $file) => ['file' => $file, 'source' => $source])
+            ->values()
+            ->all();
+    }
+
+    private function storeIncidentImages(IncidentReport $incidentReport, array $incidentImageFiles, int $existingCount = 0): void
+    {
+        foreach (array_slice($incidentImageFiles, 0, 3) as $index => $item) {
+            $file = $item['file'];
+            $image = $this->compressedUploadedImage($file);
+            $path = 'incident-reports/'.Str::uuid().'.'.$image['extension'];
+
+            Storage::disk('public')->put($path, $image['contents']);
+
+            $incidentReport->images()->create([
+                'image_path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $image['mime_type'],
+                'image_data' => base64_encode($image['contents']),
+                'source' => $item['source'],
+                'sort_order' => $existingCount + $index + 1,
+            ]);
+        }
+    }
+
+    private function compressedUploadedImage(UploadedFile $file): array
+    {
+        $contents = file_get_contents($file->getRealPath());
+
+        if ($contents === false) {
+            return [
+                'extension' => $file->extension() ?: 'jpg',
+                'mime_type' => $file->getMimeType() ?: 'image/jpeg',
+                'contents' => '',
+            ];
+        }
+
+        return ImageCompressor::compressedJpeg($contents, sourcePath: $file->getRealPath()) ?? [
+            'extension' => $file->extension() ?: 'jpg',
+            'mime_type' => $file->getMimeType() ?: 'image/jpeg',
+            'contents' => $contents,
+        ];
+    }
+
+    private function deleteIncidentImage(IncidentReportImage $image): void
+    {
+        if ($image->image_path) {
+            Storage::disk('public')->delete($image->image_path);
+        }
+
+        $image->delete();
+    }
+
+    private function reorderIncidentImages(IncidentReport $incidentReport): void
+    {
+        $incidentReport->images()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->values()
+            ->each(fn (IncidentReportImage $image, int $index) => $image->update([
+                'sort_order' => $index + 1,
+            ]));
+    }
+
+    private function severityFromPriority(string $priority): string
+    {
+        return match ($priority) {
+            'critical' => 'critical',
+            'high' => 'high',
+            'low' => 'low',
+            default => 'medium',
+        };
     }
 
     private function imageDataUris(IncidentReport $incidentReport): array

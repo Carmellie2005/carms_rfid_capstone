@@ -64,4 +64,11 @@ class IncidentReport extends Model
     {
         return $this->morphMany(NotificationRead::class, 'notifiable');
     }
+
+    public function canBeEditedByGuard(?Guard $guard): bool
+    {
+        return $guard !== null
+            && $this->guard_id === $guard->id
+            && $this->status === 'submitted';
+    }
 }
