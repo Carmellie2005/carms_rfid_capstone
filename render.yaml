@@ -13,7 +13,7 @@ services:
       - key: APP_DEBUG
         value: false
       - key: APP_URL
-        value: https://carms-rfid-capstone.onrender.com
+        value: https://slsubcpatrol.site
       - key: APP_KEY
         sync: false
       - key: APP_TIMEZONE
@@ -37,7 +37,7 @@ services:
       - key: RUN_SEEDERS
         value: true
       - key: WEBPUSH_VAPID_SUBJECT
-        value: https://carms-rfid-capstone.onrender.com
+        value: https://slsubcpatrol.site
       - key: WEBPUSH_VAPID_PUBLIC_KEY
         sync: false
       - key: WEBPUSH_VAPID_PRIVATE_KEY
