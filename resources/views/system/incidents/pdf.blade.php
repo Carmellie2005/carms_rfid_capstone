@@ -465,31 +465,19 @@
 
             return $chunks !== [] ? $chunks : [$fallback];
         };
-        $previewText = function (string $text, int $limit = 70) use ($singleLineText, $textLength, $textSlice): string {
-            $text = $singleLineText($text);
-
-            if ($textLength($text) <= $limit) {
-                return $text;
-            }
-
-            $slice = $textSlice($text, 0, $limit);
-            $breakAt = $textLength($slice);
-
-            if (preg_match('/^(.{1,'.$limit.'})(?:\s+|$)/us', $text, $matches)) {
-                $breakAt = max(1, $textLength($matches[1]));
-            }
-
-            return rtrim(trim($textSlice($text, 0, $breakAt)), '.,;:').'...';
-        };
         $narrativeChunks = collect($splitText($narrative, 950, 2200, 'No description provided.'));
         $firstNarrativeChunk = $narrativeChunks->first();
         $continuationNarrativeChunks = $narrativeChunks->slice(1)->values();
-        $reviewNotesPreviewLimit = 70;
-        $actionTakenPreviewLimit = 70;
-        $reviewNotesNeedsContinuation = $textLength($singleLineText($reviewNotes)) > $reviewNotesPreviewLimit;
-        $actionTakenNeedsContinuation = $textLength($singleLineText($actionTaken)) > $actionTakenPreviewLimit;
-        $reviewNotesPreview = $previewText($reviewNotes, $reviewNotesPreviewLimit);
-        $actionTakenPreview = $previewText($actionTaken, $actionTakenPreviewLimit);
+        $reviewNotesDisplayLimit = 70;
+        $actionTakenDisplayLimit = 70;
+        $reviewNotesNeedsContinuation = $textLength($singleLineText($reviewNotes)) > $reviewNotesDisplayLimit;
+        $actionTakenNeedsContinuation = $textLength($singleLineText($actionTaken)) > $actionTakenDisplayLimit;
+        $reviewNotesDisplay = $reviewNotesNeedsContinuation
+            ? 'Full review notes are shown on the continuation page.'
+            : $singleLineText($reviewNotes);
+        $actionTakenDisplay = $actionTakenNeedsContinuation
+            ? 'Full action taken is shown on the continuation page.'
+            : $singleLineText($actionTaken);
         $reviewActionContinuationSections = [];
         $appendContinuationSections = function (string $label, string $text, string $fallback) use (&$reviewActionContinuationSections, $splitText): void {
             $chunks = $splitText($text, 2200, 2200, $fallback);
@@ -616,11 +604,11 @@
 
         <div class="field review-notes">
             <span class="label">Review Notes:</span>
-            <span class="value">{{ $reviewNotesPreview }}</span>
+            <span class="value">{{ $reviewNotesDisplay }}</span>
         </div>
         <div class="field action-taken">
             <span class="label">Action Taken:</span>
-            <span class="value">{{ $actionTakenPreview }}</span>
+            <span class="value">{{ $actionTakenDisplay }}</span>
         </div>
         <div class="field resolved-date">
             <span class="label">Resolved Date / Time:</span>
