@@ -227,6 +227,25 @@
         color: #f8fafc;
     }
 
+    .dark table thead,
+    .dark table th,
+    .dark dt.text-blue-800,
+    .dark label.text-blue-800,
+    .dark p.text-blue-800,
+    .dark h4.text-blue-800,
+    .dark .text-blue-900,
+    .dark .text-blue-800,
+    .dark .text-blue-700,
+    .dark .text-sky-900,
+    .dark .text-sky-700 {
+        color: #f8fafc;
+    }
+
+    .dark .text-blue-600,
+    .dark .text-blue-500 {
+        color: #e2e8f0;
+    }
+
     .dark .text-slate-700,
     .dark .text-slate-600,
     .dark .text-gray-700,
@@ -240,9 +259,15 @@
     }
 
     .dark .border-blue-100,
+    .dark .border-blue-200,
     .dark .border-slate-200,
     .dark .border-gray-200 {
         border-color: #1e293b;
+    }
+
+    .dark table,
+    .dark table tbody tr {
+        color: #e2e8f0;
     }
 
     .dark .brand-spinner-icon {
@@ -301,6 +326,18 @@
     .dark .sidebar-brand-soft {
         background: linear-gradient(135deg, rgb(15 23 42 / 0.98), rgb(30 41 59 / 0.9));
         box-shadow: inset 0 -1px 0 rgb(59 130 246 / 0.18);
+    }
+}
+
+@layer utilities {
+    .dark .dark\:text-blue-100,
+    .dark .dark\:text-blue-200,
+    .dark .dark\:text-blue-300,
+    .dark .dark\:text-indigo-300,
+    .dark .dark\:text-sky-100,
+    .dark .dark\:text-sky-200,
+    .dark .dark\:text-sky-300 {
+        color: #f8fafc;
     }
 }
 
