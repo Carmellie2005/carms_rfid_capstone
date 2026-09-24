@@ -141,7 +141,7 @@
         .narrative-text {
             font-size: 11pt;
             line-height: 1.45;
-            padding: 9pt 10pt;
+            padding: 16pt 14pt;
             text-align: justify;
         }
 
@@ -216,7 +216,7 @@
         }
 
         .narrative-label {
-            top: 441.6pt;
+            top: 436.6pt;
         }
 
         .narrative-box {
@@ -227,13 +227,13 @@
         }
 
         .evidence-label {
-            top: 115.1pt;
+            top: 110.1pt;
         }
 
         .evidence-box {
             height: 234.55pt;
             left: 72.5pt;
-            padding: 10pt 12pt;
+            padding: 18pt 16pt;
             top: 131.07pt;
             width: 467.21pt;
         }
@@ -244,21 +244,21 @@
         }
 
         .photo-grid td {
-            height: 102pt;
-            padding: 3pt;
+            height: 94pt;
+            padding: 6pt 5pt;
             text-align: center;
             vertical-align: middle;
             width: 50%;
         }
 
         .photo-grid img {
-            max-height: 98pt;
+            max-height: 86pt;
             max-width: 100%;
         }
 
         .empty-evidence {
             font-size: 11pt;
-            padding-top: 92pt;
+            padding-top: 82pt;
             text-align: center;
         }
 
