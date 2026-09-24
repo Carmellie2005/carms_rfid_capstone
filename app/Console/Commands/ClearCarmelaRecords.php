@@ -68,7 +68,6 @@ class ClearCarmelaRecords extends Command
         $this->line('Files to delete: '.$plan['file_count']);
         $this->line('User accounts kept: '.$plan['kept_users']);
         $this->line('Guard profiles kept: '.$plan['kept_guards']);
-        $this->line('Face registration samples kept: '.$plan['kept_face_descriptors']);
 
         if (! $this->option('force')) {
             $this->warn('Dry run only. No records were deleted.');
@@ -157,7 +156,6 @@ class ClearCarmelaRecords extends Command
             'checklist_proof_photos' => $this->countByColumn('checklist_proof_photos', 'patrol_log_id', $scope['patrolIds']),
             'incident_reports' => $scope['incidentIds']->count(),
             'incident_images' => $this->countByColumn('incident_report_images', 'incident_report_id', $scope['incidentIds']),
-            'face_verification_attempts' => $this->countFaceAttempts($scope['guardIds'], $scope['patrolIds']),
             'notification_reads' => $this->notificationReadQuery($scope)->count(),
             'audit_logs' => $this->auditLogQuery($guard, $scope)->count(),
         ];
@@ -170,7 +168,6 @@ class ClearCarmelaRecords extends Command
             'file_count' => count($filePaths),
             'kept_users' => $scope['userIds']->count(),
             'kept_guards' => $scope['guardIds']->count(),
-            'kept_face_descriptors' => $this->countByColumn('guard_face_descriptors', 'guard_id', $scope['guardIds']),
         ];
     }
 
@@ -183,7 +180,6 @@ class ClearCarmelaRecords extends Command
             'incident_reports' => $this->deleteByIds('incident_reports', $scope['incidentIds']),
             'checklist_proof_photos' => $this->deleteByColumn('checklist_proof_photos', 'patrol_log_id', $scope['patrolIds']),
             'checklist_responses' => $this->deleteByIds('checklist_responses', $scope['checklistIds']),
-            'face_verification_attempts' => $this->deleteFaceAttempts($scope['guardIds'], $scope['patrolIds']),
             'patrol_logs' => $this->deleteByIds('patrol_logs', $scope['patrolIds']),
         ];
     }
@@ -232,44 +228,6 @@ class ClearCarmelaRecords extends Command
         }
 
         return DB::table($table)->whereIn($column, $ids)->count();
-    }
-
-    private function countFaceAttempts(Collection $guardIds, Collection $patrolIds): int
-    {
-        return $this->faceAttemptQuery($guardIds, $patrolIds)->count();
-    }
-
-    private function deleteFaceAttempts(Collection $guardIds, Collection $patrolIds): int
-    {
-        return $this->faceAttemptQuery($guardIds, $patrolIds)->delete();
-    }
-
-    private function faceAttemptQuery(Collection $guardIds, Collection $patrolIds)
-    {
-        $query = DB::table('face_verification_attempts');
-
-        if (! Schema::hasTable('face_verification_attempts')) {
-            return $this->emptyQuery();
-        }
-
-        return $query->where(function ($where) use ($guardIds, $patrolIds): void {
-            $applied = false;
-
-            if (Schema::hasColumn('face_verification_attempts', 'guard_id') && $guardIds->isNotEmpty()) {
-                $where->whereIn('guard_id', $guardIds);
-                $applied = true;
-            }
-
-            if (Schema::hasColumn('face_verification_attempts', 'patrol_log_id') && $patrolIds->isNotEmpty()) {
-                $method = $applied ? 'orWhereIn' : 'whereIn';
-                $where->{$method}('patrol_log_id', $patrolIds);
-                $applied = true;
-            }
-
-            if (! $applied) {
-                $where->whereRaw('1 = 0');
-            }
-        });
     }
 
     private function notificationReadQuery(array $scope)
@@ -376,8 +334,6 @@ class ClearCarmelaRecords extends Command
             ->merge($this->pluckPaths('patrol_logs', 'id', $scope['patrolIds'], 'area_selfie_path'))
             ->merge($this->pluckPaths('checklist_proof_photos', 'patrol_log_id', $scope['patrolIds'], 'image_path'))
             ->merge($this->pluckPaths('incident_report_images', 'incident_report_id', $scope['incidentIds'], 'image_path'))
-            ->merge($this->pluckPaths('face_verification_attempts', 'guard_id', $scope['guardIds'], 'captured_image_path'))
-            ->merge($this->pluckPaths('face_verification_attempts', 'patrol_log_id', $scope['patrolIds'], 'captured_image_path'))
             ->filter()
             ->unique()
             ->values()

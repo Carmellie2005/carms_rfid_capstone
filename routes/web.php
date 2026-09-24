@@ -10,7 +10,6 @@ use App\Http\Controllers\System\IncidentReportController;
 use App\Http\Controllers\System\NotificationController;
 use App\Http\Controllers\System\NotificationReadController;
 use App\Http\Controllers\System\PatrolLogController;
-use App\Http\Controllers\System\PushSubscriptionController;
 use App\Http\Controllers\System\ReaderStatusController;
 use App\Http\Controllers\System\ReportController;
 use App\Http\Controllers\System\RfidEnrollmentController;
@@ -71,9 +70,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/scan-issues', [ScanIssueController::class, 'index'])->name('scan-issues.index');
         Route::get('/audit-trail/pdf', [AuditLogController::class, 'downloadPdf'])->name('audit-logs.pdf');
         Route::get('/audit-trail', [AuditLogController::class, 'index'])->name('audit-logs.index');
-        Route::get('/push/config', [PushSubscriptionController::class, 'config'])->name('push.config');
-        Route::post('/push/subscriptions', [PushSubscriptionController::class, 'store'])->name('push.subscriptions.store');
-        Route::delete('/push/subscriptions', [PushSubscriptionController::class, 'destroy'])->name('push.subscriptions.destroy');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

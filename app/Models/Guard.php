@@ -18,7 +18,6 @@ class Guard extends Model
         'email',
         'phone',
         'rfid_uid',
-        'face_reference',
         'shift',
         'status',
         'notes',
@@ -32,16 +31,6 @@ class Guard extends Model
     public function patrolLogs(): HasMany
     {
         return $this->hasMany(PatrolLog::class);
-    }
-
-    public function faceDescriptors(): HasMany
-    {
-        return $this->hasMany(GuardFaceDescriptor::class);
-    }
-
-    public function faceVerificationAttempts(): HasMany
-    {
-        return $this->hasMany(FaceVerificationAttempt::class);
     }
 
     public function incidentReports(): HasMany

@@ -1,6 +1,5 @@
 <x-app-layout>
     @php
-        $faceVerificationEnabled = \App\Support\FaceVerification::enabled();
         $guardFormContext = old('_guard_form');
         $createDrawerOpen = $errors->any() && ($guardFormContext === 'create' || blank($guardFormContext));
         $editDrawerGuardId = $errors->any() && \Illuminate\Support\Str::startsWith((string) $guardFormContext, 'edit-')
@@ -12,7 +11,7 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-blue-950 dark:text-white">{{ __('Guard Management') }}</h2>
-                <p class="mt-1 text-sm text-blue-600 dark:text-slate-200">{{ $faceVerificationEnabled ? 'Registered guards, RFID cards, and live face registration status' : 'Registered guards, RFID cards, shifts, and login accounts' }}</p>
+                <p class="mt-1 text-sm text-blue-600 dark:text-slate-200">Registered guards, RFID cards, shifts, and login accounts</p>
             </div>
             <button
                 type="button"
@@ -52,9 +51,6 @@
                 >
             <div class="grid grid-cols-2 gap-3 lg:hidden">
                 @forelse ($guards as $guard)
-                    @php
-                        $hasLiveFaceRegistration = \App\Support\FaceVerification::hasCompleteRegistration($guard->faceDescriptors);
-                    @endphp
                     <article class="min-w-0 rounded-md border border-blue-100 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                         <div class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
@@ -78,12 +74,6 @@
                                 <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-white">RFID UID</dt>
                                 <dd class="mt-1 truncate font-mono">{{ $guard->rfid_uid }}</dd>
                             </div>
-                            @if ($faceVerificationEnabled)
-                            <div>
-                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-white">Face Registration</dt>
-                                <dd class="mt-1 whitespace-nowrap">{{ $hasLiveFaceRegistration ? 'Registered' : 'Not registered' }}</dd>
-                            </div>
-                            @endif
                             <div class="min-w-0">
                                 <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-white">Contact</dt>
                                 <dd class="mt-1 truncate">{{ $guard->email ?? 'No email' }}</dd>
@@ -116,9 +106,6 @@
                                 <th class="px-5 py-3">Employee</th>
                                 <th class="px-5 py-3">Contact</th>
                                 <th class="px-5 py-3">RFID UID</th>
-                                @if ($faceVerificationEnabled)
-                                    <th class="px-5 py-3">Face Registration</th>
-                                @endif
                                 <th class="px-5 py-3">Shift</th>
                                 <th class="px-5 py-3">Status</th>
                                 <th class="px-5 py-3 text-right">Actions</th>
@@ -126,9 +113,6 @@
                         </thead>
                         <tbody class="divide-y divide-blue-50 dark:divide-slate-800">
                             @forelse ($guards as $guard)
-                                @php
-                                    $hasLiveFaceRegistration = \App\Support\FaceVerification::hasCompleteRegistration($guard->faceDescriptors);
-                                @endphp
                                 <tr class="dark:text-slate-100">
                                     <td class="px-5 py-4">
                                         <button
@@ -146,9 +130,6 @@
                                         <div class="text-xs">{{ $guard->phone ?? 'No phone' }}</div>
                                     </td>
                                     <td class="px-5 py-4 font-mono text-slate-700 dark:text-slate-100">{{ $guard->rfid_uid }}</td>
-                                    @if ($faceVerificationEnabled)
-                                        <td class="px-5 py-4 text-slate-600 dark:text-slate-200">{{ $hasLiveFaceRegistration ? 'Registered' : 'Not registered' }}</td>
-                                    @endif
                                     <td class="px-5 py-4 text-slate-600 dark:text-white">{{ $guard->shift ?? 'Unassigned' }}</td>
                                     <td class="px-5 py-4">
                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $guard->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45' : 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60' }}">
@@ -164,7 +145,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ $faceVerificationEnabled ? 7 : 6 }}" class="px-5 py-8 text-center text-slate-500 dark:text-slate-300">No guards registered.</td>
+                                    <td colspan="6" class="px-5 py-8 text-center text-slate-500 dark:text-slate-300">No guards registered.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -253,13 +234,6 @@
                                     <p x-show="rfidEnrollmentStatus('create_rfid_uid')" x-text="rfidEnrollmentStatus('create_rfid_uid')" class="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400"></p>
                                     <x-input-error :messages="$errors->get('rfid_uid')" class="mt-2" />
                                 </div>
-                                @if ($faceVerificationEnabled)
-                                <div>
-                                    <label for="create_face_reference" class="sr-only">Face Reference</label>
-                                    <input id="create_face_reference" name="face_reference" value="{{ old('face_reference', $newGuard->face_reference) }}" placeholder="face-ref-01" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500">
-                                    <x-input-error :messages="$errors->get('face_reference')" class="mt-2" />
-                                </div>
-                                @endif
                                 <div>
                                     <label for="create_shift" class="sr-only">Shift</label>
                                     <input id="create_shift" name="shift" value="{{ $newGuard->shift ?: 'Night Shift' }}" placeholder="Night Shift" class="mt-1 block w-full rounded-md border-slate-300 bg-slate-100 text-slate-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500" readonly aria-readonly="true">
@@ -406,7 +380,6 @@
                             <div class="mobile-scroll-area flex-1 overflow-y-auto px-5 py-5">
                                 @include('system.guards.partials.form-fields', [
                                     'guard' => $guard,
-                                    'faceVerificationEnabled' => $faceVerificationEnabled,
                                     'passwordRequired' => $editGuardPasswordRequired,
                                     'formContext' => $editGuardFormContext,
                                     'fieldPrefix' => 'edit_'.$guard->id,
@@ -529,9 +502,6 @@
                             <section>
                                 <div class="mb-3 flex items-center justify-between gap-3">
                                     <h4 class="text-sm font-semibold uppercase tracking-wide text-blue-800 dark:text-white">Recent Patrol Scans</h4>
-                                    @if ($faceVerificationEnabled)
-                                    <span class="text-xs text-slate-500 dark:text-slate-400" x-text="`${recordStats.failed_face_attempts ?? 0} failed face attempt${(recordStats.failed_face_attempts ?? 0) === 1 ? '' : 's'}`"></span>
-                                    @endif
                                 </div>
                                 <template x-if="recordPatrols.length === 0">
                                     <p class="rounded-md border border-blue-100 px-4 py-5 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">No patrol records yet.</p>
@@ -543,9 +513,6 @@
                                                 <th class="px-4 py-3">Date / Time</th>
                                                 <th class="px-4 py-3">Checkpoint</th>
                                                 <th class="px-4 py-3">RFID</th>
-                                                @if ($faceVerificationEnabled)
-                                                <th class="px-4 py-3">Face</th>
-                                                @endif
                                                 <th class="px-4 py-3">Status</th>
                                             </tr>
                                         </thead>
@@ -560,11 +527,6 @@
                                                     <td class="px-4 py-3">
                                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(patrol.rfid_status)" x-text="patrol.rfid_status_label"></span>
                                                     </td>
-                                                    @if ($faceVerificationEnabled)
-                                                    <td class="px-4 py-3">
-                                                        <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(patrol.facial_status)" x-text="patrol.facial_status_label"></span>
-                                                    </td>
-                                                    @endif
                                                     <td class="px-4 py-3">
                                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(patrol.status)" x-text="patrol.status_label"></span>
                                                     </td>
@@ -596,26 +558,6 @@
                                 </div>
                             </section>
 
-                            @if ($faceVerificationEnabled)
-                            <section>
-                                <h4 class="mb-3 text-sm font-semibold uppercase tracking-wide text-blue-800 dark:text-white">Recent Face Verification Attempts</h4>
-                                <template x-if="recordFaceAttempts.length === 0">
-                                    <p class="rounded-md border border-blue-100 px-4 py-5 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">No face verification attempts recorded.</p>
-                                </template>
-                                <div x-show="recordFaceAttempts.length > 0" class="grid gap-2">
-                                    <template x-for="attempt in recordFaceAttempts" :key="attempt.id">
-                                        <div class="flex flex-col gap-2 rounded-md border border-blue-100 bg-white px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-950/45 sm:flex-row sm:items-center sm:justify-between">
-                                            <div>
-                                                <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1" :class="badgeClass(attempt.status)" x-text="attempt.status_label"></span>
-                                                <span class="ml-2 text-slate-500 dark:text-slate-400" x-text="attempt.verified_at || attempt.created_at || 'No date'"></span>
-                                                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400" x-show="attempt.liveness_label" x-text="`Liveness: ${attempt.liveness_label}`"></p>
-                                            </div>
-                                            <p class="text-xs text-slate-500 dark:text-slate-400" x-show="attempt.match_distance" x-text="`Distance ${attempt.match_distance} / threshold ${attempt.match_threshold}`"></p>
-                                        </div>
-                                    </template>
-                                </div>
-                            </section>
-                            @endif
                         </div>
                     </div>
                 </section>

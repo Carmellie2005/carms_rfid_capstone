@@ -6,9 +6,7 @@ use App\Models\AuditLog;
 use App\Models\Checkpoint;
 use App\Models\ChecklistProofPhoto;
 use App\Models\ChecklistResponse;
-use App\Models\FaceVerificationAttempt;
 use App\Models\Guard;
-use App\Models\GuardFaceDescriptor;
 use App\Models\IncidentReport;
 use App\Models\IncidentReportImage;
 use App\Models\NotificationRead;
@@ -45,22 +43,18 @@ class ClearCarmelaRecordsCommandTest extends TestCase
 
         $this->assertDatabaseHas('users', ['id' => $user->id]);
         $this->assertDatabaseHas('guards', ['id' => $guard->id]);
-        $this->assertDatabaseHas('guard_face_descriptors', ['guard_id' => $guard->id]);
-        Storage::disk('public')->assertExists('guard-faces/carmela/profile.jpg');
 
         $this->assertDatabaseMissing('patrol_logs', ['id' => $patrolLog->id]);
         $this->assertDatabaseMissing('checklist_responses', ['patrol_log_id' => $patrolLog->id]);
         $this->assertDatabaseMissing('checklist_proof_photos', ['patrol_log_id' => $patrolLog->id]);
         $this->assertDatabaseMissing('incident_reports', ['id' => $incidentReport->id]);
         $this->assertDatabaseMissing('incident_report_images', ['incident_report_id' => $incidentReport->id]);
-        $this->assertDatabaseMissing('face_verification_attempts', ['guard_id' => $guard->id]);
         $this->assertDatabaseMissing('notification_reads', ['user_id' => $user->id]);
         $this->assertDatabaseMissing('audit_logs', ['actor_name' => 'Carmela Bihay Hernandez']);
 
         Storage::disk('public')->assertMissing('patrol-area-selfies/carmela.jpg');
         Storage::disk('public')->assertMissing('checklist-proof-photos/carmela.jpg');
         Storage::disk('public')->assertMissing('incident-reports/carmela.jpg');
-        Storage::disk('public')->assertMissing('face-attempts/carmela.jpg');
 
         $this->assertDatabaseHas('guards', ['id' => $otherGuard->id]);
         $this->assertDatabaseHas('patrol_logs', ['guard_id' => $otherGuard->id]);
@@ -141,20 +135,6 @@ class ClearCarmelaRecordsCommandTest extends TestCase
             'source' => 'camera',
             'sort_order' => 1,
         ]);
-        FaceVerificationAttempt::create([
-            'patrol_log_id' => $patrolLog->id,
-            'guard_id' => $guard->id,
-            'status' => 'failed',
-            'captured_image_path' => 'face-attempts/carmela.jpg',
-        ]);
-        GuardFaceDescriptor::create([
-            'guard_id' => $guard->id,
-            'descriptor' => [0.12, 0.34],
-            'image_path' => 'guard-faces/carmela/profile.jpg',
-            'capture_type' => 'front',
-            'is_primary' => true,
-        ]);
-
         NotificationRead::create([
             'user_id' => $user->id,
             'notifiable_type' => PatrolLog::class,
@@ -197,8 +177,6 @@ class ClearCarmelaRecordsCommandTest extends TestCase
             'patrol-area-selfies/carmela.jpg',
             'checklist-proof-photos/carmela.jpg',
             'incident-reports/carmela.jpg',
-            'face-attempts/carmela.jpg',
-            'guard-faces/carmela/profile.jpg',
         ] as $path) {
             Storage::disk('public')->put($path, 'image');
         }

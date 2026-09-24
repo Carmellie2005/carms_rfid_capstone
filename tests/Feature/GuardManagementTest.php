@@ -3,13 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Checkpoint;
-use App\Models\FaceVerificationAttempt;
 use App\Models\Guard;
-use App\Models\GuardFaceDescriptor;
 use App\Models\IncidentReport;
 use App\Models\PatrolLog;
 use App\Models\User;
-use App\Support\FaceVerification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,14 +14,7 @@ class GuardManagementTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        config(['features.face_verification' => true]);
-    }
-
-    public function test_supervisor_can_create_guard_without_face_upload(): void
+    public function test_supervisor_can_create_guard_with_core_details(): void
     {
         $supervisor = User::factory()->create([
             'role' => 'admin',
@@ -39,7 +29,6 @@ class GuardManagementTest extends TestCase
                 'email' => 'no.upload.guard@example.com',
                 'phone' => '09171234567',
                 'rfid_uid' => 'RFID-NO-UPLOAD',
-                'face_reference' => null,
                 'shift' => 'Night Shift',
                 'status' => 'active',
                 'notes' => null,
@@ -55,7 +44,6 @@ class GuardManagementTest extends TestCase
         $guard = Guard::where('employee_no', 'SG-NO-UPLOAD')->firstOrFail();
 
         $this->assertSame('RFID-NO-UPLOAD', $guard->rfid_uid);
-        $this->assertSame(0, $guard->faceDescriptors()->count());
         $this->assertTrue($guard->user()->firstOrFail()->must_change_password);
     }
 
@@ -74,7 +62,6 @@ class GuardManagementTest extends TestCase
                 'email' => 'locked.shift@example.com',
                 'phone' => '09171234567',
                 'rfid_uid' => 'RFID-LOCKED-SHIFT',
-                'face_reference' => null,
                 'shift' => 'Day Shift',
                 'status' => 'active',
                 'notes' => null,
@@ -97,7 +84,6 @@ class GuardManagementTest extends TestCase
                 'email' => 'locked.shift@example.com',
                 'phone' => '09171234567',
                 'rfid_uid' => 'RFID-LOCKED-SHIFT',
-                'face_reference' => null,
                 'shift' => 'Day Shift',
                 'status' => 'active',
                 'notes' => null,
@@ -142,7 +128,6 @@ class GuardManagementTest extends TestCase
                 'email' => 'reset.guard@example.com',
                 'phone' => '09171234567',
                 'rfid_uid' => 'RFID-RESET',
-                'face_reference' => null,
                 'shift' => 'Night Shift',
                 'status' => 'active',
                 'notes' => null,
@@ -173,7 +158,6 @@ class GuardManagementTest extends TestCase
                 'email' => null,
                 'phone' => '09171234567',
                 'rfid_uid' => 'RFID-EMAIL-LOGIN',
-                'face_reference' => null,
                 'shift' => 'Night Shift',
                 'status' => 'active',
                 'notes' => null,
@@ -233,7 +217,7 @@ class GuardManagementTest extends TestCase
             ->assertSee("startRfidEnrollment('create_rfid_uid')", false)
             ->assertSee('Create Guard Account')
             ->assertSee('Guard Management')
-            ->assertSee('Registered guards, RFID cards, and live face registration status')
+            ->assertSee('Registered guards, RFID cards, shifts, and login accounts')
             ->assertSee('Guard Profiles')
             ->assertDontSee('<th class="px-5 py-3">Account</th>', false)
             ->assertDontSee('<dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Account</dt>', false)
@@ -304,16 +288,6 @@ class GuardManagementTest extends TestCase
             'status' => 'active',
         ]);
 
-        foreach (array_keys(FaceVerification::registrationSampleTypes()) as $index => $type) {
-            GuardFaceDescriptor::create([
-                'guard_id' => $guard->id,
-                'descriptor' => array_fill(0, 128, 0.12),
-                'model_name' => 'face-api.js',
-                'capture_type' => $type,
-                'is_primary' => $index === 0,
-            ]);
-        }
-
         $checkpoint = Checkpoint::create([
             'code' => 'CP-MODAL',
             'name' => 'Modal Checkpoint',
@@ -349,15 +323,6 @@ class GuardManagementTest extends TestCase
             'status' => 'submitted',
         ]);
 
-        FaceVerificationAttempt::create([
-            'patrol_log_id' => $patrolLog->id,
-            'guard_id' => $guard->id,
-            'status' => 'failed',
-            'match_distance' => 0.720000,
-            'match_threshold' => 0.420000,
-            'model_name' => 'face-api.js',
-        ]);
-
         $response = $this
             ->actingAs($supervisor)
             ->getJson(route('guards.records', $guard));
@@ -365,13 +330,10 @@ class GuardManagementTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('guard.name', 'Modal Guard')
-            ->assertJsonPath('guard.face_registration', 'Registered')
             ->assertJsonPath('stats.total_scans', 1)
             ->assertJsonPath('stats.incident_reports', 1)
-            ->assertJsonPath('stats.failed_face_attempts', 1)
             ->assertJsonPath('patrol_logs.0.checkpoint', 'Modal Checkpoint')
-            ->assertJsonPath('incidents.0.title', 'Broken Light')
-            ->assertJsonPath('face_attempts.0.status', 'failed');
+            ->assertJsonPath('incidents.0.title', 'Broken Light');
     }
 
     public function test_guard_cannot_fetch_guard_records_for_modal(): void

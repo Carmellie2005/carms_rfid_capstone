@@ -7,7 +7,6 @@ use App\Models\Guard;
 use App\Models\User;
 use App\Rules\UsernameOrEmail;
 use App\Support\AuditLogger;
-use App\Support\FaceVerification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,8 +25,6 @@ class GuardController extends Controller
     {
         return view('system.guards.index', [
             'guards' => Guard::with('user')
-                ->with('faceDescriptors:id,guard_id,descriptor,capture_type')
-                ->withCount('faceDescriptors')
                 ->where('employee_no', '!=', 'UNKNOWN')
                 ->latest()
                 ->paginate(10),
@@ -61,11 +58,6 @@ class GuardController extends Controller
             ->limit(5)
             ->get();
 
-        $faceAttempts = $guard->faceVerificationAttempts()
-            ->latest()
-            ->limit(5)
-            ->get(['id', 'status', 'match_distance', 'match_threshold', 'liveness_challenge', 'liveness_confirmed_at', 'verified_at', 'created_at']);
-
         return response()->json([
             'guard' => [
                 'id' => $guard->id,
@@ -79,7 +71,6 @@ class GuardController extends Controller
                 'shift' => $guard->shift,
                 'status' => $guard->status,
                 'status_label' => $this->labelFor($guard->status),
-                'face_registration' => $this->hasCompletedFaceRegistration($guard) ? 'Registered' : 'Not registered',
                 'notes' => $guard->notes,
             ],
             'stats' => [
@@ -87,7 +78,6 @@ class GuardController extends Controller
                 'completed_patrols' => $guard->patrolLogs()->where('status', 'completed')->count(),
                 'suspicious_patrols' => $guard->patrolLogs()->where('status', 'suspicious')->count(),
                 'incident_reports' => $guard->incidentReports()->count(),
-                'failed_face_attempts' => $guard->faceVerificationAttempts()->where('status', 'failed')->count(),
             ],
             'patrol_logs' => $patrolLogs->map(fn ($log) => [
                 'id' => $log->id,
@@ -96,8 +86,6 @@ class GuardController extends Controller
                 'checkpoint_code' => $log->checkpoint?->code ?? $log->checkpoint_code,
                 'rfid_status' => $log->rfid_status,
                 'rfid_status_label' => $this->labelFor($log->rfid_status),
-                'facial_status' => $log->facial_status,
-                'facial_status_label' => $this->labelFor($log->facial_status),
                 'status' => $log->status,
                 'status_label' => $this->labelFor($log->status),
                 'remarks' => $log->checklistResponse?->remarks,
@@ -114,18 +102,6 @@ class GuardController extends Controller
                 'status_label' => $this->labelFor($incident->status),
                 'checkpoint' => $incident->checkpoint?->name ?? 'Unknown checkpoint',
                 'reported_at' => $this->formatDate($incident->reported_at ?? $incident->created_at),
-            ]),
-            'face_attempts' => $faceAttempts->map(fn ($attempt) => [
-                'id' => $attempt->id,
-                'status' => $attempt->status,
-                'status_label' => $this->labelFor($attempt->status),
-                'match_distance' => $attempt->match_distance,
-                'match_threshold' => $attempt->match_threshold,
-                'liveness_challenge' => $attempt->liveness_challenge,
-                'liveness_label' => FaceVerification::livenessLabel($attempt->liveness_challenge),
-                'liveness_confirmed_at' => $this->formatDate($attempt->liveness_confirmed_at),
-                'verified_at' => $this->formatDate($attempt->verified_at),
-                'created_at' => $this->formatDate($attempt->created_at),
             ]),
         ]);
     }
@@ -228,7 +204,6 @@ class GuardController extends Controller
             'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
             'phone' => ['nullable', 'string', 'max:30'],
             'rfid_uid' => ['required', 'string', 'max:100', Rule::unique('guards', 'rfid_uid')->ignore($guardId)],
-            'face_reference' => ['nullable', 'string', 'max:255'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'notes' => ['nullable', 'string', 'max:2000'],
             'username' => ['required', 'string', 'max:255', new UsernameOrEmail, Rule::unique('users', 'username')->ignore($userId), Rule::unique('users', 'email')->ignore($userId)],
@@ -243,7 +218,6 @@ class GuardController extends Controller
             'email',
             'phone',
             'rfid_uid',
-            'face_reference',
             'status',
             'notes',
         ])->all();
@@ -294,11 +268,6 @@ class GuardController extends Controller
         }
 
         return "{$username}@guards.campusrfid.local";
-    }
-
-    private function hasCompletedFaceRegistration(Guard $guard): bool
-    {
-        return FaceVerification::hasCompleteRegistration($guard->faceDescriptors()->get(['descriptor', 'capture_type']));
     }
 
     private function labelFor(?string $value): string

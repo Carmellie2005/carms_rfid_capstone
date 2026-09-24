@@ -1,5 +1,4 @@
 @php
-    $faceVerificationEnabled ??= \App\Support\FaceVerification::enabled();
     $passwordRequired ??= ! $guard->exists || ! $guard->user_id;
     $formContext ??= $guard->exists ? 'edit-'.$guard->id : 'create';
     $fieldPrefix = preg_replace('/[^A-Za-z0-9_-]/', '_', $fieldPrefix ?? $formContext);
@@ -61,14 +60,6 @@
         <p x-show="rfidEnrollmentStatus('{{ $fieldPrefix }}_rfid_uid')" x-text="rfidEnrollmentStatus('{{ $fieldPrefix }}_rfid_uid')" class="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400"></p>
         <x-input-error :messages="$errorFor('rfid_uid')" class="mt-2" />
     </div>
-
-    @if ($faceVerificationEnabled)
-        <div>
-            <label for="{{ $fieldPrefix }}_face_reference" class="sr-only">Face Reference</label>
-            <input id="{{ $fieldPrefix }}_face_reference" name="face_reference" value="{{ $valueFor('face_reference', $guard->face_reference) }}" placeholder="face-ref-01" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500">
-            <x-input-error :messages="$errorFor('face_reference')" class="mt-2" />
-        </div>
-    @endif
 
     <div>
         <label for="{{ $fieldPrefix }}_shift" class="sr-only">Shift</label>

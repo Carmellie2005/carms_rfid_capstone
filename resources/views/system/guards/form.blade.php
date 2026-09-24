@@ -15,7 +15,6 @@
 
     @php
         $passwordRequired = ! $guard->exists || ! $guard->user_id;
-        $faceVerificationEnabled = \App\Support\FaceVerification::enabled();
     @endphp
 
     <div class="py-5 sm:py-8">
@@ -32,7 +31,6 @@
 
                 @include('system.guards.partials.form-fields', [
                     'guard' => $guard,
-                    'faceVerificationEnabled' => $faceVerificationEnabled,
                     'passwordRequired' => $passwordRequired,
                     'formContext' => $guard->exists ? 'edit-'.$guard->id : 'create',
                     'fieldPrefix' => 'guard',

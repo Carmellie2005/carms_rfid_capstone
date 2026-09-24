@@ -22,12 +22,6 @@ class ProfileUpdateRequest extends FormRequest
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($this->user()->id)],
             'phone' => ['sometimes', 'nullable', 'string', 'max:30'],
             'birthday' => ['sometimes', 'nullable', 'date', 'before_or_equal:today'],
-            'face_registration_capture' => ['sometimes', 'nullable', 'string'],
-            'face_registration_captures' => ['sometimes', 'nullable', 'array', 'size:5'],
-            'face_registration_captures.*' => ['nullable', 'string'],
-            'face_liveness_confirmed' => ['sometimes', 'nullable', 'boolean'],
-            'face_descriptors' => ['sometimes', 'nullable', 'array', 'size:5'],
-            'face_descriptors.*' => ['nullable', 'string'],
         ];
     }
 }

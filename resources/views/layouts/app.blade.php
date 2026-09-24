@@ -269,32 +269,6 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        @if ($isSupervisor)
-                                            <div
-                                                class="mt-3"
-                                                x-data="pushNotifications({
-                                                    configUrl: '{{ route('push.config') }}',
-                                                    subscribeUrl: '{{ route('push.subscriptions.store') }}',
-                                                    unsubscribeUrl: '{{ route('push.subscriptions.destroy') }}',
-                                                })"
-                                                x-init="init()"
-                                            >
-                                                <button
-                                                    type="button"
-                                                    data-skip-global-loader="true"
-                                                    x-on:click="toggle()"
-                                                    x-bind:disabled="disabled()"
-                                                    class="inline-flex h-9 w-full items-center justify-center gap-2 rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
-                                                >
-                                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                        <path d="M15 17H9m9-6a6 6 0 0 0-12 0c0 3-1 4.5-2 6h16c-1-1.5-2-3-2-6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                        <path d="M10 20a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                                    </svg>
-                                                    <span x-text="buttonLabel()">Enable phone alerts</span>
-                                                </button>
-                                                <p x-show="message" x-text="message" class="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400"></p>
-                                            </div>
-                                        @endif
                                     </div>
 
                                     <div class="mobile-scroll-area min-h-0 flex-1 overflow-y-auto border-b border-blue-100 dark:border-slate-800">

@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Guard;
 use App\Models\User;
-use App\Support\FaceVerification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -13,13 +12,6 @@ use Tests\TestCase;
 class ProfileTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        config(['features.face_verification' => true]);
-    }
 
     public function test_profile_page_is_displayed(): void
     {
@@ -108,12 +100,9 @@ class ProfileTest extends TestCase
             'email' => 'guard.profile@example.com',
             'phone' => '09171234567',
             'rfid_uid' => 'RFID-TEST',
-            'face_reference' => 'test-guard',
             'shift' => 'Night Shift',
             'status' => 'active',
         ]);
-
-        $this->completeFaceRegistration($guard);
 
         $response = $this
             ->actingAs($user)
@@ -128,7 +117,6 @@ class ProfileTest extends TestCase
             ->assertSee('RFID-TEST')
             ->assertSee('Night Shift')
             ->assertSee('Apr 12, 1998')
-            ->assertSee('Completed')
             ->assertSee('Update Password')
             ->assertSee('aria-label="Show current password"', false)
             ->assertSee('aria-label="Show new password"', false)
@@ -172,19 +160,16 @@ class ProfileTest extends TestCase
             'profile_photo_path' => 'profile-photos/complete.jpg',
         ]);
 
-        $guard = Guard::create([
+        Guard::create([
             'user_id' => $user->id,
             'employee_no' => 'SG-COMPLETE',
             'name' => 'Complete Guard',
             'email' => 'complete.guard@example.com',
             'phone' => '09170000000',
             'rfid_uid' => 'RFID-COMPLETE',
-            'face_reference' => 'complete-guard',
             'shift' => 'Night Shift',
             'status' => 'active',
         ]);
-
-        $this->completeFaceRegistration($guard);
 
         $response = $this
             ->actingAs($user)
@@ -194,11 +179,11 @@ class ProfileTest extends TestCase
             ->assertOk()
             ->assertSee('100%')
             ->assertSee('Complete')
-            ->assertSee('Face Registration')
-            ->assertSee('5 Face Samples Processed');
+            ->assertDontSee('Face Registration')
+            ->assertDontSee('Face Samples');
     }
 
-    public function test_guard_profile_page_displays_live_liveness_registration_when_face_is_missing(): void
+    public function test_guard_profile_page_does_not_show_face_registration_controls(): void
     {
         $user = User::factory()->create([
             'role' => 'guard',
@@ -220,16 +205,9 @@ class ProfileTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Capture 5 Live Face Samples')
-            ->assertSee('Front neutral')
-            ->assertSee('Front smile')
-            ->assertSee('Slight left turn')
-            ->assertSee('Slight right turn')
-            ->assertSee('Normal or low-light')
-            ->assertSee('Complete guided action')
-            ->assertSee('Light Assist')
-            ->assertSee('Capture sample')
-            ->assertSee('face_registration_captures', false)
+            ->assertDontSee('Capture 5 Live Face Samples')
+            ->assertDontSee('Face Registration')
+            ->assertDontSee('face_registration_captures', false)
             ->assertDontSee('Take Photo')
             ->assertDontSee('registrationPhotoInput')
             ->assertDontSee('face_registration_image');
@@ -372,161 +350,6 @@ class ProfileTest extends TestCase
         $this->assertCount(1, Storage::disk('public')->allFiles('profile-photos'));
     }
 
-    public function test_guard_can_complete_live_face_registration_once(): void
-    {
-        Storage::fake('public');
-
-        $user = User::factory()->create([
-            'role' => 'guard',
-            'username' => 'face.guard',
-        ]);
-
-        $guard = Guard::create([
-            'user_id' => $user->id,
-            'employee_no' => 'SG-FACE',
-            'name' => 'Face Guard',
-            'rfid_uid' => 'RFID-FACE',
-            'shift' => 'Night Shift',
-            'status' => 'active',
-        ]);
-
-        $response = $this
-            ->actingAs($user)
-            ->patch('/profile', [
-                'name' => $user->name,
-                'username' => $user->username,
-                'email' => $user->email,
-                'face_liveness_confirmed' => '1',
-                ...$this->faceRegistrationPayload(),
-            ]);
-
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
-
-        $this->assertSame(FaceVerification::requiredRegistrationSampleCount(), $guard->faceDescriptors()->count());
-
-        $faceRegistration = $guard->faceDescriptors()->where('capture_type', 'front_neutral')->first();
-        $this->assertTrue($faceRegistration->is_primary);
-        $this->assertSame(array_fill(0, 128, 0.2), $faceRegistration->descriptor);
-        Storage::disk('public')->assertExists($faceRegistration->image_path);
-
-        foreach (array_keys(FaceVerification::registrationSampleTypes()) as $type) {
-            $this->assertDatabaseHas('guard_face_descriptors', [
-                'guard_id' => $guard->id,
-                'capture_type' => $type,
-            ]);
-        }
-    }
-
-    public function test_guard_cannot_complete_face_registration_without_liveness_check(): void
-    {
-        Storage::fake('public');
-
-        $user = User::factory()->create([
-            'role' => 'guard',
-            'username' => 'no.liveness',
-        ]);
-
-        $guard = Guard::create([
-            'user_id' => $user->id,
-            'employee_no' => 'SG-LIVE',
-            'name' => 'Liveness Guard',
-            'rfid_uid' => 'RFID-LIVE',
-            'shift' => 'Night Shift',
-            'status' => 'active',
-        ]);
-
-        $response = $this
-            ->actingAs($user)
-            ->from('/profile')
-            ->patch('/profile', [
-                'name' => $user->name,
-                'username' => $user->username,
-                'email' => $user->email,
-                ...$this->faceRegistrationPayload(),
-            ]);
-
-        $response
-            ->assertSessionHasErrors('face_liveness_confirmed')
-            ->assertRedirect('/profile');
-
-        $this->assertSame(0, $guard->faceDescriptors()->count());
-    }
-
-    public function test_guard_cannot_complete_face_registration_with_liveness_but_without_capture(): void
-    {
-        Storage::fake('public');
-
-        $user = User::factory()->create([
-            'role' => 'guard',
-            'username' => 'no.capture',
-        ]);
-
-        $guard = Guard::create([
-            'user_id' => $user->id,
-            'employee_no' => 'SG-NOCAP',
-            'name' => 'No Capture Guard',
-            'rfid_uid' => 'RFID-NOCAP',
-            'shift' => 'Night Shift',
-            'status' => 'active',
-        ]);
-
-        $response = $this
-            ->actingAs($user)
-            ->from('/profile')
-            ->patch('/profile', [
-                'name' => $user->name,
-                'username' => $user->username,
-                'email' => $user->email,
-                'face_liveness_confirmed' => '1',
-                'face_descriptors' => $this->faceRegistrationDescriptors(),
-            ]);
-
-        $response
-            ->assertSessionHasErrors('face_registration_captures.front_neutral')
-            ->assertRedirect('/profile');
-
-        $this->assertSame(0, $guard->faceDescriptors()->count());
-    }
-
-    public function test_guard_cannot_replace_completed_face_registration(): void
-    {
-        Storage::fake('public');
-
-        $user = User::factory()->create([
-            'role' => 'guard',
-            'username' => 'locked.guard',
-        ]);
-
-        $guard = Guard::create([
-            'user_id' => $user->id,
-            'employee_no' => 'SG-LOCKED',
-            'name' => 'Locked Guard',
-            'rfid_uid' => 'RFID-LOCKED',
-            'shift' => 'Night Shift',
-            'status' => 'active',
-        ]);
-
-        $this->completeFaceRegistration($guard);
-
-        $response = $this
-            ->actingAs($user)
-            ->from('/profile')
-            ->patch('/profile', [
-                'name' => $user->name,
-                'username' => $user->username,
-                'email' => $user->email,
-                'face_liveness_confirmed' => '1',
-                ...$this->faceRegistrationPayload(0.3),
-            ]);
-
-        $response
-            ->assertSessionHasErrors('face_registration_captures')
-            ->assertRedirect('/profile');
-
-        $this->assertSame(FaceVerification::requiredRegistrationSampleCount(), $guard->faceDescriptors()->count());
-    }
 
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
     {
@@ -582,38 +405,5 @@ class ProfileTest extends TestCase
         $this->assertNotNull($user->fresh());
     }
 
-    private function completeFaceRegistration(Guard $guard, float $descriptorValue = 0.1): void
-    {
-        foreach (array_keys(FaceVerification::registrationSampleTypes()) as $index => $type) {
-            $guard->faceDescriptors()->create([
-                'image_path' => "guard-faces/{$guard->id}/{$type}.jpg",
-                'descriptor' => array_fill(0, 128, $descriptorValue),
-                'model_name' => 'face-api.js',
-                'capture_type' => $type,
-                'is_primary' => $index === 0,
-            ]);
-        }
-    }
 
-    private function faceRegistrationPayload(float $descriptorValue = 0.2): array
-    {
-        return [
-            'face_registration_captures' => collect(FaceVerification::registrationSampleTypes())
-                ->mapWithKeys(fn ($label, $type) => [$type => $this->liveFaceCapture()])
-                ->all(),
-            'face_descriptors' => $this->faceRegistrationDescriptors($descriptorValue),
-        ];
-    }
-
-    private function faceRegistrationDescriptors(float $descriptorValue = 0.2): array
-    {
-        return collect(FaceVerification::registrationSampleTypes())
-            ->mapWithKeys(fn ($label, $type) => [$type => json_encode(array_fill(0, 128, $descriptorValue))])
-            ->all();
-    }
-
-    private function liveFaceCapture(): string
-    {
-        return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=';
-    }
 }
