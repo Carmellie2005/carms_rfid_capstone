@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Guard;
 use App\Models\Checkpoint;
+use App\Models\Guard;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -13,45 +13,68 @@ class DatabaseSeederTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_seeded_online_accounts_can_use_default_password(): void
+    public function test_seeded_supervisor_can_use_default_password_without_sample_guards(): void
     {
         $this->seed();
 
         $supervisor = User::where('email', 'security.supervisor@campuspatrol.local')->firstOrFail();
-        $guardUser = User::where('username', 'carmela.bihay.hernandez')->firstOrFail();
-        $guard = Guard::where('employee_no', 'TEST-01')->firstOrFail();
 
         $this->assertSame('admin', $supervisor->role);
+        $this->assertSame('supervisor', $supervisor->username);
         $this->assertTrue(Hash::check('password123', $supervisor->password));
         $this->assertFalse($supervisor->must_change_password);
-
-        $this->assertSame('guard', $guardUser->role);
-        $this->assertSame('carmela.bihay.hernandez@guard.local', $guardUser->email);
-        $this->assertTrue(Hash::check('password123', $guardUser->password));
-        $this->assertTrue($guardUser->must_change_password);
-
-        $this->assertSame($guardUser->id, $guard->user_id);
-        $this->assertSame('F33C8D37', $guard->rfid_uid);
-        $this->assertSame('Night Shift', $guard->shift);
-        $this->assertSame('active', $guard->status);
+        $this->assertSame(0, Guard::count());
+        $this->assertFalse(User::where('role', 'guard')->exists());
     }
 
-    public function test_seeder_does_not_reset_existing_guard_password_requirement(): void
+    public function test_seeder_does_not_reset_existing_supervisor_password_by_default(): void
     {
         $this->seed();
 
-        $guardUser = User::where('username', 'carmela.bihay.hernandez')->firstOrFail();
-        $guardUser->forceFill([
+        $supervisor = User::where('username', 'supervisor')->firstOrFail();
+        $supervisor->forceFill([
             'password' => Hash::make('my-own-password'),
-            'must_change_password' => false,
+            'must_change_password' => true,
         ])->save();
 
         $this->seed();
 
-        $guardUser->refresh();
+        $supervisor->refresh();
 
-        $this->assertTrue(Hash::check('my-own-password', $guardUser->password));
-        $this->assertFalse($guardUser->must_change_password);
+        $this->assertTrue(Hash::check('my-own-password', $supervisor->password));
+        $this->assertFalse($supervisor->must_change_password);
+    }
+
+    public function test_seeder_can_reset_existing_supervisor_password_when_enabled(): void
+    {
+        $this->seed();
+
+        $supervisor = User::where('username', 'supervisor')->firstOrFail();
+        $supervisor->forceFill([
+            'password' => Hash::make('my-own-password'),
+        ])->save();
+
+        putenv('DEFAULT_SUPERVISOR_PASSWORD=new-hosted-password');
+        putenv('RESET_DEFAULT_SUPERVISOR_PASSWORD=true');
+        $_ENV['DEFAULT_SUPERVISOR_PASSWORD'] = 'new-hosted-password';
+        $_ENV['RESET_DEFAULT_SUPERVISOR_PASSWORD'] = 'true';
+        $_SERVER['DEFAULT_SUPERVISOR_PASSWORD'] = 'new-hosted-password';
+        $_SERVER['RESET_DEFAULT_SUPERVISOR_PASSWORD'] = 'true';
+
+        try {
+            $this->seed();
+
+            $this->assertTrue(Hash::check('new-hosted-password', $supervisor->refresh()->password));
+        } finally {
+            putenv('DEFAULT_SUPERVISOR_PASSWORD');
+            putenv('RESET_DEFAULT_SUPERVISOR_PASSWORD');
+            unset(
+                $_ENV['DEFAULT_SUPERVISOR_PASSWORD'],
+                $_ENV['RESET_DEFAULT_SUPERVISOR_PASSWORD'],
+                $_SERVER['DEFAULT_SUPERVISOR_PASSWORD'],
+                $_SERVER['RESET_DEFAULT_SUPERVISOR_PASSWORD'],
+            );
+        }
     }
 
     public function test_seeder_replaces_ag_with_guard_house_checkpoint(): void
