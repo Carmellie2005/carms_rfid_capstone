@@ -120,7 +120,8 @@ class ProfileTest extends TestCase
             ->assertSee('Update Password')
             ->assertSee('aria-label="Show current password"', false)
             ->assertSee('aria-label="Show new password"', false)
-            ->assertSee('aria-label="Show confirm password"', false);
+            ->assertSee('aria-label="Show confirm password"', false)
+            ->assertSee('aria-readonly="true"', false);
     }
 
     public function test_missing_profile_photo_falls_back_to_guard_icon(): void
@@ -150,7 +151,7 @@ class ProfileTest extends TestCase
             ->assertDontSee('storage/profile-photos/missing-render-file.jpg');
     }
 
-    public function test_completed_guard_profile_displays_one_hundred_percent_completion(): void
+    public function test_guard_profile_does_not_display_profile_completion_summary(): void
     {
         $user = User::factory()->create([
             'name' => 'Complete Guard',
@@ -177,8 +178,8 @@ class ProfileTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('100%')
-            ->assertSee('Complete')
+            ->assertDontSee('Profile Completion')
+            ->assertDontSee('100%')
             ->assertDontSee('Face Registration')
             ->assertDontSee('Face Samples');
     }
@@ -297,6 +298,50 @@ class ProfileTest extends TestCase
         $user->refresh();
 
         $this->assertSame('1999-09-12', $user->birthday->toDateString());
+    }
+
+    public function test_guard_cannot_change_username_or_email_from_profile_settings(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'guard',
+            'name' => 'Original Guard',
+            'username' => 'assigned.guard',
+            'email' => 'assigned.guard@example.com',
+            'phone' => '09170000000',
+            'email_verified_at' => now(),
+        ]);
+
+        Guard::create([
+            'user_id' => $user->id,
+            'employee_no' => 'SG-LOCKED',
+            'name' => 'Locked Guard',
+            'rfid_uid' => 'RFID-LOCKED',
+            'shift' => 'Night Shift',
+            'status' => 'active',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => 'Updated Guard',
+                'username' => 'changed.guard',
+                'email' => 'changed.guard@example.com',
+                'phone' => '09179999999',
+                'birthday' => '1999-09-12',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $user->refresh();
+
+        $this->assertSame('Updated Guard', $user->name);
+        $this->assertSame('assigned.guard', $user->username);
+        $this->assertSame('assigned.guard@example.com', $user->email);
+        $this->assertSame('09179999999', $user->phone);
+        $this->assertSame('1999-09-12', $user->birthday->toDateString());
+        $this->assertNotNull($user->email_verified_at);
     }
 
     public function test_profile_page_does_not_show_profile_photo_upload_controls(): void

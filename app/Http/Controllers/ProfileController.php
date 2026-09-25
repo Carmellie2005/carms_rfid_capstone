@@ -35,6 +35,10 @@ class ProfileController extends Controller
         $user = $request->user();
         $data = $request->validated();
 
+        if ($user->role === 'guard') {
+            unset($data['username'], $data['email']);
+        }
+
         if (array_key_exists('username', $data)) {
             $data['username'] = filled($data['username']) ? Str::lower(trim($data['username'])) : null;
         }

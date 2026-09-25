@@ -9,6 +9,18 @@ use Illuminate\Validation\Rule;
 
 class ProfileUpdateRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if ($this->user()?->role !== 'guard') {
+            return;
+        }
+
+        $this->merge([
+            'username' => $this->user()->username,
+            'email' => $this->user()->email,
+        ]);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
