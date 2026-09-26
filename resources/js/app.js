@@ -467,6 +467,15 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
         window.location.href = this.startUrl;
     },
 
+    installOrOpen() {
+        if (this.installed || this.installState === 'installed') {
+            this.openApp();
+            return;
+        }
+
+        this.install();
+    },
+
     async install() {
         if (this.isBusy()) {
             return;

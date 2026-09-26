@@ -38,7 +38,7 @@
             ['label' => 'Install App', 'href' => '#install-app'],
         ];
     @endphp
-    <body x-data="pwaInstallPrompt({ appName: 'BC Patrol', startUrl: @js($pwaStartHref) })" class="bg-slate-50 font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+    <body x-data="pwaInstallPrompt({ appName: 'SLSU Bontoc Patrol', startUrl: @js($pwaStartHref) })" class="bg-slate-50 font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
         <x-pwa-launch-splash />
 
         <div
@@ -81,7 +81,7 @@
                         <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <path d="M5 12h12m0 0-4-4m4 4-4 4M5 5h14v14H5V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
-                        <span>Open BC Patrol</span>
+                        <span>Access System</span>
                     </button>
 
                     <button
@@ -97,7 +97,7 @@
             </section>
         </div>
 
-        <header class="sticky top-0 z-30 border-b border-blue-100 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
+        <header x-data="{ mobileMenuOpen: false }" class="sticky top-0 z-30 border-b border-blue-100 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
             <nav class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8" aria-label="Main navigation">
                 <a href="{{ url('/') }}" class="flex min-w-0 items-center gap-3">
                     <x-application-logo class="h-10 w-10 shrink-0 sm:h-11 sm:w-11" />
@@ -129,13 +129,35 @@
                             </a>
                         @endauth
                     @endif
+
+                    <button
+                        type="button"
+                        class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-blue-100 bg-white text-blue-950 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-100 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950 lg:hidden"
+                        @click="mobileMenuOpen = ! mobileMenuOpen"
+                        :aria-expanded="mobileMenuOpen.toString()"
+                        aria-controls="homepage-mobile-menu"
+                        aria-label="Toggle navigation menu"
+                    >
+                        <svg x-show="! mobileMenuOpen" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        <svg x-show="mobileMenuOpen" x-cloak class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                    </button>
                 </div>
             </nav>
 
-            <div class="border-t border-blue-50 bg-white px-4 py-2 dark:border-slate-800 dark:bg-slate-950 lg:hidden">
-                <div class="mx-auto flex max-w-7xl gap-2 overflow-x-auto">
+            <div
+                id="homepage-mobile-menu"
+                x-show="mobileMenuOpen"
+                x-cloak
+                x-transition.opacity.duration.150ms
+                class="border-t border-blue-50 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950 lg:hidden"
+            >
+                <div class="mx-auto grid max-w-7xl gap-2">
                     @foreach ($headerMenuItems as $item)
-                        <a href="{{ $item['href'] }}" class="shrink-0 rounded-md border border-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:border-slate-700 dark:text-blue-200">
+                        <a href="{{ $item['href'] }}" class="rounded-md border border-blue-100 px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-900" @click="mobileMenuOpen = false">
                             {{ $item['label'] }}
                         </a>
                     @endforeach
@@ -154,61 +176,41 @@
                 <div class="pointer-events-none absolute inset-0 bg-slate-950/58 dark:bg-slate-950/70"></div>
                 <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(15,23,42,0.34),rgba(15,23,42,0.78))]"></div>
 
-                <div class="relative mx-auto flex min-h-[calc(100svh-128px)] max-w-7xl items-center justify-center px-4 py-10 text-center sm:min-h-[calc(100svh-80px)] sm:px-6 sm:py-14 lg:px-8">
-                    <div class="max-w-4xl">
-                        <p class="mx-auto mb-3 inline-flex max-w-full items-center justify-center rounded-md border border-white/40 bg-white/15 px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-wide text-blue-50 shadow-lg shadow-slate-950/20 backdrop-blur sm:mb-4 sm:px-4 sm:py-2 sm:text-xs">
-                            Southern Leyte State University - Bontoc Campus
-                        </p>
-                        <h1 class="text-3xl font-bold leading-tight text-white drop-shadow-lg sm:text-5xl">
-                            Secure Campus Patrol, Smarter Incident Reporting
+                <div class="relative mx-auto flex min-h-[calc(100svh-128px)] max-w-7xl items-center px-4 py-10 text-left sm:min-h-[calc(100svh-80px)] sm:px-6 sm:py-14 lg:px-8">
+                    <div class="max-w-xl">
+                        <h1 class="text-4xl font-bold leading-tight text-white drop-shadow-lg sm:text-6xl">
+                            SLSU Bontoc Patrol
                         </h1>
-                        <p class="mx-auto mt-4 max-w-3xl text-sm font-medium leading-6 text-blue-50 drop-shadow sm:mt-5 sm:text-lg sm:leading-7">
-                            A focused patrol system for SLSU Bontoc Campus, built to record checkpoint visits, capture patrol proof, complete patrol checklists, and submit incident reports.
+                        <p class="mt-4 max-w-lg text-sm font-medium leading-6 text-blue-50 drop-shadow sm:text-lg sm:leading-8">
+                            A campus security monitoring system for RFID patrol logs, area selfie proof, and incident reporting.
                         </p>
-                        <div class="mt-6 sm:mt-8">
-                            <div class="flex flex-col justify-center gap-2.5 sm:flex-row sm:gap-3">
-                                <button
-                                    type="button"
-                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-white px-4 py-2.5 text-sm font-bold text-blue-950 shadow-lg shadow-slate-950/20 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:cursor-wait disabled:opacity-80 sm:min-h-12 sm:px-5 sm:py-3"
-                                    @click="install"
-                                    :disabled="isBusy()"
-                                    :aria-busy="isBusy().toString()"
-                                >
-                                    <svg x-show="! isBusy() && installLabel() !== 'Open App'" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                        <path d="M12 3v10m0 0 4-4m-4 4-4-4M5 15v3a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                    <svg x-show="isBusy()" x-cloak class="h-5 w-5 shrink-0 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                        <circle class="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3"></circle>
-                                        <path class="opacity-90" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
-                                    </svg>
-                                    <svg x-show="! isBusy() && installLabel() === 'Open App'" x-cloak class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                        <path d="M5 12h12m0 0-4-4m4 4-4 4M5 5h14v14H5V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                    <span x-text="installLabel()">Install Now</span>
-                                </button>
 
-                                <a href="{{ $systemHref }}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2 focus:ring-offset-slate-950 sm:min-h-12 sm:px-5 sm:py-3">
-                                    <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                        <path d="M5 12h12m0 0-4-4m4 4-4 4M5 5h14v14H5V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                    <span>Open System</span>
-                                </a>
+                        <button
+                            type="button"
+                            class="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-bold text-blue-950 shadow-lg shadow-slate-950/20 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:cursor-wait disabled:opacity-80 sm:px-6"
+                            @click="installOrOpen"
+                            :disabled="isBusy()"
+                            :aria-busy="isBusy().toString()"
+                        >
+                            <svg x-show="! isBusy() && ! installed && installState !== 'installed'" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M12 3v10m0 0 4-4m-4 4-4-4M5 15v3a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <svg x-show="isBusy()" x-cloak class="h-5 w-5 shrink-0 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <circle class="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3"></circle>
+                                <path class="opacity-90" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
+                            </svg>
+                            <svg x-show="! isBusy() && (installed || installState === 'installed')" x-cloak class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M5 12h12m0 0-4-4m4 4-4 4M5 5h14v14H5V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <span x-text="(installed || installState === 'installed') ? 'Access System' : installLabel()">Install App</span>
+                        </button>
 
-                                <a href="#system-flow" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/80 bg-slate-950/20 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 backdrop-blur transition hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2 focus:ring-offset-slate-950 sm:min-h-12 sm:px-5 sm:py-3">
-                                    <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                        <path d="M5 5h6v6H5V5Zm8 0h6v6h-6V5ZM5 13h6v6H5v-6Zm8 0h6v6h-6v-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                                    </svg>
-                                    <span>View Roles</span>
-                                </a>
-                            </div>
-
-                            <p
-                                x-cloak
-                                x-show="message"
-                                x-text="message"
-                                class="mx-auto mt-3 max-w-xl rounded-md bg-slate-950/45 px-4 py-2 text-sm font-medium text-blue-50 shadow-sm"
-                            ></p>
-                        </div>
+                        <p
+                            x-cloak
+                            x-show="message"
+                            x-text="message"
+                            class="mt-3 max-w-xl rounded-md bg-slate-950/45 px-4 py-2 text-sm font-medium text-blue-50 shadow-sm"
+                        ></p>
                     </div>
                 </div>
             </section>
