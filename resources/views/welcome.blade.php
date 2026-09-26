@@ -30,6 +30,13 @@
             ? (auth()->user()->role === 'guard' ? route('patrol.scan') : route('dashboard'))
             : route('login');
         $pwaStartHref = Route::has('login') ? route('login') : url('/');
+
+        $headerMenuItems = [
+            ['label' => 'System Flow', 'href' => '#system-flow'],
+            ['label' => 'Users', 'href' => '#users'],
+            ['label' => 'Records', 'href' => '#records'],
+            ['label' => 'Install App', 'href' => '#install-app'],
+        ];
     @endphp
     <body x-data="pwaInstallPrompt({ appName: 'BC Patrol', startUrl: @js($pwaStartHref) })" class="bg-slate-50 font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
         <x-pwa-launch-splash />
@@ -91,13 +98,22 @@
         </div>
 
         <header class="sticky top-0 z-30 border-b border-blue-100 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
-            <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4 lg:px-8" aria-label="Main navigation">
+            <nav class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8" aria-label="Main navigation">
                 <a href="{{ url('/') }}" class="flex min-w-0 items-center gap-3">
                     <x-application-logo class="h-10 w-10 shrink-0 sm:h-11 sm:w-11" />
-                    <span class="leading-tight">
-                        <span class="block text-sm font-semibold text-blue-950 sm:text-base dark:text-blue-100">SLSU Bontoc Patrol</span>
+                    <span class="min-w-0 leading-tight">
+                        <span class="block truncate text-sm font-semibold text-blue-950 sm:text-base dark:text-blue-100">SLSU Bontoc Patrol</span>
+                        <span class="block truncate text-xs font-medium text-blue-600 dark:text-blue-300">Security Monitoring</span>
                     </span>
                 </a>
+
+                <div class="hidden items-center gap-1 lg:flex">
+                    @foreach ($headerMenuItems as $item)
+                        <a href="{{ $item['href'] }}" class="rounded-md px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-blue-200">
+                            {{ $item['label'] }}
+                        </a>
+                    @endforeach
+                </div>
 
                 <div class="flex items-center gap-2 sm:gap-3">
                     <x-theme-toggle />
@@ -115,6 +131,16 @@
                     @endif
                 </div>
             </nav>
+
+            <div class="border-t border-blue-50 bg-white px-4 py-2 dark:border-slate-800 dark:bg-slate-950 lg:hidden">
+                <div class="mx-auto flex max-w-7xl gap-2 overflow-x-auto">
+                    @foreach ($headerMenuItems as $item)
+                        <a href="{{ $item['href'] }}" class="shrink-0 rounded-md border border-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:border-slate-700 dark:text-blue-200">
+                            {{ $item['label'] }}
+                        </a>
+                    @endforeach
+                </div>
+            </div>
         </header>
 
         <main>
@@ -246,7 +272,7 @@
                 </div>
             </section>
 
-            <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-14 lg:px-8">
+            <section id="users" class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-14 lg:px-8">
                 <div class="grid gap-3 sm:gap-6 lg:grid-cols-2">
                     <article class="rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
                         <p class="text-xs font-semibold uppercase tracking-wide text-blue-700 sm:text-sm dark:text-blue-300">For Supervisors</p>
@@ -288,7 +314,7 @@
                 </div>
             </section>
 
-            <section class="border-y border-blue-100 bg-slate-100 py-8 sm:py-14 dark:border-slate-800 dark:bg-slate-900">
+            <section id="records" class="border-y border-blue-100 bg-slate-100 py-8 sm:py-14 dark:border-slate-800 dark:bg-slate-900">
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="grid gap-5 sm:gap-8 lg:grid-cols-[0.9fr_1.5fr] lg:items-start">
                         <div>
@@ -324,7 +350,7 @@
                 </div>
             </section>
 
-            <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-14 lg:px-8">
+            <section id="install-app" class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-14 lg:px-8">
                 <div class="grid gap-4 sm:gap-6 lg:grid-cols-[1.3fr_0.7fr] lg:items-center">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 sm:text-sm dark:text-emerald-300">Mobile Ready</p>
