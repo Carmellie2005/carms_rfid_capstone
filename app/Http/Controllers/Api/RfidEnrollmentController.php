@@ -3,14 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\RfidEnrollmentScan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class RfidEnrollmentController extends Controller
 {
-    public const CACHE_KEY = 'rfid_enrollment.latest_scan';
-
     public function __invoke(Request $request): JsonResponse
     {
         if ($request->isMethod('get') && ! $this->hasEnrollmentPayload($request)) {
@@ -37,11 +35,11 @@ class RfidEnrollmentController extends Controller
             ? strtoupper(trim($data['device_uid']))
             : null;
 
-        Cache::put(self::CACHE_KEY, [
+        RfidEnrollmentScan::create([
             'rfid_uid' => $rfidUid,
             'device_uid' => $deviceUid,
             'captured_at' => $capturedAt->toIso8601String(),
-        ], $capturedAt->copy()->addMinutes(3));
+        ]);
 
         return response()->json([
             'message' => 'RFID UID captured for guard enrollment.',

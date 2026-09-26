@@ -2,23 +2,15 @@
 
 namespace Tests\Feature;
 
-use App\Http\Controllers\Api\RfidEnrollmentController;
 use App\Models\PatrolLog;
+use App\Models\RfidEnrollmentScan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class RfidEnrollmentTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Cache::forget(RfidEnrollmentController::CACHE_KEY);
-    }
 
     public function test_enrollment_reader_captures_uid_without_creating_patrol_log(): void
     {
@@ -39,6 +31,7 @@ class RfidEnrollmentTest extends TestCase
             ]);
 
         $this->assertSame(0, PatrolLog::count());
+        $this->assertSame('F33C8D37', RfidEnrollmentScan::first()?->rfid_uid);
 
         $this
             ->actingAs($supervisor)
