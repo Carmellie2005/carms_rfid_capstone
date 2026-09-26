@@ -129,12 +129,12 @@
                 <div class="pointer-events-none absolute inset-0 bg-slate-950/58 dark:bg-slate-950/70"></div>
                 <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(15,23,42,0.34),rgba(15,23,42,0.78))]"></div>
 
-                <div class="relative mx-auto flex min-h-[calc(100svh-128px)] max-w-7xl items-center px-4 py-10 text-left sm:min-h-[calc(100svh-80px)] sm:px-6 sm:py-14 lg:px-8">
-                    <div class="max-w-xl">
+                <div class="relative mx-auto flex min-h-[calc(100svh-128px)] max-w-7xl items-center justify-center px-4 py-10 text-center sm:min-h-[calc(100svh-80px)] sm:px-6 sm:py-14 lg:justify-start lg:px-8 lg:text-left">
+                    <div class="mx-auto max-w-xl lg:mx-0">
                         <h1 class="text-4xl font-bold leading-tight text-white drop-shadow-lg sm:text-6xl">
                             SLSU Bontoc Patrol
                         </h1>
-                        <p class="mt-4 max-w-lg text-sm font-medium leading-6 text-blue-50 drop-shadow sm:text-lg sm:leading-8">
+                        <p class="mx-auto mt-4 max-w-lg text-sm font-medium leading-6 text-blue-50 drop-shadow sm:text-lg sm:leading-8 lg:mx-0">
                             A campus security monitoring system for RFID patrol logs, area selfie proof, and incident reporting.
                         </p>
 
@@ -162,7 +162,7 @@
                             x-cloak
                             x-show="message"
                             x-text="message"
-                            class="mt-3 max-w-xl rounded-md bg-slate-950/45 px-4 py-2 text-sm font-medium text-blue-50 shadow-sm"
+                            class="mx-auto mt-3 max-w-xl rounded-md bg-slate-950/45 px-4 py-2 text-sm font-medium text-blue-50 shadow-sm lg:mx-0"
                         ></p>
                     </div>
                 </div>
