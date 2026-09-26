@@ -129,8 +129,8 @@
                 <div class="pointer-events-none absolute inset-0 bg-slate-950/58 dark:bg-slate-950/70"></div>
                 <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(15,23,42,0.34),rgba(15,23,42,0.78))]"></div>
 
-                <div class="relative mx-auto flex min-h-[calc(100svh-128px)] max-w-7xl items-center justify-center px-4 py-10 text-center sm:min-h-[calc(100svh-80px)] sm:px-6 sm:py-14 lg:justify-start lg:px-8 lg:text-left">
-                    <div class="mx-auto max-w-xl lg:mx-0">
+                <div class="relative mx-auto grid min-h-[calc(100svh-128px)] max-w-7xl items-center gap-8 px-4 py-10 text-center sm:min-h-[calc(100svh-80px)] sm:px-6 sm:py-14 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.42fr)] lg:px-8 lg:text-left">
+                    <div class="mx-auto max-w-3xl lg:mx-0">
                         <h1 class="text-4xl font-bold leading-tight text-white drop-shadow-lg sm:text-6xl">
                             SLSU Bontoc Patrol
                         </h1>
@@ -177,6 +177,63 @@
                             class="mx-auto mt-3 max-w-xl rounded-md bg-slate-950/45 px-4 py-2 text-sm font-medium text-blue-50 shadow-sm lg:mx-0"
                         ></p>
                     </div>
+
+                    <aside class="hidden w-full max-w-sm justify-self-end rounded-md border border-white/35 bg-white/15 p-5 text-left text-white shadow-2xl shadow-slate-950/25 backdrop-blur-md lg:block">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-blue-100">System Highlights</p>
+                        <h2 class="mt-2 text-2xl font-bold leading-tight">Campus patrol in one workflow</h2>
+
+                        <div class="mt-5 space-y-4">
+                            <div class="flex gap-3 border-b border-white/20 pb-4">
+                                <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white text-blue-800">
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M5 5h5v5H5V5Zm9 0h5v5h-5V5ZM5 14h5v5H5v-5Zm10 1h4m-4 4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <h3 class="text-sm font-bold">RFID Checkpoint Scan</h3>
+                                    <p class="mt-1 text-xs leading-5 text-blue-50">Guards tap registered checkpoints to create patrol logs.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3 border-b border-white/20 pb-4">
+                                <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white text-blue-800">
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M4 12s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                                        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <h3 class="text-sm font-bold">Area Selfie Proof</h3>
+                                    <p class="mt-1 text-xs leading-5 text-blue-50">Photo proof supports every completed checkpoint visit.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3 border-b border-white/20 pb-4">
+                                <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white text-blue-800">
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M12 9v4m0 4h.01M10.3 4.7 2.8 18a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3L13.7 4.7a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <h3 class="text-sm font-bold">Incident Reporting</h3>
+                                    <p class="mt-1 text-xs leading-5 text-blue-50">Guards submit incident details for supervisor review.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3">
+                                <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white text-blue-800">
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                                        <path d="M14 3v5h5M8.5 14h7M8.5 17h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <h3 class="text-sm font-bold">Supervisor Review</h3>
+                                    <p class="mt-1 text-xs leading-5 text-blue-50">Reports and patrol records are monitored in the dashboard.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
                 </div>
             </section>
 
