@@ -22,6 +22,9 @@
         $patrolScheduleOpen = (bool) ($patrolScheduleOpen ?? true);
         $patrolScheduleTestingMode = (bool) ($patrolScheduleTestingMode ?? false);
         $mustChangePassword = (bool) ($mustChangePassword ?? false);
+        $showGuardTutorial = Auth::user()?->role === 'guard'
+            && ! $mustChangePassword
+            && blank(Auth::user()?->guard_tutorial_completed_at);
         $patrolScheduleMessage = $patrolScheduleMessage ?? 'Guard patrol scanning is only available during the assigned patrol schedule.';
         $patrolTestingNotice = $patrolTestingNotice ?? 'Testing mode is active, so patrol scanning is open anytime for demo/testing.';
         $scanWaitingMessage = $patrolScheduleTestingMode
@@ -132,6 +135,107 @@
                     </div>
                 </section>
             @elseif ($guardProfile)
+                <div
+                    x-data="guardTutorial({
+                        autoOpen: @js($showGuardTutorial),
+                        completeUrl: @js(route('guard.tutorial.complete', [], false)),
+                    })"
+                    x-init="boot()"
+                >
+                    <div class="flex justify-end">
+                        <button
+                            type="button"
+                            class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950"
+                            @click="openTutorial()"
+                        >
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M12 6v12m0-12 5 3m-5-3-5 3m10 6-5 6-5-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            View Tutorial
+                        </button>
+                    </div>
+
+                    <div
+                        x-show="open"
+                        x-cloak
+                        x-transition.opacity.duration.200ms
+                        class="fixed inset-0 z-[100] flex items-stretch justify-center overflow-hidden bg-slate-950/65 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="guard-tutorial-title"
+                    >
+                        <section
+                            x-show="open"
+                            x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 translate-y-3 scale-[0.98]"
+                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                            class="flex h-[100svh] max-h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-2xl dark:bg-slate-900 sm:h-auto sm:max-h-[92vh] sm:max-w-xl sm:rounded-lg"
+                        >
+                            <div class="border-b border-blue-100 px-4 py-4 dark:border-slate-800 sm:px-5">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Guard Tutorial</p>
+                                        <h3 id="guard-tutorial-title" class="mt-1 text-lg font-bold text-blue-950 dark:text-white" x-text="currentStepData().title"></h3>
+                                    </div>
+                                    <span class="rounded-md bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 ring-1 ring-blue-100 dark:bg-blue-950/50 dark:text-blue-100 dark:ring-blue-400/30">
+                                        <span x-text="currentStep + 1"></span>/<span x-text="steps.length"></span>
+                                    </span>
+                                </div>
+
+                                <div class="mt-4 h-2 overflow-hidden rounded-full bg-blue-100 dark:bg-slate-800">
+                                    <div class="h-full rounded-full bg-blue-700 transition-all duration-300" :style="`width: ${progressWidth()}%`"></div>
+                                </div>
+                            </div>
+
+                            <div class="mobile-scroll-area flex-1 overflow-y-auto px-4 py-5 text-center sm:px-6 sm:py-6">
+                                <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-blue-700 ring-1 ring-blue-100 dark:bg-blue-950/45 dark:text-blue-200 dark:ring-blue-400/30">
+                                    <span class="text-2xl font-bold" x-text="currentStep + 1"></span>
+                                </div>
+
+                                <div x-transition.opacity.duration.200ms :key="currentStep" class="mx-auto mt-5 max-w-md">
+                                    <p class="text-xl font-bold text-blue-950 dark:text-white" x-text="currentStepData().heading"></p>
+                                    <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300" x-text="currentStepData().body"></p>
+                                </div>
+
+                                <div class="mx-auto mt-6 grid max-w-md grid-cols-6 gap-1.5">
+                                    <template x-for="(step, index) in steps" :key="step.title">
+                                        <span
+                                            class="h-2 rounded-full transition"
+                                            :class="index <= currentStep ? 'bg-blue-700' : 'bg-blue-100 dark:bg-slate-700'"
+                                        ></span>
+                                    </template>
+                                </div>
+
+                                <p x-show="error" x-cloak class="mx-auto mt-5 max-w-md rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 dark:border-red-400/30 dark:bg-red-950/40 dark:text-red-100" x-text="error"></p>
+                            </div>
+
+                            <div class="flex shrink-0 flex-col gap-2 border-t border-blue-100 px-4 py-4 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                                <button
+                                    type="button"
+                                    class="inline-flex h-11 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-slate-800"
+                                    @click="previous()"
+                                    :disabled="currentStep === 0 || completing"
+                                >
+                                    Back
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300"
+                                    @click="next()"
+                                    :disabled="completing"
+                                >
+                                    <svg x-show="completing" x-cloak class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                                    </svg>
+                                    <span x-text="isLastStep() ? (completing ? 'Saving...' : 'Done') : 'Next'"></span>
+                                </button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
             <form
                 method="POST"
                 action="{{ route('patrol.store') }}"

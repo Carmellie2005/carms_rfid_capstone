@@ -6,6 +6,7 @@ use App\Http\Controllers\System\CheckpointController;
 use App\Http\Controllers\System\DashboardController;
 use App\Http\Controllers\System\GuardController;
 use App\Http\Controllers\System\GuardPatrolController;
+use App\Http\Controllers\System\GuardTutorialController;
 use App\Http\Controllers\System\IncidentReportController;
 use App\Http\Controllers\System\NotificationController;
 use App\Http\Controllers\System\NotificationReadController;
@@ -46,6 +47,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/patrol/pending-scan', [GuardPatrolController::class, 'pendingScan'])->name('patrol.pending-scan');
     Route::post('/patrol/scan', [GuardPatrolController::class, 'store'])->name('patrol.store');
     Route::post('/patrol/scan/cancel', [GuardPatrolController::class, 'cancel'])->name('patrol.cancel');
+    Route::post('/guard/tutorial/complete', [GuardTutorialController::class, 'complete'])->name('guard.tutorial.complete');
     Route::get('/incidents/{incidentReport}/images/{incidentReportImage}', [IncidentReportController::class, 'image'])->name('incidents.images.show');
     Route::get('/patrol-logs/{patrolLog}/area-selfie', [PatrolLogController::class, 'areaSelfie'])->name('patrol-logs.area-selfie.show');
     Route::get('/patrol-logs/{patrolLog}/proof-photos/{checklistProofPhoto}', [PatrolLogController::class, 'proofPhoto'])->name('patrol-logs.proof-photos.show');

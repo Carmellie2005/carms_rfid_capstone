@@ -26,6 +26,7 @@ class User extends Authenticatable
         'birthday',
         'password',
         'must_change_password',
+        'guard_tutorial_completed_at',
         'role',
         'profile_photo_path',
     ];
@@ -48,6 +49,7 @@ class User extends Authenticatable
     protected $casts = [
         'birthday' => 'date',
         'email_verified_at' => 'datetime',
+        'guard_tutorial_completed_at' => 'datetime',
         'must_change_password' => 'boolean',
         'password' => 'hashed',
     ];

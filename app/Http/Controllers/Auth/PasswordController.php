@@ -15,15 +15,23 @@ class PasswordController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
         $validated = $request->validateWithBag('updatePassword', [
             'current_password' => ['required', 'current_password'],
             'password' => ['required', Password::defaults(), 'confirmed'],
         ]);
 
-        $request->user()->update([
+        $user->update([
             'password' => Hash::make($validated['password']),
             'must_change_password' => false,
         ]);
+
+        if ($user->role === 'guard') {
+            return redirect()
+                ->route('patrol.scan')
+                ->with('status', 'Password updated. Please review the quick tutorial before scanning.');
+        }
 
         return back()->with('status', 'password-updated');
     }
@@ -46,6 +54,8 @@ class PasswordController extends Controller
             'must_change_password' => false,
         ]);
 
-        return back()->with('status', 'password-updated');
+        return redirect()
+            ->route('patrol.scan')
+            ->with('status', 'Password updated. Please review the quick tutorial before scanning.');
     }
 }

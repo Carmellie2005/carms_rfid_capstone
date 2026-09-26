@@ -552,6 +552,123 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
 }));
 
 
+Alpine.data('guardTutorial', (config = {}) => ({
+    open: false,
+    currentStep: 0,
+    completing: false,
+    error: '',
+    completeUrl: config.completeUrl || '',
+    autoOpen: config.autoOpen || false,
+    steps: [
+        {
+            title: 'Welcome, Guard',
+            heading: 'Your account is ready',
+            body: 'After changing your password, you can start using the patrol system with your own secure login.',
+        },
+        {
+            title: 'Step 1',
+            heading: 'Scan the RFID checkpoint',
+            body: 'Go to the patrol area and wait for the ESP32 checkpoint scan to appear in the system.',
+        },
+        {
+            title: 'Step 2',
+            heading: 'Take the area selfie',
+            body: 'Capture a clear area selfie at the checkpoint. Allow location access when asked so the record can include GPS details.',
+        },
+        {
+            title: 'Step 3',
+            heading: 'Complete the checklist',
+            body: 'Check the assigned area and answer the checklist before submitting the patrol record.',
+        },
+        {
+            title: 'Incident reports',
+            heading: 'Report issues when needed',
+            body: 'If you notice damage, safety concerns, or unusual activity, attach an incident report before submitting.',
+        },
+        {
+            title: 'You are ready',
+            heading: 'Good luck and stay safe',
+            body: 'You can now begin patrol monitoring. Follow each step carefully and submit accurate records.',
+        },
+    ],
+
+    boot() {
+        if (this.autoOpen) {
+            this.$nextTick(() => this.openTutorial());
+        }
+    },
+
+    openTutorial() {
+        this.error = '';
+        this.currentStep = 0;
+        this.open = true;
+    },
+
+    currentStepData() {
+        return this.steps[this.currentStep] || this.steps[0];
+    },
+
+    isLastStep() {
+        return this.currentStep >= this.steps.length - 1;
+    },
+
+    progressWidth() {
+        return `${((this.currentStep + 1) / this.steps.length) * 100}%`;
+    },
+
+    previous() {
+        if (this.currentStep > 0 && ! this.completing) {
+            this.currentStep -= 1;
+        }
+    },
+
+    next() {
+        if (this.isLastStep()) {
+            this.complete();
+            return;
+        }
+
+        this.currentStep += 1;
+    },
+
+    async complete() {
+        if (this.completing) {
+            return;
+        }
+
+        this.completing = true;
+        this.error = '';
+
+        try {
+            if (this.completeUrl) {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+                const response = await fetch(this.completeUrl, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'X-CSRF-TOKEN': token,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+
+                if (! response.ok) {
+                    throw new Error('Unable to save tutorial progress.');
+                }
+            }
+
+            this.open = false;
+            this.autoOpen = false;
+            this.currentStep = 0;
+        } catch (error) {
+            this.error = 'Could not save tutorial progress. Please tap Done again.';
+        } finally {
+            this.completing = false;
+        }
+    },
+}));
+
+
 Alpine.data('patrolScan', (config = {}) => ({
     incident: config.incident || false,
     incidentImageCount: 0,
