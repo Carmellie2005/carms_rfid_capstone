@@ -30,49 +30,8 @@
             ? (auth()->user()->role === 'guard' ? route('patrol.scan') : route('dashboard'))
             : route('login');
         $pwaStartHref = Route::has('login') ? route('login') : url('/');
-
-        $menuItems = [
-            ['label' => 'System', 'href' => '#system-flow'],
-            ['label' => 'Users', 'href' => '#users'],
-            ['label' => 'Records', 'href' => '#records'],
-            ['label' => 'Reports', 'href' => '#reports'],
-        ];
-
-        $featureItems = [
-            [
-                'title' => 'RFID Checkpoints',
-                'body' => 'Track and verify checkpoint visits',
-                'color' => 'blue',
-                'icon' => 'wifi',
-            ],
-            [
-                'title' => 'Area Selfie',
-                'body' => 'Capture proof of patrol presence',
-                'color' => 'green',
-                'icon' => 'camera',
-            ],
-            [
-                'title' => 'GPS Tagging',
-                'body' => 'Record patrol location details',
-                'color' => 'sky',
-                'icon' => 'pin',
-            ],
-            [
-                'title' => 'PDF Reports',
-                'body' => 'Generate patrol and incident records',
-                'color' => 'red',
-                'icon' => 'file',
-            ],
-        ];
-
-        $flowSteps = [
-            ['title' => 'Register', 'body' => 'Supervisor creates guard accounts and RFID assignments.'],
-            ['title' => 'Scan', 'body' => 'Guard taps the RFID checkpoint reader.'],
-            ['title' => 'Document', 'body' => 'Guard submits area selfie, location, checklist, and photos.'],
-            ['title' => 'Review', 'body' => 'Supervisor reviews logs, incidents, audit trail, and reports.'],
-        ];
     @endphp
-    <body x-data="pwaInstallPrompt({ appName: 'SLSU Bontoc Patrol', startUrl: @js($pwaStartHref) })" class="bg-white font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+    <body x-data="pwaInstallPrompt({ appName: 'BC Patrol', startUrl: @js($pwaStartHref) })" class="bg-slate-50 font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
         <x-pwa-launch-splash />
 
         <div
@@ -115,7 +74,7 @@
                         <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <path d="M5 12h12m0 0-4-4m4 4-4 4M5 5h14v14H5V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
-                        <span>Open System</span>
+                        <span>Open BC Patrol</span>
                     </button>
 
                     <button
@@ -131,267 +90,294 @@
             </section>
         </div>
 
-        <div class="bg-blue-950 px-4 py-2 text-white dark:bg-slate-950">
-            <div class="mx-auto flex max-w-7xl items-center justify-center gap-4 text-center text-xs font-medium sm:justify-end sm:text-sm">
-                <span>SLSU Bontoc Campus Security Monitoring</span>
-                <span class="hidden h-4 w-px bg-white/40 sm:block"></span>
-                <span class="hidden text-blue-100 sm:inline">Service - Integrity - A Safer SLSU</span>
-            </div>
-        </div>
-
         <header class="sticky top-0 z-30 border-b border-blue-100 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
-            <nav class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8" aria-label="Main navigation">
+            <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4 lg:px-8" aria-label="Main navigation">
                 <a href="{{ url('/') }}" class="flex min-w-0 items-center gap-3">
-                    <x-application-logo class="h-12 w-12 shrink-0 sm:h-14 sm:w-14" />
-                    <span class="min-w-0 leading-tight">
-                        <span class="block truncate text-lg font-bold text-blue-950 sm:text-2xl dark:text-white">SLSU Bontoc Patrol</span>
-                        <span class="block truncate text-[0.68rem] font-semibold uppercase tracking-[0.32em] text-blue-600 dark:text-blue-300">Security Monitoring</span>
+                    <x-application-logo class="h-10 w-10 shrink-0 sm:h-11 sm:w-11" />
+                    <span class="leading-tight">
+                        <span class="block text-sm font-semibold text-blue-950 sm:text-base dark:text-blue-100">SLSU Bontoc Patrol</span>
                     </span>
                 </a>
 
-                <div class="hidden items-center gap-7 lg:flex">
-                    @foreach ($menuItems as $item)
-                        <a href="{{ $item['href'] }}" class="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-950 transition hover:text-blue-700 dark:text-slate-200 dark:hover:text-blue-300">
-                            <span>{{ $item['label'] }}</span>
-                            <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                                <path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </a>
-                    @endforeach
-                </div>
-
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 sm:gap-3">
                     <x-theme-toggle />
 
                     @if (Route::has('login'))
-                        <a href="{{ $systemHref }}" class="hidden h-11 items-center justify-center rounded-md border border-blue-100 bg-white px-4 text-sm font-bold text-blue-950 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:inline-flex dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800">
-                            {{ auth()->check() ? 'Open System' : 'Sign In' }}
-                        </a>
+                        @auth
+                            <a href="{{ url('/dashboard') }}" class="rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:px-4 dark:focus:ring-offset-slate-950">
+                                Dashboard
+                            </a>
+                        @else
+                            <a href="{{ route('login') }}" class="rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:px-4 dark:focus:ring-offset-slate-950">
+                                Log in
+                            </a>
+                        @endauth
                     @endif
-
-                    <button
-                        type="button"
-                        class="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-blue-700 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-80 sm:px-5 dark:focus:ring-offset-slate-950"
-                        @click="install"
-                        :disabled="isBusy()"
-                        :aria-busy="isBusy().toString()"
-                    >
-                        <svg class="hidden h-5 w-5 shrink-0 sm:block" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                            <path d="M12 3v10m0 0 4-4m-4 4-4-4M5 15v3a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                        <span x-text="installLabel()">Install App</span>
-                    </button>
                 </div>
             </nav>
-
-            <div class="border-t border-blue-50 bg-white px-4 py-2 dark:border-slate-800 dark:bg-slate-950 lg:hidden">
-                <div class="mx-auto flex max-w-7xl gap-2 overflow-x-auto">
-                    @foreach ($menuItems as $item)
-                        <a href="{{ $item['href'] }}" class="shrink-0 rounded-md border border-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:border-slate-700 dark:text-blue-200">
-                            {{ $item['label'] }}
-                        </a>
-                    @endforeach
-                </div>
-            </div>
         </header>
 
-        <main id="home">
-            <section class="overflow-hidden border-b border-blue-100 bg-white dark:border-slate-800 dark:bg-slate-950">
-                <div class="mx-auto grid min-h-[calc(100svh-9rem)] max-w-7xl items-center gap-8 px-4 py-8 sm:px-6 sm:py-12 lg:grid-cols-[0.92fr_1.08fr] lg:gap-0 lg:px-8">
-                    <div class="relative z-10 max-w-3xl py-5 lg:py-12">
-                        <p class="inline-flex items-center gap-2 rounded-md bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-800 ring-1 ring-blue-100 dark:bg-blue-950/50 dark:text-blue-200 dark:ring-blue-800">
-                            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path d="M12 3 5 6v5c0 4.5 2.9 8.6 7 10 4.1-1.4 7-5.5 7-10V6l-7-3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                                <path d="m9 12 2 2 4-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
+        <main>
+            <section class="relative overflow-hidden border-b border-blue-100 bg-slate-100 dark:border-slate-800 dark:bg-slate-900">
+                <img
+                    src="{{ asset('images/homepage-hero-background.png') }}"
+                    alt=""
+                    class="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                    aria-hidden="true"
+                >
+                <div class="pointer-events-none absolute inset-0 bg-slate-950/58 dark:bg-slate-950/70"></div>
+                <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(15,23,42,0.34),rgba(15,23,42,0.78))]"></div>
+
+                <div class="relative mx-auto flex min-h-[calc(100svh-128px)] max-w-7xl items-center justify-center px-4 py-10 text-center sm:min-h-[calc(100svh-80px)] sm:px-6 sm:py-14 lg:px-8">
+                    <div class="max-w-4xl">
+                        <p class="mx-auto mb-3 inline-flex max-w-full items-center justify-center rounded-md border border-white/40 bg-white/15 px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-wide text-blue-50 shadow-lg shadow-slate-950/20 backdrop-blur sm:mb-4 sm:px-4 sm:py-2 sm:text-xs">
                             Southern Leyte State University - Bontoc Campus
                         </p>
-
-                        <h1 class="mt-7 max-w-3xl text-4xl font-bold leading-[1.08] tracking-normal text-blue-950 sm:text-5xl lg:text-[4.55rem] dark:text-white">
-                            Secure Campus Patrol and Incident Reporting
+                        <h1 class="text-3xl font-bold leading-tight text-white drop-shadow-lg sm:text-5xl">
+                            Secure Campus Patrol, Smarter Incident Reporting
                         </h1>
-
-                        <p class="mt-6 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg dark:text-slate-300">
-                            RFID checkpoint monitoring, area selfie proof, patrol logs, and incident reports in one system.
+                        <p class="mx-auto mt-4 max-w-3xl text-sm font-medium leading-6 text-blue-50 drop-shadow sm:mt-5 sm:text-lg sm:leading-7">
+                            A focused patrol system for SLSU Bontoc Campus, built to record checkpoint visits, capture patrol proof, complete patrol checklists, and submit incident reports.
                         </p>
-
-                        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-                            <a href="{{ $systemHref }}" class="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-blue-700 px-6 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-950">
-                                <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="M5 12h12m0 0-4-4m4 4-4 4M5 5h14v14H5V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                                <span>{{ auth()->check() ? 'Open System' : 'Open System' }}</span>
-                            </a>
-
-                            <a href="#system-flow" class="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-blue-100 bg-white px-6 text-sm font-bold text-blue-950 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950">
-                                <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="M10 8.5v7l5.5-3.5L10 8.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                                    <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" stroke="currentColor" stroke-width="2" />
-                                </svg>
-                                <span>View System Flow</span>
-                            </a>
-                        </div>
-
-                        <p
-                            x-cloak
-                            x-show="message"
-                            x-text="message"
-                            class="mt-4 rounded-md border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-800 dark:border-blue-400/30 dark:bg-blue-950/40 dark:text-blue-100"
-                        ></p>
-
-                        <div class="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                            @foreach ($featureItems as $item)
-                                <article class="border-blue-100 pr-4 sm:border-r last:border-r-0 dark:border-slate-800">
-                                    <div @class([
-                                        'flex h-12 w-12 items-center justify-center rounded-md',
-                                        'bg-blue-50 text-blue-700' => $item['color'] === 'blue',
-                                        'bg-emerald-50 text-emerald-700' => $item['color'] === 'green',
-                                        'bg-sky-50 text-sky-700' => $item['color'] === 'sky',
-                                        'bg-red-50 text-red-700' => $item['color'] === 'red',
-                                        'dark:bg-slate-900',
-                                    ])>
-                                        @if ($item['icon'] === 'wifi')
-                                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                <path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19h.01M2 9a14.5 14.5 0 0 1 20 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                            </svg>
-                                        @elseif ($item['icon'] === 'camera')
-                                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                <path d="M8 7h1.5L11 5h2l1.5 2H16a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-6a3 3 0 0 1 3-3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                                                <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
-                                            </svg>
-                                        @elseif ($item['icon'] === 'pin')
-                                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                <path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                                                <path d="M12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" stroke-width="2" />
-                                            </svg>
-                                        @else
-                                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                <path d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                                                <path d="M14 3v5h5M9 14h6M9 17h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                            </svg>
-                                        @endif
-                                    </div>
-                                    <h3 class="mt-3 text-sm font-bold text-blue-950 dark:text-white">{{ $item['title'] }}</h3>
-                                    <p class="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">{{ $item['body'] }}</p>
-                                </article>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <div class="relative min-h-[28rem] lg:min-h-[43rem]">
-                        <div class="absolute inset-0 hidden bg-blue-950 lg:block" style="clip-path: polygon(24% 0, 100% 0, 100% 100%, 3% 100%);"></div>
-
-                        <div class="relative h-full min-h-[28rem] overflow-hidden rounded-md border border-blue-100 bg-blue-50 shadow-sm lg:absolute lg:inset-y-0 lg:right-0 lg:w-[112%] lg:rounded-none lg:border-0 lg:shadow-none dark:border-slate-800 dark:bg-slate-900" style="clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);">
-                            <img
-                                src="{{ asset('images/homepage-hero-background.png') }}"
-                                alt="SLSU Bontoc Campus administration building"
-                                class="h-full min-h-[28rem] w-full object-cover object-center brightness-105 contrast-105 saturate-110 lg:min-h-[43rem]"
-                            >
-                        </div>
-
-                        <div class="absolute left-4 top-6 w-[16rem] rounded-md border border-blue-100 bg-white/95 p-4 shadow-xl shadow-blue-950/10 backdrop-blur sm:left-14 lg:left-16 lg:top-28 dark:border-slate-700 dark:bg-slate-900/95">
-                            <div class="flex items-center gap-3">
-                                <div class="flex h-12 w-12 items-center justify-center rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-200">
-                                    <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                        <path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19h.01M2 9a14.5 14.5 0 0 1 20 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        <div class="mt-6 sm:mt-8">
+                            <div class="flex flex-col justify-center gap-2.5 sm:flex-row sm:gap-3">
+                                <button
+                                    type="button"
+                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-white px-4 py-2.5 text-sm font-bold text-blue-950 shadow-lg shadow-slate-950/20 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:cursor-wait disabled:opacity-80 sm:min-h-12 sm:px-5 sm:py-3"
+                                    @click="install"
+                                    :disabled="isBusy()"
+                                    :aria-busy="isBusy().toString()"
+                                >
+                                    <svg x-show="! isBusy() && installLabel() !== 'Open App'" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M12 3v10m0 0 4-4m-4 4-4-4M5 15v3a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <p class="text-sm font-bold text-blue-950 dark:text-white">RFID Scan</p>
-                                        <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[0.68rem] font-bold text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950 dark:text-emerald-200 dark:ring-emerald-800">Active</span>
-                                    </div>
-                                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Checkpoint monitoring</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="absolute right-3 top-40 w-[17rem] rounded-md border border-blue-100 bg-white/95 p-4 shadow-xl shadow-blue-950/10 backdrop-blur sm:right-8 lg:right-5 lg:top-64 dark:border-slate-700 dark:bg-slate-900/95">
-                            <div class="flex items-center gap-3">
-                                <div class="flex h-12 w-12 items-center justify-center rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-200">
-                                    <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                        <path d="M8 7h1.5L11 5h2l1.5 2H16a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-6a3 3 0 0 1 3-3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                                        <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
+                                    <svg x-show="isBusy()" x-cloak class="h-5 w-5 shrink-0 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <circle class="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3"></circle>
+                                        <path class="opacity-90" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
                                     </svg>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold text-blue-950 dark:text-white">Patrol Logs</p>
-                                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Area selfie and checklist proof</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="absolute bottom-8 left-7 w-[18rem] rounded-md border border-blue-100 bg-white/95 p-4 shadow-xl shadow-blue-950/10 backdrop-blur sm:left-24 lg:bottom-20 lg:left-28 dark:border-slate-700 dark:bg-slate-900/95">
-                            <div class="flex items-center gap-3">
-                                <div class="flex h-12 w-12 items-center justify-center rounded-md bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-200">
-                                    <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                        <path d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                                        <path d="M14 3v5h5M12 11v4M12 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    <svg x-show="! isBusy() && installLabel() === 'Open App'" x-cloak class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M5 12h12m0 0-4-4m4 4-4 4M5 5h14v14H5V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold text-blue-950 dark:text-white">Incident Report</p>
-                                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Photo evidence and action taken</p>
-                                </div>
+                                    <span x-text="installLabel()">Install Now</span>
+                                </button>
+
+                                <a href="{{ $systemHref }}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2 focus:ring-offset-slate-950 sm:min-h-12 sm:px-5 sm:py-3">
+                                    <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M5 12h12m0 0-4-4m4 4-4 4M5 5h14v14H5V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <span>Open System</span>
+                                </a>
+
+                                <a href="#system-flow" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/80 bg-slate-950/20 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 backdrop-blur transition hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2 focus:ring-offset-slate-950 sm:min-h-12 sm:px-5 sm:py-3">
+                                    <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M5 5h6v6H5V5Zm8 0h6v6h-6V5ZM5 13h6v6H5v-6Zm8 0h6v6h-6v-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                                    </svg>
+                                    <span>View Roles</span>
+                                </a>
                             </div>
+
+                            <p
+                                x-cloak
+                                x-show="message"
+                                x-text="message"
+                                class="mx-auto mt-3 max-w-xl rounded-md bg-slate-950/45 px-4 py-2 text-sm font-medium text-blue-50 shadow-sm"
+                            ></p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section id="system-flow" class="border-b border-blue-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
-                <div class="mx-auto grid max-w-7xl gap-5 px-4 py-8 sm:px-6 lg:grid-cols-4 lg:px-8">
-                    @foreach ($flowSteps as $step)
-                        <article class="rounded-md border border-blue-100 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
-                            <h2 class="text-base font-bold text-blue-950 dark:text-white">{{ $step['title'] }}</h2>
-                            <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{{ $step['body'] }}</p>
+            <section id="system-flow" class="border-b border-blue-100 bg-white dark:border-slate-800 dark:bg-slate-950">
+                <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-14 lg:px-8">
+                    <div class="max-w-3xl">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 sm:text-sm dark:text-emerald-300">System Flow</p>
+                        <h2 class="mt-2 text-2xl font-bold tracking-tight text-blue-950 sm:mt-3 sm:text-3xl dark:text-white">From guard setup to verified patrol records</h2>
+                        <p class="mt-3 text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7 dark:text-slate-300">
+                            This system is for the patrol and incident monitoring needs of Southern Leyte State University - Bontoc Campus, handled by the Security and Safety Services Office. It connects guard profiles, RFID checkpoint scans, checklist photo proof, checklist responses, and incident reports in one place.
+                        </p>
+                        <div class="mt-4 rounded-md border border-blue-100 bg-blue-50/70 p-3 text-xs font-semibold leading-5 text-blue-950 sm:mt-5 sm:p-4 sm:text-sm sm:leading-6 dark:border-slate-800 dark:bg-slate-900 dark:text-blue-100">
+                            Built for SLSU Bontoc Campus operations and managed by the Security and Safety Services Office.
+                        </div>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-2 gap-2 sm:mt-8 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
+                        <article class="rounded-md border border-emerald-100 bg-emerald-50/60 p-3 dark:border-emerald-900 dark:bg-emerald-950/30 sm:p-5">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-600 text-white sm:h-10 sm:w-10">
+                                <svg class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
+                            <h3 class="mt-3 text-sm font-bold text-slate-950 sm:mt-4 sm:text-lg dark:text-white">Complete Profile</h3>
+                            <p class="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6 dark:text-slate-300">Supervisor and guard accounts keep identity, contact, shift, RFID, and account status ready.</p>
                         </article>
-                    @endforeach
-                </div>
-            </section>
 
-            <section id="users" class="border-b border-blue-100 bg-white dark:border-slate-800 dark:bg-slate-950">
-                <div class="mx-auto grid max-w-7xl gap-4 px-4 py-8 sm:px-6 lg:grid-cols-3 lg:px-8">
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-11 w-11 items-center justify-center rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-200">
-                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path d="M4 21h16M6 21V8l6-4 6 4v13M9 21v-7h6v7" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold uppercase tracking-wide text-blue-700 dark:text-blue-300">Southern Leyte State University</p>
-                            <p class="text-sm text-slate-500 dark:text-slate-400">Bontoc Campus</p>
-                        </div>
-                    </div>
+                        <article class="rounded-md border border-sky-100 bg-sky-50/70 p-3 dark:border-sky-900 dark:bg-sky-950/30 sm:p-5">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-md bg-sky-600 text-white sm:h-10 sm:w-10">
+                                <svg class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M5 5h5v5H5V5Zm9 0h5v5h-5V5ZM5 14h5v5H5v-5Zm10 1h4m-4 4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
+                            <h3 class="mt-3 text-sm font-bold text-slate-950 sm:mt-4 sm:text-lg dark:text-white">Scan Checkpoint</h3>
+                            <p class="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6 dark:text-slate-300">Guards scan assigned RFID checkpoints to create time-stamped patrol logs.</p>
+                        </article>
 
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-11 w-11 items-center justify-center rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-200">
-                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path d="M12 3 5 6v5c0 4.5 2.9 8.6 7 10 4.1-1.4 7-5.5 7-10V6l-7-3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                                <path d="m9 12 2 2 4-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-bold text-blue-950 dark:text-white">Campus Security Monitoring</p>
-                            <p class="text-sm text-slate-500 dark:text-slate-400">Record - Verify - Report - Safer Campus</p>
-                        </div>
-                    </div>
+                        <article class="rounded-md border border-violet-100 bg-violet-50/70 p-3 dark:border-violet-900 dark:bg-violet-950/30 sm:p-5">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-md bg-violet-600 text-white sm:h-10 sm:w-10">
+                                <svg class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M4 12s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                                    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
+                                </svg>
+                            </div>
+                            <h3 class="mt-3 text-sm font-bold text-slate-950 sm:mt-4 sm:text-lg dark:text-white">Area Selfie Proof</h3>
+                            <p class="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6 dark:text-slate-300">Stamped area selfies help confirm that the guard reached and inspected the checkpoint area.</p>
+                        </article>
 
-                    <div id="records" class="flex items-center gap-3 lg:justify-end">
-                        <div class="text-left lg:text-right">
-                            <p id="reports" class="text-sm font-semibold text-slate-500 dark:text-slate-400">RFID Checkpoints - Patrol Logs - Incident Reports</p>
-                            <p id="install-app" class="text-sm font-bold text-blue-950 dark:text-white">Built for supervisor and guard access</p>
-                        </div>
+                        <article class="rounded-md border border-amber-100 bg-amber-50/70 p-3 dark:border-amber-900 dark:bg-amber-950/30 sm:p-5">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-md bg-amber-600 text-white sm:h-10 sm:w-10">
+                                <svg class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                                    <path d="M14 3v5h5M8.5 14h7M8.5 17h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
+                            <h3 class="mt-3 text-sm font-bold text-slate-950 sm:mt-4 sm:text-lg dark:text-white">Review Reports</h3>
+                            <p class="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6 dark:text-slate-300">Supervisors review logs, incidents, statuses, and downloadable PDF records.</p>
+                        </article>
                     </div>
                 </div>
             </section>
+
+            <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-14 lg:px-8">
+                <div class="grid gap-3 sm:gap-6 lg:grid-cols-2">
+                    <article class="rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-blue-700 sm:text-sm dark:text-blue-300">For Supervisors</p>
+                        <h2 class="mt-2 text-lg font-bold text-blue-950 sm:mt-3 sm:text-xl dark:text-white">Manage people, checkpoints, and reports</h2>
+                        <ul class="mt-4 space-y-2 text-xs leading-5 text-slate-600 sm:mt-5 sm:space-y-3 sm:text-sm sm:leading-6 dark:text-slate-300">
+                            <li class="flex gap-3">
+                                <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500"></span>
+                                Create guard accounts with employee number, contact details, shift assignment, RFID UID, and active status.
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-sky-500"></span>
+                                Maintain checkpoint records and connect each checkpoint to the correct RFID card or scanner reference.
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-amber-500"></span>
+                                Monitor patrol logs, incident submissions, report status, dashboard summaries, and downloadable PDF documentation.
+                            </li>
+                        </ul>
+                    </article>
+
+                    <article class="rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-blue-700 sm:text-sm dark:text-blue-300">For Security Guards</p>
+                        <h2 class="mt-2 text-lg font-bold text-blue-950 sm:mt-3 sm:text-xl dark:text-white">Complete patrol work from a mobile phone</h2>
+                        <ul class="mt-4 space-y-2 text-xs leading-5 text-slate-600 sm:mt-5 sm:space-y-3 sm:text-sm sm:leading-6 dark:text-slate-300">
+                            <li class="flex gap-3">
+                                <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500"></span>
+                                Keep profile information complete, including contact details, assigned shift, and active account status.
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-sky-500"></span>
+                                Scan checkpoints, answer checklist items, take proof photos, and submit valid patrol entries.
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-rose-500"></span>
+                                File incident reports with details, priority, location, evidence, and PDF access for completed records.
+                            </li>
+                        </ul>
+                    </article>
+                </div>
+            </section>
+
+            <section class="border-y border-blue-100 bg-slate-100 py-8 sm:py-14 dark:border-slate-800 dark:bg-slate-900">
+                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div class="grid gap-5 sm:gap-8 lg:grid-cols-[0.9fr_1.5fr] lg:items-start">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-blue-700 sm:text-sm dark:text-blue-300">System Records</p>
+                            <h2 class="mt-2 text-2xl font-bold tracking-tight text-blue-950 sm:mt-3 sm:text-3xl dark:text-white">Important details stay traceable</h2>
+                            <p class="mt-3 text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7 dark:text-slate-300">
+                                Each record supports daily patrol monitoring and review, from the guard profile setup to the final report PDF.
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 sm:gap-4">
+                            <article class="rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-950">
+                                <h3 class="text-sm font-bold text-blue-950 sm:text-base dark:text-white">Profile Completion</h3>
+                                <p class="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6 dark:text-slate-300">Shows account details, assigned RFID card, assigned shift, and active status.</p>
+                            </article>
+
+                            <article class="rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-950">
+                                <h3 class="text-sm font-bold text-blue-950 sm:text-base dark:text-white">RFID Checkpoints</h3>
+                                <p class="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6 dark:text-slate-300">Keeps checkpoint names, locations, reader IDs, and active status organized.</p>
+                            </article>
+
+                            <article class="rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-950">
+                                <h3 class="text-sm font-bold text-blue-950 sm:text-base dark:text-white">Patrol Logs</h3>
+                                <p class="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6 dark:text-slate-300">Stores guard identity, checkpoint, scan time, checklist answers, and proof photo records.</p>
+                            </article>
+
+                            <article class="rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-950">
+                                <h3 class="text-sm font-bold text-blue-950 sm:text-base dark:text-white">Incident Reports</h3>
+                                <p class="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6 dark:text-slate-300">Includes priority, location, description, evidence, status, and PDF output.</p>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-14 lg:px-8">
+                <div class="grid gap-4 sm:gap-6 lg:grid-cols-[1.3fr_0.7fr] lg:items-center">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 sm:text-sm dark:text-emerald-300">Mobile Ready</p>
+                        <h2 class="mt-2 text-2xl font-bold tracking-tight text-blue-950 sm:mt-3 sm:text-3xl dark:text-white">Installable for faster phone access</h2>
+                        <p class="mt-3 text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7 dark:text-slate-300">
+                            The homepage includes a PWA install button so guards and supervisors can open the system from the phone home screen when the browser supports installation.
+                        </p>
+                    </div>
+
+                    <div class="rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+                        <x-application-logo class="mx-auto h-16 w-16 sm:h-20 sm:w-20" />
+                        <button
+                            type="button"
+                            class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-80 sm:mt-5 sm:px-5 sm:py-3 dark:focus:ring-offset-slate-900"
+                            @click="install"
+                            :disabled="isBusy()"
+                            :aria-busy="isBusy().toString()"
+                        >
+                            <svg x-show="! isBusy() && installLabel() !== 'Open App'" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M12 3v10m0 0 4-4m-4 4-4-4M5 15v3a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <svg x-show="isBusy()" x-cloak class="h-5 w-5 shrink-0 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <circle class="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3"></circle>
+                                <path class="opacity-90" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
+                            </svg>
+                            <svg x-show="! isBusy() && installLabel() === 'Open App'" x-cloak class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M5 12h12m0 0-4-4m4 4-4 4M5 5h14v14H5V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <span x-text="installLabel()">Install Now</span>
+                        </button>
+
+                        <p x-cloak x-show="message" x-text="message" class="mt-3 text-center text-xs font-medium text-slate-500 sm:text-sm dark:text-slate-400"></p>
+                    </div>
+                </div>
+            </section>
+
         </main>
 
-        <footer class="border-t border-blue-100 bg-white dark:border-slate-800 dark:bg-slate-950">
-            <div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-6 text-sm text-slate-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8 dark:text-slate-400">
-                <p class="font-semibold text-blue-950 dark:text-white">SLSU Bontoc Patrol</p>
-                <p>{{ now()->year }} Southern Leyte State University - Bontoc Campus</p>
+        <footer class="border-t border-blue-100 bg-white dark:border-slate-800 dark:bg-slate-900">
+            <div class="mx-auto grid max-w-7xl gap-8 px-4 py-9 sm:px-6 md:grid-cols-[1fr_1.6fr] md:items-start lg:px-8">
+                <div>
+                    <p class="text-2xl font-bold tracking-tight text-blue-950 dark:text-white">SLSU Bontoc Patrol</p>
+                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">{{ now()->year }} All rights reserved.</p>
+                </div>
+
+                <div class="grid gap-x-8 gap-y-3 border-blue-100 md:grid-cols-2 md:border-l md:pl-8 dark:border-slate-700">
+                    <p class="text-base font-semibold text-blue-950 dark:text-white">Carmela B. Hernandez <span class="text-sm font-medium text-slate-500 dark:text-slate-400">(Lead Programmer)</span></p>
+                    <p class="text-base font-semibold text-blue-950 dark:text-white">Cherry Ann R. Himo <span class="text-sm font-medium text-slate-500 dark:text-slate-400">(System Analyst)</span></p>
+                    <p class="text-base font-semibold text-blue-950 dark:text-white">Clarice R. Gumapi <span class="text-sm font-medium text-slate-500 dark:text-slate-400">(Documentation Specialist)</span></p>
+                    <p class="text-base font-semibold text-blue-950 dark:text-white">Karyl G. Viure <span class="text-sm font-medium text-slate-500 dark:text-slate-400">(Quality Assurance)</span></p>
+                </div>
             </div>
         </footer>
+
     </body>
 </html>
