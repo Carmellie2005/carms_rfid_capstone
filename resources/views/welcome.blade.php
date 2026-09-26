@@ -30,13 +30,6 @@
             ? (auth()->user()->role === 'guard' ? route('patrol.scan') : route('dashboard'))
             : route('login');
         $pwaStartHref = Route::has('login') ? route('login') : url('/');
-
-        $headerMenuItems = [
-            ['label' => 'System Flow', 'href' => '#system-flow'],
-            ['label' => 'Users', 'href' => '#users'],
-            ['label' => 'Records', 'href' => '#records'],
-            ['label' => 'Install App', 'href' => '#install-app'],
-        ];
     @endphp
     <body x-data="pwaInstallPrompt({ appName: 'SLSU Bontoc Patrol', startUrl: @js($pwaStartHref) })" class="bg-slate-50 font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
         <x-pwa-launch-splash />
@@ -97,7 +90,7 @@
             </section>
         </div>
 
-        <header x-data="{ mobileMenuOpen: false }" class="sticky top-0 z-30 border-b border-blue-100 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
+        <header class="sticky top-0 z-30 border-b border-blue-100 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
             <nav class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8" aria-label="Main navigation">
                 <a href="{{ url('/') }}" class="flex min-w-0 items-center gap-3">
                     <x-application-logo class="h-10 w-10 shrink-0 sm:h-11 sm:w-11" />
@@ -106,14 +99,6 @@
                         <span class="block truncate text-xs font-medium text-blue-600 dark:text-blue-300">Security Monitoring</span>
                     </span>
                 </a>
-
-                <div class="hidden items-center gap-1 lg:flex">
-                    @foreach ($headerMenuItems as $item)
-                        <a href="{{ $item['href'] }}" class="rounded-md px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-blue-200">
-                            {{ $item['label'] }}
-                        </a>
-                    @endforeach
-                </div>
 
                 <div class="flex items-center gap-2 sm:gap-3">
                     <x-theme-toggle />
@@ -129,40 +114,8 @@
                             </a>
                         @endauth
                     @endif
-
-                    <button
-                        type="button"
-                        class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-blue-100 bg-white text-blue-950 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-100 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950 lg:hidden"
-                        @click="mobileMenuOpen = ! mobileMenuOpen"
-                        :aria-expanded="mobileMenuOpen.toString()"
-                        aria-controls="homepage-mobile-menu"
-                        aria-label="Toggle navigation menu"
-                    >
-                        <svg x-show="! mobileMenuOpen" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                            <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                        </svg>
-                        <svg x-show="mobileMenuOpen" x-cloak class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                            <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                        </svg>
-                    </button>
                 </div>
             </nav>
-
-            <div
-                id="homepage-mobile-menu"
-                x-show="mobileMenuOpen"
-                x-cloak
-                x-transition.opacity.duration.150ms
-                class="border-t border-blue-50 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950 lg:hidden"
-            >
-                <div class="mx-auto grid max-w-7xl gap-2">
-                    @foreach ($headerMenuItems as $item)
-                        <a href="{{ $item['href'] }}" class="rounded-md border border-blue-100 px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-900" @click="mobileMenuOpen = false">
-                            {{ $item['label'] }}
-                        </a>
-                    @endforeach
-                </div>
-            </div>
         </header>
 
         <main>
