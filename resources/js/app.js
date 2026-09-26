@@ -1939,7 +1939,7 @@ Alpine.data('dashboardCharts', (analytics) => ({
                         padding: compact ? 10 : 12,
                         usePointStyle: true,
                         font: {
-                            family: 'Figtree',
+                            family: 'Poppins',
                             size: compact ? 10 : 12,
                         },
                     },
@@ -1948,10 +1948,10 @@ Alpine.data('dashboardCharts', (analytics) => ({
                     backgroundColor: '#0f172a',
                     padding: 12,
                     titleFont: {
-                        family: 'Figtree',
+                        family: 'Poppins',
                     },
                     bodyFont: {
-                        family: 'Figtree',
+                        family: 'Poppins',
                     },
                 },
             },
@@ -1972,7 +1972,7 @@ Alpine.data('dashboardCharts', (analytics) => ({
                     maxRotation: 0,
                     maxTicksLimit: compact ? 4 : 8,
                     font: {
-                        family: 'Figtree',
+                        family: 'Poppins',
                         size: compact ? 10 : 12,
                     },
                 },
@@ -1988,7 +1988,7 @@ Alpine.data('dashboardCharts', (analytics) => ({
                     maxTicksLimit: compact ? 5 : 8,
                     stepSize: 1,
                     font: {
-                        family: 'Figtree',
+                        family: 'Poppins',
                         size: compact ? 10 : 12,
                     },
                 },
