@@ -170,14 +170,25 @@
 
             <section id="system-flow" class="border-b border-blue-100 bg-white dark:border-slate-800 dark:bg-slate-950">
                 <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-14 lg:px-8">
-                    <div class="max-w-3xl">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 sm:text-sm dark:text-emerald-300">System Flow</p>
-                        <h2 class="mt-2 text-2xl font-bold tracking-tight text-blue-950 sm:mt-3 sm:text-3xl dark:text-white">From guard setup to verified patrol records</h2>
-                        <p class="mt-3 text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7 dark:text-slate-300">
-                            This system is for the patrol and incident monitoring needs of Southern Leyte State University - Bontoc Campus, handled by the Security and Safety Services Office. It connects guard profiles, RFID checkpoint scans, checklist photo proof, checklist responses, and incident reports in one place.
-                        </p>
-                        <div class="mt-4 rounded-md border border-blue-100 bg-blue-50/70 p-3 text-xs font-semibold leading-5 text-blue-950 sm:mt-5 sm:p-4 sm:text-sm sm:leading-6 dark:border-slate-800 dark:bg-slate-900 dark:text-blue-100">
-                            Built for SLSU Bontoc Campus operations and managed by the Security and Safety Services Office.
+                    <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(14rem,0.38fr)] lg:items-center">
+                        <div class="max-w-3xl">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 sm:text-sm dark:text-emerald-300">System Flow</p>
+                            <h2 class="mt-2 text-2xl font-bold tracking-tight text-blue-950 sm:mt-3 sm:text-3xl dark:text-white">From guard setup to verified patrol records</h2>
+                            <p class="mt-3 text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7 dark:text-slate-300">
+                                This system is for the patrol and incident monitoring needs of Southern Leyte State University - Bontoc Campus, handled by the Security and Safety Services Office. It connects guard profiles, RFID checkpoint scans, checklist photo proof, checklist responses, and incident reports in one place.
+                            </p>
+                            <div class="mt-4 rounded-md border border-blue-100 bg-blue-50/70 p-3 text-xs font-semibold leading-5 text-blue-950 sm:mt-5 sm:p-4 sm:text-sm sm:leading-6 dark:border-slate-800 dark:bg-slate-900 dark:text-blue-100">
+                                Built for SLSU Bontoc Campus operations and managed by the Security and Safety Services Office.
+                            </div>
+                        </div>
+
+                        <div class="hidden justify-center lg:flex lg:justify-end">
+                            <img
+                                src="{{ asset('images/kingfisher-mascot.png') }}"
+                                alt="SLSU Kingfisher mascot"
+                                class="max-h-72 w-auto object-contain drop-shadow-xl xl:max-h-80"
+                                loading="lazy"
+                            >
                         </div>
                     </div>
 
