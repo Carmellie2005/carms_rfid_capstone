@@ -45,6 +45,48 @@ class RfidEnrollmentTest extends TestCase
             ]);
     }
 
+    public function test_supervisor_can_prepare_and_read_only_newer_enrollment_scans(): void
+    {
+        $supervisor = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'supervisor',
+        ]);
+
+        $oldScan = RfidEnrollmentScan::create([
+            'rfid_uid' => 'OLD12345',
+            'device_uid' => 'ESP32-REG-01',
+            'captured_at' => now()->subMinute(),
+        ]);
+
+        $prepareResponse = $this
+            ->actingAs($supervisor)
+            ->getJson(route('guards.rfid-enrollment.latest', [
+                'prepare' => true,
+            ]))
+            ->assertOk()
+            ->assertJson([
+                'rfid_uid' => null,
+                'latest_id' => $oldScan->id,
+            ]);
+
+        RfidEnrollmentScan::create([
+            'rfid_uid' => '8049C4CC',
+            'device_uid' => 'ESP32-REG-01',
+            'captured_at' => now(),
+        ]);
+
+        $this
+            ->actingAs($supervisor)
+            ->getJson(route('guards.rfid-enrollment.latest', [
+                'after_id' => $prepareResponse->json('latest_id'),
+            ]))
+            ->assertOk()
+            ->assertJson([
+                'rfid_uid' => '8049C4CC',
+                'device_uid' => 'ESP32-REG-01',
+            ]);
+    }
+
     public function test_only_supervisors_can_read_latest_enrollment_uid(): void
     {
         $guard = User::factory()->create([

@@ -1598,6 +1598,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
     rfidEnrollmentLatestUrl: config.rfidEnrollmentLatestUrl || '',
     rfidEnrollmentInputId: '',
     rfidEnrollmentStartedAt: '',
+    rfidEnrollmentAfterId: '',
     rfidEnrollmentMessage: '',
     rfidEnrollmentBusy: false,
     rfidEnrollmentTimer: null,
@@ -1766,7 +1767,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         this.updateBodyScrollLock();
     },
 
-    startRfidEnrollment(inputId) {
+    async startRfidEnrollment(inputId) {
         if (! this.rfidEnrollmentLatestUrl || ! inputId) {
             this.rfidEnrollmentMessage = 'RFID enrollment is unavailable right now.';
             return;
@@ -1774,19 +1775,48 @@ Alpine.data('guardManagementPage', (config = {}) => ({
 
         this.stopRfidEnrollment();
         this.rfidEnrollmentInputId = inputId;
-        this.rfidEnrollmentStartedAt = new Date().toISOString();
-        this.rfidEnrollmentMessage = 'Waiting for card tap on enrollment reader...';
+        this.rfidEnrollmentStartedAt = new Date(Date.now() - 15000).toISOString();
+        this.rfidEnrollmentAfterId = '';
+        this.rfidEnrollmentMessage = 'Preparing enrollment reader...';
         this.rfidEnrollmentBusy = true;
 
-        this.pollRfidEnrollment();
-        this.rfidEnrollmentTimer = window.setInterval(() => this.pollRfidEnrollment(), 1200);
-        this.rfidEnrollmentTimeoutTimer = window.setTimeout(() => {
-            if (this.rfidEnrollmentBusy && this.rfidEnrollmentInputId === inputId) {
-                this.rfidEnrollmentBusy = false;
-                this.clearRfidEnrollmentTimers();
-                this.rfidEnrollmentMessage = 'No card captured. Tap Scan Card to try again.';
+        try {
+            const url = new URL(this.rfidEnrollmentLatestUrl, window.location.origin);
+            url.searchParams.set('prepare', '1');
+
+            const response = await fetch(url, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (! response.ok) {
+                throw new Error(data.message || 'RFID enrollment reader could not be prepared.');
             }
-        }, 45000);
+
+            this.rfidEnrollmentAfterId = Number.isFinite(Number(data.latest_id))
+                ? String(Number(data.latest_id))
+                : '';
+            this.rfidEnrollmentStartedAt = data.server_time || this.rfidEnrollmentStartedAt;
+            this.rfidEnrollmentMessage = 'Waiting for card tap on enrollment reader...';
+
+            this.pollRfidEnrollment();
+            this.rfidEnrollmentTimer = window.setInterval(() => this.pollRfidEnrollment(), 1200);
+            this.rfidEnrollmentTimeoutTimer = window.setTimeout(() => {
+                if (this.rfidEnrollmentBusy && this.rfidEnrollmentInputId === inputId) {
+                    this.rfidEnrollmentBusy = false;
+                    this.clearRfidEnrollmentTimers();
+                    this.rfidEnrollmentMessage = 'No card captured. Tap Scan Card to try again.';
+                }
+            }, 45000);
+        } catch {
+            this.rfidEnrollmentBusy = false;
+            this.clearRfidEnrollmentTimers();
+            this.rfidEnrollmentMessage = 'Could not check the enrollment reader right now.';
+        }
     },
 
     async pollRfidEnrollment() {
@@ -1796,7 +1826,11 @@ Alpine.data('guardManagementPage', (config = {}) => ({
 
         try {
             const url = new URL(this.rfidEnrollmentLatestUrl, window.location.origin);
-            url.searchParams.set('since', this.rfidEnrollmentStartedAt);
+            if (this.rfidEnrollmentAfterId !== '') {
+                url.searchParams.set('after_id', this.rfidEnrollmentAfterId);
+            } else {
+                url.searchParams.set('since', this.rfidEnrollmentStartedAt);
+            }
 
             const response = await fetch(url, {
                 headers: {
@@ -1843,6 +1877,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         this.rfidEnrollmentBusy = false;
         this.rfidEnrollmentInputId = '';
         this.rfidEnrollmentStartedAt = '';
+        this.rfidEnrollmentAfterId = '';
         this.rfidEnrollmentMessage = '';
     },
 

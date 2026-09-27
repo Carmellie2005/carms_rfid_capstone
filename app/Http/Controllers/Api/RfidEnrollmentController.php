@@ -38,7 +38,7 @@ class RfidEnrollmentController extends Controller
         RfidEnrollmentScan::create([
             'rfid_uid' => $rfidUid,
             'device_uid' => $deviceUid,
-            'captured_at' => $capturedAt->toIso8601String(),
+            'captured_at' => $capturedAt,
         ]);
 
         return response()->json([
