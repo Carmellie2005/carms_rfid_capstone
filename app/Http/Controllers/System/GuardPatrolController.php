@@ -12,6 +12,7 @@ use App\Support\AuditLogger;
 use App\Support\ImageCompressor;
 use App\Support\PatrolChecklist;
 use App\Support\PatrolSchedule;
+use App\Services\SupervisorEmailNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -90,7 +91,7 @@ class GuardPatrolController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, SupervisorEmailNotifier $emailNotifier): RedirectResponse
     {
         $user = $request->user();
         $guard = $user?->guardProfile;
@@ -251,6 +252,8 @@ class GuardPatrolController extends Controller
                 'category' => $incidentReport->category,
                 'priority' => $incidentReport->priority,
             ]);
+
+            $emailNotifier->sendIncidentSubmitted($incidentReport);
         }
 
         return redirect()->route('patrol.scan')->with('status', 'Checkpoint visit recorded successfully.');

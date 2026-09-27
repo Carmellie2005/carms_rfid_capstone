@@ -112,6 +112,8 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    'supervisor_alert_to' => env('SUPERVISOR_ALERT_EMAIL'),
+
     /*
     |--------------------------------------------------------------------------
     | Markdown Mail Settings
