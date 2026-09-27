@@ -1600,6 +1600,8 @@ Alpine.data('guardManagementPage', (config = {}) => ({
     rfidEnrollmentStartedAt: '',
     rfidEnrollmentAfterId: '',
     rfidEnrollmentMessage: '',
+    rfidEnrollmentConflictInputId: '',
+    rfidEnrollmentConflictMessage: '',
     rfidEnrollmentBusy: false,
     rfidEnrollmentTimer: null,
     rfidEnrollmentTimeoutTimer: null,
@@ -1777,6 +1779,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         this.rfidEnrollmentInputId = inputId;
         this.rfidEnrollmentStartedAt = new Date(Date.now() - 15000).toISOString();
         this.rfidEnrollmentAfterId = '';
+        this.clearRfidEnrollmentConflict(inputId);
         this.rfidEnrollmentMessage = 'Preparing enrollment reader...';
         this.rfidEnrollmentBusy = true;
 
@@ -1846,7 +1849,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
             }
 
             if (data.rfid_uid) {
-                this.applyRfidEnrollmentUid(data.rfid_uid, data.device_uid);
+                this.applyRfidEnrollmentUid(data.rfid_uid, data.device_uid, data.assigned_guard || null);
             }
         } catch {
             this.rfidEnrollmentBusy = false;
@@ -1855,8 +1858,11 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         }
     },
 
-    applyRfidEnrollmentUid(rfidUid, deviceUid = null) {
+    applyRfidEnrollmentUid(rfidUid, deviceUid = null, assignedGuard = null) {
         const input = document.getElementById(this.rfidEnrollmentInputId);
+        const assignedGuardId = assignedGuard?.id ? String(assignedGuard.id) : '';
+        const currentGuardId = input?.dataset.currentGuardId ? String(input.dataset.currentGuardId) : '';
+        const hasAssignedGuardConflict = assignedGuardId && assignedGuardId !== currentGuardId;
 
         if (input) {
             input.value = rfidUid;
@@ -1867,6 +1873,18 @@ Alpine.data('guardManagementPage', (config = {}) => ({
 
         this.rfidEnrollmentBusy = false;
         this.clearRfidEnrollmentTimers();
+
+        if (hasAssignedGuardConflict) {
+            const guardLabel = [assignedGuard.name, assignedGuard.employee_no ? `(${assignedGuard.employee_no})` : '']
+                .filter(Boolean)
+                .join(' ');
+
+            this.rfidEnrollmentConflictInputId = this.rfidEnrollmentInputId;
+            this.rfidEnrollmentConflictMessage = `This RFID card is already assigned to ${guardLabel}. Please use another card or update that guard profile.`;
+        } else {
+            this.clearRfidEnrollmentConflict(this.rfidEnrollmentInputId);
+        }
+
         this.rfidEnrollmentMessage = deviceUid
             ? `Captured ${rfidUid} from ${deviceUid}.`
             : `Captured ${rfidUid}.`;
@@ -1879,6 +1897,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         this.rfidEnrollmentStartedAt = '';
         this.rfidEnrollmentAfterId = '';
         this.rfidEnrollmentMessage = '';
+        this.clearRfidEnrollmentConflict();
     },
 
     clearRfidEnrollmentTimers() {
@@ -1899,6 +1918,23 @@ Alpine.data('guardManagementPage', (config = {}) => ({
 
     rfidEnrollmentStatus(inputId) {
         return this.rfidEnrollmentInputId === inputId ? this.rfidEnrollmentMessage : '';
+    },
+
+    clearRfidEnrollmentConflict(inputId = null) {
+        if (inputId && this.rfidEnrollmentConflictInputId && this.rfidEnrollmentConflictInputId !== inputId) {
+            return;
+        }
+
+        this.rfidEnrollmentConflictInputId = '';
+        this.rfidEnrollmentConflictMessage = '';
+    },
+
+    rfidEnrollmentConflict(inputId) {
+        return this.rfidEnrollmentConflictInputId === inputId ? this.rfidEnrollmentConflictMessage : '';
+    },
+
+    hasRfidEnrollmentConflictFor(inputId) {
+        return this.rfidEnrollmentConflictInputId === inputId && Boolean(this.rfidEnrollmentConflictMessage);
     },
 
     updateBodyScrollLock() {

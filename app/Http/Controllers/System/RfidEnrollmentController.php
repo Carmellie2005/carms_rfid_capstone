@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\System;
 
 use App\Http\Controllers\Controller;
+use App\Models\Guard;
 use App\Models\RfidEnrollmentScan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -56,6 +57,24 @@ class RfidEnrollmentController extends Controller
             'device_uid' => $latest->device_uid,
             'captured_at' => $capturedAt->toIso8601String(),
             'latest_id' => max($latestId, $latest->id),
+            'assigned_guard' => $this->assignedGuardPayload($latest->rfid_uid),
         ]);
+    }
+
+    private function assignedGuardPayload(string $rfidUid): ?array
+    {
+        $guard = Guard::query()
+            ->where('rfid_uid', strtoupper(trim($rfidUid)))
+            ->first(['id', 'employee_no', 'name']);
+
+        if (! $guard) {
+            return null;
+        }
+
+        return [
+            'id' => $guard->id,
+            'employee_no' => $guard->employee_no,
+            'name' => $guard->name,
+        ];
     }
 }

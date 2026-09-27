@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Guard;
 use App\Models\PatrolLog;
 use App\Models\RfidEnrollmentScan;
 use App\Models\User;
@@ -85,6 +86,44 @@ class RfidEnrollmentTest extends TestCase
                 'rfid_uid' => '8049C4CC',
                 'device_uid' => 'ESP32-REG-01',
             ]);
+    }
+
+    public function test_latest_enrollment_scan_reports_assigned_guard(): void
+    {
+        $supervisor = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'supervisor',
+        ]);
+
+        $guardUser = User::factory()->create([
+            'role' => 'guard',
+            'username' => 'assigned.guard',
+        ]);
+
+        $guard = Guard::create([
+            'user_id' => $guardUser->id,
+            'employee_no' => 'SG-ASSIGNED',
+            'name' => 'Assigned Guard',
+            'email' => 'assigned.guard@example.com',
+            'phone' => '09171234567',
+            'rfid_uid' => '8049C4CC',
+            'shift' => 'Night Shift',
+            'status' => 'active',
+        ]);
+
+        RfidEnrollmentScan::create([
+            'rfid_uid' => '8049C4CC',
+            'device_uid' => 'ESP32-REG-01',
+            'captured_at' => now(),
+        ]);
+
+        $this
+            ->actingAs($supervisor)
+            ->getJson(route('guards.rfid-enrollment.latest'))
+            ->assertOk()
+            ->assertJsonPath('assigned_guard.id', $guard->id)
+            ->assertJsonPath('assigned_guard.employee_no', 'SG-ASSIGNED')
+            ->assertJsonPath('assigned_guard.name', 'Assigned Guard');
     }
 
     public function test_only_supervisors_can_read_latest_enrollment_uid(): void

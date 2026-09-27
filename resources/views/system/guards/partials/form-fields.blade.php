@@ -47,7 +47,7 @@
     <div>
         <label for="{{ $fieldPrefix }}_rfid_uid" class="sr-only">RFID UID</label>
         <div class="mt-1 flex gap-2">
-            <input id="{{ $fieldPrefix }}_rfid_uid" name="rfid_uid" value="{{ $valueFor('rfid_uid', $guard->rfid_uid) }}" placeholder="F33C8D37" class="block min-w-0 flex-1 rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required>
+            <input id="{{ $fieldPrefix }}_rfid_uid" name="rfid_uid" value="{{ $valueFor('rfid_uid', $guard->rfid_uid) }}" placeholder="F33C8D37" data-current-guard-id="{{ $guard->exists ? $guard->id : '' }}" x-on:input="clearRfidEnrollmentConflict('{{ $fieldPrefix }}_rfid_uid')" x-bind:class="hasRfidEnrollmentConflictFor('{{ $fieldPrefix }}_rfid_uid') ? 'border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:text-red-100' : ''" class="block min-w-0 flex-1 rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required>
             <button
                 type="button"
                 x-on:click="startRfidEnrollment('{{ $fieldPrefix }}_rfid_uid')"
@@ -58,6 +58,7 @@
             </button>
         </div>
         <p x-show="rfidEnrollmentStatus('{{ $fieldPrefix }}_rfid_uid')" x-text="rfidEnrollmentStatus('{{ $fieldPrefix }}_rfid_uid')" class="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400"></p>
+        <p x-show="rfidEnrollmentConflict('{{ $fieldPrefix }}_rfid_uid')" x-text="rfidEnrollmentConflict('{{ $fieldPrefix }}_rfid_uid')" class="mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 dark:border-red-400/50 dark:bg-red-950/40 dark:text-red-200"></p>
         <x-input-error :messages="$errorFor('rfid_uid')" class="mt-2" />
     </div>
 

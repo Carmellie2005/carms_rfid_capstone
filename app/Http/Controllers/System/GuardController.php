@@ -198,6 +198,12 @@ class GuardController extends Controller
             ? ['nullable', 'confirmed', Password::min(8)]
             : ['required', 'confirmed', Password::min(8)];
 
+        if ($request->filled('rfid_uid')) {
+            $request->merge([
+                'rfid_uid' => strtoupper(trim((string) $request->input('rfid_uid'))),
+            ]);
+        }
+
         $data = $request->validate([
             'employee_no' => ['required', 'string', 'max:50', Rule::unique('guards', 'employee_no')->ignore($guardId)],
             'name' => ['required', 'string', 'max:255'],
@@ -208,6 +214,8 @@ class GuardController extends Controller
             'notes' => ['nullable', 'string', 'max:2000'],
             'username' => ['required', 'string', 'max:255', new UsernameOrEmail, Rule::unique('users', 'username')->ignore($userId), Rule::unique('users', 'email')->ignore($userId)],
             'password' => $passwordRules,
+        ], [
+            'rfid_uid.unique' => 'This RFID card is already assigned to another guard. Please use another card or update the existing guard profile.',
         ]);
 
         $username = Str::lower(trim($data['username']));

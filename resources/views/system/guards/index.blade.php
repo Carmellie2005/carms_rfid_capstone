@@ -221,7 +221,7 @@
                                 <div>
                                     <label for="create_rfid_uid" class="sr-only">RFID UID</label>
                                     <div class="mt-1 flex gap-2">
-                                        <input id="create_rfid_uid" name="rfid_uid" value="{{ old('rfid_uid', $newGuard->rfid_uid) }}" placeholder="F33C8D37" class="block min-w-0 flex-1 rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required>
+                                        <input id="create_rfid_uid" name="rfid_uid" value="{{ old('rfid_uid', $newGuard->rfid_uid) }}" placeholder="F33C8D37" data-current-guard-id="" x-on:input="clearRfidEnrollmentConflict('create_rfid_uid')" x-bind:class="hasRfidEnrollmentConflictFor('create_rfid_uid') ? 'border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:text-red-100' : ''" class="block min-w-0 flex-1 rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required>
                                         <button
                                             type="button"
                                             x-on:click="startRfidEnrollment('create_rfid_uid')"
@@ -232,6 +232,7 @@
                                         </button>
                                     </div>
                                     <p x-show="rfidEnrollmentStatus('create_rfid_uid')" x-text="rfidEnrollmentStatus('create_rfid_uid')" class="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400"></p>
+                                    <p x-show="rfidEnrollmentConflict('create_rfid_uid')" x-text="rfidEnrollmentConflict('create_rfid_uid')" class="mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 dark:border-red-400/50 dark:bg-red-950/40 dark:text-red-200"></p>
                                     <x-input-error :messages="$errors->get('rfid_uid')" class="mt-2" />
                                 </div>
                                 <div>
@@ -320,7 +321,7 @@
                             <button type="button" x-on:click="closeCreateGuardModal()" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900">
                                 Cancel
                             </button>
-                            <button type="submit" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            <button type="submit" x-bind:disabled="hasRfidEnrollmentConflictFor('create_rfid_uid')" x-bind:class="hasRfidEnrollmentConflictFor('create_rfid_uid') ? 'cursor-not-allowed opacity-60' : ''" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                                 Create Guard Account
                             </button>
                         </footer>
@@ -390,7 +391,7 @@
                                 <button type="button" x-on:click="closeEditGuardModal()" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900">
                                     Cancel
                                 </button>
-                                <button type="submit" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <button type="submit" x-bind:disabled="hasRfidEnrollmentConflictFor('edit_{{ $guard->id }}_rfid_uid')" x-bind:class="hasRfidEnrollmentConflictFor('edit_{{ $guard->id }}_rfid_uid') ? 'cursor-not-allowed opacity-60' : ''" class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                                     Save Changes
                                 </button>
                             </footer>

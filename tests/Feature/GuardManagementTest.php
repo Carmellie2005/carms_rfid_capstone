@@ -97,6 +97,44 @@ class GuardManagementTest extends TestCase
         $this->assertSame('Night Shift', $guard->refresh()->shift);
     }
 
+    public function test_supervisor_cannot_assign_rfid_card_already_used_by_another_guard(): void
+    {
+        $supervisor = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'supervisor',
+        ]);
+
+        Guard::create([
+            'user_id' => User::factory()->create(['role' => 'guard'])->id,
+            'employee_no' => 'SG-EXISTING',
+            'name' => 'Existing Guard',
+            'email' => 'existing.guard@example.com',
+            'phone' => '09171234567',
+            'rfid_uid' => '8049C4CC',
+            'shift' => 'Night Shift',
+            'status' => 'active',
+        ]);
+
+        $this
+            ->actingAs($supervisor)
+            ->post(route('guards.store'), [
+                'employee_no' => 'SG-DUPLICATE',
+                'name' => 'Duplicate Guard',
+                'email' => 'duplicate.guard@example.com',
+                'phone' => '09170000000',
+                'rfid_uid' => '8049c4cc',
+                'shift' => 'Night Shift',
+                'status' => 'active',
+                'notes' => null,
+                'username' => 'duplicate.guard',
+                'password' => 'password',
+                'password_confirmation' => 'password',
+            ])
+            ->assertSessionHasErrors([
+                'rfid_uid' => 'This RFID card is already assigned to another guard. Please use another card or update the existing guard profile.',
+            ]);
+    }
+
     public function test_supervisor_password_reset_requires_guard_to_change_password(): void
     {
         $supervisor = User::factory()->create([
