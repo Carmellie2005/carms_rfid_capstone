@@ -12,7 +12,6 @@ use App\Support\AuditLogger;
 use App\Support\ImageCompressor;
 use App\Support\PatrolChecklist;
 use App\Support\PatrolSchedule;
-use App\Services\WebPushNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -252,8 +251,6 @@ class GuardPatrolController extends Controller
                 'category' => $incidentReport->category,
                 'priority' => $incidentReport->priority,
             ]);
-
-            app(WebPushNotifier::class)->sendIncidentSubmitted($incidentReport);
         }
 
         return redirect()->route('patrol.scan')->with('status', 'Checkpoint visit recorded successfully.');

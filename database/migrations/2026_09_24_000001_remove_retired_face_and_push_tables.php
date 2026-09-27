@@ -62,20 +62,5 @@ return new class extends Migration
                 $table->timestamps();
             });
         }
-
-        if (! Schema::hasTable('push_subscriptions')) {
-            Schema::create('push_subscriptions', function (Blueprint $table) {
-                $table->id();
-                $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-                $table->text('endpoint');
-                $table->string('endpoint_hash')->unique();
-                $table->text('public_key');
-                $table->text('auth_token');
-                $table->string('content_encoding')->default('aes128gcm');
-                $table->text('user_agent')->nullable();
-                $table->timestamp('last_used_at')->nullable();
-                $table->timestamps();
-            });
-        }
     }
 };

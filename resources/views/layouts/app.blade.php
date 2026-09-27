@@ -55,7 +55,6 @@
             $notificationCount = \App\Support\NotificationFeed::unreadCountFor($user);
             $notificationPreviewLimit = \App\Support\NotificationFeed::DROPDOWN_LIMIT;
             $notificationItems = \App\Support\NotificationFeed::unreadItemsFor($user, $notificationPreviewLimit);
-            $webPushPublicKey = $isSupervisor ? config('services.webpush.vapid_public_key') : null;
         @endphp
 
         <div
@@ -270,36 +269,6 @@
                                         </div>
                                     </div>
 
-                                    @if ($isSupervisor)
-                                        <div
-                                            x-data="webPushNotifications({
-                                                publicKey: @js($webPushPublicKey),
-                                                configUrl: @js(route('push-notifications.config')),
-                                                subscribeUrl: @js(route('push-notifications.subscribe')),
-                                                unsubscribeUrl: @js(route('push-notifications.unsubscribe')),
-                                            })"
-                                            class="shrink-0 border-b border-blue-100 px-3 py-3 dark:border-slate-800 sm:px-4"
-                                        >
-                                            <div class="flex items-center justify-between gap-3">
-                                                <div class="min-w-0">
-                                                    <p class="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Web push alerts</p>
-                                                    <p class="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400" x-text="statusLabel()"></p>
-                                                    <p x-show="message" x-cloak class="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400" x-text="message"></p>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    x-on:click="toggle()"
-                                                    x-bind:disabled="! canToggle()"
-                                                    class="inline-flex h-9 shrink-0 items-center justify-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
-                                                    x-bind:class="enabled ? 'bg-blue-700 text-white hover:bg-blue-800 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-500' : ''"
-                                                    x-text="buttonLabel()"
-                                                >
-                                                    Enable Alerts
-                                                </button>
-                                            </div>
-                                        </div>
-                                    @endif
-
                                     <div class="mobile-scroll-area min-h-0 flex-1 overflow-y-auto border-b border-blue-100 dark:border-slate-800">
                                         @forelse ($notificationItems as $item)
                                             <div class="border-b border-blue-50 last:border-b-0 dark:border-slate-800">
@@ -464,74 +433,6 @@
                 ></iframe>
             </section>
 
-            @if ($isSupervisor)
-                <div
-                    x-data="webPushNotifications({
-                        publicKey: @js($webPushPublicKey),
-                        configUrl: @js(route('push-notifications.config')),
-                        subscribeUrl: @js(route('push-notifications.subscribe')),
-                        unsubscribeUrl: @js(route('push-notifications.unsubscribe')),
-                        autoPrompt: true,
-                        onlyPromptWhenInstalled: false,
-                        promptStorageKey: 'slsu-web-push-prompt-dismissed-at-v2',
-                    })"
-                    x-show="promptOpen"
-                    x-cloak
-                    x-transition.opacity.duration.150ms
-                    x-on:keydown.escape.window="dismissPrompt()"
-                    class="fixed inset-0 z-[95] flex items-end justify-center bg-slate-950/45 p-3 backdrop-blur-sm sm:items-center sm:p-4"
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby="web-push-prompt-title"
-                    x-on:click.self="dismissPrompt()"
-                >
-                    <section
-                        x-show="promptOpen"
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="translate-y-4 opacity-0 sm:scale-[0.98]"
-                        x-transition:enter-end="translate-y-0 opacity-100 sm:scale-100"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="translate-y-0 opacity-100 sm:scale-100"
-                        x-transition:leave-end="translate-y-4 opacity-0 sm:scale-[0.98]"
-                        class="w-full max-w-md overflow-hidden rounded-lg border border-blue-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
-                    >
-                        <div class="flex items-start gap-3 border-b border-blue-100 px-4 py-4 dark:border-slate-800">
-                            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700 ring-1 ring-blue-100 dark:bg-blue-950/45 dark:text-blue-200 dark:ring-blue-400/30">
-                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="M15 17H9m9-6a6 6 0 0 0-12 0c0 3-1 4.5-2 6h16c-1-1.5-2-3-2-6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    <path d="M10 20a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                </svg>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Supervisor Alerts</p>
-                                <h2 id="web-push-prompt-title" class="mt-1 text-lg font-semibold text-blue-950 dark:text-white" x-text="promptTitle()">Allow supervisor alerts?</h2>
-                                <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300" x-text="promptDescription()"></p>
-                                <p x-show="message" x-cloak class="mt-2 text-sm font-medium text-slate-500 dark:text-slate-400" x-text="message"></p>
-                            </div>
-                            <button type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-100 text-slate-600 transition hover:bg-blue-50 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900" x-on:click="dismissPrompt()" aria-label="Dismiss notification prompt">
-                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div class="flex flex-col-reverse gap-2 px-4 py-4 sm:flex-row sm:justify-end">
-                            <button type="button" class="inline-flex h-11 items-center justify-center rounded-md border border-blue-200 px-4 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900" x-on:click="dismissPrompt()">
-                                Later
-                            </button>
-                            <button
-                                type="button"
-                                class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-500 dark:focus:ring-offset-slate-900"
-                                x-bind:disabled="! canToggle()"
-                                x-on:click="enableFromPrompt()"
-                            >
-                                <span x-show="! busy">Allow Notifications</span>
-                                <span x-show="busy" x-cloak>Preparing...</span>
-                            </button>
-                        </div>
-                    </section>
-                </div>
-            @endif
         </div>
     </body>
 </html>

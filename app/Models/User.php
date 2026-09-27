@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -58,10 +57,5 @@ class User extends Authenticatable
     public function guardProfile(): HasOne
     {
         return $this->hasOne(Guard::class);
-    }
-
-    public function pushSubscriptions(): HasMany
-    {
-        return $this->hasMany(PushSubscription::class);
     }
 }
