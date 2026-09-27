@@ -274,6 +274,7 @@
                                         <div
                                             x-data="webPushNotifications({
                                                 publicKey: @js($webPushPublicKey),
+                                                configUrl: @js(route('push-notifications.config')),
                                                 subscribeUrl: @js(route('push-notifications.subscribe')),
                                                 unsubscribeUrl: @js(route('push-notifications.unsubscribe')),
                                             })"
@@ -467,6 +468,7 @@
                 <div
                     x-data="webPushNotifications({
                         publicKey: @js($webPushPublicKey),
+                        configUrl: @js(route('push-notifications.config')),
                         subscribeUrl: @js(route('push-notifications.subscribe')),
                         unsubscribeUrl: @js(route('push-notifications.unsubscribe')),
                         autoPrompt: true,

@@ -566,6 +566,7 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
 
 Alpine.data('webPushNotifications', (config = {}) => ({
     publicKey: config.publicKey || '',
+    configUrl: config.configUrl || '',
     subscribeUrl: config.subscribeUrl || '',
     unsubscribeUrl: config.unsubscribeUrl || '',
     autoPrompt: Boolean(config.autoPrompt),
@@ -578,9 +579,12 @@ Alpine.data('webPushNotifications', (config = {}) => ({
     promptOpen: false,
     permission: 'default',
     message: '',
+    configChecked: false,
+    serverConfigured: null,
+    missingConfig: [],
     subscriptionListener: null,
 
-    init() {
+    async init() {
         this.supported = canUseWebPush();
         this.permission = window.Notification?.permission || 'default';
 
@@ -599,8 +603,15 @@ Alpine.data('webPushNotifications', (config = {}) => ({
             return;
         }
 
+        await this.refreshConfig();
+
+        if (this.serverConfigured === false) {
+            this.message = this.configMessage() || 'Push server setup is incomplete.';
+            return;
+        }
+
         if (! this.publicKey) {
-            this.message = 'Push keys are not configured yet.';
+            this.message = this.configMessage() || 'Push keys are not configured yet.';
             return;
         }
 
@@ -623,7 +634,13 @@ Alpine.data('webPushNotifications', (config = {}) => ({
         }
 
         if (! this.publicKey) {
-            return 'Setup needed before alerts can be enabled.';
+            return this.configChecked
+                ? 'Push server setup is incomplete.'
+                : 'Setup needed before alerts can be enabled.';
+        }
+
+        if (this.serverConfigured === false) {
+            return 'Push server setup is incomplete.';
         }
 
         if (this.permission === 'denied') {
@@ -670,8 +687,54 @@ Alpine.data('webPushNotifications', (config = {}) => ({
     canToggle() {
         return this.supported
             && Boolean(this.publicKey)
+            && this.serverConfigured !== false
             && ! this.busy
             && this.permission !== 'denied';
+    },
+
+    async refreshConfig() {
+        if (! this.configUrl) {
+            return;
+        }
+
+        try {
+            const response = await fetch(this.configUrl, {
+                credentials: 'same-origin',
+                cache: 'no-store',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            if (! response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+
+            this.configChecked = true;
+            this.serverConfigured = Boolean(data.enabled);
+            this.missingConfig = Array.isArray(data.missing) ? data.missing : [];
+
+            if (data.public_key) {
+                this.publicKey = data.public_key;
+            }
+
+            if (! data.enabled) {
+                this.message = this.configMessage();
+            }
+        } catch {
+            this.message = 'Could not check push alert setup right now.';
+        }
+    },
+
+    configMessage() {
+        if (! this.missingConfig.length) {
+            return '';
+        }
+
+        return `Missing server config: ${this.missingConfig.join(', ')}.`;
     },
 
     async syncSubscription() {

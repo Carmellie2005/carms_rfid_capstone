@@ -59,6 +59,50 @@ class WebPushNotificationTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_supervisor_can_fetch_web_push_config_status(): void
+    {
+        config([
+            'services.webpush.vapid_subject' => 'mailto:noreply@slsubcpatrol.site',
+            'services.webpush.vapid_public_key' => 'test-public-key',
+            'services.webpush.vapid_private_key' => 'test-private-key',
+        ]);
+
+        $supervisor = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'supervisor',
+        ]);
+
+        $this
+            ->actingAs($supervisor)
+            ->getJson(route('push-notifications.config'))
+            ->assertOk()
+            ->assertJsonPath('enabled', true)
+            ->assertJsonPath('public_key', 'test-public-key')
+            ->assertJsonPath('missing', []);
+    }
+
+    public function test_web_push_config_reports_missing_server_values(): void
+    {
+        config([
+            'services.webpush.vapid_subject' => 'mailto:noreply@slsubcpatrol.site',
+            'services.webpush.vapid_public_key' => null,
+            'services.webpush.vapid_private_key' => null,
+        ]);
+
+        $supervisor = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'supervisor',
+        ]);
+
+        $this
+            ->actingAs($supervisor)
+            ->getJson(route('push-notifications.config'))
+            ->assertOk()
+            ->assertJsonPath('enabled', false)
+            ->assertJsonPath('missing.0', 'WEBPUSH_VAPID_PUBLIC_KEY')
+            ->assertJsonPath('missing.1', 'WEBPUSH_VAPID_PRIVATE_KEY');
+    }
+
     public function test_rfid_scan_issue_dispatches_supervisor_web_push(): void
     {
         $notifier = Mockery::mock(WebPushNotifier::class);

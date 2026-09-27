@@ -12,9 +12,16 @@ class PushSubscriptionController extends Controller
 {
     public function config(WebPushNotifier $notifier): JsonResponse
     {
+        $settings = [
+            'WEBPUSH_VAPID_SUBJECT' => config('services.webpush.vapid_subject'),
+            'WEBPUSH_VAPID_PUBLIC_KEY' => config('services.webpush.vapid_public_key'),
+            'WEBPUSH_VAPID_PRIVATE_KEY' => config('services.webpush.vapid_private_key'),
+        ];
+
         return response()->json([
             'enabled' => $notifier->isConfigured(),
-            'public_key' => config('services.webpush.vapid_public_key'),
+            'public_key' => $settings['WEBPUSH_VAPID_PUBLIC_KEY'],
+            'missing' => array_keys(array_filter($settings, fn ($value) => blank($value))),
         ]);
     }
 
