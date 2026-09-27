@@ -11,6 +11,7 @@ use App\Http\Controllers\System\IncidentReportController;
 use App\Http\Controllers\System\NotificationController;
 use App\Http\Controllers\System\NotificationReadController;
 use App\Http\Controllers\System\PatrolLogController;
+use App\Http\Controllers\System\PushSubscriptionController;
 use App\Http\Controllers\System\ReaderStatusController;
 use App\Http\Controllers\System\ReportController;
 use App\Http\Controllers\System\RfidEnrollmentController;
@@ -61,6 +62,9 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('supervisor')->group(function () {
         Route::get('/dashboard', DashboardController::class)->middleware('verified')->name('dashboard');
+        Route::get('/push-notifications/config', [PushSubscriptionController::class, 'config'])->name('push-notifications.config');
+        Route::post('/push-notifications/subscriptions', [PushSubscriptionController::class, 'store'])->name('push-notifications.subscribe');
+        Route::delete('/push-notifications/subscriptions', [PushSubscriptionController::class, 'destroy'])->name('push-notifications.unsubscribe');
         Route::get('/guards/rfid-enrollment/latest', [RfidEnrollmentController::class, 'latest'])->name('guards.rfid-enrollment.latest');
         Route::get('/guards/{guard}/records', [GuardController::class, 'records'])->name('guards.records');
         Route::resource('guards', GuardController::class)->except(['show']);

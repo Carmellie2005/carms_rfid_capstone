@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Checkpoint;
 use App\Models\Guard;
 use App\Models\PatrolLog;
+use App\Services\WebPushNotifier;
 use App\Support\AuditLogger;
 use App\Support\PatrolSchedule;
 use Illuminate\Http\JsonResponse;
@@ -89,6 +90,8 @@ class RfidScanController extends Controller
                 'checkpoint_id' => $matchedCheckpoint?->id,
             ]);
 
+            app(WebPushNotifier::class)->sendPatrolScanIssue($patrolLog);
+
             return response()->json([
                 'message' => $scheduleMessage,
                 'diagnostic' => $scheduleMessage,
@@ -149,6 +152,8 @@ class RfidScanController extends Controller
             'patrol_window' => PatrolSchedule::windowLabel(),
             'testing_mode' => PatrolSchedule::isTestingMode(),
         ]);
+
+        app(WebPushNotifier::class)->sendPatrolScanIssue($patrolLog);
 
         return response()->json([
             'message' => match (true) {

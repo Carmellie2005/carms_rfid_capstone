@@ -265,6 +265,54 @@ function registerServiceWorker() {
     return serviceWorkerRegistrationPromise;
 }
 
+function canUseWebPush() {
+    return canRegisterServiceWorker()
+        && 'PushManager' in window
+        && 'Notification' in window;
+}
+
+function webPushContentEncoding() {
+    const encodings = window.PushManager?.supportedContentEncodings || [];
+
+    if (Array.from(encodings).includes('aes128gcm')) {
+        return 'aes128gcm';
+    }
+
+    return encodings[0] || 'aes128gcm';
+}
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = `${base64String}${padding}`
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let index = 0; index < rawData.length; index += 1) {
+        outputArray[index] = rawData.charCodeAt(index);
+    }
+
+    return outputArray;
+}
+
+async function fetchJsonWithCsrf(url, options = {}, retried = false) {
+    const response = await fetch(url, {
+        credentials: 'same-origin',
+        ...options,
+        headers: {
+            ...csrfJsonHeaders(),
+            ...(options.headers || {}),
+        },
+    });
+
+    if (response.status === 419 && ! retried && await refreshCsrfToken()) {
+        return fetchJsonWithCsrf(url, options, true);
+    }
+
+    return response;
+}
+
 function notifyPwaInstallPromptListeners() {
     pwaInstallPromptListeners.forEach((listener) => listener(deferredPwaInstallPrompt));
 }
@@ -547,6 +595,174 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
                     this.message = `${this.appName} installed successfully.`;
                 }
             }, 1200);
+        }
+    },
+}));
+
+Alpine.data('webPushNotifications', (config = {}) => ({
+    publicKey: config.publicKey || '',
+    subscribeUrl: config.subscribeUrl || '',
+    unsubscribeUrl: config.unsubscribeUrl || '',
+    enabled: false,
+    supported: false,
+    busy: false,
+    permission: 'default',
+    message: '',
+
+    init() {
+        this.supported = canUseWebPush();
+        this.permission = window.Notification?.permission || 'default';
+
+        if (! this.supported) {
+            this.message = 'Push alerts need HTTPS and a supported browser.';
+            return;
+        }
+
+        if (! this.publicKey) {
+            this.message = 'Push keys are not configured yet.';
+            return;
+        }
+
+        this.syncSubscription();
+    },
+
+    statusLabel() {
+        if (this.busy) {
+            return 'Updating alerts...';
+        }
+
+        if (! this.supported) {
+            return this.message || 'Push alerts are unavailable on this browser.';
+        }
+
+        if (! this.publicKey) {
+            return 'Setup needed before alerts can be enabled.';
+        }
+
+        if (this.permission === 'denied') {
+            return 'Notifications are blocked in this browser.';
+        }
+
+        return this.enabled
+            ? 'This device can receive supervisor alerts.'
+            : 'Receive incident and scan issue alerts on this device.';
+    },
+
+    buttonLabel() {
+        if (this.busy) {
+            return 'Please wait';
+        }
+
+        return this.enabled ? 'Alerts On' : 'Enable Alerts';
+    },
+
+    canToggle() {
+        return this.supported
+            && Boolean(this.publicKey)
+            && ! this.busy
+            && this.permission !== 'denied';
+    },
+
+    async syncSubscription() {
+        try {
+            const registration = await registerServiceWorker();
+            const subscription = await registration?.pushManager?.getSubscription();
+
+            this.enabled = Boolean(subscription);
+        } catch {
+            this.enabled = false;
+        }
+    },
+
+    async toggle() {
+        if (! this.canToggle()) {
+            return;
+        }
+
+        if (this.enabled) {
+            await this.disable();
+        } else {
+            await this.enable();
+        }
+    },
+
+    async enable() {
+        this.busy = true;
+        this.message = '';
+
+        try {
+            this.permission = await window.Notification.requestPermission();
+
+            if (this.permission !== 'granted') {
+                this.message = 'Notification permission was not allowed.';
+                return;
+            }
+
+            const registration = await registerServiceWorker();
+
+            if (! registration?.pushManager) {
+                throw new Error('Push manager is unavailable.');
+            }
+
+            const existingSubscription = await registration.pushManager.getSubscription();
+            const subscription = existingSubscription || await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(this.publicKey),
+            });
+
+            await this.saveSubscription(subscription);
+
+            this.enabled = true;
+            this.message = 'Alerts enabled on this device.';
+        } catch (error) {
+            this.enabled = false;
+            this.message = 'Could not enable push alerts right now.';
+        } finally {
+            this.busy = false;
+        }
+    },
+
+    async disable() {
+        this.busy = true;
+        this.message = '';
+
+        try {
+            const registration = await registerServiceWorker();
+            const subscription = await registration?.pushManager?.getSubscription();
+            const endpoint = subscription?.endpoint;
+
+            if (endpoint && this.unsubscribeUrl) {
+                await fetchJsonWithCsrf(this.unsubscribeUrl, {
+                    method: 'DELETE',
+                    body: JSON.stringify({ endpoint }),
+                });
+            }
+
+            if (subscription) {
+                await subscription.unsubscribe();
+            }
+
+            this.enabled = false;
+            this.message = 'Alerts disabled on this device.';
+        } catch {
+            this.message = 'Could not disable push alerts right now.';
+        } finally {
+            this.busy = false;
+        }
+    },
+
+    async saveSubscription(subscription) {
+        const payload = subscription.toJSON();
+
+        payload.contentEncoding = webPushContentEncoding();
+
+        const response = await fetchJsonWithCsrf(this.subscribeUrl, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+        });
+
+        if (! response.ok) {
+            throw new Error('Subscription could not be saved.');
         }
     },
 }));

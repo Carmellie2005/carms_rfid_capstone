@@ -31,4 +31,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'webpush' => [
+        'vapid_subject' => env('WEBPUSH_VAPID_SUBJECT', env('MAIL_FROM_ADDRESS') ? 'mailto:'.env('MAIL_FROM_ADDRESS') : env('APP_URL')),
+        'vapid_public_key' => env('WEBPUSH_VAPID_PUBLIC_KEY'),
+        'vapid_private_key' => env('WEBPUSH_VAPID_PRIVATE_KEY'),
+        'ttl' => env('WEBPUSH_TTL', 3600),
+    ],
+
 ];

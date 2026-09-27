@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bc-patrol-v14';
+const CACHE_NAME = 'bc-patrol-v15';
 const OFFLINE_URL = '/offline.html';
 const CORE_ASSETS = [
     OFFLINE_URL,
@@ -62,6 +62,48 @@ self.addEventListener('fetch', (event) => {
     }
 });
 
+self.addEventListener('push', (event) => {
+    const data = notificationPayload(event);
+    const title = data.title || 'SLSU Bontoc Patrol';
+
+    event.waitUntil(
+        self.registration.showNotification(title, {
+            body: data.body || 'New patrol alert received.',
+            icon: data.icon || '/pwa-icon-192.png',
+            badge: data.badge || '/pwa-icon-maskable-192.png',
+            tag: data.tag || 'slsu-bontoc-patrol',
+            renotify: true,
+            data: {
+                url: data.url || '/',
+                type: data.type || 'alert',
+            },
+        })
+    );
+});
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+
+    const targetUrl = new URL(event.notification.data?.url || '/', self.location.origin).href;
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then((clientList) => {
+                for (const client of clientList) {
+                    if ('focus' in client && client.url === targetUrl) {
+                        return client.focus();
+                    }
+                }
+
+                if (clients.openWindow) {
+                    return clients.openWindow(targetUrl);
+                }
+
+                return null;
+            })
+    );
+});
+
 function isCacheableAsset(url) {
     return url.pathname.startsWith('/build/')
         || CORE_ASSETS.includes(url.pathname);
@@ -85,4 +127,19 @@ function cacheFirst(request) {
             return networkResponse;
         });
     });
+}
+
+function notificationPayload(event) {
+    if (! event.data) {
+        return {};
+    }
+
+    try {
+        return event.data.json();
+    } catch (error) {
+        return {
+            title: 'SLSU Bontoc Patrol',
+            body: event.data.text(),
+        };
+    }
 }
