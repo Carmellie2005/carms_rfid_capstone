@@ -46,6 +46,7 @@ services:
       MAIL_ENCRYPTION: "${MAIL_ENCRYPTION:-tls}"
       MAIL_FROM_ADDRESS: "${MAIL_FROM_ADDRESS:-noreply@slsubcpatrol.site}"
       MAIL_FROM_NAME: "${MAIL_FROM_NAME:-SLSU Bontoc Patrol}"
+      SUPERVISOR_ALERT_EMAIL: "${SUPERVISOR_ALERT_EMAIL:-}"
     volumes:
       - app_public_uploads:/var/www/html/storage/app/public
       - app_framework_storage:/var/www/html/storage/framework
