@@ -10,6 +10,7 @@ window.Chart = Chart;
 
 const PWA_LAUNCH_SPLASH_MS = 1400;
 const PWA_LAUNCH_SPLASH_STORAGE_KEY = 'slsu-pwa-launch-splash-shown';
+const WEB_PUSH_PROMPT_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
 const LOCALHOST_HOSTNAMES = ['localhost', '127.0.0.1', '[::1]', '::1'];
 
 function imageFromDataUrl(dataUrl) {
@@ -603,15 +604,31 @@ Alpine.data('webPushNotifications', (config = {}) => ({
     publicKey: config.publicKey || '',
     subscribeUrl: config.subscribeUrl || '',
     unsubscribeUrl: config.unsubscribeUrl || '',
+    autoPrompt: Boolean(config.autoPrompt),
+    onlyPromptWhenInstalled: config.onlyPromptWhenInstalled ?? true,
+    promptDelayMs: config.promptDelayMs ?? 900,
+    promptStorageKey: config.promptStorageKey || 'slsu-web-push-prompt-dismissed-at',
     enabled: false,
     supported: false,
     busy: false,
+    promptOpen: false,
     permission: 'default',
     message: '',
+    subscriptionListener: null,
 
     init() {
         this.supported = canUseWebPush();
         this.permission = window.Notification?.permission || 'default';
+
+        this.subscriptionListener = (event) => {
+            this.enabled = Boolean(event.detail?.enabled);
+
+            if (this.enabled) {
+                this.promptOpen = false;
+            }
+        };
+
+        window.addEventListener('web-push-subscription-changed', this.subscriptionListener);
 
         if (! this.supported) {
             this.message = 'Push alerts need HTTPS and a supported browser.';
@@ -623,7 +640,13 @@ Alpine.data('webPushNotifications', (config = {}) => ({
             return;
         }
 
-        this.syncSubscription();
+        this.syncSubscription().then(() => this.maybeOpenPrompt());
+    },
+
+    destroy() {
+        if (this.subscriptionListener) {
+            window.removeEventListener('web-push-subscription-changed', this.subscriptionListener);
+        }
     },
 
     statusLabel() {
@@ -656,6 +679,30 @@ Alpine.data('webPushNotifications', (config = {}) => ({
         return this.enabled ? 'Alerts On' : 'Enable Alerts';
     },
 
+    promptTitle() {
+        if (this.permission === 'denied') {
+            return 'Notifications are blocked';
+        }
+
+        if (this.enabled) {
+            return 'Alerts are enabled';
+        }
+
+        return 'Allow supervisor alerts?';
+    },
+
+    promptDescription() {
+        if (this.permission === 'denied') {
+            return 'Open your browser or phone settings and allow notifications for SLSU Bontoc Patrol.';
+        }
+
+        if (this.enabled) {
+            return 'This device can receive incident and scan issue alerts.';
+        }
+
+        return 'Receive important incident and RFID scan issue alerts on this device, even when the app is not open.';
+    },
+
     canToggle() {
         return this.supported
             && Boolean(this.publicKey)
@@ -669,6 +716,7 @@ Alpine.data('webPushNotifications', (config = {}) => ({
             const subscription = await registration?.pushManager?.getSubscription();
 
             this.enabled = Boolean(subscription);
+            this.permission = window.Notification?.permission || this.permission;
         } catch {
             this.enabled = false;
         }
@@ -713,7 +761,9 @@ Alpine.data('webPushNotifications', (config = {}) => ({
             await this.saveSubscription(subscription);
 
             this.enabled = true;
+            this.promptOpen = false;
             this.message = 'Alerts enabled on this device.';
+            this.broadcastSubscriptionState();
         } catch (error) {
             this.enabled = false;
             this.message = 'Could not enable push alerts right now.';
@@ -744,6 +794,7 @@ Alpine.data('webPushNotifications', (config = {}) => ({
 
             this.enabled = false;
             this.message = 'Alerts disabled on this device.';
+            this.broadcastSubscriptionState();
         } catch {
             this.message = 'Could not disable push alerts right now.';
         } finally {
@@ -764,6 +815,66 @@ Alpine.data('webPushNotifications', (config = {}) => ({
         if (! response.ok) {
             throw new Error('Subscription could not be saved.');
         }
+    },
+
+    async enableFromPrompt() {
+        await this.enable();
+
+        if (! this.enabled && this.permission !== 'denied') {
+            return;
+        }
+
+        this.promptOpen = false;
+    },
+
+    maybeOpenPrompt() {
+        if (! this.shouldOpenPrompt()) {
+            return;
+        }
+
+        window.setTimeout(() => {
+            if (this.shouldOpenPrompt()) {
+                this.promptOpen = true;
+            }
+        }, this.promptDelayMs);
+    },
+
+    shouldOpenPrompt() {
+        return this.autoPrompt
+            && this.supported
+            && Boolean(this.publicKey)
+            && ! this.enabled
+            && this.permission === 'default'
+            && (! this.onlyPromptWhenInstalled || isPwaInstalled())
+            && ! this.promptRecentlyDismissed();
+    },
+
+    dismissPrompt() {
+        this.promptOpen = false;
+
+        try {
+            window.localStorage.setItem(this.promptStorageKey, String(Date.now()));
+        } catch {
+            //
+        }
+    },
+
+    promptRecentlyDismissed() {
+        try {
+            const dismissedAt = Number(window.localStorage.getItem(this.promptStorageKey) || 0);
+
+            return dismissedAt > 0 && Date.now() - dismissedAt < WEB_PUSH_PROMPT_DISMISS_MS;
+        } catch {
+            return false;
+        }
+    },
+
+    broadcastSubscriptionState() {
+        window.dispatchEvent(new CustomEvent('web-push-subscription-changed', {
+            detail: {
+                enabled: this.enabled,
+            },
+        }));
     },
 }));
 
