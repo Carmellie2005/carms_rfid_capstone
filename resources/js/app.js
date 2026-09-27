@@ -8,8 +8,6 @@ Chart.register(...registerables);
 window.Alpine = Alpine;
 window.Chart = Chart;
 
-const PWA_LAUNCH_SPLASH_MS = 1400;
-const PWA_LAUNCH_SPLASH_STORAGE_KEY = 'slsu-pwa-launch-splash-shown';
 const WEB_PUSH_PROMPT_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
 const LOCALHOST_HOSTNAMES = ['localhost', '127.0.0.1', '[::1]', '::1'];
 
@@ -230,24 +228,6 @@ function isPwaInstalled() {
         || window.navigator.standalone === true;
 }
 
-function shouldShowPwaLaunchSplash() {
-    if (! isPwaInstalled()) {
-        return false;
-    }
-
-    try {
-        if (window.sessionStorage.getItem(PWA_LAUNCH_SPLASH_STORAGE_KEY)) {
-            return false;
-        }
-
-        window.sessionStorage.setItem(PWA_LAUNCH_SPLASH_STORAGE_KEY, '1');
-    } catch {
-        return true;
-    }
-
-    return true;
-}
-
 function canRegisterServiceWorker() {
     return 'serviceWorker' in navigator
         && (window.isSecureContext || isLocalhostHostname());
@@ -335,24 +315,8 @@ if (canRegisterServiceWorker()) {
     });
 }
 
-Alpine.data('pwaLaunchSplash', () => ({
-    visible: false,
-
-    init() {
-        if (! shouldShowPwaLaunchSplash()) {
-            return;
-        }
-
-        this.visible = true;
-
-        setTimeout(() => {
-            this.visible = false;
-        }, PWA_LAUNCH_SPLASH_MS);
-    },
-}));
-
 Alpine.data('pwaInstallPrompt', (config = {}) => ({
-    appName: config.appName || 'BC Patrol',
+    appName: config.appName || 'SLSUBCPatrol',
     startUrl: config.startUrl || '/',
     deferredPrompt: null,
     canInstall: false,

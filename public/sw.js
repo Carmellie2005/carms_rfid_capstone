@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bc-patrol-v15';
+const CACHE_NAME = 'slsubcpatrol-v16';
 const OFFLINE_URL = '/offline.html';
 const CORE_ASSETS = [
     OFFLINE_URL,
