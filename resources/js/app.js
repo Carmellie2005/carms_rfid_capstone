@@ -607,7 +607,7 @@ Alpine.data('webPushNotifications', (config = {}) => ({
     autoPrompt: Boolean(config.autoPrompt),
     onlyPromptWhenInstalled: config.onlyPromptWhenInstalled ?? true,
     promptDelayMs: config.promptDelayMs ?? 900,
-    promptStorageKey: config.promptStorageKey || 'slsu-web-push-prompt-dismissed-at',
+    promptStorageKey: config.promptStorageKey || 'slsu-web-push-prompt-dismissed-at-v2',
     enabled: false,
     supported: false,
     busy: false,
@@ -844,7 +844,7 @@ Alpine.data('webPushNotifications', (config = {}) => ({
             && this.supported
             && Boolean(this.publicKey)
             && ! this.enabled
-            && this.permission === 'default'
+            && ['default', 'denied'].includes(this.permission)
             && (! this.onlyPromptWhenInstalled || isPwaInstalled())
             && ! this.promptRecentlyDismissed();
     },

@@ -472,7 +472,8 @@
                         subscribeUrl: @js(route('push-notifications.subscribe')),
                         unsubscribeUrl: @js(route('push-notifications.unsubscribe')),
                         autoPrompt: true,
-                        onlyPromptWhenInstalled: true,
+                        onlyPromptWhenInstalled: false,
+                        promptStorageKey: 'slsu-web-push-prompt-dismissed-at-v2',
                     })"
                     x-show="promptOpen"
                     x-cloak
