@@ -175,7 +175,7 @@ class IncidentReportPdfTest extends TestCase
             'imageDataUris' => [],
             'incident' => $incident->fresh()->load(['securityGuard', 'checkpoint', 'patrolLog', 'images']),
             'incidentFormPageOneDataUri' => null,
-            'incidentFormPageTwoDataUri' => null,
+            'incidentFormPageTwoDataUri' => 'data:image/png;base64,page-two-template',
         ])->render();
 
         $this->assertStringNotContainsString('Incident Description / Summary:', $html);
@@ -183,9 +183,11 @@ class IncidentReportPdfTest extends TestCase
         $this->assertStringContainsString('desc35', $html);
         $this->assertStringNotContainsString('continuation-title', $html);
         $this->assertStringNotContainsString('continuation-subtitle', $html);
+        $this->assertStringNotContainsString('continuation-content-plane', $html);
         $this->assertStringNotContainsString('continuation-meta', $html);
         $this->assertStringNotContainsString('continuation-box', $html);
         $this->assertStringNotContainsString('Narrative details page', $html);
+        $this->assertSame(1, substr_count($html, 'data:image/png;base64,page-two-template'));
         $this->assertStringContainsString('act30', $html);
         $this->assertStringNotContainsString('act31', $html);
         $this->assertStringNotContainsString('Review Notes:', $html);

@@ -137,13 +137,45 @@
             z-index: 1;
         }
 
-        .continuation-content-plane {
-            background: #ffffff;
-            height: 660pt;
-            left: 70.5pt;
+        .narrative-letterhead {
+            height: 76pt;
+            left: 144pt;
             position: absolute;
-            top: 119pt;
-            width: 471pt;
+            top: 24pt;
+            width: 220pt;
+            z-index: 1;
+        }
+
+        .narrative-campus {
+            font-size: 7.4pt;
+            left: 198pt;
+            line-height: 1.15;
+            position: absolute;
+            top: 63pt;
+            width: 190pt;
+            z-index: 2;
+        }
+
+        .narrative-campus a {
+            color: #003f9f;
+            text-decoration: underline;
+        }
+
+        .narrative-bagong {
+            height: 70pt;
+            left: 383pt;
+            position: absolute;
+            top: 22pt;
+            width: 70pt;
+            z-index: 1;
+        }
+
+        .narrative-rule {
+            border-top: 1pt solid #111111;
+            left: 52pt;
+            position: absolute;
+            top: 116pt;
+            width: 508pt;
             z-index: 1;
         }
 
@@ -151,12 +183,38 @@
             font-size: 11pt;
             left: 72.5pt;
             line-height: 1.45;
-            padding: 18pt 4pt 0;
             position: absolute;
             text-align: justify;
-            top: 134pt;
+            top: 145pt;
             width: 467.21pt;
-            z-index: 2;
+            z-index: 1;
+        }
+
+        .narrative-footer-rule {
+            border-top: 1pt solid #111111;
+            bottom: 80pt;
+            left: 72.5pt;
+            position: absolute;
+            width: 467.21pt;
+            z-index: 1;
+        }
+
+        .narrative-qs {
+            bottom: 30pt;
+            height: 49pt;
+            left: 333pt;
+            position: absolute;
+            width: 49pt;
+            z-index: 1;
+        }
+
+        .narrative-socotec {
+            bottom: 34pt;
+            height: 42pt;
+            left: 416pt;
+            position: absolute;
+            width: 106pt;
+            z-index: 1;
         }
 
         .report-no {
@@ -358,6 +416,10 @@
         $supervisorName = 'Ryan P. Tomol';
         $evidenceImages = collect($imageDataUris)->take(4)->values();
         $narrative = $incident->description ?: 'No description provided.';
+        $letterheadSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/slsu-letterhead.png'));
+        $bagongSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/bagong-pilipinas.png'));
+        $qsSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/qs-rated-good.png'));
+        $socotecSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/socotec-iso9001.jpg'));
         $normalizeText = fn (string $value): string => trim(preg_replace("/\r\n|\r/", "\n", $value));
         $plainText = fn (string $value): string => trim(preg_replace('/\s+/u', ' ', $normalizeText($value)));
         $words = function (string $value) use ($plainText): array {
@@ -476,13 +538,19 @@
 
     @foreach ($narrativeDetailChunks as $continuationNarrative)
         <section class="page">
-            @if ($incidentFormPageTwoDataUri)
-                <img class="page-background" src="{{ $incidentFormPageTwoDataUri }}" alt="">
-            @endif
-
             <div class="core-values">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</div>
-            <div class="continuation-content-plane"></div>
+            <img class="narrative-letterhead" src="{{ $letterheadSrc }}" alt="">
+            <div class="narrative-campus">
+                Bontoc Campus, San Ramon, Bontoc, Southern Leyte<br>
+                Email: <a href="mailto:cd_bt@southernleytestateu.edu.ph">cd_bt@southernleytestateu.edu.ph</a><br>
+                Website: www.southernleytestateu.edu.ph
+            </div>
+            <img class="narrative-bagong" src="{{ $bagongSrc }}" alt="">
+            <div class="narrative-rule"></div>
             <div class="continuation-body">{!! nl2br(e($continuationNarrative)) !!}</div>
+            <div class="narrative-footer-rule"></div>
+            <img class="narrative-qs" src="{{ $qsSrc }}" alt="">
+            <img class="narrative-socotec" src="{{ $socotecSrc }}" alt="">
         </section>
     @endforeach
 
