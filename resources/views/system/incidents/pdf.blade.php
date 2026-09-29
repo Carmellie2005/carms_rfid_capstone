@@ -56,38 +56,6 @@
             page-break-after: auto;
         }
 
-        .page-background {
-            height: 936pt;
-            left: 0;
-            position: absolute;
-            top: 0;
-            width: 612pt;
-            z-index: 0;
-        }
-
-        .html-title {
-            font-size: 11pt;
-            font-weight: 700;
-            left: 0;
-            letter-spacing: 0;
-            position: absolute;
-            text-align: center;
-            top: 114.8pt;
-            width: 612pt;
-            z-index: 1;
-        }
-
-        .html-subtitle {
-            font-size: 11pt;
-            font-weight: 400;
-            left: 0;
-            position: absolute;
-            text-align: center;
-            top: 129.4pt;
-            width: 612pt;
-            z-index: 1;
-        }
-
         .core-values {
             font-family: "Poppins", "Calibri", "DejaVu Sans", sans-serif;
             font-size: 6pt;
@@ -101,43 +69,7 @@
             z-index: 1;
         }
 
-        .field {
-            overflow: hidden;
-            padding: 4.5pt 5.2pt;
-            position: absolute;
-            z-index: 1;
-        }
-
-        .label {
-            display: block;
-            font-size: 11pt;
-            font-weight: 700;
-            letter-spacing: 0;
-            line-height: 1.15;
-            margin-bottom: 3pt;
-            text-transform: uppercase;
-        }
-
-        .value {
-            display: block;
-            font-size: 11pt;
-            font-weight: 400;
-            line-height: 1.25;
-        }
-
-        .name-value {
-            font-weight: 700;
-        }
-
-        .evidence-label {
-            font-size: 11pt;
-            font-weight: 700;
-            left: 71.3pt;
-            position: absolute;
-            z-index: 1;
-        }
-
-        .narrative-letterhead {
+        .letterhead {
             height: 76pt;
             left: 144pt;
             position: absolute;
@@ -146,7 +78,7 @@
             z-index: 1;
         }
 
-        .narrative-campus {
+        .campus-meta {
             font-size: 7.4pt;
             left: 198pt;
             line-height: 1.15;
@@ -156,12 +88,12 @@
             z-index: 2;
         }
 
-        .narrative-campus a {
+        .campus-meta a {
             color: #003f9f;
             text-decoration: underline;
         }
 
-        .narrative-bagong {
+        .bagong {
             height: 70pt;
             left: 383pt;
             position: absolute;
@@ -170,7 +102,7 @@
             z-index: 1;
         }
 
-        .narrative-rule {
+        .header-rule {
             border-top: 1pt solid #111111;
             left: 52pt;
             position: absolute;
@@ -179,18 +111,7 @@
             z-index: 1;
         }
 
-        .continuation-body {
-            font-size: 11pt;
-            left: 72.5pt;
-            line-height: 1.45;
-            position: absolute;
-            text-align: justify;
-            top: 145pt;
-            width: 467.21pt;
-            z-index: 1;
-        }
-
-        .narrative-footer-rule {
+        .footer-rule {
             border-top: 1pt solid #111111;
             bottom: 80pt;
             left: 72.5pt;
@@ -199,7 +120,7 @@
             z-index: 1;
         }
 
-        .narrative-qs {
+        .footer-qs {
             bottom: 30pt;
             height: 49pt;
             left: 333pt;
@@ -208,7 +129,7 @@
             z-index: 1;
         }
 
-        .narrative-socotec {
+        .footer-socotec {
             bottom: 34pt;
             height: 42pt;
             left: 416pt;
@@ -217,157 +138,164 @@
             z-index: 1;
         }
 
-        .report-no {
-            height: 58.56pt;
-            left: 72.5pt;
-            top: 160.37pt;
-            width: 155.35pt;
-        }
-
-        .status {
-            height: 58.56pt;
-            left: 228.34pt;
-            top: 160.37pt;
-            width: 155.57pt;
-        }
-
-        .generated {
-            height: 58.56pt;
-            left: 384.38pt;
-            top: 160.37pt;
-            width: 155.33pt;
-        }
-
-        .category {
-            height: 43.94pt;
-            left: 72.5pt;
-            top: 234.77pt;
-            width: 233.38pt;
-        }
-
-        .priority {
-            height: 43.94pt;
-            left: 306.36pt;
-            top: 234.77pt;
-            width: 233.35pt;
-        }
-
-        .incident-date {
-            height: 43.92pt;
-            left: 72.5pt;
-            top: 279.19pt;
-            width: 233.38pt;
-        }
-
-        .reported-date {
-            height: 43.92pt;
-            left: 306.36pt;
-            top: 279.19pt;
-            width: 233.35pt;
-        }
-
-        .location {
-            height: 43.94pt;
-            left: 72.5pt;
-            top: 323.6pt;
-            width: 467.21pt;
-        }
-
-        .guard {
-            height: 43.92pt;
-            left: 72.5pt;
-            top: 383.38pt;
-            width: 233.38pt;
-        }
-
-        .employee {
-            height: 43.92pt;
-            left: 306.36pt;
-            top: 383.38pt;
-            width: 233.35pt;
-        }
-
-        .evidence-label {
-            top: 105.1pt;
-        }
-
-        .evidence-box {
-            height: 234.55pt;
-            left: 72.5pt;
-            padding: 26pt 22pt;
-            top: 131.07pt;
-            width: 467.21pt;
-        }
-
-        .photo-grid {
-            border-collapse: collapse;
-            width: 100%;
-        }
-
-        .photo-grid td {
-            height: 86pt;
-            padding: 8pt 7pt;
-            text-align: center;
-            vertical-align: middle;
-            width: 50%;
-        }
-
-        .photo-grid img {
-            max-height: 74pt;
-            max-width: 100%;
-        }
-
-        .empty-evidence {
+        .report-title {
             font-size: 11pt;
-            padding-top: 74pt;
+            font-weight: 700;
+            left: 0;
+            position: absolute;
             text-align: center;
+            top: 127pt;
+            width: 612pt;
+            z-index: 1;
         }
 
-        .review-flow {
-            background: #ffffff;
+        .report-subtitle {
+            font-size: 11pt;
+            font-weight: 400;
+            left: 0;
+            position: absolute;
+            text-align: center;
+            top: 142pt;
+            width: 612pt;
+            z-index: 1;
+        }
+
+        .report-table,
+        .details-table,
+        .review-table,
+        .signature-table {
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .report-table,
+        .details-table,
+        .review-table {
             left: 72.5pt;
             position: absolute;
-            top: 410.5pt;
             width: 467.21pt;
-            z-index: 2;
+            z-index: 1;
         }
 
-        .review-flow-field {
-            border: 0.75pt solid #555555;
-            border-bottom: 0;
+        .report-table {
+            top: 169pt;
+        }
+
+        .details-table {
+            top: 239pt;
+        }
+
+        .report-table td,
+        .details-table td,
+        .review-table td {
+            border: 0.75pt solid #111111;
+            font-size: 11pt;
+            line-height: 1.25;
             padding: 5pt 7pt 6pt;
+            vertical-align: top;
         }
 
-        .review-flow-field:last-of-type {
-            border-bottom: 0.75pt solid #555555;
+        .report-table td {
+            height: 58pt;
+            width: 33.333%;
         }
 
-        .review-flow-normal .review-flow-field {
-            min-height: 43.92pt;
+        .details-table td {
+            height: 44pt;
         }
 
-        .review-flow .label {
+        .label {
+            display: block;
+            font-weight: 700;
             margin-bottom: 3pt;
         }
 
-        .review-flow .value {
+        .value {
+            display: block;
+            font-weight: 400;
+        }
+
+        .incident-description-label,
+        .documentation-label {
             font-size: 11pt;
-            line-height: 1.25;
+            font-weight: 700;
+            left: 72.5pt;
+            position: absolute;
+            width: 467.21pt;
+            z-index: 1;
+        }
+
+        .incident-description-label {
+            top: 430pt;
+        }
+
+        .description-body,
+        .description-continuation {
+            font-size: 11pt;
+            left: 72.5pt;
+            line-height: 1.45;
+            position: absolute;
             text-align: justify;
+            width: 467.21pt;
+            z-index: 1;
         }
 
-        .review-flow .resolved-field .value {
-            text-align: left;
+        .description-body {
+            top: 456pt;
         }
 
-        .review-signatures {
-            border-collapse: collapse;
-            margin-top: 32pt;
-            table-layout: fixed;
+        .description-continuation {
+            top: 145pt;
+        }
+
+        .documentation-label {
+            top: 145pt;
+        }
+
+        .documentation-photo {
+            height: 337.5pt;
+            left: 81pt;
+            object-fit: cover;
+            position: absolute;
+            top: 178pt;
+            width: 450pt;
+            z-index: 1;
+        }
+
+        .documentation-empty {
+            font-size: 11pt;
+            left: 72.5pt;
+            position: absolute;
+            text-align: center;
+            top: 220pt;
+            width: 467.21pt;
+            z-index: 1;
+        }
+
+        .review-table {
+            top: 145pt;
+        }
+
+        .review-table td {
+            height: 44pt;
             width: 100%;
         }
 
-        .review-signatures td {
+        .review-table .value {
+            line-height: 1.3;
+            text-align: justify;
+        }
+
+        .signature-table {
+            left: 72.5pt;
+            position: absolute;
+            table-layout: fixed;
+            top: 350pt;
+            width: 467.21pt;
+            z-index: 1;
+        }
+
+        .signature-table td {
             border: 0;
             font-size: 11pt;
             line-height: 1.15;
@@ -414,7 +342,7 @@
         $resolvedDateLabel = $resolvedDate?->format('M d, Y h:i A') ?? 'Not yet resolved';
         $reviewedDateLabel = $resolvedDate?->format('M d, Y') ?? $generatedAt->format('M d, Y');
         $supervisorName = 'Ryan P. Tomol';
-        $evidenceImages = collect($imageDataUris)->take(4)->values();
+        $evidenceImages = collect($imageDataUris)->values();
         $narrative = $incident->description ?: 'No description provided.';
         $letterheadSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/slsu-letterhead.png'));
         $bagongSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/bagong-pilipinas.png'));
@@ -480,137 +408,153 @@
 
             return $chunks !== [] ? $chunks : [$fallback];
         };
+        $descriptionChunks = $splitText($narrative, 1200, 2400, 'No description provided.');
+        $firstDescription = array_shift($descriptionChunks) ?: 'No description provided.';
+        $descriptionContinuationChunks = collect($descriptionChunks);
         $actionTakenSummary = $limitWords($actionTaken, 30, 'No action recorded.');
-        $narrativeDetailChunks = collect($splitText($narrative, 2200, 2200, 'No description provided.'));
+    @endphp
+
+    @php
+        $pageChrome = function () use ($letterheadSrc, $bagongSrc, $qsSrc, $socotecSrc): string {
+            return '
+                <div class="core-values">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</div>
+                <img class="letterhead" src="'.e($letterheadSrc).'" alt="">
+                <div class="campus-meta">
+                    Bontoc Campus, San Ramon, Bontoc, Southern Leyte<br>
+                    Email: <a href="mailto:cd_bt@southernleytestateu.edu.ph">cd_bt@southernleytestateu.edu.ph</a><br>
+                    Website: www.southernleytestateu.edu.ph
+                </div>
+                <img class="bagong" src="'.e($bagongSrc).'" alt="">
+                <div class="header-rule"></div>
+                <div class="footer-rule"></div>
+                <img class="footer-qs" src="'.e($qsSrc).'" alt="">
+                <img class="footer-socotec" src="'.e($socotecSrc).'" alt="">
+            ';
+        };
     @endphp
 
     <section class="page">
-        @if ($incidentFormPageOneDataUri)
-            <img class="page-background" src="{{ $incidentFormPageOneDataUri }}" alt="">
-        @endif
+        {!! $pageChrome() !!}
 
-        <div class="core-values">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</div>
-        <div class="html-title">Security Incident Report</div>
-        <div class="html-subtitle">Incident Documentation for Checkpoint Patrol Monitoring</div>
+        <div class="report-title">Security Incident Report</div>
+        <div class="report-subtitle">Incident Documentation for Checkpoint Patrol Monitoring</div>
 
-        <div class="field report-no">
-            <span class="label">Report No.</span>
-            <span class="value">{{ $reportNumber }}</span>
-        </div>
-        <div class="field status">
-            <span class="label">Status:</span>
-            <span class="value">{{ $status }}</span>
-        </div>
-        <div class="field generated">
-            <span class="label">Generated:</span>
-            <span class="value">{{ $generatedAt->format('M d, Y h:i A') }}</span>
-        </div>
-        <div class="field category">
-            <span class="label">Category:</span>
-            <span class="value">{{ $category }}</span>
-        </div>
-        <div class="field priority">
-            <span class="label">Priority:</span>
-            <span class="value">{{ $priority }}</span>
-        </div>
-        <div class="field incident-date">
-            <span class="label">Incident Date / Time:</span>
-            <span class="value">{{ $incidentDate }}</span>
-        </div>
-        <div class="field reported-date">
-            <span class="label">Reported Date / Time:</span>
-            <span class="value">{{ $reportedDate }}</span>
-        </div>
-        <div class="field location">
-            <span class="label">Location / Checkpoint:</span>
-            <span class="value">{{ $locationCheckpoint }}</span>
-        </div>
-        <div class="field guard">
-            <span class="label">Security Guard:</span>
-            <span class="value name-value">{{ $guardName }}</span>
-        </div>
-        <div class="field employee">
-            <span class="label">Employee No.</span>
-            <span class="value">{{ $employeeNo }}</span>
-        </div>
+        <table class="report-table">
+            <tr>
+                <td>
+                    <span class="label">Report No.</span>
+                    <span class="value">{{ $reportNumber }}</span>
+                </td>
+                <td>
+                    <span class="label">Status:</span>
+                    <span class="value">{{ $status }}</span>
+                </td>
+                <td>
+                    <span class="label">Generated:</span>
+                    <span class="value">{{ $generatedAt->format('M d, Y h:i A') }}</span>
+                </td>
+            </tr>
+        </table>
 
+        <table class="details-table">
+            <tr>
+                <td colspan="2">
+                    <span class="label">Location / Checkpoint:</span>
+                    <span class="value">{{ $locationCheckpoint }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">Security Guard:</span>
+                    <span class="value">{{ $guardName }}</span>
+                </td>
+                <td>
+                    <span class="label">Employee No.</span>
+                    <span class="value">{{ $employeeNo }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">Category:</span>
+                    <span class="value">{{ $category }}</span>
+                </td>
+                <td>
+                    <span class="label">Priority:</span>
+                    <span class="value">{{ $priority }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">Incident Date / Time:</span>
+                    <span class="value">{{ $incidentDate }}</span>
+                </td>
+                <td>
+                    <span class="label">Reported Date / Time:</span>
+                    <span class="value">{{ $reportedDate }}</span>
+                </td>
+            </tr>
+        </table>
+
+        <div class="incident-description-label">Incident Description:</div>
+        <div class="description-body">{!! nl2br(e($firstDescription)) !!}</div>
     </section>
 
-    @foreach ($narrativeDetailChunks as $continuationNarrative)
+    @foreach ($descriptionContinuationChunks as $descriptionContinuation)
         <section class="page">
-            <div class="core-values">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</div>
-            <img class="narrative-letterhead" src="{{ $letterheadSrc }}" alt="">
-            <div class="narrative-campus">
-                Bontoc Campus, San Ramon, Bontoc, Southern Leyte<br>
-                Email: <a href="mailto:cd_bt@southernleytestateu.edu.ph">cd_bt@southernleytestateu.edu.ph</a><br>
-                Website: www.southernleytestateu.edu.ph
-            </div>
-            <img class="narrative-bagong" src="{{ $bagongSrc }}" alt="">
-            <div class="narrative-rule"></div>
-            <div class="continuation-body">{!! nl2br(e($continuationNarrative)) !!}</div>
-            <div class="narrative-footer-rule"></div>
-            <img class="narrative-qs" src="{{ $qsSrc }}" alt="">
-            <img class="narrative-socotec" src="{{ $socotecSrc }}" alt="">
+            {!! $pageChrome() !!}
+            <div class="description-continuation">{!! nl2br(e($descriptionContinuation)) !!}</div>
         </section>
     @endforeach
 
+    @forelse ($evidenceImages as $imageDataUri)
+        <section class="page">
+            {!! $pageChrome() !!}
+            <div class="documentation-label">Documentation</div>
+            <img class="documentation-photo" src="{{ $imageDataUri }}" alt="Incident documentation image {{ $loop->iteration }}">
+        </section>
+    @empty
+        <section class="page">
+            {!! $pageChrome() !!}
+            <div class="documentation-label">Documentation</div>
+            <div class="documentation-empty">No image evidence attached.</div>
+        </section>
+    @endforelse
+
     <section class="page">
-        @if ($incidentFormPageTwoDataUri)
-            <img class="page-background" src="{{ $incidentFormPageTwoDataUri }}" alt="">
-        @endif
+        {!! $pageChrome() !!}
 
-        <div class="core-values">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</div>
-        <div class="evidence-label">Evidence (Photo):</div>
+        <table class="review-table">
+            <tr>
+                <td>
+                    <span class="label">Action Taken:</span>
+                    <span class="value">{!! nl2br(e($actionTakenSummary)) !!}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">Resolved Date / Time:</span>
+                    <span class="value">{{ $resolvedDateLabel }}</span>
+                </td>
+            </tr>
+        </table>
 
-        <div class="field evidence-box">
-            @if ($evidenceImages->isNotEmpty())
-                <table class="photo-grid">
-                    @foreach ($evidenceImages->chunk(2) as $row)
-                        <tr>
-                            @foreach ($row as $imageDataUri)
-                                <td>
-                                    <img src="{{ $imageDataUri }}" alt="Incident image evidence {{ $loop->parent->iteration }}-{{ $loop->iteration }}">
-                                </td>
-                            @endforeach
-                            @if ($row->count() === 1)
-                                <td></td>
-                            @endif
-                        </tr>
-                    @endforeach
-                </table>
-            @else
-                <div class="empty-evidence">No image evidence attached.</div>
-            @endif
-        </div>
-
-        <div class="review-flow">
-            <div class="review-flow-field">
-                <span class="label">Action Taken:</span>
-                <span class="value">{!! nl2br(e($actionTakenSummary)) !!}</span>
-            </div>
-            <div class="review-flow-field resolved-field">
-                <span class="label">Resolved Date / Time:</span>
-                <span class="value">{{ $resolvedDateLabel }}</span>
-            </div>
-
-            <table class="review-signatures">
-                <tr>
-                    <td>
-                        <span class="signature-name">{{ $guardName }}</span>
-                        <span class="signature-label">Reporting Guard</span>
-                    </td>
-                    <td>
-                        <span class="signature-name">{{ $supervisorName }}</span>
-                        <span class="signature-label">Supervisor</span>
-                        <span class="office-label">Security and Safety Office</span>
-                    </td>
-                    <td>
-                        <span class="signature-name">{{ $reviewedDateLabel }}</span>
-                        <span class="signature-label">Date Reviewed</span>
-                    </td>
-                </tr>
-            </table>
-        </div>
+        <table class="signature-table">
+            <tr>
+                <td>
+                    <span class="signature-name">{{ $guardName }}</span>
+                    <span class="signature-label">Reporting Guard</span>
+                </td>
+                <td>
+                    <span class="signature-name">{{ $supervisorName }}</span>
+                    <span class="signature-label">Supervisor</span>
+                    <span class="office-label">Security and Safety Office</span>
+                </td>
+                <td>
+                    <span class="signature-name">{{ $reviewedDateLabel }}</span>
+                    <span class="signature-label">Date Reviewed</span>
+                </td>
+            </tr>
+        </table>
     </section>
 </body>
 </html>

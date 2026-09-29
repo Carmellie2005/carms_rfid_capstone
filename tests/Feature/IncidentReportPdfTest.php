@@ -172,7 +172,7 @@ class IncidentReportPdfTest extends TestCase
 
         $html = view('system.incidents.pdf', [
             'generatedAt' => now(),
-            'imageDataUris' => [],
+            'imageDataUris' => ['data:image/png;base64,'.$this->tinyPngBase64()],
             'incident' => $incident->fresh()->load(['securityGuard', 'checkpoint', 'patrolLog', 'images']),
             'incidentFormPageOneDataUri' => null,
             'incidentFormPageTwoDataUri' => 'data:image/png;base64,page-two-template',
@@ -180,6 +180,11 @@ class IncidentReportPdfTest extends TestCase
 
         $this->assertStringNotContainsString('Incident Description / Summary:', $html);
         $this->assertStringNotContainsString('Narrative of Incident Details', $html);
+        $this->assertStringContainsString('Incident Description:', $html);
+        $this->assertStringContainsString('Documentation', $html);
+        $this->assertStringContainsString('documentation-photo', $html);
+        $this->assertStringContainsString('width: 450pt', $html);
+        $this->assertStringContainsString('height: 337.5pt', $html);
         $this->assertStringContainsString('desc35', $html);
         $this->assertStringNotContainsString('continuation-title', $html);
         $this->assertStringNotContainsString('continuation-subtitle', $html);
@@ -187,7 +192,8 @@ class IncidentReportPdfTest extends TestCase
         $this->assertStringNotContainsString('continuation-meta', $html);
         $this->assertStringNotContainsString('continuation-box', $html);
         $this->assertStringNotContainsString('Narrative details page', $html);
-        $this->assertSame(1, substr_count($html, 'data:image/png;base64,page-two-template'));
+        $this->assertStringNotContainsString('page-background', $html);
+        $this->assertSame(0, substr_count($html, 'data:image/png;base64,page-two-template'));
         $this->assertStringContainsString('act30', $html);
         $this->assertStringNotContainsString('act31', $html);
         $this->assertStringNotContainsString('Review Notes:', $html);
