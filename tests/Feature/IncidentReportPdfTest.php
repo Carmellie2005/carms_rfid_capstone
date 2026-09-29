@@ -179,8 +179,10 @@ class IncidentReportPdfTest extends TestCase
         ])->render();
 
         $this->assertStringNotContainsString('Incident Description / Summary:', $html);
-        $this->assertStringContainsString('Narrative of Incident Details', $html);
+        $this->assertStringNotContainsString('Narrative of Incident Details', $html);
         $this->assertStringContainsString('desc35', $html);
+        $this->assertStringNotContainsString('continuation-title', $html);
+        $this->assertStringNotContainsString('continuation-subtitle', $html);
         $this->assertStringNotContainsString('continuation-meta', $html);
         $this->assertStringNotContainsString('continuation-box', $html);
         $this->assertStringNotContainsString('Narrative details page', $html);

@@ -137,34 +137,13 @@
             z-index: 1;
         }
 
-        .continuation-title {
-            font-size: 11pt;
-            font-weight: 700;
-            left: 0;
-            position: absolute;
-            text-align: center;
-            top: 114.8pt;
-            width: 612pt;
-            z-index: 1;
-        }
-
-        .continuation-subtitle {
-            font-size: 11pt;
-            left: 0;
-            position: absolute;
-            text-align: center;
-            top: 129.4pt;
-            width: 612pt;
-            z-index: 1;
-        }
-
         .continuation-content-plane {
             background: #ffffff;
-            height: 622pt;
-            left: 71.8pt;
+            height: 660pt;
+            left: 70.5pt;
             position: absolute;
-            top: 150pt;
-            width: 468.61pt;
+            top: 119pt;
+            width: 471pt;
             z-index: 1;
         }
 
@@ -175,7 +154,7 @@
             padding: 18pt 4pt 0;
             position: absolute;
             text-align: justify;
-            top: 158pt;
+            top: 134pt;
             width: 467.21pt;
             z-index: 2;
         }
@@ -503,8 +482,6 @@
 
             <div class="core-values">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</div>
             <div class="continuation-content-plane"></div>
-            <div class="continuation-title">Security Incident Report</div>
-            <div class="continuation-subtitle">Narrative of Incident Details</div>
             <div class="continuation-body">{!! nl2br(e($continuationNarrative)) !!}</div>
         </section>
     @endforeach
