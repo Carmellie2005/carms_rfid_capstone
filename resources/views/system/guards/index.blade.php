@@ -413,27 +413,27 @@
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="delete-guard-title"
-                    class="w-full max-w-md overflow-hidden rounded-lg bg-white shadow-2xl"
+                    class="w-full max-w-md select-none overflow-hidden rounded-lg bg-white shadow-2xl dark:bg-slate-900"
                 >
-                    <div class="border-b border-red-100 px-5 py-4">
-                        <h3 id="delete-guard-title" class="text-lg font-semibold text-red-700">Delete Guard</h3>
-                        <p class="mt-1 text-sm text-slate-500">This will remove the guard profile and linked guard account.</p>
+                    <div class="border-b border-red-100 px-5 py-4 dark:border-slate-700">
+                        <h3 id="delete-guard-title" class="text-lg font-semibold text-red-700 dark:text-red-400">Delete Guard</h3>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">This will remove the guard profile and linked guard account.</p>
                     </div>
 
                     <div class="px-5 py-5">
-                        <p class="text-sm text-slate-700">
+                        <p class="text-sm text-slate-700 dark:text-slate-200">
                             Are you sure you want to delete
-                            <span class="font-semibold text-slate-950" x-text="deleteGuardName"></span>?
+                            <span class="font-semibold text-slate-950 dark:text-white" x-text="deleteGuardName"></span>?
                         </p>
                     </div>
 
-                    <form method="POST" x-ref="deleteGuardForm" x-bind:action="deleteGuardAction" class="flex flex-col-reverse gap-2 border-t border-red-100 px-5 py-4 sm:flex-row sm:justify-end">
+                    <form method="POST" x-ref="deleteGuardForm" x-bind:action="deleteGuardAction" class="flex flex-col-reverse gap-2 border-t border-red-100 px-5 py-4 dark:border-slate-700 sm:flex-row sm:justify-end">
                         @csrf
                         @method('DELETE')
-                        <button type="button" x-ref="deleteGuardCancelButton" x-on:click="closeDeleteGuardModal()" class="inline-flex h-10 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <button type="button" x-ref="deleteGuardCancelButton" x-on:click="closeDeleteGuardModal()" class="inline-flex h-10 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900">
                             Cancel
                         </button>
-                        <button type="submit" class="inline-flex h-10 items-center justify-center rounded-md bg-red-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        <button type="submit" class="inline-flex h-10 items-center justify-center rounded-md bg-red-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900">
                             Delete Guard
                         </button>
                     </form>
