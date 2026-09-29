@@ -178,8 +178,12 @@ class IncidentReportPdfTest extends TestCase
             'incidentFormPageTwoDataUri' => null,
         ])->render();
 
-        $this->assertStringContainsString('Incident Description / Summary:', $html);
+        $this->assertStringNotContainsString('Incident Description / Summary:', $html);
         $this->assertStringContainsString('Narrative of Incident Details', $html);
+        $this->assertStringContainsString('desc35', $html);
+        $this->assertStringNotContainsString('continuation-meta', $html);
+        $this->assertStringNotContainsString('continuation-box', $html);
+        $this->assertStringNotContainsString('Narrative details page', $html);
         $this->assertStringContainsString('act30', $html);
         $this->assertStringNotContainsString('act31', $html);
         $this->assertStringNotContainsString('Review Notes:', $html);

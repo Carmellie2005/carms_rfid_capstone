@@ -129,20 +129,12 @@
             font-weight: 700;
         }
 
-        .narrative-label,
         .evidence-label {
             font-size: 11pt;
             font-weight: 700;
             left: 71.3pt;
             position: absolute;
             z-index: 1;
-        }
-
-        .narrative-text {
-            font-size: 11pt;
-            line-height: 1.45;
-            padding: 24pt 20pt;
-            text-align: justify;
         }
 
         .continuation-title {
@@ -166,47 +158,26 @@
             z-index: 1;
         }
 
-        .continuation-meta {
-            font-size: 10pt;
-            left: 72.5pt;
+        .continuation-content-plane {
+            background: #ffffff;
+            height: 622pt;
+            left: 71.8pt;
             position: absolute;
-            top: 160pt;
-            width: 467.21pt;
+            top: 150pt;
+            width: 468.61pt;
             z-index: 1;
         }
 
-        .continuation-label {
+        .continuation-body {
             font-size: 11pt;
-            font-weight: 700;
-            left: 72.5pt;
-            position: absolute;
-            top: 188pt;
-            z-index: 1;
-        }
-
-        .continuation-box {
-            border: 0.75pt solid #4b5563;
-            font-size: 11pt;
-            height: 600pt;
             left: 72.5pt;
             line-height: 1.45;
-            padding: 18pt 20pt;
+            padding: 18pt 4pt 0;
             position: absolute;
             text-align: justify;
-            top: 214pt;
+            top: 158pt;
             width: 467.21pt;
-            z-index: 1;
-        }
-
-        .continuation-footer {
-            bottom: 67pt;
-            color: #4b5563;
-            font-size: 9pt;
-            left: 72.5pt;
-            position: absolute;
-            text-align: center;
-            width: 467.21pt;
-            z-index: 1;
+            z-index: 2;
         }
 
         .report-no {
@@ -277,17 +248,6 @@
             left: 306.36pt;
             top: 383.38pt;
             width: 233.35pt;
-        }
-
-        .narrative-label {
-            top: 431.6pt;
-        }
-
-        .narrative-box {
-            height: 249.17pt;
-            left: 72.5pt;
-            top: 457.56pt;
-            width: 467.21pt;
         }
 
         .evidence-label {
@@ -479,12 +439,8 @@
 
             return $chunks !== [] ? $chunks : [$fallback];
         };
-        $incidentDescriptionSummary = $limitWords($narrative, 30, 'No description provided.');
         $actionTakenSummary = $limitWords($actionTaken, 30, 'No action recorded.');
-        $narrativeWordCount = count($words($narrative));
-        $narrativeDetailChunks = $narrativeWordCount > 30
-            ? collect($splitText($narrative, 2200, 2200, 'No description provided.'))
-            : collect();
+        $narrativeDetailChunks = collect($splitText($narrative, 2200, 2200, 'No description provided.'));
     @endphp
 
     <section class="page">
@@ -537,19 +493,19 @@
             <span class="value">{{ $employeeNo }}</span>
         </div>
 
-        <div class="narrative-label">Incident Description / Summary:</div>
-        <div class="field narrative-box narrative-text">{!! nl2br(e($incidentDescriptionSummary)) !!}</div>
     </section>
 
-    @foreach ($narrativeDetailChunks as $continuationIndex => $continuationNarrative)
+    @foreach ($narrativeDetailChunks as $continuationNarrative)
         <section class="page">
+            @if ($incidentFormPageTwoDataUri)
+                <img class="page-background" src="{{ $incidentFormPageTwoDataUri }}" alt="">
+            @endif
+
             <div class="core-values">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</div>
+            <div class="continuation-content-plane"></div>
             <div class="continuation-title">Security Incident Report</div>
             <div class="continuation-subtitle">Narrative of Incident Details</div>
-            <div class="continuation-meta">Report No.: {{ $reportNumber }} &nbsp; | &nbsp; Security Guard: {{ $guardName }}</div>
-            <div class="continuation-label">Narrative of Incident:</div>
-            <div class="continuation-box">{!! nl2br(e($continuationNarrative)) !!}</div>
-            <div class="continuation-footer">Narrative details page {{ $continuationIndex + 1 }} of {{ $narrativeDetailChunks->count() }}</div>
+            <div class="continuation-body">{!! nl2br(e($continuationNarrative)) !!}</div>
         </section>
     @endforeach
 
