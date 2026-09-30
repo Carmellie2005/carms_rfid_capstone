@@ -423,13 +423,13 @@
             </div>
         </section>
 
-        <footer class="bg-blue-950 text-white">
-            <div class="mx-auto flex max-w-7xl flex-col items-center justify-center gap-3 px-4 py-8 text-center sm:px-6 lg:px-8">
+        <footer class="bg-sky-900 text-white">
+            <div class="mx-auto flex max-w-7xl flex-col items-start justify-start gap-3 px-4 py-8 text-left sm:px-6 lg:px-8">
                 <div class="flex items-center gap-3">
                     <x-application-logo class="h-9 w-9 rounded-full bg-white p-1" />
                     <p class="text-2xl font-bold">SLSU BC Patrol</p>
                 </div>
-                <p class="text-sm text-blue-100">&copy; {{ now()->year }} All rights reserved.</p>
+                <p class="text-sm text-sky-100">&copy; {{ now()->year }} All rights reserved.</p>
             </div>
         </footer>
 

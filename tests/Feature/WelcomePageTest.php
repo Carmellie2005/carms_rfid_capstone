@@ -29,6 +29,8 @@ class WelcomePageTest extends TestCase
             ->assertSee('images/developers/cherry.jpg')
             ->assertSee('images/developers/clarice.jpg')
             ->assertSee('images/developers/karyl.jpg')
+            ->assertSee('bg-sky-900 text-white', false)
+            ->assertSee('items-start justify-start', false)
             ->assertSee('Carmela B. Hernandez')
             ->assertSee('Lead Programmer')
             ->assertSee('Cherry Ann R. Himo')
