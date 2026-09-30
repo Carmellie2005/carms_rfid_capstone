@@ -233,11 +233,11 @@
         }
 
         .checklist-label {
-            top: 164pt;
+            top: 474pt;
         }
 
         .checklist-table {
-            top: 190pt;
+            top: 498pt;
         }
 
         .checklist-table td {
@@ -298,7 +298,7 @@
         }
 
         .review-table {
-            top: 390pt;
+            top: 164pt;
         }
 
         .review-table td {
@@ -315,7 +315,7 @@
             left: 72.5pt;
             position: absolute;
             table-layout: fixed;
-            top: 610pt;
+            top: 369pt;
             width: 467.21pt;
             z-index: 1;
         }
@@ -369,7 +369,6 @@
         $checklistItems = \App\Support\PatrolChecklist::statusSummaries($patrolLog->checklistResponse);
         $checklistSummary = $patrolLog->checklistSummary();
         $remarks = $patrolLog->checklistResponse?->remarks ?: ($patrolLog->notes ?: 'No remarks recorded.');
-        $remarksSummary = str($remarks)->squish()->words(35, '');
         $attachedIncident = $patrolLog->incidentReport
             ? ($patrolLog->incidentReport->category ?? 'Incident report').' - '.str($patrolLog->incidentReport->status ?? 'submitted')->replace('_', ' ')->title()
             : 'No incident report attached.';
@@ -471,6 +470,23 @@
                 </td>
             </tr>
         </table>
+
+        <div class="checklist-label">Patrol Checklist:</div>
+        <table class="checklist-table">
+            @forelse ($checklistItems as $item)
+                <tr>
+                    <td>{{ $item['label'] }}</td>
+                    <td class="status-cell">{{ $item['status_label'] }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="2">No checklist status recorded.</td>
+                </tr>
+            @endforelse
+        </table>
+
+        <div class="notes-label">Remarks / Notes:</div>
+        <div class="notes-body">{!! nl2br(e($remarks)) !!}</div>
     </section>
 
     @forelse ($documentationImages->chunk(2) as $imagePair)
@@ -496,31 +512,11 @@
     <section class="page">
         {!! $pageChrome() !!}
 
-        <div class="checklist-label">Patrol Checklist:</div>
-        <table class="checklist-table">
-            @forelse ($checklistItems as $item)
-                <tr>
-                    <td>{{ $item['label'] }}</td>
-                    <td class="status-cell">{{ $item['status_label'] }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="2">No checklist status recorded.</td>
-                </tr>
-            @endforelse
-        </table>
-
         <table class="review-table">
             <tr>
                 <td>
                     <span class="label">Checklist Summary:</span>
                     <span class="value">{{ $checklistSummary }}</span>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <span class="label">Remarks / Notes:</span>
-                    <span class="value">{!! nl2br(e($remarksSummary)) !!}</span>
                 </td>
             </tr>
             <tr>
