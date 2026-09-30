@@ -71,28 +71,6 @@
             z-index: 1;
         }
 
-        .header-band {
-            background: #f1f1f1;
-            border-radius: 9pt;
-            height: 107pt;
-            left: 47pt;
-            position: absolute;
-            top: 13pt;
-            width: 481pt;
-            z-index: 0;
-        }
-
-        .header-accent {
-            background: #d9d9d9;
-            border-radius: 3pt;
-            height: 98pt;
-            left: 55pt;
-            position: absolute;
-            top: 18pt;
-            width: 4pt;
-            z-index: 1;
-        }
-
         .letterhead {
             height: 102pt;
             left: 75pt;
@@ -430,8 +408,6 @@
     @php
         $pageChrome = function () use ($letterheadSrc, $bagongSrc, $qsSrc, $socotecSrc): string {
             return '
-                <div class="header-band"></div>
-                <div class="header-accent"></div>
                 <div class="core-values">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</div>
                 <img class="letterhead" src="'.e($letterheadSrc).'" alt="">
                 <div class="campus-meta">
