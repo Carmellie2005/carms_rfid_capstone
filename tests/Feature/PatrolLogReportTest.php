@@ -15,9 +15,10 @@ class PatrolLogReportTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_guard_patrol_logs_page_has_date_filter_without_pdf_actions(): void
+    public function test_guard_patrol_logs_page_has_date_filter_and_pdf_actions(): void
     {
         $guard = $this->createGuard('SG-FILTER', 'RFID-FILTER');
+        $patrolLog = $this->createPatrolLog($guard);
 
         $response = $this
             ->actingAs($guard->user)
@@ -26,8 +27,64 @@ class PatrolLogReportTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('Date Filter')
-            ->assertDontSee('Download PDF')
-            ->assertDontSee('Print PDF');
+            ->assertSee('Download PDF')
+            ->assertSee('Print PDF')
+            ->assertSee('/patrol-logs/'.$patrolLog->id.'/pdf', false);
+    }
+
+    public function test_supervisor_can_download_patrol_log_pdf(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'admin']);
+        $guard = $this->createGuard('SG-PDF', 'RFID-PDF');
+        $patrolLog = $this->createPatrolLog($guard);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('patrol-logs.pdf', $patrolLog));
+
+        $response->assertOk();
+        $this->assertStringContainsString('application/pdf', $response->headers->get('content-type'));
+        $this->assertStringContainsString('patrol-log-cp-sg-pdf', $response->headers->get('content-disposition'));
+    }
+
+    public function test_supervisor_can_preview_patrol_log_pdf_inline(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'admin']);
+        $guard = $this->createGuard('SG-PREVIEW', 'RFID-PREVIEW');
+        $patrolLog = $this->createPatrolLog($guard);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('patrol-logs.pdf', ['patrolLog' => $patrolLog, 'preview' => 1]));
+
+        $response->assertOk();
+        $this->assertStringContainsString('application/pdf', $response->headers->get('content-type'));
+        $this->assertStringContainsString('inline', $response->headers->get('content-disposition'));
+    }
+
+    public function test_guard_can_download_own_patrol_log_pdf(): void
+    {
+        $guard = $this->createGuard('SG-OWN', 'RFID-OWN');
+        $patrolLog = $this->createPatrolLog($guard);
+
+        $response = $this
+            ->actingAs($guard->user)
+            ->get(route('patrol-logs.pdf', $patrolLog));
+
+        $response->assertOk();
+        $this->assertStringContainsString('application/pdf', $response->headers->get('content-type'));
+    }
+
+    public function test_guard_cannot_download_another_guards_patrol_log_pdf(): void
+    {
+        $owner = $this->createGuard('SG-OWNER', 'RFID-OWNER');
+        $patrolLog = $this->createPatrolLog($owner);
+        $otherGuard = $this->createGuard('SG-OTHER', 'RFID-OTHER');
+
+        $this
+            ->actingAs($otherGuard->user)
+            ->get(route('patrol-logs.pdf', $patrolLog))
+            ->assertForbidden();
     }
 
     public function test_patrol_logs_page_opens_checklist_and_proof_photos_from_details_button(): void

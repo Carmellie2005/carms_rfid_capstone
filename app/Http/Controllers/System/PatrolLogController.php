@@ -7,11 +7,14 @@ use App\Models\ChecklistProofPhoto;
 use App\Models\Checkpoint;
 use App\Models\Guard;
 use App\Models\PatrolLog;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PatrolLogController extends Controller
@@ -32,6 +35,32 @@ class PatrolLogController extends Controller
             'checkpoints' => Checkpoint::orderBy('name')->get(),
             'isSupervisor' => $isSupervisor,
         ]);
+    }
+
+    public function downloadPdf(Request $request, PatrolLog $patrolLog): Response
+    {
+        $this->ensureCanViewPatrolLog($request, $patrolLog);
+
+        $patrolLog->load(['securityGuard', 'checkpoint', 'checklistResponse.proofPhotos', 'incidentReport']);
+        File::ensureDirectoryExists(storage_path('fonts'));
+
+        $pdf = Pdf::loadView('system.patrols.pdf', [
+            'generatedAt' => now(config('app.timezone')),
+            'imageDataUris' => $this->patrolImageDataUris($patrolLog),
+            'patrolLog' => $patrolLog,
+        ])->setPaper([0, 0, 595.28, 841.89]);
+
+        $filename = $this->pdfFilename($patrolLog);
+
+        $response = $request->boolean('print') || $request->boolean('preview')
+            ? $pdf->stream($filename)
+            : $pdf->download($filename);
+
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+
+        return $response;
     }
 
     public function areaSelfie(Request $request, PatrolLog $patrolLog): Response
@@ -109,6 +138,85 @@ class PatrolLogController extends Controller
         $guardId = $request->user()->guardProfile?->id;
 
         abort_unless($guardId && $patrolLog->guard_id === $guardId, 403);
+    }
+
+    private function patrolImageDataUris(PatrolLog $patrolLog): array
+    {
+        $areaSelfie = $this->imageDataUriFromPatrolSelfie($patrolLog);
+        $proofPhotos = $patrolLog->checklistResponse?->proofPhotos ?? collect();
+
+        return collect([$areaSelfie])
+            ->filter()
+            ->merge(
+                $proofPhotos
+                    ->map(fn (ChecklistProofPhoto $photo) => $this->imageDataUriFromProofPhoto($photo))
+                    ->filter()
+            )
+            ->values()
+            ->all();
+    }
+
+    private function imageDataUriFromPatrolSelfie(PatrolLog $patrolLog): ?string
+    {
+        if ($patrolLog->area_selfie_path) {
+            $dataUri = $this->imageDataUriFromPath($patrolLog->area_selfie_path);
+
+            if ($dataUri) {
+                return $dataUri;
+            }
+        }
+
+        return $this->imageDataUriFromBase64(
+            $patrolLog->area_selfie_image_data,
+            $patrolLog->area_selfie_mime_type ?: 'image/jpeg',
+        );
+    }
+
+    private function imageDataUriFromProofPhoto(ChecklistProofPhoto $photo): ?string
+    {
+        if ($photo->image_path) {
+            $dataUri = $this->imageDataUriFromPath($photo->image_path);
+
+            if ($dataUri) {
+                return $dataUri;
+            }
+        }
+
+        return $this->imageDataUriFromBase64($photo->image_data, $photo->mime_type ?: 'image/jpeg');
+    }
+
+    private function imageDataUriFromPath(string $path): ?string
+    {
+        if (! Storage::disk('public')->exists($path)) {
+            return null;
+        }
+
+        $mimeType = Storage::disk('public')->mimeType($path) ?: 'image/jpeg';
+        $contents = Storage::disk('public')->get($path);
+
+        return sprintf('data:%s;base64,%s', $mimeType, base64_encode($contents));
+    }
+
+    private function imageDataUriFromBase64(?string $imageData, string $mimeType): ?string
+    {
+        if (! $imageData) {
+            return null;
+        }
+
+        $contents = base64_decode($imageData, true);
+
+        if ($contents === false) {
+            return null;
+        }
+
+        return sprintf('data:%s;base64,%s', $mimeType, base64_encode($contents));
+    }
+
+    private function pdfFilename(PatrolLog $patrolLog): string
+    {
+        $checkpoint = Str::slug($patrolLog->checkpoint?->code ?: $patrolLog->checkpoint_code ?: 'patrol-log');
+
+        return sprintf('patrol-log-%s-%06d.pdf', $checkpoint, $patrolLog->id);
     }
 
 }

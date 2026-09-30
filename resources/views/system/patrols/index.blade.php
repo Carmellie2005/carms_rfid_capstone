@@ -131,6 +131,9 @@
                 @forelse ($logs as $log)
                     @php
                         $scanTime = $log->scanned_at?->timezone(config('app.timezone'));
+                        $patrolPdfVersion = $log->updated_at?->timestamp ?? now()->timestamp;
+                        $patrolPdfDownloadUrl = route('patrol-logs.pdf', ['patrolLog' => $log, 'download' => 1, 'v' => $patrolPdfVersion]);
+                        $patrolPdfPreviewUrl = route('patrol-logs.pdf', ['patrolLog' => $log, 'preview' => 1, 'v' => $patrolPdfVersion]);
                     @endphp
                     <article class="min-w-0 rounded-md border border-blue-100 bg-white p-3 shadow-sm">
                         <div class="flex items-start justify-between gap-2">
@@ -186,7 +189,13 @@
                             </div>
                         </div>
 
-                        <div class="mt-3 flex justify-end">
+                        <div class="mt-3 flex flex-wrap justify-end gap-2">
+                            <a href="{{ $patrolPdfPreviewUrl }}" target="_blank" rel="noopener" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                Print PDF
+                            </a>
+                            <a href="{{ $patrolPdfDownloadUrl }}" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                Download PDF
+                            </a>
                             <button type="button" class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-blue-200 bg-white px-3 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openPatrolDetails(@js((string) $log->id))" aria-label="View patrol details for {{ $log->securityGuard?->name ?? 'this patrol log' }}">
                                 <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                     <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
@@ -203,7 +212,7 @@
 
             <div class="hidden overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm lg:block">
                 <div class="overflow-x-auto">
-                    <table class="w-full min-w-[76rem] divide-y divide-blue-100 text-sm">
+                    <table class="w-full min-w-[84rem] divide-y divide-blue-100 text-sm">
                         <thead class="bg-blue-50/70 text-left text-xs font-extrabold uppercase text-blue-800">
                             <tr>
                                 <th class="px-5 py-3">Time</th>
@@ -213,13 +222,16 @@
                                 <th class="px-5 py-3">Status</th>
                                 <th class="px-5 py-3">Checklist</th>
                                 <th class="px-5 py-3">Incident</th>
-                                <th class="px-5 py-3 text-center">View</th>
+                                <th class="px-5 py-3 text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-blue-50">
                             @forelse ($logs as $log)
                                 @php
                                     $scanTime = $log->scanned_at?->timezone(config('app.timezone'));
+                                    $patrolPdfVersion = $log->updated_at?->timestamp ?? now()->timestamp;
+                                    $patrolPdfDownloadUrl = route('patrol-logs.pdf', ['patrolLog' => $log, 'download' => 1, 'v' => $patrolPdfVersion]);
+                                    $patrolPdfPreviewUrl = route('patrol-logs.pdf', ['patrolLog' => $log, 'preview' => 1, 'v' => $patrolPdfVersion]);
                                 @endphp
                                 <tr class="align-top">
                                     <td class="px-5 py-4 whitespace-nowrap text-slate-600">
@@ -262,13 +274,21 @@
                                             <span class="text-xs text-slate-500">None</span>
                                         @endif
                                     </td>
-                                    <td class="px-5 py-4 text-center">
-                                        <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-blue-200 bg-white text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openPatrolDetails(@js((string) $log->id))" aria-label="View patrol details for {{ $log->securityGuard?->name ?? 'this patrol log' }}" title="View patrol details">
-                                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
-                                            </svg>
-                                        </button>
+                                    <td class="px-5 py-4">
+                                        <div class="flex flex-wrap justify-center gap-2">
+                                            <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-blue-200 bg-white text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openPatrolDetails(@js((string) $log->id))" aria-label="View patrol details for {{ $log->securityGuard?->name ?? 'this patrol log' }}" title="View patrol details">
+                                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
+                                                </svg>
+                                            </button>
+                                            <a href="{{ $patrolPdfPreviewUrl }}" target="_blank" rel="noopener" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-50">
+                                                Print PDF
+                                            </a>
+                                            <a href="{{ $patrolPdfDownloadUrl }}" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-50">
+                                                Download PDF
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
@@ -300,6 +320,9 @@
                         ? route('patrol-logs.area-selfie.show', $log)
                         : null;
                     $detailPhotoCount = $detailProofPhotos->count() + ($detailAreaSelfieUrl ? 1 : 0);
+                    $detailPdfVersion = $log->updated_at?->timestamp ?? now()->timestamp;
+                    $detailPdfDownloadUrl = route('patrol-logs.pdf', ['patrolLog' => $log, 'download' => 1, 'v' => $detailPdfVersion]);
+                    $detailPdfPreviewUrl = route('patrol-logs.pdf', ['patrolLog' => $log, 'preview' => 1, 'v' => $detailPdfVersion]);
                 @endphp
 
                 <section x-show="selectedPatrolId === @js((string) $log->id)" x-cloak class="flex max-h-[88dvh] w-full max-w-5xl flex-col overflow-hidden rounded-md border border-blue-100 bg-white shadow-2xl">
@@ -453,8 +476,14 @@
                         </div>
                     </div>
 
-                    <div class="border-t border-blue-100 bg-white px-5 py-3">
-                        <button type="button" class="inline-flex h-10 w-full items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="closePatrolDetails()">
+                    <div class="flex flex-col gap-2 border-t border-blue-100 bg-white px-5 py-3 sm:flex-row sm:justify-end">
+                        <a href="{{ $detailPdfPreviewUrl }}" target="_blank" rel="noopener" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Print PDF
+                        </a>
+                        <a href="{{ $detailPdfDownloadUrl }}" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Download PDF
+                        </a>
+                        <button type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="closePatrolDetails()">
                             Close
                         </button>
                     </div>
