@@ -27,7 +27,7 @@
 
         @page {
             margin: 0;
-            size: 612pt 936pt;
+            size: 595.28pt 841.89pt;
         }
 
         * {
@@ -45,11 +45,11 @@
         }
 
         .page {
-            height: 936pt;
+            height: 841.89pt;
             overflow: hidden;
             page-break-after: always;
             position: relative;
-            width: 612pt;
+            width: 595.28pt;
         }
 
         .page:last-child {
@@ -65,7 +65,7 @@
             line-height: 1;
             position: absolute;
             text-align: center;
-            top: 126pt;
+            top: 116pt;
             width: 544pt;
             white-space: nowrap;
             z-index: 1;
@@ -75,7 +75,7 @@
             height: 77.1pt;
             left: 145pt;
             position: absolute;
-            top: 45pt;
+            top: 26pt;
             width: 226.8pt;
             z-index: 1;
         }
@@ -86,7 +86,7 @@
             left: 208pt;
             line-height: 1.15;
             position: absolute;
-            top: 84pt;
+            top: 65pt;
             width: 230pt;
             z-index: 2;
         }
@@ -100,7 +100,7 @@
             height: 62.4pt;
             left: 385pt;
             position: absolute;
-            top: 40pt;
+            top: 21pt;
             width: 59.8pt;
             z-index: 1;
         }
@@ -109,7 +109,7 @@
             border-top: 1pt solid #111111;
             left: 52pt;
             position: absolute;
-            top: 141pt;
+            top: 129pt;
             width: 508pt;
             z-index: 1;
         }
@@ -148,7 +148,7 @@
             position: absolute;
             text-align: center;
             top: 153pt;
-            width: 612pt;
+            width: 595.28pt;
             z-index: 1;
         }
 
@@ -159,7 +159,7 @@
             position: absolute;
             text-align: center;
             top: 168pt;
-            width: 612pt;
+            width: 595.28pt;
             z-index: 1;
         }
 

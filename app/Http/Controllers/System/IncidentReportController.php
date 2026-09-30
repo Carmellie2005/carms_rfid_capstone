@@ -176,7 +176,7 @@ class IncidentReportController extends Controller
             'incident' => $incidentReport,
             'incidentFormPageOneDataUri' => $this->incidentFormDataUri('security-incident-report-format-page-1.png'),
             'incidentFormPageTwoDataUri' => $this->incidentFormDataUri('security-incident-report-format-page-2.png'),
-        ])->setPaper([0, 0, 612, 936]);
+        ])->setPaper([0, 0, 595.28, 841.89]);
 
         $filename = $this->pdfFilename($incidentReport);
 
