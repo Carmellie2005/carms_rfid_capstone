@@ -58,35 +58,57 @@
 
         .core-values {
             font-family: "Poppins", "Calibri", "DejaVu Sans", sans-serif;
-            font-size: 5.8pt;
+            font-size: 7pt;
             font-weight: 400;
-            left: 72.5pt;
+            left: 34pt;
             letter-spacing: -0.01em;
             line-height: 1;
             position: absolute;
             text-align: center;
-            top: 104pt;
-            width: 467.21pt;
+            top: 126pt;
+            width: 544pt;
             white-space: nowrap;
             z-index: 1;
         }
 
-        .letterhead {
-            height: 76pt;
-            left: 144pt;
+        .header-band {
+            background: #f1f1f1;
+            border-radius: 9pt;
+            height: 107pt;
+            left: 47pt;
             position: absolute;
-            top: 24pt;
-            width: 220pt;
+            top: 13pt;
+            width: 481pt;
+            z-index: 0;
+        }
+
+        .header-accent {
+            background: #d9d9d9;
+            border-radius: 3pt;
+            height: 98pt;
+            left: 55pt;
+            position: absolute;
+            top: 18pt;
+            width: 4pt;
+            z-index: 1;
+        }
+
+        .letterhead {
+            height: 102pt;
+            left: 75pt;
+            position: absolute;
+            top: 17pt;
+            width: 300pt;
             z-index: 1;
         }
 
         .campus-meta {
-            font-size: 7.4pt;
-            left: 198pt;
+            font-size: 7.2pt;
+            left: 205pt;
             line-height: 1.15;
             position: absolute;
-            top: 63pt;
-            width: 190pt;
+            top: 78pt;
+            width: 210pt;
             z-index: 2;
         }
 
@@ -96,47 +118,37 @@
         }
 
         .bagong {
-            height: 70pt;
-            left: 383pt;
+            height: 76pt;
+            left: 431pt;
             position: absolute;
-            top: 22pt;
-            width: 70pt;
+            top: 19pt;
+            width: 73pt;
             z-index: 1;
         }
 
         .header-rule {
-            border-top: 1pt solid #111111;
-            left: 52pt;
-            position: absolute;
-            top: 121pt;
-            width: 508pt;
-            z-index: 1;
+            display: none;
         }
 
         .footer-rule {
-            border-top: 1pt solid #111111;
-            bottom: 80pt;
-            left: 72.5pt;
-            position: absolute;
-            width: 467.21pt;
-            z-index: 1;
+            display: none;
         }
 
         .footer-qs {
-            bottom: 30pt;
-            height: 49pt;
-            left: 333pt;
+            bottom: 28pt;
+            height: 62pt;
+            left: 76pt;
             position: absolute;
-            width: 49pt;
+            width: 62pt;
             z-index: 1;
         }
 
         .footer-socotec {
-            bottom: 34pt;
-            height: 42pt;
-            left: 416pt;
+            bottom: 29pt;
+            height: 60pt;
+            left: 174pt;
             position: absolute;
-            width: 106pt;
+            width: 107pt;
             z-index: 1;
         }
 
@@ -146,7 +158,7 @@
             left: 0;
             position: absolute;
             text-align: center;
-            top: 132pt;
+            top: 153pt;
             width: 612pt;
             z-index: 1;
         }
@@ -157,7 +169,7 @@
             left: 0;
             position: absolute;
             text-align: center;
-            top: 147pt;
+            top: 168pt;
             width: 612pt;
             z-index: 1;
         }
@@ -180,11 +192,11 @@
         }
 
         .report-table {
-            top: 174pt;
+            top: 196pt;
         }
 
         .details-table {
-            top: 244pt;
+            top: 266pt;
         }
 
         .report-table td,
@@ -228,7 +240,7 @@
         }
 
         .incident-description-label {
-            top: 474pt;
+            top: 496pt;
         }
 
         .description-body,
@@ -243,15 +255,15 @@
         }
 
         .description-body {
-            top: 500pt;
+            top: 522pt;
         }
 
         .description-continuation {
-            top: 145pt;
+            top: 164pt;
         }
 
         .documentation-label {
-            top: 145pt;
+            top: 164pt;
         }
 
         .documentation-photo {
@@ -259,7 +271,7 @@
             left: 81pt;
             object-fit: cover;
             position: absolute;
-            top: 178pt;
+            top: 197pt;
             width: 450pt;
             z-index: 1;
         }
@@ -269,13 +281,13 @@
             left: 72.5pt;
             position: absolute;
             text-align: center;
-            top: 220pt;
+            top: 239pt;
             width: 467.21pt;
             z-index: 1;
         }
 
         .review-table {
-            top: 145pt;
+            top: 164pt;
         }
 
         .review-table td {
@@ -292,7 +304,7 @@
             left: 72.5pt;
             position: absolute;
             table-layout: fixed;
-            top: 350pt;
+            top: 369pt;
             width: 467.21pt;
             z-index: 1;
         }
@@ -418,6 +430,8 @@
     @php
         $pageChrome = function () use ($letterheadSrc, $bagongSrc, $qsSrc, $socotecSrc): string {
             return '
+                <div class="header-band"></div>
+                <div class="header-accent"></div>
                 <div class="core-values">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</div>
                 <img class="letterhead" src="'.e($letterheadSrc).'" alt="">
                 <div class="campus-meta">
