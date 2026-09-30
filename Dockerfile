@@ -31,6 +31,7 @@ RUN apt-get update \
         libzip-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
+        bcmath \
         curl \
         gd \
         intl \
