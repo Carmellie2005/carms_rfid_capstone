@@ -392,31 +392,31 @@
             ];
         @endphp
 
-        <section aria-labelledby="development-team-heading" class="bg-white py-12 dark:bg-slate-950 sm:py-16">
+        <section aria-labelledby="development-team-heading" class="bg-white py-8 dark:bg-slate-950 sm:py-10">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-center gap-4">
-                    <span class="hidden h-px w-24 bg-blue-400 sm:block" aria-hidden="true"></span>
-                    <h2 id="development-team-heading" class="text-center text-2xl font-extrabold uppercase text-blue-950 dark:text-white sm:text-3xl">
+                <div class="flex items-center justify-center gap-3">
+                    <span class="hidden h-px w-16 bg-blue-400 sm:block" aria-hidden="true"></span>
+                    <h2 id="development-team-heading" class="text-center text-xl font-extrabold uppercase text-blue-950 dark:text-white sm:text-2xl">
                         Development Team
                     </h2>
-                    <span class="hidden h-px w-24 bg-blue-400 sm:block" aria-hidden="true"></span>
+                    <span class="hidden h-px w-16 bg-blue-400 sm:block" aria-hidden="true"></span>
                 </div>
 
-                <div class="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-8 lg:grid-cols-4">
+                <div class="mt-7 grid grid-cols-2 gap-x-4 gap-y-7 sm:gap-x-8 lg:grid-cols-4">
                     @foreach ($developers as $developer)
                         <article class="min-w-0 text-center">
                             <img
                                 src="{{ asset($developer['photo']) }}"
                                 alt="{{ $developer['name'] }}"
-                                class="mx-auto h-28 w-28 rounded-full border-4 border-blue-300 object-cover object-center shadow-lg shadow-blue-950/10 dark:border-blue-500 sm:h-36 sm:w-36 lg:h-40 lg:w-40"
+                                class="mx-auto h-24 w-24 rounded-full border-[3px] border-blue-300 object-cover object-center shadow-md shadow-blue-950/10 dark:border-blue-500 sm:h-28 sm:w-28 lg:h-32 lg:w-32"
                             >
-                            <h3 class="mt-4 text-base font-bold leading-tight text-blue-950 dark:text-white sm:text-lg">
+                            <h3 class="mt-3 text-sm font-bold leading-tight text-blue-950 dark:text-white sm:text-base">
                                 {{ $developer['name'] }}
                             </h3>
-                            <p class="mt-1 text-sm font-medium text-slate-600 dark:text-slate-300 sm:text-base">
+                            <p class="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300 sm:text-sm">
                                 {{ $developer['role'] }}
                             </p>
-                            <span class="mx-auto mt-4 block h-0.5 w-12 rounded-full bg-blue-500" aria-hidden="true"></span>
+                            <span class="mx-auto mt-3 block h-0.5 w-10 rounded-full bg-blue-500" aria-hidden="true"></span>
                         </article>
                     @endforeach
                 </div>
