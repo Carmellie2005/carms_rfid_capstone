@@ -105,17 +105,27 @@
         }
 
         .header-rule {
-            display: none;
+            border-top: 1pt solid #111111;
+            left: 52pt;
+            position: absolute;
+            top: 141pt;
+            width: 508pt;
+            z-index: 1;
         }
 
         .footer-rule {
-            display: none;
+            border-top: 1pt solid #111111;
+            bottom: 102pt;
+            left: 52pt;
+            position: absolute;
+            width: 508pt;
+            z-index: 1;
         }
 
         .footer-qs {
             bottom: 28pt;
             height: 62pt;
-            left: 76pt;
+            left: 341pt;
             position: absolute;
             width: 62pt;
             z-index: 1;
@@ -124,7 +134,7 @@
         .footer-socotec {
             bottom: 29pt;
             height: 60pt;
-            left: 174pt;
+            left: 429pt;
             position: absolute;
             width: 107pt;
             z-index: 1;
