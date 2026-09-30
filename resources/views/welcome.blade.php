@@ -397,7 +397,7 @@
                 <div class="flex items-center justify-center gap-3">
                     <span class="hidden h-px w-16 bg-blue-400 sm:block" aria-hidden="true"></span>
                     <h2 id="development-team-heading" class="text-center text-xl font-extrabold uppercase text-blue-950 dark:text-white sm:text-2xl">
-                        Development Team
+                        Meet the Developers
                     </h2>
                     <span class="hidden h-px w-16 bg-blue-400 sm:block" aria-hidden="true"></span>
                 </div>

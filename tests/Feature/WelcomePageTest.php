@@ -24,7 +24,7 @@ class WelcomePageTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Development Team')
+            ->assertSee('Meet the Developers')
             ->assertSee('images/developers/carmela.jpg')
             ->assertSee('images/developers/cherry.jpg')
             ->assertSee('images/developers/clarice.jpg')
