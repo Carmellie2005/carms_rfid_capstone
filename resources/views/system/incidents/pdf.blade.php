@@ -82,11 +82,11 @@
 
         .campus-meta {
             font-size: 7.2pt;
-            left: 205pt;
+            left: 160pt;
             line-height: 1.15;
             position: absolute;
             top: 78pt;
-            width: 210pt;
+            width: 250pt;
             z-index: 2;
         }
 
