@@ -233,17 +233,19 @@
         }
 
         .checklist-label {
-            top: 474pt;
+            top: 500pt;
         }
 
         .checklist-table {
-            top: 498pt;
+            top: 523pt;
         }
 
         .checklist-table td {
-            font-size: 10.4pt;
-            height: 25pt;
-            padding: 4pt 6pt 5pt;
+            font-size: 10pt;
+            height: 22pt;
+            line-height: 1.15;
+            padding: 3pt 6pt;
+            vertical-align: middle;
         }
 
         .checklist-table .status-cell {
@@ -252,7 +254,7 @@
         }
 
         .notes-label {
-            top: 654pt;
+            top: 656pt;
         }
 
         .notes-body {
@@ -261,7 +263,7 @@
             line-height: 1.35;
             position: absolute;
             text-align: justify;
-            top: 677pt;
+            top: 679pt;
             width: 467.21pt;
             z-index: 1;
         }
