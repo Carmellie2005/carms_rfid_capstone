@@ -423,7 +423,7 @@
             </div>
         </section>
 
-        <footer class="border-t border-blue-100 bg-white text-blue-950 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+        <footer class="border-t border-blue-100 bg-[#eef8ff] text-blue-950 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
             <div class="mx-auto flex max-w-7xl flex-col items-start justify-start gap-3 px-4 py-8 text-left sm:px-6 lg:px-8">
                 <div class="flex items-center gap-4">
                     <x-application-logo class="h-14 w-14 rounded-full" />

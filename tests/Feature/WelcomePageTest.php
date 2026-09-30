@@ -29,7 +29,7 @@ class WelcomePageTest extends TestCase
             ->assertSee('images/developers/cherry.jpg')
             ->assertSee('images/developers/clarice.jpg')
             ->assertSee('images/developers/karyl.jpg')
-            ->assertSee('bg-white text-blue-950', false)
+            ->assertSee('bg-[#eef8ff] text-blue-950', false)
             ->assertSee('items-start justify-start', false)
             ->assertSee('h-14 w-14 rounded-full', false)
             ->assertSee('Carmela B. Hernandez')
