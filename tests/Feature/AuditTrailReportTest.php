@@ -47,6 +47,7 @@ class AuditTrailReportTest extends TestCase
             ->assertSee('Selected guard patrol record.')
             ->assertDontSee('Other guard patrol record.')
             ->assertSee('border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700', false)
+            ->assertSee('dark:bg-emerald-950/40', false)
             ->assertSee('Download PDF')
             ->assertSee('Print PDF');
     }
@@ -88,6 +89,8 @@ class AuditTrailReportTest extends TestCase
             ->assertSee('Guard matched checkpoint reader.')
             ->assertSee('6:00 PM - 5:00 AM')
             ->assertSee('Pending Checklist')
+            ->assertSee('dark:bg-slate-800/80', false)
+            ->assertSee('dark:bg-amber-950/40', false)
             ->assertDontSee('SECRET-RFID')
             ->assertDontSee('SECRET-DEVICE')
             ->assertDontSee('private-before@example.com')

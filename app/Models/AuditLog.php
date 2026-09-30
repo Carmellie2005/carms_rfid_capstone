@@ -80,10 +80,10 @@ class AuditLog extends Model
     public function resultBadgeClasses(): string
     {
         return match ($this->resultTone()) {
-            'success' => 'inline-flex whitespace-nowrap rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200',
-            'warning' => 'inline-flex whitespace-nowrap rounded-md bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 ring-1 ring-amber-200',
-            'danger' => 'inline-flex whitespace-nowrap rounded-md bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-700 ring-1 ring-rose-200',
-            default => 'inline-flex whitespace-nowrap rounded-md bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200',
+            'success' => 'inline-flex whitespace-nowrap rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-700/60',
+            'warning' => 'inline-flex whitespace-nowrap rounded-md bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-700/60',
+            'danger' => 'inline-flex whitespace-nowrap rounded-md bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-700 ring-1 ring-rose-200 dark:bg-rose-950/40 dark:text-rose-200 dark:ring-rose-700/60',
+            default => 'inline-flex whitespace-nowrap rounded-md bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-600',
         };
     }
 
