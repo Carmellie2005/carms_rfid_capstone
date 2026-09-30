@@ -131,7 +131,7 @@
                 @forelse ($logs as $log)
                     @php
                         $scanTime = $log->scanned_at?->timezone(config('app.timezone'));
-                        $patrolPdfVersion = $log->updated_at?->timestamp ?? now()->timestamp;
+                        $patrolPdfVersion = now()->timestamp;
                         $patrolPdfDownloadUrl = route('patrol-logs.pdf', ['patrolLog' => $log, 'download' => 1, 'v' => $patrolPdfVersion]);
                         $patrolPdfPreviewUrl = route('patrol-logs.pdf', ['patrolLog' => $log, 'preview' => 1, 'v' => $patrolPdfVersion]);
                     @endphp
@@ -229,7 +229,7 @@
                             @forelse ($logs as $log)
                                 @php
                                     $scanTime = $log->scanned_at?->timezone(config('app.timezone'));
-                                    $patrolPdfVersion = $log->updated_at?->timestamp ?? now()->timestamp;
+                                    $patrolPdfVersion = now()->timestamp;
                                     $patrolPdfDownloadUrl = route('patrol-logs.pdf', ['patrolLog' => $log, 'download' => 1, 'v' => $patrolPdfVersion]);
                                     $patrolPdfPreviewUrl = route('patrol-logs.pdf', ['patrolLog' => $log, 'preview' => 1, 'v' => $patrolPdfVersion]);
                                 @endphp
@@ -320,7 +320,7 @@
                         ? route('patrol-logs.area-selfie.show', $log)
                         : null;
                     $detailPhotoCount = $detailProofPhotos->count() + ($detailAreaSelfieUrl ? 1 : 0);
-                    $detailPdfVersion = $log->updated_at?->timestamp ?? now()->timestamp;
+                    $detailPdfVersion = now()->timestamp;
                     $detailPdfDownloadUrl = route('patrol-logs.pdf', ['patrolLog' => $log, 'download' => 1, 'v' => $detailPdfVersion]);
                     $detailPdfPreviewUrl = route('patrol-logs.pdf', ['patrolLog' => $log, 'preview' => 1, 'v' => $detailPdfVersion]);
                 @endphp

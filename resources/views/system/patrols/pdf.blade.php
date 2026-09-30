@@ -207,7 +207,14 @@
         }
 
         .details-table td {
-            height: 37pt;
+            font-size: 10.5pt;
+            height: 30pt;
+            line-height: 1.15;
+            padding: 3pt 6pt 4pt;
+        }
+
+        .details-table .label {
+            margin-bottom: 2pt;
         }
 
         .label {
@@ -233,37 +240,37 @@
         }
 
         .checklist-label {
-            top: 500pt;
+            top: 535pt;
         }
 
         .checklist-table {
-            top: 523pt;
+            top: 557pt;
         }
 
         .checklist-table td {
-            font-size: 10pt;
-            height: 22pt;
-            line-height: 1.15;
-            padding: 3pt 6pt;
+            font-size: 9.6pt;
+            height: 18pt;
+            line-height: 1.1;
+            padding: 2pt 6pt;
             vertical-align: middle;
         }
 
         .checklist-table .status-cell {
             text-align: center;
-            width: 110pt;
+            width: 96pt;
         }
 
         .notes-label {
-            top: 656pt;
+            top: 678pt;
         }
 
         .notes-body {
-            font-size: 11pt;
+            font-size: 10.5pt;
             left: 72.5pt;
-            line-height: 1.35;
+            line-height: 1.25;
             position: absolute;
             text-align: justify;
-            top: 679pt;
+            top: 699pt;
             width: 467.21pt;
             z-index: 1;
         }
