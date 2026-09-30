@@ -98,7 +98,7 @@
 
         .bagong {
             height: 62.4pt;
-            left: 385pt;
+            left: 370pt;
             position: absolute;
             top: 31pt;
             width: 59.8pt;
