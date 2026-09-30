@@ -192,6 +192,7 @@ class IncidentReportPdfTest extends TestCase
         $this->assertStringNotContainsString('continuation-meta', $html);
         $this->assertStringNotContainsString('continuation-box', $html);
         $this->assertStringNotContainsString('Narrative details page', $html);
+        $this->assertStringNotContainsString('Date Reviewed', $html);
         $this->assertStringNotContainsString('page-background', $html);
         $this->assertSame(0, substr_count($html, 'data:image/png;base64,page-two-template'));
         $this->assertStringContainsString('act30', $html);

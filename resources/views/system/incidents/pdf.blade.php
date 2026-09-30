@@ -58,13 +58,15 @@
 
         .core-values {
             font-family: "Poppins", "Calibri", "DejaVu Sans", sans-serif;
-            font-size: 6pt;
+            font-size: 5.8pt;
             font-weight: 400;
-            left: 104.7pt;
+            left: 72.5pt;
             letter-spacing: -0.01em;
             line-height: 1;
             position: absolute;
-            top: 87.3pt;
+            text-align: center;
+            top: 104pt;
+            width: 467.21pt;
             white-space: nowrap;
             z-index: 1;
         }
@@ -106,7 +108,7 @@
             border-top: 1pt solid #111111;
             left: 52pt;
             position: absolute;
-            top: 116pt;
+            top: 121pt;
             width: 508pt;
             z-index: 1;
         }
@@ -144,7 +146,7 @@
             left: 0;
             position: absolute;
             text-align: center;
-            top: 127pt;
+            top: 132pt;
             width: 612pt;
             z-index: 1;
         }
@@ -155,7 +157,7 @@
             left: 0;
             position: absolute;
             text-align: center;
-            top: 142pt;
+            top: 147pt;
             width: 612pt;
             z-index: 1;
         }
@@ -178,11 +180,11 @@
         }
 
         .report-table {
-            top: 169pt;
+            top: 174pt;
         }
 
         .details-table {
-            top: 239pt;
+            top: 244pt;
         }
 
         .report-table td,
@@ -226,7 +228,7 @@
         }
 
         .incident-description-label {
-            top: 430pt;
+            top: 474pt;
         }
 
         .description-body,
@@ -241,7 +243,7 @@
         }
 
         .description-body {
-            top: 456pt;
+            top: 500pt;
         }
 
         .description-continuation {
@@ -302,7 +304,7 @@
             padding: 0 8pt;
             text-align: center;
             vertical-align: bottom;
-            width: 33.333%;
+            width: 50%;
         }
 
         .signature-name {
@@ -340,7 +342,6 @@
             : $location;
         $actionTaken = $incident->action_taken ?: 'No action recorded.';
         $resolvedDateLabel = $resolvedDate?->format('M d, Y h:i A') ?? 'Not yet resolved';
-        $reviewedDateLabel = $resolvedDate?->format('M d, Y') ?? $generatedAt->format('M d, Y');
         $supervisorName = 'Ryan P. Tomol';
         $evidenceImages = collect($imageDataUris)->values();
         $narrative = $incident->description ?: 'No description provided.';
@@ -548,10 +549,6 @@
                     <span class="signature-name">{{ $supervisorName }}</span>
                     <span class="signature-label">Supervisor</span>
                     <span class="office-label">Security and Safety Office</span>
-                </td>
-                <td>
-                    <span class="signature-name">{{ $reviewedDateLabel }}</span>
-                    <span class="signature-label">Date Reviewed</span>
                 </td>
             </tr>
         </table>
