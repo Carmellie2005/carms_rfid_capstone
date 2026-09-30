@@ -73,7 +73,7 @@
 
         .letterhead {
             height: 77.1pt;
-            left: 200pt;
+            left: 145pt;
             position: absolute;
             top: 22pt;
             width: 226.8pt;
@@ -83,11 +83,11 @@
         .campus-meta {
             font-family: "Poppins", "Calibri", "DejaVu Sans", sans-serif;
             font-size: 6.3pt;
-            left: 273pt;
+            left: 208pt;
             line-height: 1.15;
             position: absolute;
             top: 78pt;
-            width: 150pt;
+            width: 230pt;
             z-index: 2;
         }
 
@@ -98,7 +98,7 @@
 
         .bagong {
             height: 62.4pt;
-            left: 431pt;
+            left: 385pt;
             position: absolute;
             top: 19pt;
             width: 59.8pt;
