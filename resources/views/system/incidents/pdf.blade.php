@@ -100,7 +100,7 @@
             height: 62.4pt;
             left: 385pt;
             position: absolute;
-            top: 21pt;
+            top: 31pt;
             width: 59.8pt;
             z-index: 1;
         }
