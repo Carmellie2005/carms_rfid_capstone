@@ -72,17 +72,18 @@
         }
 
         .letterhead {
-            height: 102pt;
-            left: 75pt;
+            height: 88pt;
+            left: 90pt;
             position: absolute;
-            top: 17pt;
-            width: 300pt;
+            top: 22pt;
+            width: 258pt;
             z-index: 1;
         }
 
         .campus-meta {
-            font-size: 7.2pt;
-            left: 160pt;
+            font-family: "Poppins", "Calibri", "DejaVu Sans", sans-serif;
+            font-size: 6.3pt;
+            left: 163pt;
             line-height: 1.15;
             position: absolute;
             top: 78pt;
