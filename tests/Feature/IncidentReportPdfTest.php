@@ -183,8 +183,9 @@ class IncidentReportPdfTest extends TestCase
         $this->assertStringContainsString('Incident Description:', $html);
         $this->assertStringContainsString('Documentation', $html);
         $this->assertStringContainsString('documentation-photo', $html);
-        $this->assertStringContainsString('width: 450pt', $html);
-        $this->assertStringContainsString('height: 337.5pt', $html);
+        $this->assertStringContainsString('documentation-photo-slot-1', $html);
+        $this->assertStringContainsString('width: 340pt', $html);
+        $this->assertStringContainsString('height: 255pt', $html);
         $this->assertStringContainsString('desc35', $html);
         $this->assertStringNotContainsString('continuation-title', $html);
         $this->assertStringNotContainsString('continuation-subtitle', $html);

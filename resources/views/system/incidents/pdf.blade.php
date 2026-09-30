@@ -256,13 +256,20 @@
         }
 
         .documentation-photo {
-            height: 337.5pt;
-            left: 81pt;
+            height: 255pt;
+            left: 127.5pt;
             object-fit: cover;
             position: absolute;
-            top: 197pt;
-            width: 450pt;
+            width: 340pt;
             z-index: 1;
+        }
+
+        .documentation-photo-slot-1 {
+            top: 190pt;
+        }
+
+        .documentation-photo-slot-2 {
+            top: 464pt;
         }
 
         .documentation-empty {
@@ -304,16 +311,14 @@
             line-height: 1.15;
             padding: 0 8pt;
             text-align: center;
-            vertical-align: bottom;
+            vertical-align: top;
             width: 50%;
         }
 
         .signature-name {
-            border-top: 0.75pt solid #111111;
             display: block;
             font-weight: 700;
             margin-bottom: 3pt;
-            padding-top: 3pt;
         }
 
         .signature-label,
@@ -508,11 +513,17 @@
         </section>
     @endforeach
 
-    @forelse ($evidenceImages as $imageDataUri)
+    @forelse ($evidenceImages->chunk(2) as $imagePair)
         <section class="page">
             {!! $pageChrome() !!}
             <div class="documentation-label">Documentation</div>
-            <img class="documentation-photo" src="{{ $imageDataUri }}" alt="Incident documentation image {{ $loop->iteration }}">
+            @foreach ($imagePair->values() as $imageDataUri)
+                <img
+                    class="documentation-photo documentation-photo-slot-{{ $loop->iteration }}"
+                    src="{{ $imageDataUri }}"
+                    alt="Incident documentation image {{ (($loop->parent->iteration - 1) * 2) + $loop->iteration }}"
+                >
+            @endforeach
         </section>
     @empty
         <section class="page">
