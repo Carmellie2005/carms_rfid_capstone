@@ -424,7 +424,7 @@
         </section>
 
         <footer class="border-t border-blue-100 bg-[#eef8ff] text-blue-950 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
-            <div class="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-8 text-left sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+            <div class="mx-auto flex max-w-7xl items-start justify-start px-4 py-8 text-left sm:px-6 lg:px-8">
                 <div class="flex items-center gap-4">
                     <x-application-logo class="h-14 w-14 rounded-full" />
                     <div>
@@ -432,16 +432,6 @@
                         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ now()->year }}</p>
                     </div>
                 </div>
-                <address class="text-sm not-italic leading-6 text-slate-600 dark:text-slate-300 md:text-right">
-                    <p class="font-semibold text-blue-950 dark:text-white">Bontoc Campus</p>
-                    <p>San Ramon, Bontoc, Southern Leyte</p>
-                    <p>
-                        <a href="mailto:cd_bt@southernleytestateu.edu.ph" class="text-blue-700 hover:text-blue-900 dark:text-blue-300 dark:hover:text-blue-200">cd_bt@southernleytestateu.edu.ph</a>
-                    </p>
-                    <p>
-                        <a href="https://www.southernleytestateu.edu.ph" class="text-blue-700 hover:text-blue-900 dark:text-blue-300 dark:hover:text-blue-200">www.southernleytestateu.edu.ph</a>
-                    </p>
-                </address>
             </div>
         </footer>
 
