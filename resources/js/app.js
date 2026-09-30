@@ -239,6 +239,11 @@ function registerServiceWorker() {
 
     if (! serviceWorkerRegistrationPromise) {
         serviceWorkerRegistrationPromise = navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+                registration.update?.();
+
+                return registration;
+            })
             .catch(() => null);
     }
 
@@ -268,6 +273,22 @@ function base64UrlToUint8Array(base64UrlString) {
     const rawData = window.atob(base64);
 
     return Uint8Array.from([...rawData].map((character) => character.charCodeAt(0)));
+}
+
+function uint8ArrayToBase64Url(array) {
+    const binary = [...array].map((byte) => String.fromCharCode(byte)).join('');
+
+    return window.btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function subscriptionUsesPublicKey(subscription, publicKey) {
+    const applicationServerKey = subscription?.options?.applicationServerKey;
+
+    if (! applicationServerKey) {
+        return true;
+    }
+
+    return uint8ArrayToBase64Url(new Uint8Array(applicationServerKey)) === publicKey;
 }
 
 function canUseWebPush() {
@@ -2312,10 +2333,12 @@ Alpine.data('webPushManager', (config = {}) => ({
         const registration = await registerServiceWorker();
         const subscription = await registration?.pushManager?.getSubscription();
 
-        this.enabled = Boolean(subscription);
-        this.message = this.enabled
-            ? 'Push notifications are enabled on this browser.'
-            : 'Enable browser alerts for new incidents and scan issues.';
+        this.enabled = Boolean(subscription && subscriptionUsesPublicKey(subscription, config.publicKey));
+        this.message = subscription && ! this.enabled
+            ? 'Refresh push notifications for this browser.'
+            : this.enabled
+                ? 'Push notifications are enabled on this browser.'
+                : 'Enable browser alerts for new incidents and scan issues.';
     },
 
     buttonLabel() {
@@ -2357,6 +2380,12 @@ Alpine.data('webPushManager', (config = {}) => ({
 
             let subscription = await registration.pushManager.getSubscription();
 
+            if (subscription && ! subscriptionUsesPublicKey(subscription, config.publicKey)) {
+                await this.deleteStoredSubscription(subscription);
+                await subscription.unsubscribe();
+                subscription = null;
+            }
+
             if (! subscription) {
                 subscription = await registration.pushManager.subscribe({
                     userVisibleOnly: true,
@@ -2387,6 +2416,17 @@ Alpine.data('webPushManager', (config = {}) => ({
         if (! response.ok) {
             throw new Error('Push subscription could not be saved.');
         }
+    },
+
+    async deleteStoredSubscription(subscription) {
+        if (! config.unsubscribeUrl || ! subscription?.endpoint) {
+            return;
+        }
+
+        await fetchJsonWithCsrf(config.unsubscribeUrl, {
+            method: 'DELETE',
+            body: JSON.stringify({ endpoint: subscription.endpoint }),
+        }).catch(() => null);
     },
 }));
 
