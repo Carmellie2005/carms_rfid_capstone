@@ -83,7 +83,7 @@
         .campus-meta {
             font-family: "Poppins", "Calibri", "DejaVu Sans", sans-serif;
             font-size: 6.3pt;
-            left: 208pt;
+            left: 190pt;
             line-height: 1.15;
             position: absolute;
             top: 75pt;
