@@ -73,7 +73,7 @@
 
         .letterhead {
             height: 85pt;
-            left: 145pt;
+            left: 140pt;
             position: absolute;
             top: 30pt;
             width: 250pt;
