@@ -1,4 +1,4 @@
-const CACHE_NAME = 'slsubcpatrol-v19';
+const CACHE_NAME = 'slsubcpatrol-v20';
 const OFFLINE_URL = '/offline.html';
 const CORE_ASSETS = [
     OFFLINE_URL,
@@ -9,6 +9,7 @@ const CORE_ASSETS = [
     '/apple-touch-icon.png',
     '/pwa-icon-192.png',
     '/pwa-icon-512.png',
+    '/notification-badge.png',
     '/pwa-icon-maskable-192.png',
     '/pwa-icon-maskable-512.png',
     '/images/slsu-rfid-system-logo-ai-v2.png',
@@ -148,7 +149,7 @@ function notificationPayload(event) {
         title: data.title || 'SLSU BC Patrol',
         body: data.body || 'New patrol alert received.',
         icon: data.icon || '/pwa-icon-192.png',
-        badge: data.badge || '/pwa-icon-maskable-192.png',
+        badge: data.badge || '/notification-badge.png',
         tag: data.tag || 'slsu-bontoc-patrol-alert',
         url: data.url || '/notifications',
     };

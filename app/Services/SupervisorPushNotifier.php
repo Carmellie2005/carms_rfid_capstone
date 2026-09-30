@@ -72,7 +72,7 @@ class SupervisorPushNotifier
         $ttl = max(60, (int) config('webpush.ttl', 3600));
         $payload = [
             'icon' => asset('pwa-icon-192.png'),
-            'badge' => asset('pwa-icon-maskable-192.png'),
+            'badge' => asset('notification-badge.png'),
             ...$payload,
         ];
 

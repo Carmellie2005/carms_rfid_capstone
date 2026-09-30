@@ -27,6 +27,7 @@ class PwaManifestTest extends TestCase
 
         $this->assertFileExists(public_path('pwa-icon-192.png'));
         $this->assertFileExists(public_path('pwa-icon-512.png'));
+        $this->assertFileExists(public_path('notification-badge.png'));
         $this->assertFileExists(public_path('pwa-icon-maskable-192.png'));
         $this->assertFileExists(public_path('pwa-icon-maskable-512.png'));
     }

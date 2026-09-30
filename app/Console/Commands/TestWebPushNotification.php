@@ -38,12 +38,12 @@ class TestWebPushNotification extends Command
 
         $ttl = max(60, (int) config('webpush.ttl', 3600));
         $payload = json_encode([
-            'title' => 'SLSU Bontoc Patrol test',
+            'title' => 'SLSU BC Patrol test',
             'body' => 'Browser push notifications are working.',
             'url' => route('notifications.index'),
             'tag' => 'webpush-test',
             'icon' => asset('pwa-icon-192.png'),
-            'badge' => asset('pwa-icon-maskable-192.png'),
+            'badge' => asset('notification-badge.png'),
         ], JSON_THROW_ON_ERROR);
 
         $sent = 0;
