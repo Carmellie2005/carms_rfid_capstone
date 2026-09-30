@@ -11,6 +11,7 @@ use App\Http\Controllers\System\IncidentReportController;
 use App\Http\Controllers\System\NotificationController;
 use App\Http\Controllers\System\NotificationReadController;
 use App\Http\Controllers\System\PatrolLogController;
+use App\Http\Controllers\System\PushSubscriptionController;
 use App\Http\Controllers\System\ReaderStatusController;
 use App\Http\Controllers\System\ReportController;
 use App\Http\Controllers\System\RfidEnrollmentController;
@@ -71,6 +72,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reader-status', [ReaderStatusController::class, 'index'])->name('readers.index');
         Route::get('/scan-issues', [ScanIssueController::class, 'index'])->name('scan-issues.index');
+        Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
+        Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy'])->name('push-subscriptions.destroy');
         Route::get('/audit-trail/pdf', [AuditLogController::class, 'downloadPdf'])->name('audit-logs.pdf');
         Route::get('/audit-trail', [AuditLogController::class, 'index'])->name('audit-logs.index');
     });

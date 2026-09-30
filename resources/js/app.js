@@ -8,7 +8,6 @@ Chart.register(...registerables);
 window.Alpine = Alpine;
 window.Chart = Chart;
 
-const WEB_PUSH_PROMPT_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
 const LOCALHOST_HOSTNAMES = ['localhost', '127.0.0.1', '[::1]', '::1'];
 
 function imageFromDataUrl(dataUrl) {
@@ -261,6 +260,22 @@ async function fetchJsonWithCsrf(url, options = {}, retried = false) {
     }
 
     return response;
+}
+
+function base64UrlToUint8Array(base64UrlString) {
+    const padding = '='.repeat((4 - (base64UrlString.length % 4)) % 4);
+    const base64 = `${base64UrlString}${padding}`.replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+
+    return Uint8Array.from([...rawData].map((character) => character.charCodeAt(0)));
+}
+
+function canUseWebPush() {
+    return Boolean(
+        canRegisterServiceWorker()
+        && 'Notification' in window
+        && 'PushManager' in window
+    );
 }
 
 function notifyPwaInstallPromptListeners() {
@@ -2270,6 +2285,108 @@ Alpine.data('dashboardCharts', (analytics) => ({
                 scales: this.axisOptions(),
             },
         }));
+    },
+}));
+
+Alpine.data('webPushManager', (config = {}) => ({
+    supported: false,
+    enabled: false,
+    busy: false,
+    message: 'Enable browser alerts for new incidents and scan issues.',
+
+    async init() {
+        this.supported = Boolean(config.publicKey) && canUseWebPush();
+
+        if (! this.supported) {
+            this.message = 'Push notifications need HTTPS and a supported browser.';
+
+            return;
+        }
+
+        if (Notification.permission === 'denied') {
+            this.message = 'Push notifications are blocked in this browser.';
+
+            return;
+        }
+
+        const registration = await registerServiceWorker();
+        const subscription = await registration?.pushManager?.getSubscription();
+
+        this.enabled = Boolean(subscription);
+        this.message = this.enabled
+            ? 'Push notifications are enabled on this browser.'
+            : 'Enable browser alerts for new incidents and scan issues.';
+    },
+
+    buttonLabel() {
+        if (this.busy) {
+            return 'Saving...';
+        }
+
+        if (! this.supported) {
+            return 'Unavailable';
+        }
+
+        return this.enabled ? 'Enabled' : 'Enable Push';
+    },
+
+    async enable() {
+        if (! this.supported || this.busy || this.enabled) {
+            return;
+        }
+
+        this.busy = true;
+        this.message = 'Waiting for browser permission...';
+
+        try {
+            const permission = Notification.permission === 'granted'
+                ? 'granted'
+                : await Notification.requestPermission();
+
+            if (permission !== 'granted') {
+                this.message = 'Push notifications were not allowed.';
+
+                return;
+            }
+
+            const registration = await registerServiceWorker();
+
+            if (! registration?.pushManager) {
+                throw new Error('Push manager is not available.');
+            }
+
+            let subscription = await registration.pushManager.getSubscription();
+
+            if (! subscription) {
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: base64UrlToUint8Array(config.publicKey),
+                });
+            }
+
+            await this.saveSubscription(subscription);
+
+            this.enabled = true;
+            this.message = 'Push notifications are enabled on this browser.';
+        } catch (error) {
+            this.message = 'Push notifications could not be enabled.';
+        } finally {
+            this.busy = false;
+        }
+    },
+
+    async saveSubscription(subscription) {
+        const payload = subscription.toJSON();
+        payload.contentEncoding = 'aes128gcm';
+
+        const response = await fetchJsonWithCsrf(config.subscribeUrl, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+        });
+
+        if (! response.ok) {
+            throw new Error('Push subscription could not be saved.');
+        }
     },
 }));
 

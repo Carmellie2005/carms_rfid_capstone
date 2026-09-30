@@ -55,6 +55,8 @@
             $notificationCount = \App\Support\NotificationFeed::unreadCountFor($user);
             $notificationPreviewLimit = \App\Support\NotificationFeed::DROPDOWN_LIMIT;
             $notificationItems = \App\Support\NotificationFeed::unreadItemsFor($user, $notificationPreviewLimit);
+            $webPushPublicKey = config('webpush.vapid.public_key');
+            $canUseWebPush = $isSupervisor && filled($webPushPublicKey);
         @endphp
 
         <div
@@ -268,6 +270,33 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    @if ($canUseWebPush)
+                                        <div
+                                            x-data="webPushManager({
+                                                publicKey: @js($webPushPublicKey),
+                                                subscribeUrl: @js(route('push-subscriptions.store')),
+                                                unsubscribeUrl: @js(route('push-subscriptions.destroy')),
+                                            })"
+                                            x-init="init()"
+                                            class="shrink-0 border-b border-blue-100 px-3 py-2.5 dark:border-slate-800 sm:px-4"
+                                        >
+                                            <div class="flex items-center justify-between gap-3">
+                                                <div class="min-w-0">
+                                                    <p class="text-xs font-semibold text-slate-800 dark:text-slate-100">Browser Push</p>
+                                                    <p class="mt-0.5 text-[11px] leading-4 text-slate-500 dark:text-slate-400" x-text="message"></p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    class="inline-flex h-8 shrink-0 items-center justify-center rounded-md border px-2.5 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-offset-slate-900"
+                                                    x-bind:class="enabled ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-950/35 dark:text-emerald-200' : 'border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-800'"
+                                                    x-bind:disabled="busy || enabled || ! supported"
+                                                    x-on:click="enable()"
+                                                    x-text="buttonLabel()"
+                                                ></button>
+                                            </div>
+                                        </div>
+                                    @endif
 
                                     <div class="mobile-scroll-area min-h-0 flex-1 overflow-y-auto border-b border-blue-100 dark:border-slate-800">
                                         @forelse ($notificationItems as $item)

@@ -7,6 +7,7 @@ use App\Models\Checkpoint;
 use App\Models\Guard;
 use App\Models\PatrolLog;
 use App\Services\SupervisorEmailNotifier;
+use App\Services\SupervisorPushNotifier;
 use App\Support\AuditLogger;
 use App\Support\PatrolSchedule;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +16,7 @@ use Illuminate\Support\Carbon;
 
 class RfidScanController extends Controller
 {
-    public function __invoke(Request $request, SupervisorEmailNotifier $emailNotifier): JsonResponse
+    public function __invoke(Request $request, SupervisorEmailNotifier $emailNotifier, SupervisorPushNotifier $pushNotifier): JsonResponse
     {
         if ($request->isMethod('get') && ! $this->hasScanPayload($request)) {
             return response()->json([
@@ -91,6 +92,7 @@ class RfidScanController extends Controller
             ]);
 
             $emailNotifier->sendPatrolScanIssue($patrolLog);
+            $pushNotifier->sendPatrolScanIssue($patrolLog);
 
             return response()->json([
                 'message' => $scheduleMessage,
@@ -155,6 +157,7 @@ class RfidScanController extends Controller
 
         if (! $isValid) {
             $emailNotifier->sendPatrolScanIssue($patrolLog);
+            $pushNotifier->sendPatrolScanIssue($patrolLog);
         }
 
         return response()->json([

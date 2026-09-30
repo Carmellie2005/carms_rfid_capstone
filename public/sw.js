@@ -1,4 +1,4 @@
-const CACHE_NAME = 'slsubcpatrol-v17';
+const CACHE_NAME = 'slsubcpatrol-v18';
 const OFFLINE_URL = '/offline.html';
 const CORE_ASSETS = [
     OFFLINE_URL,
@@ -62,6 +62,52 @@ self.addEventListener('fetch', (event) => {
     }
 });
 
+self.addEventListener('push', (event) => {
+    const payload = notificationPayload(event);
+
+    event.waitUntil(
+        self.registration.showNotification(payload.title, {
+            body: payload.body,
+            icon: payload.icon,
+            badge: payload.badge,
+            tag: payload.tag,
+            data: {
+                url: payload.url,
+            },
+            renotify: Boolean(payload.tag),
+        })
+    );
+});
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+
+    const targetUrl = new URL(event.notification.data?.url || '/notifications', self.location.origin).href;
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then((clientList) => {
+                for (const client of clientList) {
+                    if (! client.url.startsWith(self.location.origin) || ! ('focus' in client)) {
+                        continue;
+                    }
+
+                    if ('navigate' in client) {
+                        return client.navigate(targetUrl).then(() => client.focus());
+                    }
+
+                    return client.focus();
+                }
+
+                if (clients.openWindow) {
+                    return clients.openWindow(targetUrl);
+                }
+
+                return undefined;
+            })
+    );
+});
+
 function isCacheableAsset(url) {
     return url.pathname.startsWith('/build/')
         || CORE_ASSETS.includes(url.pathname);
@@ -85,4 +131,25 @@ function cacheFirst(request) {
             return networkResponse;
         });
     });
+}
+
+function notificationPayload(event) {
+    let data = {};
+
+    if (event.data) {
+        try {
+            data = event.data.json();
+        } catch (error) {
+            data = { body: event.data.text() };
+        }
+    }
+
+    return {
+        title: data.title || 'SLSU Bontoc Patrol',
+        body: data.body || 'New patrol alert received.',
+        icon: data.icon || '/pwa-icon-192.png',
+        badge: data.badge || '/pwa-icon-maskable-192.png',
+        tag: data.tag || 'slsu-bontoc-patrol-alert',
+        url: data.url || '/notifications',
+    };
 }

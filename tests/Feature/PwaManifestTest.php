@@ -37,7 +37,8 @@ class PwaManifestTest extends TestCase
 
         $this->assertStringContainsString("self.addEventListener('install'", $serviceWorker);
         $this->assertStringContainsString("self.addEventListener('fetch'", $serviceWorker);
-        $this->assertStringNotContainsString("self.addEventListener('push'", $serviceWorker);
-        $this->assertStringNotContainsString('showNotification', $serviceWorker);
+        $this->assertStringContainsString("self.addEventListener('push'", $serviceWorker);
+        $this->assertStringContainsString("self.addEventListener('notificationclick'", $serviceWorker);
+        $this->assertStringContainsString('showNotification', $serviceWorker);
     }
 }

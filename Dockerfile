@@ -21,6 +21,7 @@ RUN apt-get update \
         git \
         unzip \
         zip \
+        libcurl4-openssl-dev \
         libfreetype6-dev \
         libicu-dev \
         libjpeg62-turbo-dev \
@@ -30,6 +31,7 @@ RUN apt-get update \
         libzip-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
+        curl \
         gd \
         intl \
         mbstring \

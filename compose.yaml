@@ -47,6 +47,11 @@ services:
       MAIL_FROM_ADDRESS: "${MAIL_FROM_ADDRESS:-noreply@slsubcpatrol.site}"
       MAIL_FROM_NAME: "${MAIL_FROM_NAME:-SLSU Bontoc Patrol}"
       SUPERVISOR_ALERT_EMAIL: "${SUPERVISOR_ALERT_EMAIL:-}"
+
+      WEBPUSH_VAPID_SUBJECT: "${WEBPUSH_VAPID_SUBJECT:-mailto:noreply@slsubcpatrol.site}"
+      WEBPUSH_VAPID_PUBLIC_KEY: "${WEBPUSH_VAPID_PUBLIC_KEY:-}"
+      WEBPUSH_VAPID_PRIVATE_KEY: "${WEBPUSH_VAPID_PRIVATE_KEY:-}"
+      WEBPUSH_TTL: "${WEBPUSH_TTL:-3600}"
     volumes:
       - app_public_uploads:/var/www/html/storage/app/public
       - app_framework_storage:/var/www/html/storage/framework
