@@ -42,7 +42,7 @@ class WelcomePageTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee("pwaInstallPrompt({ appName: 'SLSUBCPatrol'", false)
+            ->assertSee("pwaInstallPrompt({ appName: 'SLSU BC Patrol'", false)
             ->assertSee('installModalOpen', false)
             ->assertSee('installModalTitle()', false)
             ->assertSee('Access System');

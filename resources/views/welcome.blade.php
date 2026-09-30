@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>SLSU Bontoc Patrol</title>
+        <title>SLSU BC Patrol</title>
         <x-favicon />
 
         <script>
@@ -31,7 +31,7 @@
             : route('login');
         $pwaStartHref = Route::has('login') ? route('login') : url('/');
     @endphp
-    <body x-data="pwaInstallPrompt({ appName: 'SLSUBCPatrol', startUrl: @js($pwaStartHref) })" class="bg-slate-50 font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+    <body x-data="pwaInstallPrompt({ appName: 'SLSU BC Patrol', startUrl: @js($pwaStartHref) })" class="bg-slate-50 font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
 
         <div
             x-show="installModalOpen"
@@ -94,7 +94,7 @@
                 <a href="{{ url('/') }}" class="flex min-w-0 items-center gap-3">
                     <x-application-logo class="h-10 w-10 shrink-0 sm:h-11 sm:w-11" />
                     <span class="min-w-0 leading-tight">
-                        <span class="block truncate text-sm font-semibold text-blue-950 sm:text-base dark:text-blue-100">SLSU Bontoc Patrol</span>
+                        <span class="block truncate text-sm font-semibold text-blue-950 sm:text-base dark:text-blue-100">SLSU BC Patrol</span>
                         <span class="block truncate text-xs font-medium text-blue-600 dark:text-blue-300">Security Monitoring</span>
                     </span>
                 </a>
@@ -131,7 +131,7 @@
                 <div class="relative mx-auto flex min-h-[calc(100svh-128px)] max-w-7xl items-center justify-center px-4 py-10 text-center sm:min-h-[calc(100svh-80px)] sm:px-6 sm:py-14 lg:justify-start lg:px-8 lg:text-left">
                     <div class="mx-auto max-w-3xl lg:mx-0">
                         <h1 class="text-4xl font-bold leading-tight text-white drop-shadow-lg sm:text-6xl">
-                            SLSU Bontoc Patrol
+                            SLSU BC Patrol
                         </h1>
                         <p class="mx-auto mt-4 max-w-lg text-sm font-medium leading-6 text-blue-50 drop-shadow sm:text-lg sm:leading-8 lg:mx-0">
                             A campus security monitoring system for RFID patrol logs, area selfie proof, and incident reporting.
@@ -370,7 +370,7 @@
         <footer class="border-t border-blue-100 bg-white dark:border-slate-800 dark:bg-slate-900">
             <div class="mx-auto grid max-w-7xl gap-8 px-4 py-9 sm:px-6 md:grid-cols-[1fr_1.6fr] md:items-start lg:px-8">
                 <div>
-                    <p class="text-2xl font-bold tracking-tight text-blue-950 dark:text-white">SLSU Bontoc Patrol</p>
+                    <p class="text-2xl font-bold tracking-tight text-blue-950 dark:text-white">SLSU BC Patrol</p>
                     <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">{{ now()->year }} All rights reserved.</p>
                 </div>
 

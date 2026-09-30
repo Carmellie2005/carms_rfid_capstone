@@ -152,7 +152,7 @@
 
     <div class="title-block">
         <h1>Audit Trail Report</h1>
-        <div class="subtitle">SLSU Bontoc Patrol system activity documentation</div>
+        <div class="subtitle">SLSU BC Patrol system activity documentation</div>
     </div>
 
     <div class="section">

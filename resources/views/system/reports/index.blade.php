@@ -83,7 +83,7 @@
                 <div class="flex items-start gap-4">
                     <x-application-logo class="h-14 w-14 shrink-0" />
                     <div>
-                        <h3 class="text-lg font-semibold text-blue-950">SLSU Bontoc Patrol</h3>
+                        <h3 class="text-lg font-semibold text-blue-950">SLSU BC Patrol</h3>
                         <p class="mt-1 text-sm text-slate-600">Report period: {{ $from->format('M d, Y') }} to {{ $to->format('M d, Y') }}</p>
                     </div>
                 </div>

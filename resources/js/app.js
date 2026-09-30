@@ -321,7 +321,7 @@ if (canRegisterServiceWorker()) {
 }
 
 Alpine.data('pwaInstallPrompt', (config = {}) => ({
-    appName: config.appName || 'SLSUBCPatrol',
+    appName: config.appName || 'SLSU BC Patrol',
     startUrl: config.startUrl || '/',
     deferredPrompt: null,
     canInstall: false,

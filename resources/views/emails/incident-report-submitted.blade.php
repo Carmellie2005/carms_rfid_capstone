@@ -7,7 +7,7 @@
 
 <h1>Incident Report Submitted</h1>
 
-<p>A guard submitted an incident report in SLSU Bontoc Patrol.</p>
+<p>A guard submitted an incident report in SLSU BC Patrol.</p>
 
 <ul>
     <li><strong>Category:</strong> {{ $incident->category ?: 'Incident report' }}</li>

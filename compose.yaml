@@ -10,7 +10,7 @@ services:
     expose:
       - "80"
     environment:
-      APP_NAME: "${APP_NAME:-SLSU Bontoc Patrol}"
+      APP_NAME: "${APP_NAME:-SLSU BC Patrol}"
       APP_ENV: "${APP_ENV:-production}"
       APP_KEY: "${APP_KEY:?Set APP_KEY in Dokploy}"
       APP_DEBUG: "${APP_DEBUG:-false}"
@@ -45,7 +45,7 @@ services:
       MAIL_PASSWORD: "${MAIL_PASSWORD:-}"
       MAIL_ENCRYPTION: "${MAIL_ENCRYPTION:-tls}"
       MAIL_FROM_ADDRESS: "${MAIL_FROM_ADDRESS:-noreply@slsubcpatrol.site}"
-      MAIL_FROM_NAME: "${MAIL_FROM_NAME:-SLSU Bontoc Patrol}"
+      MAIL_FROM_NAME: "${MAIL_FROM_NAME:-SLSU BC Patrol}"
       SUPERVISOR_ALERT_EMAIL: "${SUPERVISOR_ALERT_EMAIL:-}"
 
       WEBPUSH_VAPID_SUBJECT: "${WEBPUSH_VAPID_SUBJECT:-mailto:noreply@slsubcpatrol.site}"

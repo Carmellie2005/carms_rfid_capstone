@@ -7,7 +7,7 @@ services:
     healthCheckPath: /
     envVars:
       - key: APP_NAME
-        value: SLSU Bontoc Patrol
+        value: SLSU BC Patrol
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
