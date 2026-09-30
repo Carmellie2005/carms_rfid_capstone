@@ -180,11 +180,15 @@ class IncidentReportController extends Controller
 
         $filename = $this->pdfFilename($incidentReport);
 
-        if ($request->boolean('print') || $request->boolean('preview')) {
-            return $pdf->stream($filename);
-        }
+        $response = $request->boolean('print') || $request->boolean('preview')
+            ? $pdf->stream($filename)
+            : $pdf->download($filename);
 
-        return $pdf->download($filename);
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+
+        return $response;
     }
 
     public function image(Request $request, IncidentReport $incidentReport, IncidentReportImage $incidentReportImage): Response

@@ -85,8 +85,9 @@
                 @forelse ($incidents as $incident)
                     @php
                         $incidentTime = $incident->incident_at?->timezone(config('app.timezone'));
-                        $incidentPdfDownloadUrl = route('incidents.pdf', $incident);
-                        $incidentPdfPreviewUrl = route('incidents.pdf', ['incidentReport' => $incident, 'preview' => 1]);
+                        $incidentPdfVersion = now()->timestamp;
+                        $incidentPdfDownloadUrl = route('incidents.pdf', ['incidentReport' => $incident, 'download' => 1, 'v' => $incidentPdfVersion]);
+                        $incidentPdfPreviewUrl = route('incidents.pdf', ['incidentReport' => $incident, 'preview' => 1, 'v' => $incidentPdfVersion]);
                         $incidentPdfTitle = 'Incident Report - '.($incident->category ?: 'Incident');
                     @endphp
                     <article class="rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
