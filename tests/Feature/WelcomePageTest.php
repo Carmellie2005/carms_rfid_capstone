@@ -18,20 +18,23 @@ class WelcomePageTest extends TestCase
             ->assertSee('text-xs leading-5 text-slate-600', false);
     }
 
-    public function test_public_landing_page_uses_original_text_footer(): void
+    public function test_public_landing_page_shows_development_team_photos(): void
     {
         $response = $this->get('/');
 
         $response
             ->assertOk()
-            ->assertDontSee('Development Team')
-            ->assertDontSee('images/developers/')
+            ->assertSee('Development Team')
+            ->assertSee('images/developers/carmela.jpg')
+            ->assertSee('images/developers/cherry.jpg')
+            ->assertSee('images/developers/clarice.jpg')
+            ->assertSee('images/developers/karyl.jpg')
             ->assertSee('Carmela B. Hernandez')
             ->assertSee('Lead Programmer')
             ->assertSee('Cherry Ann R. Himo')
-            ->assertSee('System Analyst')
-            ->assertSee('Clarice R. Gumapi')
             ->assertSee('Documentation Specialist')
+            ->assertSee('Clarice R. Gumapi')
+            ->assertSee('System Analyst')
             ->assertSee('Karyl G. Viure')
             ->assertSee('Quality Assurance');
     }

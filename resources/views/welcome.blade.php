@@ -367,19 +367,69 @@
 
         </main>
 
-        <footer class="border-t border-blue-100 bg-white dark:border-slate-800 dark:bg-slate-900">
-            <div class="mx-auto grid max-w-7xl gap-8 px-4 py-9 sm:px-6 md:grid-cols-[1fr_1.6fr] md:items-start lg:px-8">
-                <div>
-                    <p class="text-2xl font-bold tracking-tight text-blue-950 dark:text-white">SLSU BC Patrol</p>
-                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">{{ now()->year }} All rights reserved.</p>
+        @php
+            $developers = [
+                [
+                    'name' => 'Carmela B. Hernandez',
+                    'role' => 'Lead Programmer',
+                    'photo' => 'images/developers/carmela.jpg',
+                ],
+                [
+                    'name' => 'Cherry Ann R. Himo',
+                    'role' => 'Documentation Specialist',
+                    'photo' => 'images/developers/cherry.jpg',
+                ],
+                [
+                    'name' => 'Clarice R. Gumapi',
+                    'role' => 'System Analyst',
+                    'photo' => 'images/developers/clarice.jpg',
+                ],
+                [
+                    'name' => 'Karyl G. Viure',
+                    'role' => 'Quality Assurance',
+                    'photo' => 'images/developers/karyl.jpg',
+                ],
+            ];
+        @endphp
+
+        <section aria-labelledby="development-team-heading" class="bg-white py-12 dark:bg-slate-950 sm:py-16">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-center gap-4">
+                    <span class="hidden h-px w-24 bg-blue-400 sm:block" aria-hidden="true"></span>
+                    <h2 id="development-team-heading" class="text-center text-2xl font-extrabold uppercase text-blue-950 dark:text-white sm:text-3xl">
+                        Development Team
+                    </h2>
+                    <span class="hidden h-px w-24 bg-blue-400 sm:block" aria-hidden="true"></span>
                 </div>
 
-                <div class="grid gap-x-8 gap-y-3 border-blue-100 md:grid-cols-2 md:border-l md:pl-8 dark:border-slate-700">
-                    <p class="text-base font-semibold text-blue-950 dark:text-white">Carmela B. Hernandez <span class="text-sm font-medium text-slate-500 dark:text-slate-400">(Lead Programmer)</span></p>
-                    <p class="text-base font-semibold text-blue-950 dark:text-white">Cherry Ann R. Himo <span class="text-sm font-medium text-slate-500 dark:text-slate-400">(System Analyst)</span></p>
-                    <p class="text-base font-semibold text-blue-950 dark:text-white">Clarice R. Gumapi <span class="text-sm font-medium text-slate-500 dark:text-slate-400">(Documentation Specialist)</span></p>
-                    <p class="text-base font-semibold text-blue-950 dark:text-white">Karyl G. Viure <span class="text-sm font-medium text-slate-500 dark:text-slate-400">(Quality Assurance)</span></p>
+                <div class="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-8 lg:grid-cols-4">
+                    @foreach ($developers as $developer)
+                        <article class="min-w-0 text-center">
+                            <img
+                                src="{{ asset($developer['photo']) }}"
+                                alt="{{ $developer['name'] }}"
+                                class="mx-auto h-28 w-28 rounded-full border-4 border-blue-300 object-cover object-center shadow-lg shadow-blue-950/10 dark:border-blue-500 sm:h-36 sm:w-36 lg:h-40 lg:w-40"
+                            >
+                            <h3 class="mt-4 text-base font-bold leading-tight text-blue-950 dark:text-white sm:text-lg">
+                                {{ $developer['name'] }}
+                            </h3>
+                            <p class="mt-1 text-sm font-medium text-slate-600 dark:text-slate-300 sm:text-base">
+                                {{ $developer['role'] }}
+                            </p>
+                            <span class="mx-auto mt-4 block h-0.5 w-12 rounded-full bg-blue-500" aria-hidden="true"></span>
+                        </article>
+                    @endforeach
                 </div>
+            </div>
+        </section>
+
+        <footer class="bg-blue-950 text-white">
+            <div class="mx-auto flex max-w-7xl flex-col items-center justify-center gap-3 px-4 py-8 text-center sm:px-6 lg:px-8">
+                <div class="flex items-center gap-3">
+                    <x-application-logo class="h-9 w-9 rounded-full bg-white p-1" />
+                    <p class="text-2xl font-bold">SLSU BC Patrol</p>
+                </div>
+                <p class="text-sm text-blue-100">&copy; {{ now()->year }} All rights reserved.</p>
             </div>
         </footer>
 
