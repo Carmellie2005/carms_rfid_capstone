@@ -32,6 +32,7 @@ class WelcomePageTest extends TestCase
             ->assertSee('bg-[#eef8ff] text-blue-950', false)
             ->assertSee('items-start justify-start', false)
             ->assertSee('h-14 w-14 rounded-full', false)
+            ->assertDontSee('All rights reserved.')
             ->assertSee('Carmela B. Hernandez')
             ->assertSee('Lead Programmer')
             ->assertSee('Cherry Ann R. Himo')
