@@ -86,7 +86,7 @@
             left: 208pt;
             line-height: 1.15;
             position: absolute;
-            top: 75pt;
+            top: 88pt;
             width: 230pt;
             z-index: 2;
         }
