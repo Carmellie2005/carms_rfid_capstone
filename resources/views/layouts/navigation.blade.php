@@ -147,7 +147,7 @@
     >
         <div class="sidebar-brand-soft flex h-20 items-center justify-between border-b border-blue-100 px-5 dark:border-slate-800">
             <a href="{{ $homeRoute }}" class="flex min-w-0 flex-1 items-center gap-3" aria-label="SLSU BC Patrol dashboard" @click="sidebarOpen = false">
-                <x-application-logo class="h-11 w-11 shrink-0" />
+                <x-application-logo class="h-14 w-14 shrink-0" />
                 <span class="min-w-0 leading-tight">
                     <span class="block text-sm font-bold text-blue-950 dark:text-blue-100">SLSU BC Patrol</span>
                     <span class="block text-xs font-medium text-blue-500 dark:text-blue-300">Security Monitoring</span>
