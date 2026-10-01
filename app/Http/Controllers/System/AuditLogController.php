@@ -58,11 +58,10 @@ class AuditLogController extends Controller
         $pdf = Pdf::loadView('system.audit.pdf', [
             'filters' => $this->activeFilters($request, $selectedGuard),
             'generatedAt' => now()->timezone(config('app.timezone')),
-            'letterheadDataUri' => $this->letterheadDataUri(),
             'logs' => $logs,
             'selectedGuard' => $selectedGuard,
             'summary' => $summary,
-        ])->setPaper('a4');
+        ])->setPaper([0, 0, 595.28, 841.89]);
 
         AuditLogger::record('audit_report_exported', 'Audit trail PDF report exported.', $selectedGuard, [
             'guard_id' => $selectedGuard?->id,
@@ -73,11 +72,15 @@ class AuditLogController extends Controller
 
         $filename = $this->pdfFilename($selectedGuard);
 
-        if ($request->boolean('print')) {
-            return $pdf->stream($filename);
-        }
+        $response = $request->boolean('print')
+            ? $pdf->stream($filename)
+            : $pdf->download($filename);
 
-        return $pdf->download($filename);
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+
+        return $response;
     }
 
     private function actions()
@@ -177,17 +180,6 @@ class AuditLogController extends Controller
             ->replace('_', ' ')
             ->title()
             ->toString();
-    }
-
-    private function letterheadDataUri(): ?string
-    {
-        $path = public_path('images/pdf-letterhead.png');
-
-        if (! file_exists($path)) {
-            return null;
-        }
-
-        return 'data:image/png;base64,'.base64_encode(file_get_contents($path));
     }
 
     private function pdfFilename(?Guard $guard): string
