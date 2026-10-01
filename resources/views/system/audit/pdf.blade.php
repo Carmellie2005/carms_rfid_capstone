@@ -175,19 +175,19 @@
         }
 
         .report-table {
-            top: 196pt;
+            top: 193pt;
         }
 
         .scope-table {
-            top: 266pt;
+            top: 258pt;
         }
 
         .audit-table-first {
-            top: 414pt;
+            top: 378pt;
         }
 
         .audit-table-following {
-            top: 196pt;
+            top: 188pt;
         }
 
         .report-table td,
@@ -200,35 +200,35 @@
         }
 
         .report-table td {
-            font-size: 10.5pt;
-            height: 54pt;
-            line-height: 1.2;
-            padding: 5pt 7pt 6pt;
+            font-size: 9.8pt;
+            height: 48pt;
+            line-height: 1.12;
+            padding: 4pt 6pt;
             width: 33.333%;
         }
 
         .scope-table td {
-            font-size: 10pt;
-            height: 31pt;
-            line-height: 1.15;
-            padding: 3pt 6pt 4pt;
+            font-size: 9.2pt;
+            height: 27pt;
+            line-height: 1.08;
+            padding: 3pt 5pt;
             width: 50%;
         }
 
         .audit-table th {
             background: #f1f5f9;
-            font-size: 7.2pt;
+            font-size: 6.6pt;
             font-weight: 700;
-            line-height: 1.05;
-            padding: 4pt 4pt;
+            line-height: 1;
+            padding: 3pt;
             text-align: left;
             text-transform: uppercase;
         }
 
         .audit-table td {
-            font-size: 7.4pt;
-            line-height: 1.1;
-            padding: 4pt;
+            font-size: 6.8pt;
+            line-height: 1.03;
+            padding: 3pt;
         }
 
         .label {
@@ -252,31 +252,31 @@
         }
 
         .scope-label {
-            top: 247pt;
+            top: 240pt;
         }
 
         .audit-label-first {
-            top: 392pt;
+            top: 356pt;
         }
 
         .audit-label-following {
-            top: 174pt;
+            top: 166pt;
         }
 
         .w-time {
-            width: 69pt;
+            width: 64pt;
         }
 
         .w-actor {
-            width: 65pt;
+            width: 62pt;
         }
 
         .w-action {
-            width: 66pt;
+            width: 62pt;
         }
 
         .w-diagnostic {
-            width: 148pt;
+            width: 164pt;
         }
 
         .w-window {
@@ -284,7 +284,7 @@
         }
 
         .w-result {
-            width: 49.21pt;
+            width: 45.21pt;
         }
 
         .muted {
@@ -304,8 +304,8 @@
         $generatedBy = auth()->user()?->name ?? 'System Supervisor';
         $reportNumber = 'AT-'.$generatedAt->format('YmdHis');
         $logsForPdf = collect($logs)->values();
-        $firstPageLogs = $logsForPdf->take(9);
-        $followingPageLogs = $logsForPdf->slice(9)->values()->chunk(13);
+        $firstPageLogs = $logsForPdf->take(6);
+        $followingPageLogs = $logsForPdf->slice(6)->values()->chunk(9);
         $actionTypeCount = collect($summary['actions'])->count();
         $recordLabel = $summary['total'] === 1 ? 'record' : 'records';
         $letterheadSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/slsu-letterhead.png'));
@@ -410,7 +410,7 @@
                     <th>Actor</th>
                     <th>Action</th>
                     <th>Diagnostic</th>
-                    <th>Patrol Window</th>
+                    <th>Window</th>
                     <th>Result</th>
                 </tr>
             </thead>
@@ -418,11 +418,11 @@
                 @forelse ($firstPageLogs as $log)
                     <tr>
                         <td>{{ $formatDate($log->created_at) }}</td>
-                        <td>{{ $limitText($log->actor_name ?: 'System', 38) }}</td>
-                        <td>{{ $limitText(str($log->action)->replace('_', ' ')->title(), 42) }}</td>
-                        <td>{{ $limitText($log->diagnosticSummary(), 110) }}</td>
-                        <td>{{ $limitText($log->patrolWindowSummary(), 48) }}</td>
-                        <td>{{ $limitText($log->resultLabel(), 24) }}</td>
+                        <td>{{ $limitText($log->actor_name ?: 'System', 32) }}</td>
+                        <td>{{ $limitText(str($log->action)->replace('_', ' ')->title(), 32) }}</td>
+                        <td>{{ $limitText($log->diagnosticSummary(), 82) }}</td>
+                        <td>{{ $limitText($log->patrolWindowSummary(), 36) }}</td>
+                        <td>{{ $limitText($log->resultLabel(), 18) }}</td>
                     </tr>
                 @empty
                     <tr class="empty-row">
@@ -453,7 +453,7 @@
                         <th>Actor</th>
                         <th>Action</th>
                         <th>Diagnostic</th>
-                        <th>Patrol Window</th>
+                        <th>Window</th>
                         <th>Result</th>
                     </tr>
                 </thead>
@@ -461,11 +461,11 @@
                     @foreach ($logChunk as $log)
                         <tr>
                             <td>{{ $formatDate($log->created_at) }}</td>
-                            <td>{{ $limitText($log->actor_name ?: 'System', 38) }}</td>
-                            <td>{{ $limitText(str($log->action)->replace('_', ' ')->title(), 42) }}</td>
-                            <td>{{ $limitText($log->diagnosticSummary(), 110) }}</td>
-                            <td>{{ $limitText($log->patrolWindowSummary(), 48) }}</td>
-                            <td>{{ $limitText($log->resultLabel(), 24) }}</td>
+                            <td>{{ $limitText($log->actor_name ?: 'System', 32) }}</td>
+                            <td>{{ $limitText(str($log->action)->replace('_', ' ')->title(), 32) }}</td>
+                            <td>{{ $limitText($log->diagnosticSummary(), 82) }}</td>
+                            <td>{{ $limitText($log->patrolWindowSummary(), 36) }}</td>
+                            <td>{{ $limitText($log->resultLabel(), 18) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
