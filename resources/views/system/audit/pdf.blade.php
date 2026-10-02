@@ -187,7 +187,7 @@
         }
 
         .audit-table-following {
-            top: 190pt;
+            top: 166pt;
         }
 
         .report-table td,
@@ -216,7 +216,7 @@
         }
 
         .audit-table th {
-            background: #f1f5f9;
+            background: #ffffff;
             font-size: 11pt;
             font-weight: 700;
             line-height: 1.15;
@@ -260,27 +260,27 @@
         }
 
         .audit-label-following {
-            top: 166pt;
+            top: 144pt;
         }
 
         .w-time {
-            width: 90pt;
+            width: 88pt;
         }
 
         .w-actor {
-            width: 83pt;
+            width: 87pt;
         }
 
         .w-action {
-            width: 80pt;
+            width: 92pt;
         }
 
         .w-diagnostic {
-            width: 154pt;
+            width: 130pt;
         }
 
         .w-result {
-            width: 60.21pt;
+            width: 70.21pt;
         }
 
         .muted {
@@ -419,7 +419,7 @@
                     </tr>
                 @empty
                     <tr class="empty-row">
-                        <td colspan="6" class="muted">No audit records found for this report scope.</td>
+                        <td colspan="5" class="muted">No audit records found for this report scope.</td>
                     </tr>
                 @endforelse
             </tbody>
