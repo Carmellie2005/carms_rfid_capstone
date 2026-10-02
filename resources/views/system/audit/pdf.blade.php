@@ -182,11 +182,7 @@
             top: 290pt;
         }
 
-        .audit-table-first {
-            top: 462pt;
-        }
-
-        .audit-table-following {
+        .audit-table-records {
             top: 166pt;
         }
 
@@ -255,11 +251,7 @@
             top: 268pt;
         }
 
-        .audit-label-first {
-            top: 440pt;
-        }
-
-        .audit-label-following {
+        .audit-label-records {
             top: 144pt;
         }
 
@@ -300,8 +292,9 @@
         $generatedBy = auth()->user()?->name ?? 'System Supervisor';
         $reportNumber = 'AT-'.$generatedAt->format('YmdHis');
         $logsForPdf = collect($logs)->values();
-        $firstPageLogs = $logsForPdf->take(4);
-        $followingPageLogs = $logsForPdf->slice(4)->values()->chunk(8);
+        $auditLogChunks = $logsForPdf->isEmpty()
+            ? collect([collect()])
+            : $logsForPdf->chunk(8);
         $actionTypeCount = collect($summary['actions'])->count();
         $recordLabel = $summary['total'] === 1 ? 'record' : 'records';
         $letterheadSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/slsu-letterhead.png'));
@@ -389,49 +382,14 @@
                 </td>
             </tr>
         </table>
-
-        <div class="section-label audit-label-first">Audit Records:</div>
-        <table class="audit-table audit-table-first">
-            <colgroup>
-                <col class="w-time">
-                <col class="w-actor">
-                <col class="w-action">
-                <col class="w-diagnostic">
-                <col class="w-result">
-            </colgroup>
-            <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>Actor</th>
-                    <th>Action</th>
-                    <th>Diagnostic</th>
-                    <th>Result</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($firstPageLogs as $log)
-                    <tr>
-                        <td>{{ $formatDate($log->created_at) }}</td>
-                        <td>{{ $limitText($log->actor_name ?: 'System', 32) }}</td>
-                        <td>{{ $limitText(str($log->action)->replace('_', ' ')->title(), 32) }}</td>
-                        <td>{{ $limitText($log->diagnosticSummary(), 82) }}</td>
-                        <td>{{ $limitText($log->resultLabel(), 18) }}</td>
-                    </tr>
-                @empty
-                    <tr class="empty-row">
-                        <td colspan="5" class="muted">No audit records found for this report scope.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
     </section>
 
-    @foreach ($followingPageLogs as $logChunk)
+    @foreach ($auditLogChunks as $logChunk)
         <section class="page">
             {!! $pageChrome() !!}
 
-            <div class="section-label audit-label-following">Audit Records Continued:</div>
-            <table class="audit-table audit-table-following">
+            <div class="section-label audit-label-records">{{ $loop->first ? 'Audit Records:' : 'Audit Records Continued:' }}</div>
+            <table class="audit-table audit-table-records">
                 <colgroup>
                     <col class="w-time">
                     <col class="w-actor">
@@ -449,7 +407,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($logChunk as $log)
+                    @forelse ($logChunk as $log)
                         <tr>
                             <td>{{ $formatDate($log->created_at) }}</td>
                             <td>{{ $limitText($log->actor_name ?: 'System', 32) }}</td>
@@ -457,7 +415,11 @@
                             <td>{{ $limitText($log->diagnosticSummary(), 82) }}</td>
                             <td>{{ $limitText($log->resultLabel(), 18) }}</td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr class="empty-row">
+                            <td colspan="5" class="muted">No audit records found for this report scope.</td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </section>
