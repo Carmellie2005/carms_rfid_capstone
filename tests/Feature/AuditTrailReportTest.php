@@ -38,6 +38,16 @@ class AuditTrailReportTest extends TestCase
             'properties' => ['guard_id' => $otherGuard->id],
         ]);
 
+        AuditLog::create([
+            'user_id' => $supervisor->id,
+            'actor_name' => 'Ryan Tomol',
+            'action' => 'incident_updated',
+            'description' => 'Supervisor action related to selected guard.',
+            'subject_type' => Guard::class,
+            'subject_id' => $guard->id,
+            'properties' => ['guard_id' => $guard->id],
+        ]);
+
         $response = $this
             ->actingAs($supervisor)
             ->get(route('audit-logs.index', ['guard_id' => $guard->id]));
@@ -46,6 +56,8 @@ class AuditTrailReportTest extends TestCase
             ->assertOk()
             ->assertSee('Selected guard patrol record.')
             ->assertDontSee('Other guard patrol record.')
+            ->assertDontSee('Supervisor action related to selected guard.')
+            ->assertDontSee('Ryan Tomol')
             ->assertSee('border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700', false)
             ->assertSee('dark:bg-emerald-950/40', false)
             ->assertSee('Download PDF')

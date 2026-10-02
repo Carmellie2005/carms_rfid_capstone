@@ -5,9 +5,6 @@ namespace App\Http\Controllers\System;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Guard;
-use App\Models\IncidentReport;
-use App\Models\PatrolLog;
-use App\Models\User;
 use App\Support\AuditLogger;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
@@ -115,40 +112,15 @@ class AuditLogController extends Controller
 
     private function applyGuardFilter(Builder $query, Guard $guard): void
     {
-        $patrolLogIds = PatrolLog::query()
-            ->select('id')
-            ->where('guard_id', $guard->id);
-
-        $incidentReportIds = IncidentReport::query()
-            ->select('id')
-            ->where('guard_id', $guard->id);
-
-        $query->where(function (Builder $query) use ($guard, $patrolLogIds, $incidentReportIds) {
-            $query->where(function (Builder $query) use ($guard) {
-                $query->where('subject_type', Guard::class)
-                    ->where('subject_id', $guard->id);
-            })
-                ->orWhere(function (Builder $query) use ($guard) {
-                    $query->where('subject_type', User::class)
-                        ->where('subject_id', $guard->user_id ?: 0);
-                })
-                ->orWhere(function (Builder $query) use ($patrolLogIds) {
-                    $query->where('subject_type', PatrolLog::class)
-                        ->whereIn('subject_id', $patrolLogIds);
-                })
-                ->orWhere(function (Builder $query) use ($incidentReportIds) {
-                    $query->where('subject_type', IncidentReport::class)
-                        ->whereIn('subject_id', $incidentReportIds);
-                });
-
+        $query->where(function (Builder $query) use ($guard) {
             if ($guard->user_id) {
-                $query->orWhere('user_id', $guard->user_id);
+                $query->where('user_id', $guard->user_id)
+                    ->orWhere('actor_name', $guard->name);
+
+                return;
             }
 
-            $query->orWhere('actor_name', $guard->name)
-                ->orWhere('properties->guard_id', $guard->id)
-                ->orWhere('properties->employee_no', $guard->employee_no)
-                ->orWhere('properties->rfid_uid', $guard->rfid_uid);
+            $query->where('actor_name', $guard->name);
         });
     }
 
