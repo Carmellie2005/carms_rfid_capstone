@@ -37,7 +37,7 @@
         body {
             color: #000000;
             font-family: "Calibri", "DejaVu Sans", sans-serif;
-            font-size: 10.5pt;
+            font-size: 11pt;
             letter-spacing: 0;
             line-height: 1.2;
             margin: 0;
@@ -175,19 +175,19 @@
         }
 
         .report-table {
-            top: 193pt;
+            top: 196pt;
         }
 
         .scope-table {
-            top: 258pt;
+            top: 290pt;
         }
 
         .audit-table-first {
-            top: 378pt;
+            top: 462pt;
         }
 
         .audit-table-following {
-            top: 188pt;
+            top: 190pt;
         }
 
         .report-table td,
@@ -200,35 +200,35 @@
         }
 
         .report-table td {
-            font-size: 9.8pt;
-            height: 48pt;
-            line-height: 1.12;
-            padding: 4pt 6pt;
+            font-size: 11pt;
+            height: 58pt;
+            line-height: 1.25;
+            padding: 5pt 7pt 6pt;
             width: 33.333%;
         }
 
         .scope-table td {
-            font-size: 9.2pt;
-            height: 27pt;
-            line-height: 1.08;
-            padding: 3pt 5pt;
+            font-size: 11pt;
+            height: 40pt;
+            line-height: 1.2;
+            padding: 5pt 7pt 6pt;
             width: 50%;
         }
 
         .audit-table th {
             background: #f1f5f9;
-            font-size: 6.6pt;
+            font-size: 11pt;
             font-weight: 700;
-            line-height: 1;
-            padding: 3pt;
+            line-height: 1.15;
+            padding: 5pt 6pt;
             text-align: left;
             text-transform: uppercase;
         }
 
         .audit-table td {
-            font-size: 6.8pt;
-            line-height: 1.03;
-            padding: 3pt;
+            font-size: 11pt;
+            line-height: 1.15;
+            padding: 5pt 6pt;
         }
 
         .label {
@@ -252,11 +252,11 @@
         }
 
         .scope-label {
-            top: 240pt;
+            top: 268pt;
         }
 
         .audit-label-first {
-            top: 356pt;
+            top: 440pt;
         }
 
         .audit-label-following {
@@ -264,27 +264,27 @@
         }
 
         .w-time {
-            width: 64pt;
+            width: 82pt;
         }
 
         .w-actor {
-            width: 62pt;
+            width: 72pt;
         }
 
         .w-action {
-            width: 62pt;
-        }
-
-        .w-diagnostic {
-            width: 164pt;
-        }
-
-        .w-window {
             width: 70pt;
         }
 
+        .w-diagnostic {
+            width: 130pt;
+        }
+
+        .w-window {
+            width: 65pt;
+        }
+
         .w-result {
-            width: 45.21pt;
+            width: 48.21pt;
         }
 
         .muted {
@@ -292,7 +292,7 @@
         }
 
         .empty-row td {
-            font-size: 10pt;
+            font-size: 11pt;
             padding: 12pt 6pt;
             text-align: center;
         }
@@ -304,8 +304,8 @@
         $generatedBy = auth()->user()?->name ?? 'System Supervisor';
         $reportNumber = 'AT-'.$generatedAt->format('YmdHis');
         $logsForPdf = collect($logs)->values();
-        $firstPageLogs = $logsForPdf->take(6);
-        $followingPageLogs = $logsForPdf->slice(6)->values()->chunk(9);
+        $firstPageLogs = $logsForPdf->take(3);
+        $followingPageLogs = $logsForPdf->slice(3)->values()->chunk(6);
         $actionTypeCount = collect($summary['actions'])->count();
         $recordLabel = $summary['total'] === 1 ? 'record' : 'records';
         $letterheadSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/slsu-letterhead.png'));
