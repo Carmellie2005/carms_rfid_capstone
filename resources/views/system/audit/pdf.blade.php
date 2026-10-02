@@ -264,27 +264,23 @@
         }
 
         .w-time {
-            width: 82pt;
+            width: 90pt;
         }
 
         .w-actor {
-            width: 72pt;
+            width: 83pt;
         }
 
         .w-action {
-            width: 70pt;
+            width: 80pt;
         }
 
         .w-diagnostic {
-            width: 130pt;
-        }
-
-        .w-window {
-            width: 65pt;
+            width: 154pt;
         }
 
         .w-result {
-            width: 48.21pt;
+            width: 60.21pt;
         }
 
         .muted {
@@ -304,8 +300,8 @@
         $generatedBy = auth()->user()?->name ?? 'System Supervisor';
         $reportNumber = 'AT-'.$generatedAt->format('YmdHis');
         $logsForPdf = collect($logs)->values();
-        $firstPageLogs = $logsForPdf->take(3);
-        $followingPageLogs = $logsForPdf->slice(3)->values()->chunk(6);
+        $firstPageLogs = $logsForPdf->take(4);
+        $followingPageLogs = $logsForPdf->slice(4)->values()->chunk(8);
         $actionTypeCount = collect($summary['actions'])->count();
         $recordLabel = $summary['total'] === 1 ? 'record' : 'records';
         $letterheadSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/slsu-letterhead.png'));
@@ -401,7 +397,6 @@
                 <col class="w-actor">
                 <col class="w-action">
                 <col class="w-diagnostic">
-                <col class="w-window">
                 <col class="w-result">
             </colgroup>
             <thead>
@@ -410,7 +405,6 @@
                     <th>Actor</th>
                     <th>Action</th>
                     <th>Diagnostic</th>
-                    <th>Window</th>
                     <th>Result</th>
                 </tr>
             </thead>
@@ -421,7 +415,6 @@
                         <td>{{ $limitText($log->actor_name ?: 'System', 32) }}</td>
                         <td>{{ $limitText(str($log->action)->replace('_', ' ')->title(), 32) }}</td>
                         <td>{{ $limitText($log->diagnosticSummary(), 82) }}</td>
-                        <td>{{ $limitText($log->patrolWindowSummary(), 36) }}</td>
                         <td>{{ $limitText($log->resultLabel(), 18) }}</td>
                     </tr>
                 @empty
@@ -444,7 +437,6 @@
                     <col class="w-actor">
                     <col class="w-action">
                     <col class="w-diagnostic">
-                    <col class="w-window">
                     <col class="w-result">
                 </colgroup>
                 <thead>
@@ -453,7 +445,6 @@
                         <th>Actor</th>
                         <th>Action</th>
                         <th>Diagnostic</th>
-                        <th>Window</th>
                         <th>Result</th>
                     </tr>
                 </thead>
@@ -464,7 +455,6 @@
                             <td>{{ $limitText($log->actor_name ?: 'System', 32) }}</td>
                             <td>{{ $limitText(str($log->action)->replace('_', ' ')->title(), 32) }}</td>
                             <td>{{ $limitText($log->diagnosticSummary(), 82) }}</td>
-                            <td>{{ $limitText($log->patrolWindowSummary(), 36) }}</td>
                             <td>{{ $limitText($log->resultLabel(), 18) }}</td>
                         </tr>
                     @endforeach

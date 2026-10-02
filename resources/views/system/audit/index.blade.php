@@ -53,14 +53,13 @@
 
             <section class="overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div class="hidden overflow-x-auto lg:block">
-                    <table class="w-full min-w-[66rem] divide-y divide-blue-100 dark:divide-slate-800">
+                    <table class="w-full min-w-[58rem] divide-y divide-blue-100 dark:divide-slate-800">
                         <thead class="bg-blue-50/70 dark:bg-slate-800/80">
                             <tr>
                                 <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800 dark:text-blue-200">Time</th>
                                 <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800 dark:text-blue-200">Actor</th>
                                 <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800 dark:text-blue-200">Action</th>
                                 <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800 dark:text-blue-200">Diagnostic</th>
-                                <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800 dark:text-blue-200">Patrol Window</th>
                                 <th class="px-5 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-blue-800 dark:text-blue-200">Result</th>
                             </tr>
                         </thead>
@@ -77,14 +76,13 @@
                                         </span>
                                     </td>
                                     <td class="max-w-md px-5 py-4 text-sm text-slate-600 dark:text-slate-300">{{ $log->diagnosticSummary() }}</td>
-                                    <td class="px-5 py-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ $log->patrolWindowSummary() }}</td>
                                     <td class="px-5 py-4">
                                         <span class="{{ $log->resultBadgeClasses() }}">{{ $log->resultLabel() }}</span>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-5 py-8 text-center text-slate-500 dark:text-slate-400">No audit records found.</td>
+                                    <td colspan="5" class="px-5 py-8 text-center text-slate-500 dark:text-slate-400">No audit records found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -107,10 +105,6 @@
                                 <div>
                                     <dt class="font-bold uppercase tracking-wide text-blue-800 dark:text-blue-200">Diagnostic</dt>
                                     <dd class="mt-1 text-slate-600 dark:text-slate-300">{{ $log->diagnosticSummary() }}</dd>
-                                </div>
-                                <div>
-                                    <dt class="font-bold uppercase tracking-wide text-blue-800 dark:text-blue-200">Patrol Window</dt>
-                                    <dd class="mt-1 font-semibold text-slate-700 dark:text-slate-300">{{ $log->patrolWindowSummary() }}</dd>
                                 </div>
                                 <div>
                                     <dt class="font-bold uppercase tracking-wide text-blue-800 dark:text-blue-200">Result</dt>
