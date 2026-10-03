@@ -10,7 +10,7 @@
     </filter>
   </defs>
 
-  <rect width="1400" height="900" fill="#f8fbff"/>
+  <rect width="1400" height="900" fill="#ffffff"/>
 
   <text x="700" y="60" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#0f2a63">
     SLSU BC Patrol System Context Diagram

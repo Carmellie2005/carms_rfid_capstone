@@ -20,13 +20,13 @@
     .process-title { font: 700 16px Arial, Helvetica, sans-serif; fill: #0f2a63; }
     .store-title { font: 700 15px Arial, Helvetica, sans-serif; fill: #0f2a63; }
     .store-text { font: 400 13px Arial, Helvetica, sans-serif; fill: #334155; }
-    .flow { font: 400 12.5px Arial, Helvetica, sans-serif; fill: #1f2937; }
+    .flow { font: 400 12px Arial, Helvetica, sans-serif; fill: #1f2937; }
     .legend { font: 400 12px Arial, Helvetica, sans-serif; fill: #475569; }
     .line { stroke: #1f2937; stroke-width: 2; fill: none; marker-end: url(#arrow); }
     .store-line { stroke: #2563eb; stroke-width: 2.2; fill: none; }
   </style>
 
-  <rect width="1600" height="1000" fill="#f8fbff"/>
+  <rect width="1600" height="1000" fill="#ffffff"/>
   <text x="800" y="54" text-anchor="middle" class="title">Guard Data Flow Diagram</text>
   <text x="800" y="82" text-anchor="middle" class="subtitle">Gane and Sarson notation for guard-side RFID patrol monitoring and incident reporting</text>
 
@@ -48,9 +48,9 @@
   <text x="1130" y="179" class="store-title">D1</text>
   <text x="1184" y="179" class="store-title">Users and Guards</text>
   <line class="line" x1="340" y1="174" x2="455" y2="174"/>
-  <text x="356" y="158" class="flow">Login credentials</text>
+  <text x="445" y="158" text-anchor="end" class="flow">Login credentials</text>
   <line class="line" x1="455" y1="204" x2="340" y2="204"/>
-  <text x="356" y="224" class="flow">Access result</text>
+  <text x="445" y="224" text-anchor="end" class="flow">Access result</text>
   <line class="line" x1="725" y1="185" x2="1110" y2="185"/>
   <text x="825" y="169" class="flow">Account validation data</text>
 
@@ -70,9 +70,9 @@
   <text x="1202" y="309" class="store-title">Guard, Checkpoint, Patrol Log Data</text>
   <text x="1202" y="333" class="store-text">Validates RFID and records pending scan</text>
   <line class="line" x1="340" y1="315" x2="455" y2="315"/>
-  <text x="356" y="299" class="flow">RFID scan data</text>
+  <text x="445" y="299" text-anchor="end" class="flow">RFID scan data</text>
   <line class="line" x1="455" y1="351" x2="340" y2="351"/>
-  <text x="356" y="371" class="flow">Scan response</text>
+  <text x="445" y="371" text-anchor="end" class="flow">Scan response</text>
   <line class="line" x1="725" y1="328" x2="1110" y2="328"/>
   <text x="820" y="311" class="flow">Validation result and scan record</text>
 
@@ -91,9 +91,9 @@
   <text x="1202" y="457" class="store-title">Patrol Logs and Checklist Evidence</text>
   <text x="1202" y="481" class="store-text">Stores checklist, area selfie, GPS, and photos</text>
   <line class="line" x1="340" y1="462" x2="455" y2="462"/>
-  <text x="356" y="446" class="flow">Patrol data</text>
+  <text x="445" y="446" text-anchor="end" class="flow">Patrol data</text>
   <line class="line" x1="455" y1="499" x2="340" y2="499"/>
-  <text x="356" y="520" class="flow">Submission confirmation</text>
+  <text x="445" y="520" text-anchor="end" class="flow">Patrol saved</text>
   <line class="line" x1="725" y1="476" x2="1110" y2="476"/>
   <text x="815" y="459" class="flow">Completed patrol documentation</text>
 
@@ -112,9 +112,9 @@
   <text x="1184" y="612" class="store-title">Incident Reports</text>
   <text x="1184" y="636" class="store-text">Stores incident description, priority, and images</text>
   <line class="line" x1="340" y1="617" x2="455" y2="617"/>
-  <text x="356" y="601" class="flow">Incident data</text>
+  <text x="445" y="601" text-anchor="end" class="flow">Incident data</text>
   <line class="line" x1="455" y1="654" x2="340" y2="654"/>
-  <text x="356" y="675" class="flow">Submission status</text>
+  <text x="445" y="675" text-anchor="end" class="flow">Incident saved</text>
   <line class="line" x1="725" y1="631" x2="1110" y2="631"/>
   <text x="815" y="614" class="flow">New incident report record</text>
 
@@ -133,9 +133,9 @@
   <text x="1202" y="769" class="store-title">Patrol Logs and Incident Reports</text>
   <text x="1202" y="793" class="store-text">Returns guard-owned history and details</text>
   <line class="line" x1="340" y1="774" x2="455" y2="774"/>
-  <text x="356" y="758" class="flow">View/filter request</text>
+  <text x="445" y="758" text-anchor="end" class="flow">View/filter request</text>
   <line class="line" x1="455" y1="811" x2="340" y2="811"/>
-  <text x="356" y="832" class="flow">Own records</text>
+  <text x="445" y="832" text-anchor="end" class="flow">Own records</text>
   <line class="line" x1="1110" y1="787" x2="725" y2="787"/>
   <text x="812" y="770" class="flow">Record query result</text>
 
