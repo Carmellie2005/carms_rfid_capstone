@@ -357,7 +357,6 @@
         $reportNumber = 'PL-'.str_pad((string) $patrolLog->id, 6, '0', STR_PAD_LEFT);
         $status = str($patrolLog->status ?? 'valid')->replace('_', ' ')->title();
         $rfidStatus = str($patrolLog->rfid_status ?? 'not recorded')->replace('_', ' ')->title();
-        $facialStatus = str($patrolLog->facial_status ?? 'not recorded')->replace('_', ' ')->title();
         $scanDate = $patrolLog->scanned_at?->timezone(config('app.timezone'))->format('M d, Y h:i A') ?? 'Not recorded';
         $selfieDate = $patrolLog->area_selfie_captured_at?->timezone(config('app.timezone'))->format('M d, Y h:i A') ?? 'Not recorded';
         $guardName = $patrolLog->securityGuard?->name ?? 'Unknown';
@@ -460,20 +459,16 @@
             </tr>
             <tr>
                 <td>
-                    <span class="label">Facial Verification:</span>
-                    <span class="value">{{ $facialStatus }}</span>
-                </td>
-                <td>
                     <span class="label">Guard Shift:</span>
                     <span class="value">{{ $guardShift }}</span>
                 </td>
-            </tr>
-            <tr>
                 <td>
                     <span class="label">Patrol Date / Time:</span>
                     <span class="value">{{ $scanDate }}</span>
                 </td>
-                <td>
+            </tr>
+            <tr>
+                <td colspan="2">
                     <span class="label">Area Selfie Captured:</span>
                     <span class="value">{{ $selfieDate }}</span>
                 </td>
