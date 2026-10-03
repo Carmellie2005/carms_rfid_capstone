@@ -147,7 +147,7 @@
             left: 0;
             position: absolute;
             text-align: center;
-            top: 153pt;
+            top: 143pt;
             width: 595.28pt;
             z-index: 1;
         }
@@ -158,7 +158,7 @@
             left: 0;
             position: absolute;
             text-align: center;
-            top: 168pt;
+            top: 158pt;
             width: 595.28pt;
             z-index: 1;
         }
@@ -175,11 +175,11 @@
         }
 
         .report-table {
-            top: 196pt;
+            top: 186pt;
         }
 
         .scope-table {
-            top: 290pt;
+            top: 280pt;
         }
 
         .audit-table-records {
@@ -248,7 +248,7 @@
         }
 
         .scope-label {
-            top: 268pt;
+            top: 258pt;
         }
 
         .audit-label-records {
