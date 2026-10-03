@@ -261,7 +261,7 @@
         }
 
         .notes-label {
-            top: 590pt;
+            top: 616pt;
         }
 
         .notes-body {
@@ -270,7 +270,7 @@
             line-height: 1.25;
             position: absolute;
             text-align: justify;
-            top: 611pt;
+            top: 637pt;
             width: 467.21pt;
             z-index: 1;
         }
