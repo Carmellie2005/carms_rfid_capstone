@@ -157,7 +157,7 @@
                                     </div>
                                 @endif
                                 @if ($incident->action_taken)
-                                    <div class="mt-3 rounded-md bg-emerald-50 p-3 text-sm text-emerald-900">
+                                    <div class="mt-3 rounded-md border border-emerald-100 bg-emerald-50 p-3 text-sm text-emerald-900 dark:border-emerald-700/40 dark:bg-slate-800/80 dark:text-emerald-100">
                                         <span class="font-semibold">Action taken:</span> {{ $incident->action_taken }}
                                     </div>
                                 @endif
