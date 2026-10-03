@@ -294,7 +294,7 @@
         $logsForPdf = collect($logs)->values();
         $auditLogChunks = $logsForPdf->isEmpty()
             ? collect([collect()])
-            : $logsForPdf->chunk(8);
+            : $logsForPdf->chunk(6);
         $actionTypeCount = collect($summary['actions'])->count();
         $recordLabel = $summary['total'] === 1 ? 'record' : 'records';
         $letterheadSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/slsu-letterhead.png'));
