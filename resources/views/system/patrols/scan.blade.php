@@ -35,7 +35,6 @@
             'rfid_uid' => $pendingPatrol->rfid_uid,
             'checkpoint_code' => $pendingPatrol->checkpoint_code,
             'status' => $pendingPatrol->status,
-            'facial_status' => $pendingPatrol->facial_status,
             'area_selfie_captured' => $pendingSelfieCaptured,
             'area_selfie_captured_at' => $pendingPatrol->area_selfie_captured_at?->timezone('Asia/Manila')->format('M d, Y h:i A'),
             'area_selfie_latitude' => $pendingPatrol->area_selfie_latitude,

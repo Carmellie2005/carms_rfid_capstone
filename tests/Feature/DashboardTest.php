@@ -73,7 +73,6 @@ class DashboardTest extends TestCase
             'rfid_uid' => 'RFID-DASH',
             'checkpoint_code' => 'CP-DASH',
             'rfid_status' => 'valid',
-            'facial_status' => 'verified',
             'status' => 'valid',
             'scanned_at' => now(),
         ]);
@@ -84,7 +83,6 @@ class DashboardTest extends TestCase
             'rfid_uid' => 'RFID-EXPIRED-DASH',
             'checkpoint_code' => 'CP-EXPIRED-DASH',
             'rfid_status' => 'expired',
-            'facial_status' => 'expired',
             'status' => 'expired',
             'scanned_at' => now()->addMinute(),
         ]);

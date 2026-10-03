@@ -139,7 +139,6 @@ class GuardPatrolController extends Controller
             ->whereKey($data['patrol_log_id'])
             ->where('guard_id', $guard->id)
             ->where('rfid_status', 'valid')
-            ->whereIn('facial_status', ['pending', 'not_required'])
             ->whereIn('status', ['pending_face', 'pending_selfie', 'pending_checklist'])
             ->first();
 
@@ -155,7 +154,6 @@ class GuardPatrolController extends Controller
                 ->withErrors(['area_selfie_capture' => 'Take a clear area selfie before submitting the patrol record.']);
         }
 
-        $facialStatus = 'not_required';
         $patrolStatus = 'valid';
         $checkpoint = $patrolLog->checkpoint;
         $checklistProofPhotoFiles = $this->checklistProofPhotoFiles($request);
@@ -178,11 +176,10 @@ class GuardPatrolController extends Controller
                 ->withErrors(['incident_images' => $incidentImageError]);
         }
 
-        DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $facialStatus, $patrolStatus, $areaSelfieImage, $selfieCapturedAt, $checklistProofPhotoFiles, $incidentImageFiles, $submittedAt, &$incidentReport) {
+        DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $patrolStatus, $areaSelfieImage, $selfieCapturedAt, $checklistProofPhotoFiles, $incidentImageFiles, $submittedAt, &$incidentReport) {
             $areaSelfiePath = $this->storePatrolAreaSelfie($areaSelfieImage, $guard);
 
             $patrolLog->update([
-                'facial_status' => $facialStatus,
                 'status' => $patrolStatus,
                 'area_selfie_path' => $areaSelfiePath,
                 'area_selfie_mime_type' => $areaSelfieImage['mime_type'],
@@ -239,7 +236,6 @@ class GuardPatrolController extends Controller
                 'employee_no' => $guard->employee_no,
                 'checkpoint_id' => $checkpoint?->id,
                 'checkpoint_code' => $patrolLog->checkpoint_code,
-                'facial_status' => $facialStatus,
                 'area_selfie_captured_at' => $selfieCapturedAt->toDateTimeString(),
                 'area_selfie_latitude' => $data['area_selfie_latitude'],
                 'area_selfie_longitude' => $data['area_selfie_longitude'],
@@ -277,7 +273,6 @@ class GuardPatrolController extends Controller
             ->whereKey($data['patrol_log_id'])
             ->where('guard_id', $guard->id)
             ->where('rfid_status', 'valid')
-            ->whereIn('facial_status', ['pending', 'not_required'])
             ->whereIn('status', ['pending_face', 'pending_selfie', 'pending_checklist'])
             ->first();
 
@@ -325,7 +320,6 @@ class GuardPatrolController extends Controller
     private function isPendingPatrol(PatrolLog $patrolLog): bool
     {
         return $patrolLog->rfid_status === 'valid'
-            && in_array($patrolLog->facial_status, ['pending', 'not_required'], true)
             && in_array($patrolLog->status, ['pending_face', 'pending_selfie', 'pending_checklist'], true);
     }
 
@@ -334,10 +328,8 @@ class GuardPatrolController extends Controller
         PatrolLog::where('guard_id', $guard->id)
             ->whereKeyNot($completedPatrolLog->id)
             ->where('rfid_status', 'valid')
-            ->whereIn('facial_status', ['pending', 'not_required'])
             ->whereIn('status', ['pending_face', 'pending_selfie', 'pending_checklist'])
             ->update([
-                'facial_status' => 'expired',
                 'status' => 'expired',
                 'notes' => 'This pending checkpoint scan was replaced by a newer completed patrol scan.',
             ]);
@@ -350,7 +342,6 @@ class GuardPatrolController extends Controller
             'rfid_uid' => $patrolLog->rfid_uid,
             'checkpoint_code' => $patrolLog->checkpoint_code,
             'status' => $patrolLog->status,
-            'facial_status' => $patrolLog->facial_status,
             'area_selfie_captured' => filled($patrolLog->area_selfie_path) || filled($patrolLog->area_selfie_image_data),
             'area_selfie_captured_at' => $patrolLog->area_selfie_captured_at?->timezone('Asia/Manila')->format('M d, Y h:i A'),
             'area_selfie_latitude' => $patrolLog->area_selfie_latitude,

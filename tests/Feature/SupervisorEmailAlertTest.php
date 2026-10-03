@@ -42,7 +42,6 @@ class SupervisorEmailAlertTest extends TestCase
             'rfid_uid' => 'F33C8D37',
             'checkpoint_code' => $checkpoint->code,
             'rfid_status' => 'valid',
-            'facial_status' => 'not_required',
             'status' => 'pending_selfie',
             'scanned_at' => now(PatrolSchedule::TIMEZONE),
         ]);

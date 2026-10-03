@@ -16,7 +16,6 @@ return new class extends Migration
                 $table->string('rfid_uid');
                 $table->string('checkpoint_code')->nullable();
                 $table->string('rfid_status')->default('pending');
-                $table->string('facial_status')->default('pending');
                 $table->string('status')->default('pending');
                 $table->timestamp('scanned_at');
                 $table->text('notes')->nullable();
@@ -39,12 +38,8 @@ return new class extends Migration
                 $table->string('rfid_status')->default('pending')->after('checkpoint_code');
             }
 
-            if (! Schema::hasColumn('patrol_logs', 'facial_status')) {
-                $table->string('facial_status')->default('pending')->after('rfid_status');
-            }
-
             if (! Schema::hasColumn('patrol_logs', 'status')) {
-                $table->string('status')->default('pending')->after('facial_status');
+                $table->string('status')->default('pending')->after('rfid_status');
             }
 
             if (! Schema::hasColumn('patrol_logs', 'notes')) {

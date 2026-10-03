@@ -276,7 +276,6 @@ class PatrolLogReportTest extends TestCase
             'rfid_uid' => $guard->rfid_uid,
             'checkpoint_code' => $checkpoint->code,
             'rfid_status' => in_array($status, ['pending_face', 'pending_selfie'], true) ? 'valid' : $status,
-            'facial_status' => in_array($status, ['pending_face', 'pending_selfie'], true) ? 'not_required' : 'verified',
             'status' => $status,
             'scanned_at' => $scannedAt ?? now(config('app.timezone')),
         ]);

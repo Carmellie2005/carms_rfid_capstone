@@ -36,7 +36,6 @@ class ReportPaginationTest extends TestCase
                 'rfid_uid' => $guard->rfid_uid,
                 'checkpoint_code' => sprintf('CP-REPORT-%02d', $number),
                 'rfid_status' => 'valid',
-                'facial_status' => 'verified',
                 'status' => 'valid',
                 'scanned_at' => Carbon::parse('2026-09-02 20:00:00', config('app.timezone'))->addMinutes($number),
             ]);

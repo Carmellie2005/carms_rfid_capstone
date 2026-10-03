@@ -160,7 +160,6 @@ class NotificationReadTest extends TestCase
             'rfid_uid' => 'RFID-NOTIFY',
             'checkpoint_code' => 'CP-NOTIFY',
             'rfid_status' => 'valid',
-            'facial_status' => 'failed',
             'status' => 'suspicious',
             'scanned_at' => now('Asia/Manila'),
         ]);
@@ -224,7 +223,6 @@ class NotificationReadTest extends TestCase
             'rfid_uid' => 'RFID-ACTION',
             'checkpoint_code' => 'CP-ACTION',
             'rfid_status' => 'valid',
-            'facial_status' => 'not_required',
             'status' => 'suspicious',
             'scanned_at' => now('Asia/Manila')->subMinutes(2),
         ]);
@@ -234,7 +232,6 @@ class NotificationReadTest extends TestCase
             'rfid_uid' => 'RFID-ACTION',
             'checkpoint_code' => 'CP-ACTION',
             'rfid_status' => 'valid',
-            'facial_status' => 'not_required',
             'status' => 'pending_selfie',
             'scanned_at' => now('Asia/Manila')->subMinute(),
         ]);
@@ -322,7 +319,6 @@ class NotificationReadTest extends TestCase
                 'rfid_uid' => 'RFID-REVIEW',
                 'checkpoint_code' => 'CP-REVIEW',
                 'rfid_status' => $status === 'invalid' ? 'invalid' : 'valid',
-                'facial_status' => $status === 'pending_selfie' ? 'not_required' : 'not_started',
                 'status' => $status,
                 'scanned_at' => now('Asia/Manila')->subMinutes($index + 1),
             ]);

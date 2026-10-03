@@ -50,7 +50,6 @@ class PatrolAreaSelfieTest extends TestCase
             'rfid_uid' => 'F33C8D37',
             'checkpoint_code' => 'CP-IT-01',
             'rfid_status' => 'valid',
-            'facial_status' => 'not_required',
             'status' => 'pending_selfie',
         ]);
     }
@@ -78,7 +77,6 @@ class PatrolAreaSelfieTest extends TestCase
             'rfid_uid' => 'F33C8D37',
             'checkpoint_code' => 'CP-IT-01',
             'rfid_status' => 'profile_incomplete',
-            'facial_status' => 'not_started',
             'status' => 'profile_incomplete',
         ]);
     }
@@ -105,7 +103,6 @@ class PatrolAreaSelfieTest extends TestCase
 
         $patrolLog->refresh();
 
-        $this->assertSame('not_required', $patrolLog->facial_status);
         $this->assertSame('valid', $patrolLog->status);
         $this->assertSame('image/jpeg', $patrolLog->area_selfie_mime_type);
         $this->assertNotNull($patrolLog->area_selfie_image_data);
@@ -258,7 +255,6 @@ class PatrolAreaSelfieTest extends TestCase
             ->assertOk()
             ->assertJsonPath('pending', true)
             ->assertJsonPath('patrol_log.status', 'pending_selfie')
-            ->assertJsonPath('patrol_log.facial_status', 'not_required')
             ->assertJsonPath('patrol_log.area_selfie_captured', false);
     }
 
@@ -438,7 +434,6 @@ class PatrolAreaSelfieTest extends TestCase
             'rfid_uid' => 'F33C8D37',
             'checkpoint_code' => 'CP-IT-01',
             'rfid_status' => 'valid',
-            'facial_status' => 'not_required',
             'status' => 'pending_selfie',
             'scanned_at' => now(PatrolSchedule::TIMEZONE),
         ]);

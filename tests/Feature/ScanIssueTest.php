@@ -41,7 +41,6 @@ class ScanIssueTest extends TestCase
             'rfid_uid' => 'RFID-UNREGISTERED',
             'checkpoint_code' => $checkpoint->code,
             'rfid_status' => 'invalid',
-            'facial_status' => 'not_started',
             'status' => 'invalid',
             'scanned_at' => now(),
             'notes' => 'RFID card is not assigned to any guard profile.',

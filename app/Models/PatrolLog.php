@@ -21,7 +21,6 @@ class PatrolLog extends Model
         'rfid_uid',
         'checkpoint_code',
         'rfid_status',
-        'facial_status',
         'status',
         'area_selfie_path',
         'area_selfie_mime_type',

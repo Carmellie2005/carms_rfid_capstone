@@ -91,7 +91,6 @@ class ClearCarmelaRecordsCommandTest extends TestCase
             'rfid_uid' => 'F33C8D37',
             'checkpoint_code' => 'CP-IT-01',
             'rfid_status' => 'valid',
-            'facial_status' => 'not_required',
             'status' => 'valid',
             'area_selfie_path' => 'patrol-area-selfies/carmela.jpg',
             'area_selfie_mime_type' => 'image/jpeg',
@@ -210,7 +209,6 @@ class ClearCarmelaRecordsCommandTest extends TestCase
             'rfid_uid' => 'OTHER-RFID',
             'checkpoint_code' => 'CP-OTHER',
             'rfid_status' => 'valid',
-            'facial_status' => 'not_required',
             'status' => 'valid',
             'scanned_at' => now(),
         ]);

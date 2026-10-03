@@ -71,7 +71,6 @@ class RfidScanController extends Controller
                 'rfid_uid' => $rfidUid,
                 'checkpoint_code' => $matchedCheckpoint?->code ?? $checkpointToken,
                 'rfid_status' => 'outside_schedule',
-                'facial_status' => 'not_started',
                 'status' => 'outside_schedule',
                 'scanned_at' => $scannedAt,
                 'notes' => $scheduleMessage.' '.$diagnostic,
@@ -110,10 +109,8 @@ class RfidScanController extends Controller
         if ($isValid) {
             PatrolLog::where('guard_id', $guard->id)
                 ->where('rfid_status', 'valid')
-                ->whereIn('facial_status', ['pending', 'not_required'])
                 ->whereIn('status', ['pending_face', 'pending_selfie', 'pending_checklist'])
                 ->update([
-                    'facial_status' => 'expired',
                     'status' => 'expired',
                     'notes' => 'This pending checkpoint scan was replaced by a newer RFID checkpoint scan.',
                 ]);
@@ -135,7 +132,6 @@ class RfidScanController extends Controller
                 'profile_incomplete' => 'profile_incomplete',
                 default => 'invalid',
             },
-            'facial_status' => $isValid ? 'not_required' : 'not_started',
             'status' => $patrolStatus,
             'scanned_at' => $scannedAt,
             'notes' => $diagnostic,

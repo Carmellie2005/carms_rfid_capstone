@@ -244,7 +244,6 @@ class IncidentReportPdfTest extends TestCase
             'rfid_uid' => $guard->rfid_uid,
             'checkpoint_code' => $checkpoint->code,
             'rfid_status' => 'valid',
-            'facial_status' => 'verified',
             'status' => 'valid',
             'scanned_at' => now(),
         ]);
