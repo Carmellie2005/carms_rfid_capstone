@@ -1,0 +1,264 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2600" height="1650" viewBox="0 0 2600 1650" role="img" aria-labelledby="title desc">
+  <title id="title">SLSU BC Patrol Entity Relationship Diagram</title>
+  <desc id="desc">Entity relationship diagram for the current SLSU BC Patrol database showing core users, guards, checkpoints, patrol logs, checklist evidence, incident reports, audit logs, notifications, and push subscription tables.</desc>
+  <defs>
+    <filter id="softShadow" x="-12%" y="-12%" width="124%" height="124%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <style>
+    .bg { fill: #ffffff; }
+    .entity { fill: #ffffff; stroke: #0f2a63; stroke-width: 2.4; }
+    .head { fill: #eaf2ff; stroke: #0f2a63; stroke-width: 2.4; }
+    .head-green { fill: #eaf7ef; stroke: #14532d; stroke-width: 2.4; }
+    .head-amber { fill: #fff7e6; stroke: #92400e; stroke-width: 2.4; }
+    .name { font: 700 19px Arial, Helvetica, sans-serif; fill: #0f2a63; }
+    .attr { font: 400 15px Arial, Helvetica, sans-serif; fill: #334155; }
+    .key { font: 700 14px Arial, Helvetica, sans-serif; fill: #0f2a63; }
+    .fk { font: 700 14px Arial, Helvetica, sans-serif; fill: #14532d; }
+    .soft { font: 400 13px Arial, Helvetica, sans-serif; fill: #64748b; }
+    .rel { stroke: #1f2937; stroke-width: 2.1; fill: none; }
+    .rel-dashed { stroke: #64748b; stroke-width: 2; fill: none; stroke-dasharray: 8 7; }
+    .card { font: 700 14px Arial, Helvetica, sans-serif; fill: #1f2937; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; }
+    .legend { font: 400 14px Arial, Helvetica, sans-serif; fill: #334155; }
+    .legend-title { font: 700 15px Arial, Helvetica, sans-serif; fill: #0f2a63; }
+    .note { font: 400 13px Arial, Helvetica, sans-serif; fill: #475569; }
+  </style>
+
+  <rect width="2600" height="1650" class="bg"/>
+
+  <!-- Relationships -->
+  <g id="relationships">
+    <!-- Users relationships -->
+    <path class="rel" d="M275 370 V450"/>
+    <path class="rel" d="M275 120 V70 H1835 V120"/>
+    <path class="rel" d="M80 260 H35 V420 H1540 V570 H1620"/>
+    <path class="rel" d="M80 320 H25 V1150 H80"/>
+
+    <!-- Guard, checkpoint, patrol, and incident relationships -->
+    <path class="rel" d="M470 552 H580"/>
+    <path class="rel" d="M470 612 H525 V790 H1040 V635 H1100"/>
+    <path class="rel" d="M785 340 V450"/>
+    <path class="rel" d="M980 265 H1040 V635 H1100"/>
+    <path class="rel" d="M1010 588 H1100"/>
+    <path class="rel" d="M790 740 V850"/>
+    <path class="rel" d="M790 1100 V1185"/>
+    <path class="rel" d="M1315 760 V850"/>
+
+    <!-- Notification polymorphic reads -->
+    <path class="rel-dashed" d="M1010 675 H1110 V690 H1620"/>
+    <path class="rel-dashed" d="M1530 670 H1580 V625 H1620"/>
+  </g>
+
+  <!-- Users -->
+  <g transform="translate(80 120)" filter="url(#softShadow)">
+    <rect width="390" height="250" rx="6" class="entity"/>
+    <rect width="390" height="44" rx="6" class="head"/>
+    <text x="195" y="29" text-anchor="middle" class="name">USERS</text>
+    <text x="18" y="72" class="key">PK</text><text x="58" y="72" class="attr">id</text>
+    <text x="18" y="99" class="attr">name</text>
+    <text x="18" y="126" class="attr">username</text>
+    <text x="18" y="153" class="attr">email</text>
+    <text x="18" y="180" class="attr">role</text>
+    <text x="18" y="207" class="attr">phone, birthday</text>
+    <text x="18" y="234" class="attr">must_change_password</text>
+  </g>
+
+  <!-- Guards -->
+  <g transform="translate(80 450)" filter="url(#softShadow)">
+    <rect width="390" height="220" rx="6" class="entity"/>
+    <rect width="390" height="44" rx="6" class="head-green"/>
+    <text x="195" y="29" text-anchor="middle" class="name">GUARDS</text>
+    <text x="18" y="72" class="key">PK</text><text x="58" y="72" class="attr">id</text>
+    <text x="18" y="99" class="fk">FK</text><text x="58" y="99" class="attr">user_id</text>
+    <text x="18" y="126" class="attr">employee_no</text>
+    <text x="18" y="153" class="attr">name, email, phone</text>
+    <text x="18" y="180" class="attr">rfid_uid</text>
+    <text x="18" y="207" class="attr">shift, status, notes</text>
+  </g>
+
+  <!-- Checkpoints -->
+  <g transform="translate(580 120)" filter="url(#softShadow)">
+    <rect width="400" height="220" rx="6" class="entity"/>
+    <rect width="400" height="44" rx="6" class="head"/>
+    <text x="200" y="29" text-anchor="middle" class="name">CHECKPOINTS</text>
+    <text x="18" y="72" class="key">PK</text><text x="58" y="72" class="attr">id</text>
+    <text x="18" y="99" class="attr">code</text>
+    <text x="18" y="126" class="attr">name, location</text>
+    <text x="18" y="153" class="attr">device_uid</text>
+    <text x="18" y="180" class="attr">status, description</text>
+    <text x="18" y="207" class="attr">reader_last_status</text>
+  </g>
+
+  <!-- Patrol Logs -->
+  <g transform="translate(580 450)" filter="url(#softShadow)">
+    <rect width="430" height="290" rx="6" class="entity"/>
+    <rect width="430" height="44" rx="6" class="head-green"/>
+    <text x="215" y="29" text-anchor="middle" class="name">PATROL_LOGS</text>
+    <text x="18" y="72" class="key">PK</text><text x="58" y="72" class="attr">id</text>
+    <text x="18" y="99" class="fk">FK</text><text x="58" y="99" class="attr">guard_id</text>
+    <text x="18" y="126" class="fk">FK</text><text x="58" y="126" class="attr">checkpoint_id</text>
+    <text x="18" y="153" class="attr">rfid_uid, checkpoint_code</text>
+    <text x="18" y="180" class="attr">rfid_status, status</text>
+    <text x="18" y="207" class="attr">scanned_at</text>
+    <text x="18" y="234" class="attr">area_selfie_path</text>
+    <text x="18" y="261" class="attr">latitude, longitude, accuracy</text>
+  </g>
+
+  <!-- Checklist Responses -->
+  <g transform="translate(580 850)" filter="url(#softShadow)">
+    <rect width="430" height="250" rx="6" class="entity"/>
+    <rect width="430" height="44" rx="6" class="head-green"/>
+    <text x="215" y="29" text-anchor="middle" class="name">CHECKLIST_RESPONSES</text>
+    <text x="18" y="72" class="key">PK</text><text x="58" y="72" class="attr">id</text>
+    <text x="18" y="99" class="fk">FK</text><text x="58" y="99" class="attr">patrol_log_id</text>
+    <text x="18" y="126" class="attr">area_secure, lighting_ok</text>
+    <text x="18" y="153" class="attr">doors_locked, cctv_alarm_checked</text>
+    <text x="18" y="180" class="attr">safety_hazard, no_unauthorized_person</text>
+    <text x="18" y="207" class="attr">item_statuses</text>
+    <text x="18" y="234" class="attr">remarks</text>
+  </g>
+
+  <!-- Checklist Proof Photos -->
+  <g transform="translate(580 1185)" filter="url(#softShadow)">
+    <rect width="430" height="255" rx="6" class="entity"/>
+    <rect width="430" height="44" rx="6" class="head-green"/>
+    <text x="215" y="29" text-anchor="middle" class="name">CHECKLIST_PROOF_PHOTOS</text>
+    <text x="18" y="72" class="key">PK</text><text x="58" y="72" class="attr">id</text>
+    <text x="18" y="99" class="fk">FK</text><text x="58" y="99" class="attr">checklist_response_id</text>
+    <text x="18" y="126" class="fk">FK</text><text x="58" y="126" class="attr">patrol_log_id</text>
+    <text x="18" y="153" class="attr">item_key, item_label</text>
+    <text x="18" y="180" class="attr">image_path, mime_type</text>
+    <text x="18" y="207" class="attr">image_data</text>
+    <text x="18" y="234" class="attr">sort_order</text>
+  </g>
+
+  <!-- RFID Enrollment Scans -->
+  <g transform="translate(1100 120)" filter="url(#softShadow)">
+    <rect width="430" height="180" rx="6" class="entity"/>
+    <rect width="430" height="44" rx="6" class="head-amber"/>
+    <text x="215" y="29" text-anchor="middle" class="name">RFID_ENROLLMENT_SCANS</text>
+    <text x="18" y="72" class="key">PK</text><text x="58" y="72" class="attr">id</text>
+    <text x="18" y="99" class="attr">rfid_uid</text>
+    <text x="18" y="126" class="attr">device_uid</text>
+    <text x="18" y="153" class="attr">captured_at</text>
+    <text x="245" y="153" class="soft">staging table, no FK</text>
+  </g>
+
+  <!-- Incident Reports -->
+  <g transform="translate(1100 450)" filter="url(#softShadow)">
+    <rect width="430" height="310" rx="6" class="entity"/>
+    <rect width="430" height="44" rx="6" class="head"/>
+    <text x="215" y="29" text-anchor="middle" class="name">INCIDENT_REPORTS</text>
+    <text x="18" y="72" class="key">PK</text><text x="58" y="72" class="attr">id</text>
+    <text x="18" y="99" class="fk">FK</text><text x="58" y="99" class="attr">patrol_log_id</text>
+    <text x="18" y="126" class="fk">FK</text><text x="58" y="126" class="attr">guard_id</text>
+    <text x="18" y="153" class="fk">FK</text><text x="58" y="153" class="attr">checkpoint_id</text>
+    <text x="18" y="180" class="attr">title, category, severity</text>
+    <text x="18" y="207" class="attr">location, incident_at</text>
+    <text x="18" y="234" class="attr">description, image_path</text>
+    <text x="18" y="261" class="attr">status, action_taken</text>
+    <text x="18" y="288" class="attr">resolved_at</text>
+  </g>
+
+  <!-- Incident Report Images -->
+  <g transform="translate(1100 850)" filter="url(#softShadow)">
+    <rect width="430" height="230" rx="6" class="entity"/>
+    <rect width="430" height="44" rx="6" class="head"/>
+    <text x="215" y="29" text-anchor="middle" class="name">INCIDENT_REPORT_IMAGES</text>
+    <text x="18" y="72" class="key">PK</text><text x="58" y="72" class="attr">id</text>
+    <text x="18" y="99" class="fk">FK</text><text x="58" y="99" class="attr">incident_report_id</text>
+    <text x="18" y="126" class="attr">image_path</text>
+    <text x="18" y="153" class="attr">original_name, source</text>
+    <text x="18" y="180" class="attr">mime_type, image_data</text>
+    <text x="18" y="207" class="attr">sort_order</text>
+  </g>
+
+  <!-- Push Subscriptions -->
+  <g transform="translate(1620 120)" filter="url(#softShadow)">
+    <rect width="430" height="215" rx="6" class="entity"/>
+    <rect width="430" height="44" rx="6" class="head-amber"/>
+    <text x="215" y="29" text-anchor="middle" class="name">PUSH_SUBSCRIPTIONS</text>
+    <text x="18" y="72" class="key">PK</text><text x="58" y="72" class="attr">id</text>
+    <text x="18" y="99" class="fk">FK</text><text x="58" y="99" class="attr">user_id</text>
+    <text x="18" y="126" class="attr">endpoint_hash</text>
+    <text x="18" y="153" class="attr">endpoint</text>
+    <text x="18" y="180" class="attr">public_key, auth_token</text>
+    <text x="18" y="207" class="attr">last_used_at</text>
+  </g>
+
+  <!-- Notification Reads -->
+  <g transform="translate(1620 450)" filter="url(#softShadow)">
+    <rect width="430" height="240" rx="6" class="entity"/>
+    <rect width="430" height="44" rx="6" class="head-amber"/>
+    <text x="215" y="29" text-anchor="middle" class="name">NOTIFICATION_READS</text>
+    <text x="18" y="72" class="key">PK</text><text x="58" y="72" class="attr">id</text>
+    <text x="18" y="99" class="fk">FK</text><text x="58" y="99" class="attr">user_id</text>
+    <text x="18" y="126" class="attr">notifiable_type</text>
+    <text x="18" y="153" class="attr">notifiable_id</text>
+    <text x="18" y="180" class="attr">read_at</text>
+    <text x="18" y="207" class="soft">polymorphic to patrol_logs or incidents</text>
+  </g>
+
+  <!-- Audit Logs -->
+  <g transform="translate(80 1030)" filter="url(#softShadow)">
+    <rect width="430" height="245" rx="6" class="entity"/>
+    <rect width="430" height="44" rx="6" class="head-amber"/>
+    <text x="215" y="29" text-anchor="middle" class="name">AUDIT_LOGS</text>
+    <text x="18" y="72" class="key">PK</text><text x="58" y="72" class="attr">id</text>
+    <text x="18" y="99" class="fk">FK</text><text x="58" y="99" class="attr">user_id</text>
+    <text x="18" y="126" class="attr">actor_name, action</text>
+    <text x="18" y="153" class="attr">description</text>
+    <text x="18" y="180" class="attr">subject_type, subject_id</text>
+    <text x="18" y="207" class="attr">properties</text>
+    <text x="18" y="234" class="attr">ip_address, user_agent</text>
+  </g>
+
+  <!-- Cardinalities -->
+  <g id="cardinalities">
+    <text x="288" y="398" class="card">1</text>
+    <text x="288" y="438" class="card">0..1</text>
+
+    <text x="486" y="543" class="card">1</text>
+    <text x="540" y="543" class="card">0..*</text>
+    <text x="486" y="632" class="card">1</text>
+    <text x="1042" y="602" class="card">0..*</text>
+
+    <text x="796" y="368" class="card">1</text>
+    <text x="796" y="438" class="card">0..*</text>
+    <text x="994" y="282" class="card">1</text>
+    <text x="1045" y="653" class="card">0..*</text>
+
+    <text x="1020" y="578" class="card">1</text>
+    <text x="1050" y="578" class="card">0..1</text>
+    <text x="800" y="768" class="card">1</text>
+    <text x="800" y="838" class="card">0..1</text>
+    <text x="800" y="1128" class="card">1</text>
+    <text x="800" y="1172" class="card">0..*</text>
+    <text x="1328" y="788" class="card">1</text>
+    <text x="1328" y="838" class="card">0..*</text>
+
+    <text x="1545" y="637" class="card">0..*</text>
+    <text x="1600" y="592" class="card">0..*</text>
+    <text x="1550" y="700" class="card">0..*</text>
+
+    <text x="1565" y="212" class="card">0..*</text>
+    <text x="1565" y="558" class="card">0..*</text>
+    <text x="42" y="1144" class="card">0..*</text>
+  </g>
+
+  <!-- Legend -->
+  <g transform="translate(80 1535)">
+    <text x="0" y="-28" class="legend-title">Legend:</text>
+    <text x="0" y="0" class="key">PK</text>
+    <text x="38" y="0" class="legend">Primary key</text>
+    <text x="170" y="0" class="fk">FK</text>
+    <text x="208" y="0" class="legend">Foreign key</text>
+    <line x1="380" y1="-5" x2="480" y2="-5" class="rel"/>
+    <text x="500" y="0" class="legend">Database relationship</text>
+    <line x1="710" y1="-5" x2="810" y2="-5" class="rel-dashed"/>
+    <text x="830" y="0" class="legend">Polymorphic/logical reference</text>
+    <text x="1120" y="0" class="note">Laravel infrastructure tables such as password resets, failed jobs, and personal access tokens are omitted for readability.</text>
+  </g>
+</svg>
