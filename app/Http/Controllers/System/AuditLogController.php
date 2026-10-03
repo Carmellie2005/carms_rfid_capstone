@@ -82,7 +82,10 @@ class AuditLogController extends Controller
 
     private function actions()
     {
-        return AuditLog::query()
+        $query = AuditLog::query();
+        $this->excludePendingSelfieRecords($query);
+
+        return $query
             ->select('action')
             ->distinct()
             ->orderBy('action')
@@ -94,6 +97,7 @@ class AuditLogController extends Controller
         $missingGuard = $request->filled('guard_id') && ! $guard;
 
         return AuditLog::with('user')
+            ->where(fn (Builder $query) => $this->excludePendingSelfieRecords($query))
             ->when($missingGuard, fn (Builder $query) => $query->whereRaw('1 = 0'))
             ->when($guard, fn (Builder $query) => $this->applyGuardFilter($query, $guard))
             ->when($request->filled('action'), fn (Builder $query) => $query->where('action', $request->action))
@@ -107,6 +111,23 @@ class AuditLogController extends Controller
                         ->orWhere('actor_name', 'like', "%{$search}%")
                         ->orWhere('properties->diagnostic', 'like', "%{$search}%");
                 });
+            });
+    }
+
+    private function excludePendingSelfieRecords(Builder $query): void
+    {
+        $hiddenStatuses = ['pending_face', 'pending_selfie'];
+
+        $query
+            ->where(function (Builder $query) use ($hiddenStatuses) {
+                $query
+                    ->whereNull('properties->result')
+                    ->orWhereNotIn('properties->result', $hiddenStatuses);
+            })
+            ->where(function (Builder $query) use ($hiddenStatuses) {
+                $query
+                    ->whereNull('properties->status')
+                    ->orWhereNotIn('properties->status', $hiddenStatuses);
             });
     }
 

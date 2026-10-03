@@ -112,6 +112,62 @@ class AuditTrailReportTest extends TestCase
             ->assertDontSee('Details');
     }
 
+    public function test_audit_trail_hides_pending_selfie_transition_records(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'admin']);
+        $guard = $this->createGuard('SG-SELFIE', 'RFID-SELFIE');
+
+        AuditLog::create([
+            'user_id' => $guard->user_id,
+            'actor_name' => $guard->name,
+            'action' => 'rfid_scan_received',
+            'description' => 'Pending selfie transitional scan.',
+            'subject_type' => Guard::class,
+            'subject_id' => $guard->id,
+            'properties' => [
+                'diagnostic' => 'RFID accepted, awaiting area selfie.',
+                'result' => 'pending_selfie',
+            ],
+        ]);
+
+        AuditLog::create([
+            'user_id' => $guard->user_id,
+            'actor_name' => $guard->name,
+            'action' => 'rfid_scan_received',
+            'description' => 'Legacy pending face transitional scan.',
+            'subject_type' => Guard::class,
+            'subject_id' => $guard->id,
+            'properties' => [
+                'diagnostic' => 'RFID accepted, awaiting legacy selfie step.',
+                'status' => 'pending_face',
+            ],
+        ]);
+
+        AuditLog::create([
+            'user_id' => $guard->user_id,
+            'actor_name' => $guard->name,
+            'action' => 'patrol_completed',
+            'description' => 'Completed patrol record.',
+            'subject_type' => Guard::class,
+            'subject_id' => $guard->id,
+            'properties' => [
+                'diagnostic' => 'Checkpoint visit recorded successfully.',
+                'result' => 'completed',
+            ],
+        ]);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('audit-logs.index'));
+
+        $response
+            ->assertOk()
+            ->assertSee('Checkpoint visit recorded successfully.')
+            ->assertDontSee('Pending selfie transitional scan.')
+            ->assertDontSee('Legacy pending face transitional scan.')
+            ->assertDontSee('Pending Selfie');
+    }
+
     public function test_supervisor_can_download_guard_audit_trail_pdf(): void
     {
         $supervisor = User::factory()->create(['role' => 'admin']);
