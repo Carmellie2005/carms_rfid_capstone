@@ -1,0 +1,229 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1300" viewBox="0 0 2200 1300" role="img" aria-labelledby="title desc">
+  <title id="title">SLSU BC Patrol Data Flow Diagram - Gane and Sarson Notation</title>
+  <desc id="desc">A clean Gane and Sarson Level 1 data flow diagram for SLSU BC Patrol.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#263241"/>
+    </marker>
+    <filter id="softShadow" x="-14%" y="-18%" width="128%" height="136%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.11"/>
+    </filter>
+    <style>
+      .title { font: 700 36px Arial, Helvetica, sans-serif; fill: #0f2a63; }
+      .subtitle { font: 400 17px Arial, Helvetica, sans-serif; fill: #526173; }
+      .entity-box { fill: #eef2ff; stroke: #7f9cf5; stroke-width: 2.2; filter: url(#softShadow); }
+      .entity-title { font: 700 21px Arial, Helvetica, sans-serif; fill: #1e1b4b; }
+      .entity-note { font: 400 15px Arial, Helvetica, sans-serif; fill: #334155; }
+      .process-box { fill: #e4f4ff; stroke: #3578ff; stroke-width: 2.7; filter: url(#softShadow); }
+      .process-band { fill: #b8dcff; stroke: #3578ff; stroke-width: 2.7; }
+      .process-id { font: 700 22px Arial, Helvetica, sans-serif; fill: #0f2a63; }
+      .process-title { font: 700 18px Arial, Helvetica, sans-serif; fill: #0f2a63; }
+      .store-line { fill: none; stroke: #0f766e; stroke-width: 2.5; }
+      .store-id { font: 700 18px Arial, Helvetica, sans-serif; fill: #0f766e; }
+      .store-title { font: 700 17px Arial, Helvetica, sans-serif; fill: #134e4a; }
+      .flow { fill: none; stroke: #263241; stroke-width: 2.3; marker-end: url(#arrow); }
+      .flow-light { fill: none; stroke: #475569; stroke-width: 1.9; marker-end: url(#arrow); }
+      .flow-label { font: 400 14px Arial, Helvetica, sans-serif; fill: #1f2937; }
+      .label-bg { fill: #f8fbff; opacity: 0.97; }
+      .legend-title { font: 700 15px Arial, Helvetica, sans-serif; fill: #0f2a63; }
+      .legend-text { font: 400 14px Arial, Helvetica, sans-serif; fill: #334155; }
+    </style>
+  </defs>
+
+  <rect width="2200" height="1300" fill="#f8fbff"/>
+
+  <text x="1100" y="58" text-anchor="middle" class="title">SLSU BC Patrol Data Flow Diagram</text>
+  <text x="1100" y="90" text-anchor="middle" class="subtitle">Gane and Sarson Level 1 DFD for RFID checkpoint monitoring, patrol documentation, incident reporting, reports, and alerts</text>
+
+  <!-- External entities -->
+  <rect class="entity-box" x="70" y="165" width="320" height="110" rx="4"/>
+  <text x="230" y="207" text-anchor="middle" class="entity-title">Security Guard</text>
+  <text x="230" y="239" text-anchor="middle" class="entity-note">Uses patrol and incident forms</text>
+
+  <rect class="entity-box" x="70" y="465" width="320" height="118" rx="4"/>
+  <text x="230" y="506" text-anchor="middle" class="entity-title">ESP32 RFID</text>
+  <text x="230" y="532" text-anchor="middle" class="entity-title">Checkpoint Device</text>
+  <text x="230" y="561" text-anchor="middle" class="entity-note">Sends card scan data</text>
+
+  <rect class="entity-box" x="1810" y="350" width="320" height="125" rx="4"/>
+  <text x="1970" y="395" text-anchor="middle" class="entity-title">Supervisor / Admin</text>
+  <text x="1970" y="428" text-anchor="middle" class="entity-note">Monitors, reviews, and manages</text>
+
+  <rect class="entity-box" x="1810" y="850" width="320" height="125" rx="4"/>
+  <text x="1970" y="893" text-anchor="middle" class="entity-title">Email / Web Push</text>
+  <text x="1970" y="920" text-anchor="middle" class="entity-title">Notification Services</text>
+  <text x="1970" y="949" text-anchor="middle" class="entity-note">Delivers supervisor alerts</text>
+
+  <!-- Processes -->
+  <rect class="process-box" x="500" y="165" width="330" height="125" rx="18"/>
+  <path class="process-band" d="M500,165 H570 V290 H500 Z"/>
+  <text x="535" y="235" text-anchor="middle" class="process-id">1.0</text>
+  <text x="695" y="210" text-anchor="middle" class="process-title">Authenticate and</text>
+  <text x="695" y="235" text-anchor="middle" class="process-title">Manage Access</text>
+  <text x="695" y="263" text-anchor="middle" class="entity-note">Validate role-based access</text>
+
+  <rect class="process-box" x="500" y="455" width="330" height="140" rx="18"/>
+  <path class="process-band" d="M500,455 H570 V595 H500 Z"/>
+  <text x="535" y="533" text-anchor="middle" class="process-id">2.0</text>
+  <text x="695" y="504" text-anchor="middle" class="process-title">Process RFID</text>
+  <text x="695" y="529" text-anchor="middle" class="process-title">Checkpoint Scan</text>
+  <text x="695" y="558" text-anchor="middle" class="entity-note">Validate guard and checkpoint</text>
+
+  <rect class="process-box" x="930" y="455" width="350" height="140" rx="18"/>
+  <path class="process-band" d="M930,455 H1000 V595 H930 Z"/>
+  <text x="965" y="533" text-anchor="middle" class="process-id">3.0</text>
+  <text x="1110" y="504" text-anchor="middle" class="process-title">Record Patrol</text>
+  <text x="1110" y="529" text-anchor="middle" class="process-title">Documentation</text>
+  <text x="1110" y="558" text-anchor="middle" class="entity-note">Checklist, selfie, remarks</text>
+
+  <rect class="process-box" x="1360" y="455" width="350" height="140" rx="18"/>
+  <path class="process-band" d="M1360,455 H1430 V595 H1360 Z"/>
+  <text x="1395" y="533" text-anchor="middle" class="process-id">4.0</text>
+  <text x="1540" y="504" text-anchor="middle" class="process-title">Manage Incident</text>
+  <text x="1540" y="529" text-anchor="middle" class="process-title">Reports</text>
+  <text x="1540" y="558" text-anchor="middle" class="entity-note">Submit, review, update status</text>
+
+  <rect class="process-box" x="1280" y="900" width="370" height="150" rx="18"/>
+  <path class="process-band" d="M1280,900 H1350 V1050 H1280 Z"/>
+  <text x="1315" y="985" text-anchor="middle" class="process-id">5.0</text>
+  <text x="1468" y="948" text-anchor="middle" class="process-title">Generate Reports</text>
+  <text x="1468" y="974" text-anchor="middle" class="process-title">and Send Alerts</text>
+  <text x="1468" y="1004" text-anchor="middle" class="entity-note">Dashboards, PDFs, notifications</text>
+
+  <!-- Data stores -->
+  <path class="store-line" d="M930 155 H1280 M930 225 H1280 M930 155 V225 M1000 155 V225"/>
+  <text x="965" y="198" text-anchor="middle" class="store-id">D1</text>
+  <text x="1140" y="197" text-anchor="middle" class="store-title">User and Guard Records</text>
+
+  <path class="store-line" d="M930 300 H1280 M930 370 H1280 M930 300 V370 M1000 300 V370"/>
+  <text x="965" y="343" text-anchor="middle" class="store-id">D2</text>
+  <text x="1140" y="342" text-anchor="middle" class="store-title">Checkpoint Records</text>
+
+  <path class="store-line" d="M930 690 H1280 M930 760 H1280 M930 690 V760 M1000 690 V760"/>
+  <text x="965" y="733" text-anchor="middle" class="store-id">D3</text>
+  <text x="1140" y="732" text-anchor="middle" class="store-title">Patrol Log Records</text>
+
+  <path class="store-line" d="M1360 690 H1710 M1360 760 H1710 M1360 690 V760 M1430 690 V760"/>
+  <text x="1395" y="733" text-anchor="middle" class="store-id">D4</text>
+  <text x="1570" y="732" text-anchor="middle" class="store-title">Incident Report Records</text>
+
+  <path class="store-line" d="M1360 800 H1710 M1360 870 H1710 M1360 800 V870 M1430 800 V870"/>
+  <text x="1395" y="843" text-anchor="middle" class="store-id">D6</text>
+  <text x="1570" y="842" text-anchor="middle" class="store-title">Evidence Photo Records</text>
+
+  <path class="store-line" d="M930 1110 H1280 M930 1180 H1280 M930 1110 V1180 M1000 1110 V1180"/>
+  <text x="965" y="1153" text-anchor="middle" class="store-id">D5</text>
+  <text x="1140" y="1152" text-anchor="middle" class="store-title">Audit Trail Records</text>
+
+  <path class="store-line" d="M1570 1110 H1940 M1570 1180 H1940 M1570 1110 V1180 M1640 1110 V1180"/>
+  <text x="1605" y="1153" text-anchor="middle" class="store-id">D7</text>
+  <text x="1782" y="1152" text-anchor="middle" class="store-title">Push Subscription Records</text>
+
+  <!-- Authentication flows -->
+  <path class="flow" d="M390 205 H500"/>
+  <rect class="label-bg" x="410" y="176" width="110" height="19"/>
+  <text x="465" y="191" text-anchor="middle" class="flow-label">Login details</text>
+
+  <path class="flow" d="M500 255 H390"/>
+  <rect class="label-bg" x="404" y="265" width="108" height="19"/>
+  <text x="458" y="280" text-anchor="middle" class="flow-label">Access status</text>
+
+  <path class="flow-light" d="M830 200 H930"/>
+  <path class="flow-light" d="M930 225 H830"/>
+
+  <!-- RFID scan flows -->
+  <path class="flow" d="M390 505 H500"/>
+  <rect class="label-bg" x="395" y="475" width="148" height="19"/>
+  <text x="469" y="490" text-anchor="middle" class="flow-label">RFID UID, device ID</text>
+
+  <path class="flow" d="M500 555 H390"/>
+  <rect class="label-bg" x="410" y="565" width="112" height="19"/>
+  <text x="466" y="580" text-anchor="middle" class="flow-label">Scan result</text>
+
+  <path class="flow-light" d="M660 455 V335 H930"/>
+  <rect class="label-bg" x="700" y="388" width="100" height="19"/>
+  <text x="750" y="403" text-anchor="middle" class="flow-label">Guard lookup</text>
+
+  <path class="flow-light" d="M735 455 V335 H930"/>
+  <rect class="label-bg" x="780" y="430" width="122" height="19"/>
+  <text x="841" y="445" text-anchor="middle" class="flow-label">Checkpoint lookup</text>
+
+  <path class="flow" d="M830 515 H930"/>
+  <rect class="label-bg" x="845" y="486" width="112" height="19"/>
+  <text x="901" y="501" text-anchor="middle" class="flow-label">Accepted scan</text>
+
+  <path class="flow-light" d="M700 595 V725 H930"/>
+
+  <!-- Patrol documentation flows -->
+  <path class="flow" d="M230 275 V640 H930"/>
+  <rect class="label-bg" x="300" y="632" width="178" height="40"/>
+  <text x="389" y="648" text-anchor="middle" class="flow-label">Checklist, area selfie,</text>
+  <text x="389" y="666" text-anchor="middle" class="flow-label">GPS, remarks</text>
+
+  <path class="flow" d="M1110 595 V690"/>
+  <rect class="label-bg" x="1125" y="636" width="122" height="19"/>
+  <text x="1186" y="651" text-anchor="middle" class="flow-label">Patrol record</text>
+
+  <path class="flow-light" d="M1220 595 V835 H1360"/>
+
+  <path class="flow" d="M1280 515 H1360"/>
+  <rect class="label-bg" x="1280" y="486" width="124" height="19"/>
+  <text x="1342" y="501" text-anchor="middle" class="flow-label">Incident details</text>
+
+  <!-- Incident management flows -->
+  <path class="flow" d="M1810 385 H1710"/>
+  <rect class="label-bg" x="1718" y="356" width="106" height="19"/>
+  <text x="1771" y="371" text-anchor="middle" class="flow-label">Review action</text>
+
+  <path class="flow" d="M1710 540 H1810"/>
+  <rect class="label-bg" x="1718" y="550" width="112" height="19"/>
+  <text x="1774" y="565" text-anchor="middle" class="flow-label">Incident status</text>
+
+  <path class="flow" d="M1540 595 V690"/>
+  <rect class="label-bg" x="1555" y="636" width="118" height="19"/>
+  <text x="1614" y="651" text-anchor="middle" class="flow-label">Incident record</text>
+
+  <path class="flow-light" d="M1465 595 V800"/>
+
+  <!-- Reporting and notification flows -->
+  <path class="flow" d="M1810 425 C1730 535 1650 760 1550 900"/>
+  <rect class="label-bg" x="1690" y="620" width="106" height="19"/>
+  <text x="1743" y="635" text-anchor="middle" class="flow-label">Report filters</text>
+
+  <path class="flow" d="M1650 940 C1740 835 1820 560 1810 425"/>
+  <rect class="label-bg" x="1740" y="670" width="150" height="19"/>
+  <text x="1815" y="685" text-anchor="middle" class="flow-label">Dashboards, PDFs</text>
+
+  <path class="flow-light" d="M1125 760 C1160 825 1195 875 1280 930"/>
+  <path class="flow-light" d="M1530 760 C1480 825 1425 860 1350 900"/>
+
+  <path class="flow" d="M1370 1050 C1280 1080 1145 1080 1110 1110"/>
+  <rect class="label-bg" x="1190" y="1070" width="112" height="19"/>
+  <text x="1246" y="1085" text-anchor="middle" class="flow-label">Audit entries</text>
+
+  <path class="flow-light" d="M1510 1050 C1570 1085 1630 1100 1670 1110"/>
+  <rect class="label-bg" x="1544" y="1068" width="116" height="19"/>
+  <text x="1602" y="1083" text-anchor="middle" class="flow-label">Subscriptions</text>
+
+  <path class="flow" d="M1650 940 H1810"/>
+  <rect class="label-bg" x="1675" y="912" width="132" height="19"/>
+  <text x="1741" y="927" text-anchor="middle" class="flow-label">Alert payload</text>
+
+  <path class="flow" d="M1970 850 V475"/>
+  <rect class="label-bg" x="1984" y="650" width="135" height="19"/>
+  <text x="2051" y="665" text-anchor="middle" class="flow-label">Email/browser alert</text>
+
+  <!-- Legend -->
+  <g transform="translate(70 1070)">
+    <text x="0" y="0" class="legend-title">Gane and Sarson Notation</text>
+    <rect x="0" y="25" width="98" height="44" class="entity-box" filter="none"/>
+    <text x="118" y="54" class="legend-text">External Entity</text>
+    <rect x="292" y="25" width="108" height="52" rx="13" class="process-box" filter="none"/>
+    <rect x="292" y="25" width="28" height="52" class="process-band"/>
+    <text x="426" y="58" class="legend-text">Process</text>
+    <path class="store-line" d="M540 25 H660 M540 69 H660 M540 25 V69 M572 25 V69"/>
+    <text x="682" y="54" class="legend-text">Data Store</text>
+    <path class="flow" d="M830 50 H930"/>
+    <text x="955" y="55" class="legend-text">Data Flow</text>
+  </g>
+</svg>
