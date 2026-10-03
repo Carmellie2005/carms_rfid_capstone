@@ -104,7 +104,6 @@
   <path class="flow" d="M1820 315 V372"/>
   <path class="flow" d="M1950 406 H2025"/>
   <path class="flow" d="M2152 440 V494"/>
-  <text x="1665" y="135" text-anchor="middle" class="small-text">Supervisor/Admin</text>
 
   <!-- Guard branch -->
   <text x="470" y="530" text-anchor="middle" class="lane">SECURITY GUARD FLOW</text>
