@@ -31,9 +31,6 @@
 
   <rect width="2400" height="1500" fill="#ffffff"/>
 
-  <text x="1200" y="54" text-anchor="middle" class="title">SLSU BC Patrol System Flowchart</text>
-  <text x="1200" y="84" text-anchor="middle" class="subtitle">Landscape view using standard symbols for RFID patrol monitoring, incident reporting, alerts, and PDF reports</text>
-
   <!-- Access flow -->
   <g filter="url(#softShadow)">
     <rect x="80" y="120" width="190" height="58" rx="29" class="terminator"/>
