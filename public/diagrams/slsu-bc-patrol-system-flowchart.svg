@@ -1,0 +1,202 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1720" viewBox="0 0 2000 1720" role="img" aria-labelledby="title desc">
+  <title id="title">SLSU BC Patrol System Flowchart</title>
+  <desc id="desc">System flowchart using standard flowchart symbols for the SLSU BC Patrol RFID patrol monitoring and incident reporting workflow.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#1f2937"/>
+    </marker>
+    <filter id="softShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <style>
+    .title { font: 700 32px Arial, Helvetica, sans-serif; fill: #0f2a63; }
+    .subtitle { font: 400 16px Arial, Helvetica, sans-serif; fill: #526173; }
+    .label { font: 700 14px Arial, Helvetica, sans-serif; fill: #1f2937; }
+    .shape-title { font: 700 17px Arial, Helvetica, sans-serif; fill: #0f2a63; }
+    .shape-text { font: 400 14px Arial, Helvetica, sans-serif; fill: #334155; }
+    .small-text { font: 400 12px Arial, Helvetica, sans-serif; fill: #475569; }
+    .legend-title { font: 700 15px Arial, Helvetica, sans-serif; fill: #0f2a63; }
+    .legend-text { font: 400 13px Arial, Helvetica, sans-serif; fill: #334155; }
+    .flow { stroke: #1f2937; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+    .flow-soft { stroke: #64748b; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    .system-fill { fill: #ffffff; stroke: #3578ff; stroke-width: 2.5; }
+    .io-fill { fill: #eaf7ef; stroke: #59b378; stroke-width: 2.5; }
+    .decision-fill { fill: #fff7e6; stroke: #f59e0b; stroke-width: 2.5; }
+    .end-fill { fill: #eef2ff; stroke: #6476d9; stroke-width: 2.5; }
+    .doc-fill { fill: #f8fafc; stroke: #475569; stroke-width: 2.2; }
+    .db-fill { fill: #f0f7ff; stroke: #2563eb; stroke-width: 2.5; }
+  </style>
+
+  <rect width="2000" height="1720" fill="#ffffff"/>
+
+  <text x="1000" y="54" text-anchor="middle" class="title">SLSU BC Patrol System Flowchart</text>
+  <text x="1000" y="84" text-anchor="middle" class="subtitle">Standard flowchart symbols for RFID patrol monitoring, incident reporting, alerts, and PDF reports</text>
+
+  <!-- Main access flow -->
+  <g filter="url(#softShadow)">
+    <rect x="780" y="115" width="240" height="58" rx="29" class="end-fill"/>
+    <rect x="720" y="215" width="360" height="76" rx="6" class="system-fill"/>
+    <polygon points="735,330 1095,330 1065,408 705,408" class="io-fill"/>
+    <rect x="730" y="455" width="340" height="76" rx="6" class="system-fill"/>
+    <polygon points="900,555 1040,625 900,695 760,625" class="decision-fill"/>
+  </g>
+
+  <text x="900" y="150" text-anchor="middle" class="shape-title">Start</text>
+  <text x="900" y="248" text-anchor="middle" class="shape-title">Open SLSU BC Patrol</text>
+  <text x="900" y="271" text-anchor="middle" class="shape-text">in browser or installed app</text>
+  <text x="900" y="363" text-anchor="middle" class="shape-title">Enter login credentials</text>
+  <text x="900" y="386" text-anchor="middle" class="shape-text">guard, supervisor, or admin account</text>
+  <text x="900" y="488" text-anchor="middle" class="shape-title">Authenticate account</text>
+  <text x="900" y="511" text-anchor="middle" class="shape-text">check user access and role</text>
+  <text x="900" y="619" text-anchor="middle" class="shape-title">Account</text>
+  <text x="900" y="642" text-anchor="middle" class="shape-title">role?</text>
+
+  <path class="flow" d="M900 173 V215"/>
+  <path class="flow" d="M900 291 V330"/>
+  <path class="flow" d="M900 408 V455"/>
+  <path class="flow" d="M900 531 V555"/>
+
+  <!-- Shared database -->
+  <g filter="url(#softShadow)">
+    <path d="M780 735 C780 714 1020 714 1020 735 V865 C1020 886 780 886 780 865 Z" class="db-fill"/>
+    <ellipse cx="900" cy="735" rx="120" ry="25" class="db-fill"/>
+    <path d="M780 865 C780 844 1020 844 1020 865" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+  </g>
+  <text x="900" y="760" text-anchor="middle" class="shape-title">System Database</text>
+  <text x="900" y="785" text-anchor="middle" class="shape-text">users, guards, checkpoints,</text>
+  <text x="900" y="806" text-anchor="middle" class="shape-text">patrol logs, incidents,</text>
+  <text x="900" y="827" text-anchor="middle" class="shape-text">audit logs, push subscriptions</text>
+
+  <path class="flow-soft" d="M1070 493 H1145 V760 H1020"/>
+  <text x="1112" y="476" text-anchor="middle" class="small-text">reads and updates</text>
+
+  <!-- Guard branch -->
+  <text x="622" y="603" text-anchor="middle" class="label">GUARD</text>
+  <path class="flow" d="M760 625 H420 V722"/>
+
+  <g filter="url(#softShadow)">
+    <polygon points="190,722 650,722 610,804 150,804" class="io-fill"/>
+    <polygon points="400,845 555,925 400,1005 245,925" class="decision-fill"/>
+    <rect x="635" y="887" width="345" height="76" rx="6" class="system-fill"/>
+    <polygon points="675,1003 1015,1003 985,1085 645,1085" class="io-fill"/>
+    <rect x="635" y="1128" width="345" height="76" rx="6" class="system-fill"/>
+    <polygon points="805,1240 950,1315 805,1390 660,1315" class="decision-fill"/>
+    <rect x="62" y="1036" width="320" height="82" rx="6" class="system-fill"/>
+    <polygon points="90,1158 390,1158 360,1240 60,1240" class="io-fill"/>
+    <rect x="110" y="1284" width="220" height="58" rx="29" class="end-fill"/>
+    <polygon points="250,1410 620,1410 590,1492 220,1492" class="io-fill"/>
+    <rect x="690" y="1430" width="340" height="76" rx="6" class="system-fill"/>
+    <rect x="1140" y="1276" width="350" height="76" rx="6" class="system-fill"/>
+    <polygon points="1180,1392 1500,1392 1470,1474 1150,1474" class="io-fill"/>
+    <rect x="1228" y="1510" width="220" height="58" rx="29" class="end-fill"/>
+  </g>
+
+  <text x="400" y="754" text-anchor="middle" class="shape-title">Scan RFID card</text>
+  <text x="400" y="777" text-anchor="middle" class="shape-text">at campus checkpoint</text>
+  <text x="400" y="917" text-anchor="middle" class="shape-title">RFID and</text>
+  <text x="400" y="940" text-anchor="middle" class="shape-title">checkpoint valid?</text>
+  <text x="808" y="920" text-anchor="middle" class="shape-title">Create pending</text>
+  <text x="808" y="943" text-anchor="middle" class="shape-title">patrol log</text>
+  <text x="830" y="1035" text-anchor="middle" class="shape-title">Capture GPS, area selfie,</text>
+  <text x="830" y="1058" text-anchor="middle" class="shape-title">and checklist data</text>
+  <text x="808" y="1161" text-anchor="middle" class="shape-title">Submit patrol</text>
+  <text x="808" y="1184" text-anchor="middle" class="shape-title">documentation</text>
+  <text x="805" y="1307" text-anchor="middle" class="shape-title">Incident</text>
+  <text x="805" y="1330" text-anchor="middle" class="shape-title">observed?</text>
+  <text x="222" y="1067" text-anchor="middle" class="shape-title">Record scan issue</text>
+  <text x="222" y="1090" text-anchor="middle" class="shape-text">invalid card or incomplete data</text>
+  <text x="225" y="1189" text-anchor="middle" class="shape-title">Show error message</text>
+  <text x="225" y="1212" text-anchor="middle" class="shape-text">and notify supervisor</text>
+  <text x="220" y="1320" text-anchor="middle" class="shape-title">End / retry</text>
+  <text x="420" y="1442" text-anchor="middle" class="shape-title">Submit incident details</text>
+  <text x="420" y="1465" text-anchor="middle" class="shape-text">description and images</text>
+  <text x="860" y="1462" text-anchor="middle" class="shape-title">Save incident report</text>
+  <text x="860" y="1485" text-anchor="middle" class="shape-text">and trigger alert</text>
+  <text x="1315" y="1309" text-anchor="middle" class="shape-title">Save completed</text>
+  <text x="1315" y="1332" text-anchor="middle" class="shape-title">patrol log</text>
+  <text x="1325" y="1424" text-anchor="middle" class="shape-title">Show confirmation</text>
+  <text x="1325" y="1447" text-anchor="middle" class="shape-text">patrol record submitted</text>
+  <text x="1338" y="1546" text-anchor="middle" class="shape-title">End</text>
+
+  <path class="flow" d="M400 804 V845"/>
+  <path class="flow" d="M555 925 H635"/>
+  <text x="592" y="906" text-anchor="middle" class="small-text">Yes</text>
+  <path class="flow" d="M400 1005 V1030 H222 V1036"/>
+  <text x="376" y="1025" text-anchor="middle" class="small-text">No</text>
+  <path class="flow" d="M222 1118 V1158"/>
+  <path class="flow" d="M222 1240 V1284"/>
+  <path class="flow" d="M808 963 V1003"/>
+  <path class="flow" d="M830 1085 V1128"/>
+  <path class="flow" d="M808 1204 V1240"/>
+  <path class="flow" d="M660 1315 H420 V1410"/>
+  <text x="604" y="1297" text-anchor="middle" class="small-text">Yes</text>
+  <path class="flow" d="M950 1315 H1140"/>
+  <text x="1000" y="1297" text-anchor="middle" class="small-text">No</text>
+  <path class="flow" d="M620 1451 H690"/>
+  <path class="flow" d="M1030 1468 H1108 V1433 H1150"/>
+  <path class="flow" d="M1315 1352 V1392"/>
+  <path class="flow" d="M1325 1474 V1510"/>
+
+  <!-- Supervisor/Admin branch -->
+  <text x="1365" y="603" text-anchor="middle" class="label">SUPERVISOR / ADMIN</text>
+  <path class="flow" d="M1040 625 H1695 V712"/>
+
+  <g filter="url(#softShadow)">
+    <rect x="1515" y="712" width="360" height="76" rx="6" class="system-fill"/>
+    <rect x="1515" y="828" width="360" height="76" rx="6" class="system-fill"/>
+    <rect x="1515" y="944" width="360" height="76" rx="6" class="system-fill"/>
+    <rect x="1515" y="1060" width="360" height="76" rx="6" class="system-fill"/>
+    <path d="M1515 1182 H1875 V1250 Q1815 1230 1755 1250 Q1695 1270 1635 1250 Q1575 1230 1515 1250 Z" class="doc-fill"/>
+    <polygon points="1555,1302 1875,1302 1845,1384 1525,1384" class="io-fill"/>
+    <rect x="1585" y="1426" width="220" height="58" rx="29" class="end-fill"/>
+  </g>
+
+  <text x="1695" y="745" text-anchor="middle" class="shape-title">Open dashboard</text>
+  <text x="1695" y="768" text-anchor="middle" class="shape-text">view live system status</text>
+  <text x="1695" y="861" text-anchor="middle" class="shape-title">Monitor patrol logs</text>
+  <text x="1695" y="884" text-anchor="middle" class="shape-text">and scan issues</text>
+  <text x="1695" y="977" text-anchor="middle" class="shape-title">Review incidents</text>
+  <text x="1695" y="1000" text-anchor="middle" class="shape-text">record action taken</text>
+  <text x="1695" y="1093" text-anchor="middle" class="shape-title">Manage records</text>
+  <text x="1695" y="1116" text-anchor="middle" class="shape-text">guards and checkpoints</text>
+  <text x="1695" y="1216" text-anchor="middle" class="shape-title">Generate PDF reports</text>
+  <text x="1695" y="1239" text-anchor="middle" class="shape-text">patrol logs, incidents, audit trail</text>
+  <text x="1700" y="1334" text-anchor="middle" class="shape-title">Receive alerts</text>
+  <text x="1700" y="1357" text-anchor="middle" class="shape-text">web push or email notification</text>
+  <text x="1695" y="1462" text-anchor="middle" class="shape-title">End</text>
+
+  <path class="flow" d="M1695 788 V828"/>
+  <path class="flow" d="M1695 904 V944"/>
+  <path class="flow" d="M1695 1020 V1060"/>
+  <path class="flow" d="M1695 1136 V1182"/>
+  <path class="flow" d="M1695 1250 V1302"/>
+  <path class="flow" d="M1695 1384 V1426"/>
+
+  <!-- Legend -->
+  <g transform="translate(72 1620)">
+    <text x="0" y="-28" class="legend-title">Shape meaning:</text>
+    <rect x="0" y="-8" width="120" height="34" rx="17" class="end-fill"/>
+    <text x="60" y="14" text-anchor="middle" class="legend-text">Start / End</text>
+
+    <polygon points="190,-8 330,-8 312,26 172,26" class="io-fill"/>
+    <text x="251" y="14" text-anchor="middle" class="legend-text">Input / Output</text>
+
+    <rect x="385" y="-8" width="120" height="34" rx="4" class="system-fill"/>
+    <text x="445" y="14" text-anchor="middle" class="legend-text">Process</text>
+
+    <polygon points="590,-14 658,9 590,32 522,9" class="decision-fill"/>
+    <text x="590" y="14" text-anchor="middle" class="legend-text">Decision</text>
+
+    <path d="M725 -5 C725 -20 855 -20 855 -5 V27 C855 42 725 42 725 27 Z" class="db-fill"/>
+    <ellipse cx="790" cy="-5" rx="65" ry="14" class="db-fill"/>
+    <text x="790" y="18" text-anchor="middle" class="legend-text">Data store</text>
+
+    <path d="M920 -8 H1058 V22 Q1035 13 1012 22 Q989 31 966 22 Q943 13 920 22 Z" class="doc-fill"/>
+    <text x="989" y="14" text-anchor="middle" class="legend-text">Document</text>
+
+    <line x1="1128" y1="9" x2="1218" y2="9" class="flow"/>
+    <text x="1285" y="14" text-anchor="middle" class="legend-text">Process direction</text>
+  </g>
+</svg>
