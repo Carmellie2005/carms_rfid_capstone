@@ -72,11 +72,11 @@
         }
 
         .letterhead {
-            height: 85pt;
-            left: 140pt;
+            height: 90pt;
+            left: 133pt;
             position: absolute;
-            top: 25pt;
-            width: 250pt;
+            top: 22pt;
+            width: 260pt;
             z-index: 1;
         }
 
@@ -86,7 +86,7 @@
             left: 208pt;
             line-height: 1.15;
             position: absolute;
-            top: 75pt;
+            top: 78pt;
             width: 230pt;
             z-index: 2;
         }
