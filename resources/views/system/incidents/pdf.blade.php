@@ -147,7 +147,7 @@
             left: 0;
             position: absolute;
             text-align: center;
-            top: 153pt;
+            top: 143pt;
             width: 595.28pt;
             z-index: 1;
         }
@@ -158,7 +158,7 @@
             left: 0;
             position: absolute;
             text-align: center;
-            top: 168pt;
+            top: 158pt;
             width: 595.28pt;
             z-index: 1;
         }
@@ -181,11 +181,11 @@
         }
 
         .report-table {
-            top: 196pt;
+            top: 186pt;
         }
 
         .details-table {
-            top: 266pt;
+            top: 256pt;
         }
 
         .report-table td,
@@ -229,7 +229,7 @@
         }
 
         .incident-description-label {
-            top: 496pt;
+            top: 486pt;
         }
 
         .description-body,
@@ -244,7 +244,7 @@
         }
 
         .description-body {
-            top: 522pt;
+            top: 512pt;
         }
 
         .description-continuation {
