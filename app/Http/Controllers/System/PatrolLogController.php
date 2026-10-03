@@ -157,7 +157,7 @@ class PatrolLogController extends Controller
             ->all();
     }
 
-    private function imageDataUriFromPatrolSelfie(PatrolLog $patrolLog): ?string
+    private function imageDataUriFromPatrolSelfie(PatrolLog $patrolLog): ?array
     {
         if ($patrolLog->area_selfie_path) {
             $dataUri = $this->imageDataUriFromPath($patrolLog->area_selfie_path);
@@ -173,7 +173,7 @@ class PatrolLogController extends Controller
         );
     }
 
-    private function imageDataUriFromProofPhoto(ChecklistProofPhoto $photo): ?string
+    private function imageDataUriFromProofPhoto(ChecklistProofPhoto $photo): ?array
     {
         if ($photo->image_path) {
             $dataUri = $this->imageDataUriFromPath($photo->image_path);
@@ -186,7 +186,7 @@ class PatrolLogController extends Controller
         return $this->imageDataUriFromBase64($photo->image_data, $photo->mime_type ?: 'image/jpeg');
     }
 
-    private function imageDataUriFromPath(string $path): ?string
+    private function imageDataUriFromPath(string $path): ?array
     {
         if (! Storage::disk('public')->exists($path)) {
             return null;
@@ -195,10 +195,10 @@ class PatrolLogController extends Controller
         $mimeType = Storage::disk('public')->mimeType($path) ?: 'image/jpeg';
         $contents = Storage::disk('public')->get($path);
 
-        return sprintf('data:%s;base64,%s', $mimeType, base64_encode($contents));
+        return $this->imageDataUriFromContents($contents, $mimeType);
     }
 
-    private function imageDataUriFromBase64(?string $imageData, string $mimeType): ?string
+    private function imageDataUriFromBase64(?string $imageData, string $mimeType): ?array
     {
         if (! $imageData) {
             return null;
@@ -210,7 +210,18 @@ class PatrolLogController extends Controller
             return null;
         }
 
-        return sprintf('data:%s;base64,%s', $mimeType, base64_encode($contents));
+        return $this->imageDataUriFromContents($contents, $mimeType);
+    }
+
+    private function imageDataUriFromContents(string $contents, string $mimeType): array
+    {
+        $dimensions = @getimagesizefromstring($contents) ?: [];
+
+        return [
+            'src' => sprintf('data:%s;base64,%s', $mimeType, base64_encode($contents)),
+            'width' => isset($dimensions[0]) ? (int) $dimensions[0] : null,
+            'height' => isset($dimensions[1]) ? (int) $dimensions[1] : null,
+        ];
     }
 
     private function pdfFilename(PatrolLog $patrolLog): string

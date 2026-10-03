@@ -280,20 +280,8 @@
         }
 
         .documentation-photo {
-            height: 255pt;
-            left: 127.5pt;
-            object-fit: cover;
             position: absolute;
-            width: 340pt;
             z-index: 1;
-        }
-
-        .documentation-photo-slot-1 {
-            top: 190pt;
-        }
-
-        .documentation-photo-slot-2 {
-            top: 464pt;
         }
 
         .documentation-empty {
@@ -498,9 +486,33 @@
             {!! $pageChrome() !!}
             <div class="documentation-label">Documentation</div>
             @foreach ($imagePair->values() as $imageDataUri)
+                @php
+                    $image = is_array($imageDataUri)
+                        ? $imageDataUri
+                        : ['src' => $imageDataUri, 'width' => null, 'height' => null];
+                    $boxWidth = 340.0;
+                    $boxHeight = 255.0;
+                    $boxLeft = 127.5;
+                    $boxTop = $loop->iteration === 1 ? 190.0 : 464.0;
+                    $naturalWidth = (float) ($image['width'] ?? 0);
+                    $naturalHeight = (float) ($image['height'] ?? 0);
+
+                    if ($naturalWidth > 0 && $naturalHeight > 0) {
+                        $scale = min($boxWidth / $naturalWidth, $boxHeight / $naturalHeight);
+                        $displayWidth = $naturalWidth * $scale;
+                        $displayHeight = $naturalHeight * $scale;
+                    } else {
+                        $displayWidth = $boxWidth;
+                        $displayHeight = $boxHeight;
+                    }
+
+                    $displayLeft = $boxLeft + (($boxWidth - $displayWidth) / 2);
+                    $displayTop = $boxTop + (($boxHeight - $displayHeight) / 2);
+                @endphp
                 <img
-                    class="documentation-photo documentation-photo-slot-{{ $loop->iteration }}"
-                    src="{{ $imageDataUri }}"
+                    class="documentation-photo"
+                    src="{{ $image['src'] }}"
+                    style="left: {{ number_format($displayLeft, 2, '.', '') }}pt; top: {{ number_format($displayTop, 2, '.', '') }}pt; width: {{ number_format($displayWidth, 2, '.', '') }}pt; height: {{ number_format($displayHeight, 2, '.', '') }}pt;"
                     alt="Patrol documentation image {{ (($loop->parent->iteration - 1) * 2) + $loop->iteration }}"
                 >
             @endforeach
