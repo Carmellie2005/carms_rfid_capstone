@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Guard Data Flow Diagram - SLSU BC Patrol</title>
+  <desc id="desc">Clean Gane and Sarson style data flow diagram for guard-side processes in SLSU BC Patrol.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#1f2937"/>
+    </marker>
+    <filter id="softShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <style>
+    .title { font: 700 30px Arial, Helvetica, sans-serif; fill: #0f2a63; }
+    .subtitle { font: 400 15px Arial, Helvetica, sans-serif; fill: #526173; }
+    .column { font: 700 13px Arial, Helvetica, sans-serif; fill: #64748b; letter-spacing: .04em; }
+    .entity-title { font: 700 17px Arial, Helvetica, sans-serif; fill: #0f2a63; }
+    .entity-text { font: 400 13px Arial, Helvetica, sans-serif; fill: #334155; }
+    .process-num { font: 700 15px Arial, Helvetica, sans-serif; fill: #0f2a63; }
+    .process-title { font: 700 16px Arial, Helvetica, sans-serif; fill: #0f2a63; }
+    .store-title { font: 700 15px Arial, Helvetica, sans-serif; fill: #0f2a63; }
+    .store-text { font: 400 13px Arial, Helvetica, sans-serif; fill: #334155; }
+    .flow { font: 400 12.5px Arial, Helvetica, sans-serif; fill: #1f2937; }
+    .legend { font: 400 12px Arial, Helvetica, sans-serif; fill: #475569; }
+    .line { stroke: #1f2937; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    .store-line { stroke: #2563eb; stroke-width: 2.2; fill: none; }
+  </style>
+
+  <rect width="1600" height="1000" fill="#f8fbff"/>
+  <text x="800" y="54" text-anchor="middle" class="title">Guard Data Flow Diagram</text>
+  <text x="800" y="82" text-anchor="middle" class="subtitle">Gane and Sarson notation for guard-side RFID patrol monitoring and incident reporting</text>
+
+  <text x="205" y="118" text-anchor="middle" class="column">EXTERNAL ENTITY</text>
+  <text x="590" y="118" text-anchor="middle" class="column">PROCESS</text>
+  <text x="1235" y="118" text-anchor="middle" class="column">DATA STORE</text>
+
+  <!-- Row 1: Authentication -->
+  <g filter="url(#softShadow)">
+    <rect x="70" y="145" width="270" height="82" fill="#dff0ff" stroke="#60a5fa" stroke-width="2"/>
+    <rect x="455" y="140" width="270" height="92" rx="28" fill="#ffffff" stroke="#3578ff" stroke-width="2"/>
+  </g>
+  <text x="205" y="179" text-anchor="middle" class="entity-title">Security Guard</text>
+  <text x="205" y="202" text-anchor="middle" class="entity-text">Provides login credentials</text>
+  <text x="480" y="168" class="process-num">1.0</text>
+  <text x="590" y="177" text-anchor="middle" class="process-title">Authenticate</text>
+  <text x="590" y="198" text-anchor="middle" class="process-title">Guard</text>
+  <path class="store-line" d="M1110 152 H1495 M1110 218 H1495 M1110 152 V218"/>
+  <text x="1130" y="179" class="store-title">D1</text>
+  <text x="1184" y="179" class="store-title">Users and Guards</text>
+  <line class="line" x1="340" y1="174" x2="455" y2="174"/>
+  <text x="356" y="158" class="flow">Login credentials</text>
+  <line class="line" x1="455" y1="204" x2="340" y2="204"/>
+  <text x="356" y="224" class="flow">Access result</text>
+  <line class="line" x1="725" y1="185" x2="1110" y2="185"/>
+  <text x="825" y="169" class="flow">Account validation data</text>
+
+  <!-- Row 2: RFID scan -->
+  <g filter="url(#softShadow)">
+    <rect x="70" y="282" width="270" height="92" fill="#eaf7ef" stroke="#86cc9b" stroke-width="2"/>
+    <rect x="455" y="276" width="270" height="104" rx="28" fill="#ffffff" stroke="#3578ff" stroke-width="2"/>
+  </g>
+  <text x="205" y="317" text-anchor="middle" class="entity-title">ESP32 RFID</text>
+  <text x="205" y="339" text-anchor="middle" class="entity-title">Checkpoint Device</text>
+  <text x="205" y="359" text-anchor="middle" class="entity-text">Sends card and checkpoint data</text>
+  <text x="480" y="305" class="process-num">2.0</text>
+  <text x="590" y="313" text-anchor="middle" class="process-title">Validate RFID</text>
+  <text x="590" y="334" text-anchor="middle" class="process-title">Checkpoint Scan</text>
+  <path class="store-line" d="M1110 282 H1495 M1110 364 H1495 M1110 282 V364"/>
+  <text x="1130" y="309" class="store-title">D1-D3</text>
+  <text x="1202" y="309" class="store-title">Guard, Checkpoint, Patrol Log Data</text>
+  <text x="1202" y="333" class="store-text">Validates RFID and records pending scan</text>
+  <line class="line" x1="340" y1="315" x2="455" y2="315"/>
+  <text x="356" y="299" class="flow">RFID scan data</text>
+  <line class="line" x1="455" y1="351" x2="340" y2="351"/>
+  <text x="356" y="371" class="flow">Scan response</text>
+  <line class="line" x1="725" y1="328" x2="1110" y2="328"/>
+  <text x="820" y="311" class="flow">Validation result and scan record</text>
+
+  <!-- Row 3: Patrol documentation -->
+  <g filter="url(#softShadow)">
+    <rect x="70" y="430" width="270" height="92" fill="#dff0ff" stroke="#60a5fa" stroke-width="2"/>
+    <rect x="455" y="424" width="270" height="104" rx="28" fill="#ffffff" stroke="#3578ff" stroke-width="2"/>
+  </g>
+  <text x="205" y="467" text-anchor="middle" class="entity-title">Security Guard</text>
+  <text x="205" y="491" text-anchor="middle" class="entity-text">Submits patrol documentation</text>
+  <text x="480" y="453" class="process-num">3.0</text>
+  <text x="590" y="462" text-anchor="middle" class="process-title">Complete Patrol</text>
+  <text x="590" y="483" text-anchor="middle" class="process-title">Documentation</text>
+  <path class="store-line" d="M1110 430 H1495 M1110 512 H1495 M1110 430 V512"/>
+  <text x="1130" y="457" class="store-title">D3-D4</text>
+  <text x="1202" y="457" class="store-title">Patrol Logs and Checklist Evidence</text>
+  <text x="1202" y="481" class="store-text">Stores checklist, area selfie, GPS, and photos</text>
+  <line class="line" x1="340" y1="462" x2="455" y2="462"/>
+  <text x="356" y="446" class="flow">Patrol data</text>
+  <line class="line" x1="455" y1="499" x2="340" y2="499"/>
+  <text x="356" y="520" class="flow">Submission confirmation</text>
+  <line class="line" x1="725" y1="476" x2="1110" y2="476"/>
+  <text x="815" y="459" class="flow">Completed patrol documentation</text>
+
+  <!-- Row 4: Incident report -->
+  <g filter="url(#softShadow)">
+    <rect x="70" y="585" width="270" height="92" fill="#dff0ff" stroke="#60a5fa" stroke-width="2"/>
+    <rect x="455" y="579" width="270" height="104" rx="28" fill="#ffffff" stroke="#3578ff" stroke-width="2"/>
+  </g>
+  <text x="205" y="622" text-anchor="middle" class="entity-title">Security Guard</text>
+  <text x="205" y="646" text-anchor="middle" class="entity-text">Reports incident details</text>
+  <text x="480" y="608" class="process-num">4.0</text>
+  <text x="590" y="617" text-anchor="middle" class="process-title">Submit Incident</text>
+  <text x="590" y="638" text-anchor="middle" class="process-title">Report</text>
+  <path class="store-line" d="M1110 585 H1495 M1110 667 H1495 M1110 585 V667"/>
+  <text x="1130" y="612" class="store-title">D5</text>
+  <text x="1184" y="612" class="store-title">Incident Reports</text>
+  <text x="1184" y="636" class="store-text">Stores incident description, priority, and images</text>
+  <line class="line" x1="340" y1="617" x2="455" y2="617"/>
+  <text x="356" y="601" class="flow">Incident data</text>
+  <line class="line" x1="455" y1="654" x2="340" y2="654"/>
+  <text x="356" y="675" class="flow">Submission status</text>
+  <line class="line" x1="725" y1="631" x2="1110" y2="631"/>
+  <text x="815" y="614" class="flow">New incident report record</text>
+
+  <!-- Row 5: View own records -->
+  <g filter="url(#softShadow)">
+    <rect x="70" y="742" width="270" height="92" fill="#dff0ff" stroke="#60a5fa" stroke-width="2"/>
+    <rect x="455" y="736" width="270" height="104" rx="28" fill="#ffffff" stroke="#3578ff" stroke-width="2"/>
+  </g>
+  <text x="205" y="779" text-anchor="middle" class="entity-title">Security Guard</text>
+  <text x="205" y="803" text-anchor="middle" class="entity-text">Views own records</text>
+  <text x="480" y="765" class="process-num">5.0</text>
+  <text x="590" y="774" text-anchor="middle" class="process-title">View Own</text>
+  <text x="590" y="795" text-anchor="middle" class="process-title">Patrol Records</text>
+  <path class="store-line" d="M1110 742 H1495 M1110 824 H1495 M1110 742 V824"/>
+  <text x="1130" y="769" class="store-title">D3/D5</text>
+  <text x="1202" y="769" class="store-title">Patrol Logs and Incident Reports</text>
+  <text x="1202" y="793" class="store-text">Returns guard-owned history and details</text>
+  <line class="line" x1="340" y1="774" x2="455" y2="774"/>
+  <text x="356" y="758" class="flow">View/filter request</text>
+  <line class="line" x1="455" y1="811" x2="340" y2="811"/>
+  <text x="356" y="832" class="flow">Own records</text>
+  <line class="line" x1="1110" y1="787" x2="725" y2="787"/>
+  <text x="812" y="770" class="flow">Record query result</text>
+
+  <!-- Legend -->
+  <rect x="70" y="915" width="24" height="18" fill="#ffffff" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="102" y="929" class="legend">External Entity</text>
+  <rect x="225" y="907" width="52" height="34" rx="12" fill="#ffffff" stroke="#3578ff" stroke-width="1.5"/>
+  <text x="285" y="929" class="legend">Process</text>
+  <path d="M385 910 H445 M385 938 H445 M385 910 V938" stroke="#2563eb" stroke-width="1.5" fill="none"/>
+  <text x="455" y="929" class="legend">Data Store</text>
+  <text x="735" y="929" class="legend">Note: Repeated external entity symbols are used to keep role-specific data flows readable.</text>
+</svg>
