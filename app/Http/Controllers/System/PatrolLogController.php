@@ -114,6 +114,7 @@ class PatrolLogController extends Controller
     private function patrolLogQuery(Request $request, bool $isSupervisor, ?Guard $guardProfile): Builder
     {
         return PatrolLog::with(['securityGuard', 'checkpoint', 'checklistResponse.proofPhotos', 'incidentReport'])
+            ->whereNotIn('status', ['pending_face', 'pending_selfie'])
             ->when(! $isSupervisor, fn (Builder $query) => $query->where('guard_id', $guardProfile?->id ?? 0))
             ->when($isSupervisor && $request->filled('status'), fn (Builder $query) => $query->where('status', $request->status))
             ->when($isSupervisor && $request->filled('guard_id'), fn (Builder $query) => $query->where('guard_id', $request->integer('guard_id')))

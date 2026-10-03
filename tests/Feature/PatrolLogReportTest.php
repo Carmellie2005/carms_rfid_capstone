@@ -161,6 +161,50 @@ class PatrolLogReportTest extends TestCase
             ->assertDontSee('Aug 29, 2026');
     }
 
+    public function test_patrol_logs_hide_pending_selfie_records(): void
+    {
+        $guard = $this->createGuard('SG-HIDE', 'RFID-HIDE');
+
+        $visibleLog = $this->createPatrolLog(
+            $guard,
+            Carbon::parse('2026-09-03 20:00:00', config('app.timezone')),
+            'CP-HIDE-VALID',
+        );
+
+        $pendingSelfieLog = $this->createPatrolLog(
+            $guard,
+            Carbon::parse('2026-09-03 20:05:00', config('app.timezone')),
+            'CP-HIDE-SELFIE',
+            'pending_selfie',
+        );
+
+        $pendingFaceLog = $this->createPatrolLog(
+            $guard,
+            Carbon::parse('2026-09-03 20:10:00', config('app.timezone')),
+            'CP-HIDE-FACE',
+            'pending_face',
+        );
+
+        $response = $this
+            ->actingAs($guard->user)
+            ->get(route('patrol-logs.index'));
+
+        $response
+            ->assertOk()
+            ->assertSee('CP-HIDE-VALID')
+            ->assertSee('/patrol-logs/'.$visibleLog->id.'/pdf', false)
+            ->assertDontSee('/patrol-logs/'.$pendingSelfieLog->id.'/pdf', false)
+            ->assertDontSee('/patrol-logs/'.$pendingFaceLog->id.'/pdf', false)
+            ->assertDontSee('Pending Selfie');
+
+        $this
+            ->actingAs($guard->user)
+            ->get(route('patrol-logs.index', ['status' => 'pending_selfie']))
+            ->assertOk()
+            ->assertSee('No patrol logs to display')
+            ->assertDontSee('/patrol-logs/'.$pendingSelfieLog->id.'/pdf', false);
+    }
+
     public function test_my_patrol_logs_are_paginated_for_guard(): void
     {
         $guard = $this->createGuard('SG-PAGE', 'RFID-PAGE');
@@ -214,7 +258,7 @@ class PatrolLogReportTest extends TestCase
         ]);
     }
 
-    private function createPatrolLog(Guard $guard, ?Carbon $scannedAt = null, ?string $checkpointCode = null): PatrolLog
+    private function createPatrolLog(Guard $guard, ?Carbon $scannedAt = null, ?string $checkpointCode = null, string $status = 'valid'): PatrolLog
     {
         $checkpointCode ??= 'CP-'.$guard->employee_no;
 
@@ -231,9 +275,9 @@ class PatrolLogReportTest extends TestCase
             'checkpoint_id' => $checkpoint->id,
             'rfid_uid' => $guard->rfid_uid,
             'checkpoint_code' => $checkpoint->code,
-            'rfid_status' => 'valid',
-            'facial_status' => 'verified',
-            'status' => 'valid',
+            'rfid_status' => in_array($status, ['pending_face', 'pending_selfie'], true) ? 'valid' : $status,
+            'facial_status' => in_array($status, ['pending_face', 'pending_selfie'], true) ? 'not_required' : 'verified',
+            'status' => $status,
             'scanned_at' => $scannedAt ?? now(config('app.timezone')),
         ]);
     }
