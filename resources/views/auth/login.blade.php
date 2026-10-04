@@ -40,12 +40,12 @@
                 x-transition:leave="transition ease-in duration-150"
                 x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-white px-4 dark:bg-slate-950"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-white/75 px-4 backdrop-blur-md dark:bg-slate-950/80"
             >
-                <div class="flex items-center justify-center" role="status" aria-live="polite" aria-label="Loading">
-                    <x-application-logo class="h-24 w-24" />
-                    <span class="sr-only">Loading</span>
-                </div>
+                <x-brand-spinner dots class="brand-spinner-floating text-blue-950 dark:text-blue-100">
+                    Signing in
+                    <x-slot name="description">Verifying your account...</x-slot>
+                </x-brand-spinner>
             </div>
 
             <a
@@ -144,7 +144,11 @@
                         class="inline-flex h-12 w-full items-center justify-center rounded-lg bg-blue-700 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-400"
                         :disabled="loggingIn"
                     >
-                        <span>Log in</span>
+                        <svg x-show="loggingIn" x-cloak class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                        </svg>
+                        <span x-text="loggingIn ? 'Signing in...' : 'Log in'">Log in</span>
                     </button>
 
                 </form>
