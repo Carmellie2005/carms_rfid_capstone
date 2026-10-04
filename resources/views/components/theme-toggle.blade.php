@@ -1,13 +1,3 @@
-@props([
-    'variant' => 'default',
-])
-
-@php
-    $buttonClasses = $variant === 'header'
-        ? 'inline-flex h-12 w-12 items-center justify-center rounded-full border-0 bg-blue-50 text-blue-950 shadow-sm transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-slate-800 dark:text-blue-100 dark:hover:bg-slate-700 dark:focus:ring-offset-slate-950'
-        : 'inline-flex h-10 w-10 items-center justify-center rounded-md border border-blue-100 bg-white text-blue-900 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-100 dark:hover:bg-slate-800';
-@endphp
-
 <button
     type="button"
     x-data="{
@@ -21,7 +11,7 @@
     }"
     x-init="window.addEventListener('theme-changed', (event) => darkMode = event.detail)"
     @click="toggleTheme()"
-    {{ $attributes->merge(['class' => $buttonClasses]) }}
+    class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-blue-100 bg-white text-blue-900 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-100 dark:hover:bg-slate-800"
     aria-label="Toggle dark mode"
 >
     <svg x-show="! darkMode" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
