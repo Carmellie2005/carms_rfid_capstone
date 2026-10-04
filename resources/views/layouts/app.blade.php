@@ -156,8 +156,8 @@
                 class="app-content-shell flex min-h-0 flex-col lg:h-full lg:pl-72"
                 :class="sidebarCollapsed ? 'lg:!pl-16' : 'lg:!pl-72'"
             >
-                <header class="sticky top-0 z-30 shrink-0 border-b border-blue-100 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
-                    <div class="mx-auto flex min-h-[4rem] max-w-7xl items-center justify-between gap-2 py-2 pl-16 pr-3 sm:gap-4 sm:px-6 lg:px-8">
+                <header class="sticky top-0 z-30 shrink-0 bg-blue-50/80 px-3 py-3 backdrop-blur dark:bg-slate-950/90 sm:px-6 lg:px-8">
+                    <div class="mx-auto flex min-h-[4.5rem] max-w-7xl items-center justify-between gap-3 rounded-xl border border-blue-100 bg-white px-3 py-3 pl-14 shadow-[0_8px_24px_rgba(30,64,175,0.10)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_8px_24px_rgba(2,6,23,0.35)] sm:gap-4 sm:px-5">
                         <div
                             class="flex min-w-0 items-center gap-3"
                             x-data="{
@@ -186,15 +186,27 @@
                                 }
                             }"
                         >
+                            <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700 ring-1 ring-blue-100 dark:bg-slate-800 dark:text-blue-100 dark:ring-slate-700">
+                                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M7 3v3m10-3v3M4.5 9.5h15M6.5 5h11A2.5 2.5 0 0 1 20 7.5v10A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5v-10A2.5 2.5 0 0 1 6.5 5Z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </span>
                             <div class="min-w-0">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Today</p>
-                                <p class="truncate text-xs font-semibold text-blue-950 dark:text-blue-100 lg:text-base">
-                                    <span class="lg:hidden">{{ $mobileToday }}</span>
-                                    <span class="hidden lg:inline">{{ $today }}</span>
-                                    <span class="text-slate-400">|</span>
-                                    <span class="font-mono lg:hidden" x-text="shortTimeNow">{{ $currentShortTime }}</span>
-                                    <span class="hidden font-mono lg:inline" x-text="timeNow">{{ $currentTime }}</span>
-                                </p>
+                                <p class="text-[0.68rem] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">Today</p>
+                                <div class="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold text-blue-950 dark:text-blue-100 sm:text-base">
+                                    <span class="truncate">
+                                        <span class="sm:hidden">{{ $mobileToday }}</span>
+                                        <span class="hidden sm:inline">{{ $today }}</span>
+                                    </span>
+                                    <span class="hidden h-6 w-px bg-slate-200 dark:bg-slate-700 sm:inline-flex"></span>
+                                    <span class="inline-flex items-center gap-2 font-mono text-sm font-semibold text-blue-950 dark:text-blue-100 sm:text-base">
+                                        <svg class="h-5 w-5 text-blue-700 dark:text-blue-300" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                        <span class="sm:hidden" x-text="shortTimeNow">{{ $currentShortTime }}</span>
+                                        <span class="hidden sm:inline" x-text="timeNow">{{ $currentTime }}</span>
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
@@ -203,7 +215,7 @@
                                 <div>
                                     <button
                                         type="button"
-                                        class="relative inline-flex h-11 w-11 items-center justify-center rounded-lg border border-blue-100 bg-white text-slate-700 shadow-sm transition hover:bg-blue-50 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950"
+                                        class="relative inline-flex h-12 w-12 items-center justify-center rounded-full border-0 bg-blue-50 text-slate-700 shadow-sm transition hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:focus:ring-offset-slate-900"
                                         aria-label="Open notifications"
                                         x-on:click.stop="open = ! open"
                                     >
@@ -212,7 +224,7 @@
                                             <path d="M10 20a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                                         </svg>
                                         @if ($notificationCount > 0)
-                                            <span class="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white ring-2 ring-white dark:ring-slate-900">
+                                            <span class="absolute right-0 top-0 inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white ring-2 ring-white dark:ring-slate-900">
                                                 {{ $notificationCount > 99 ? '99+' : $notificationCount }}
                                             </span>
                                         @endif
@@ -349,16 +361,18 @@
                                 </section>
                             </div>
 
-                            <x-theme-toggle />
+                            <x-theme-toggle variant="header" />
+
+                            <span class="hidden h-8 w-px bg-slate-200 dark:bg-slate-700 sm:inline-flex"></span>
 
                             <x-dropdown align="right" width="56" contentClasses="bg-white py-2 dark:bg-slate-900">
                                 <x-slot name="trigger">
                                     <button
                                         type="button"
-                                        class="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-blue-100 bg-white text-slate-700 shadow-sm transition hover:bg-blue-50 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950"
+                                        class="inline-flex items-center gap-2 rounded-full border-0 bg-transparent p-0 text-slate-700 transition hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:text-slate-200 dark:hover:text-blue-100 dark:focus:ring-offset-slate-900"
                                         aria-label="Open profile menu"
                                     >
-                                        <span class="inline-flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-blue-50 ring-1 ring-blue-100 dark:bg-slate-800 dark:ring-slate-700">
+                                        <span class="inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-blue-50 ring-1 ring-blue-100 dark:bg-slate-800 dark:ring-slate-700">
                                             <img
                                                 src="{{ $accountPhotoUrl }}"
                                                 alt="{{ $roleLabel }} profile photo"
@@ -366,6 +380,9 @@
                                                 class="h-full w-full object-cover"
                                             >
                                         </span>
+                                        <svg class="hidden h-5 w-5 text-slate-500 dark:text-slate-300 sm:block" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
                                     </button>
                                 </x-slot>
 
