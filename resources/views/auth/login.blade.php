@@ -29,7 +29,17 @@
     <body class="font-sans text-slate-900 antialiased dark:text-slate-100">
         <main
             class="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-[#eef6ff] px-3 py-16 sm:px-4 sm:py-8 dark:bg-slate-950"
-            x-data="{ loggingIn: false }"
+            x-data="{
+                loggingIn: false,
+                submitLogin(event) {
+                    if (this.loggingIn) {
+                        return;
+                    }
+
+                    this.loggingIn = true;
+                    window.setTimeout(() => event.target.submit(), 6000);
+                },
+            }"
         >
             <div
                 x-show="loggingIn"
@@ -74,7 +84,7 @@
 
                 <x-auth-session-status class="mt-5" :status="session('status')" />
 
-                <form method="POST" action="{{ route('login') }}" class="mt-5 space-y-4" x-on:submit="loggingIn = true">
+                <form method="POST" action="{{ route('login') }}" class="mt-5 space-y-4" x-on:submit.prevent="submitLogin($event)">
                     @csrf
 
                     <div>

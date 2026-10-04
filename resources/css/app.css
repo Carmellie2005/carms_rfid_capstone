@@ -12,8 +12,8 @@
     .brand-spinner-icon {
         position: relative;
         display: inline-flex;
-        height: 4.25rem;
-        width: 4.25rem;
+        height: 6rem;
+        width: 6rem;
         align-items: center;
         justify-content: center;
         border-radius: 9999px;
@@ -43,8 +43,8 @@
     }
 
     .brand-spinner-floating .brand-spinner-icon {
-        height: 5rem;
-        width: 5rem;
+        height: 7rem;
+        width: 7rem;
         background: rgb(255 255 255 / 0.74);
         box-shadow:
             0 0 0 1px rgb(191 219 254 / 0.8),

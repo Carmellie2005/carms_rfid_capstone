@@ -5,7 +5,7 @@
 
 <div {{ $attributes->merge(['class' => 'flex flex-col items-center justify-center text-center']) }} role="status" aria-live="polite">
     <span class="brand-spinner-icon">
-        <img src="{{ asset('images/slsu-rfid-system-logo-ai-v2.png') }}" alt="" class="h-12 w-12 object-contain">
+        <img src="{{ asset('images/slsu-rfid-system-logo-ai-v2.png') }}" alt="" class="h-20 w-20 object-contain">
     </span>
 
     @if ($dots)
