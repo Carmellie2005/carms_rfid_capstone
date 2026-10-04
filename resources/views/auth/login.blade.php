@@ -37,7 +37,7 @@
                     }
 
                     this.loggingIn = true;
-                    window.setTimeout(() => event.target.submit(), 6000);
+                    window.setTimeout(() => event.target.submit(), 4000);
                 },
             }"
         >
