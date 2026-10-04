@@ -9,6 +9,134 @@
 }
 
 @layer components {
+    .app-opening-loader {
+        background:
+            radial-gradient(circle at 50% 34%, rgb(224 242 254 / 0.92), transparent 34rem),
+            linear-gradient(180deg, #f8fcff 0%, #eef7ff 100%);
+        transition: opacity 380ms ease, visibility 380ms ease;
+    }
+
+    .app-opening-loader-hidden {
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .app-opening-loader-emblem {
+        position: relative;
+        display: grid;
+        height: min(72vw, 17rem);
+        width: min(72vw, 17rem);
+        place-items: center;
+        filter: drop-shadow(0 22px 44px rgb(37 99 235 / 0.18));
+    }
+
+    .app-opening-loader-ring,
+    .app-opening-loader-orb {
+        position: absolute;
+        border-radius: 9999px;
+        pointer-events: none;
+    }
+
+    .app-opening-loader-ring-soft {
+        inset: 0;
+        border: 0.72rem solid rgb(186 230 253 / 0.42);
+        border-left-color: rgb(125 211 252 / 0.68);
+        border-bottom-color: rgb(219 234 254 / 0.88);
+        animation: app-opening-loader-rotate 4.8s linear infinite;
+    }
+
+    .app-opening-loader-ring-main {
+        inset: 1.05rem;
+        background: conic-gradient(
+            from 18deg,
+            transparent 0deg 28deg,
+            #2563eb 30deg 82deg,
+            #22d3ee 102deg 156deg,
+            transparent 174deg 216deg,
+            #38bdf8 232deg 264deg,
+            transparent 282deg 360deg
+        );
+        -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 0.78rem), #000 calc(100% - 0.72rem));
+        mask: radial-gradient(farthest-side, transparent calc(100% - 0.78rem), #000 calc(100% - 0.72rem));
+        animation: app-opening-loader-rotate 1.7s linear infinite;
+    }
+
+    .app-opening-loader-ring-offset {
+        inset: 2.05rem;
+        border: 0.22rem solid transparent;
+        border-top-color: rgb(147 197 253 / 0.82);
+        border-right-color: rgb(34 211 238 / 0.78);
+        border-bottom-color: rgb(219 234 254 / 0.92);
+        transform: rotate(-22deg);
+        animation: app-opening-loader-rotate-reverse 2.5s linear infinite;
+    }
+
+    .app-opening-loader-orb {
+        height: 1.35rem;
+        width: 1.35rem;
+        background: #f8fcff;
+        box-shadow:
+            0 0 0 0.28rem rgb(34 211 238 / 0.45),
+            0 0 1.6rem rgb(14 165 233 / 0.65);
+    }
+
+    .app-opening-loader-orb-top {
+        right: 2.3rem;
+        top: 2.7rem;
+        animation: app-opening-loader-orb 2.4s ease-in-out infinite;
+    }
+
+    .app-opening-loader-orb-bottom {
+        bottom: 3.1rem;
+        left: 1.9rem;
+        height: 1rem;
+        width: 1rem;
+        animation: app-opening-loader-orb 2.4s ease-in-out infinite reverse;
+    }
+
+    .app-opening-loader-logo {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        height: min(42vw, 10.4rem);
+        width: min(42vw, 10.4rem);
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        background: rgb(255 255 255 / 0.92);
+        box-shadow:
+            0 0 0 0.42rem rgb(255 255 255 / 0.88),
+            0 18px 42px rgb(30 64 175 / 0.22);
+        animation: app-opening-loader-logo 1.8s ease-in-out infinite;
+    }
+
+    .app-opening-loader-dots {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.9rem;
+    }
+
+    .app-opening-loader-dots span {
+        height: 0.78rem;
+        width: 0.78rem;
+        border-radius: 9999px;
+        background: #1d4ed8;
+        box-shadow: 0 8px 18px rgb(37 99 235 / 0.26);
+        animation: app-opening-loader-dot 1.15s ease-in-out infinite;
+    }
+
+    .app-opening-loader-dots span:nth-child(2) {
+        background: #0ea5e9;
+        animation-delay: 150ms;
+    }
+
+    .app-opening-loader-dots span:nth-child(3) {
+        background: #67e8f9;
+        animation-delay: 300ms;
+    }
+
     .brand-spinner-icon {
         position: relative;
         display: inline-flex;
@@ -286,6 +414,19 @@
             0 0 35px rgb(56 189 248 / 0.18);
     }
 
+    .dark .app-opening-loader {
+        background:
+            radial-gradient(circle at 50% 32%, rgb(14 116 144 / 0.28), transparent 33rem),
+            linear-gradient(180deg, #020617 0%, #0f172a 100%);
+    }
+
+    .dark .app-opening-loader-logo {
+        background: rgb(15 23 42 / 0.88);
+        box-shadow:
+            0 0 0 0.42rem rgb(30 41 59 / 0.82),
+            0 18px 42px rgb(14 165 233 / 0.18);
+    }
+
     .dark .divide-blue-50 > :not([hidden]) ~ :not([hidden]),
     .dark .divide-blue-100 > :not([hidden]) ~ :not([hidden]) {
         border-color: #1e293b;
@@ -344,6 +485,55 @@
 @keyframes brand-spinner-rotate {
     to {
         transform: rotate(360deg);
+    }
+}
+
+@keyframes app-opening-loader-rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes app-opening-loader-rotate-reverse {
+    to {
+        transform: rotate(-360deg);
+    }
+}
+
+@keyframes app-opening-loader-logo {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.035);
+    }
+}
+
+@keyframes app-opening-loader-orb {
+    0%,
+    100% {
+        transform: scale(0.94);
+        opacity: 0.72;
+    }
+
+    50% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+}
+
+@keyframes app-opening-loader-dot {
+    0%,
+    100% {
+        transform: translateY(0) scale(0.92);
+        opacity: 0.45;
+    }
+
+    50% {
+        transform: translateY(-0.18rem) scale(1);
+        opacity: 1;
     }
 }
 
