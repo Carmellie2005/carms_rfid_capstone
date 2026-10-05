@@ -130,7 +130,7 @@
                                 <input id="incident_camera_images" name="incident_camera_images[]" type="file" accept="image/*" capture="environment" class="sr-only">
                             </label>
                         </div>
-                        <p class="mt-2 text-xs text-slate-500">New photos are added to the existing evidence unless selected photos are removed.</p>
+                        <p class="mt-2 text-xs text-slate-500">Take the photo in landscape orientation. New photos are added to the existing evidence unless selected photos are removed.</p>
                         <x-input-error :messages="$errors->get('incident_camera_images')" class="mt-2" />
                         <x-input-error :messages="$errors->get('incident_camera_images.*')" class="mt-2" />
                     </div>

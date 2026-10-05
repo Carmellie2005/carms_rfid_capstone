@@ -2,7 +2,6 @@
     @php
         $incidentDefault = (bool) old('has_incident');
         $checkpointChecklistItems = \App\Support\PatrolChecklist::items();
-        $checklistStatusOptions = \App\Support\PatrolChecklist::statusOptions();
         $incidentCategories = \App\Support\PatrolChecklist::incidentCategories();
         $guardName = $guardProfile?->name ?? Auth::user()->name;
         $guardEmployeeNo = $guardProfile?->employee_no ?? 'Account only';
@@ -547,18 +546,12 @@
                                 <div class="mt-4 grid gap-3 sm:grid-cols-2">
                                     @foreach ($checkpointChecklistItems as $field => $label)
                                         @php
-                                            $selectedChecklistStatus = old("checklist_statuses.{$field}", \App\Support\PatrolChecklist::STATUS_NORMAL);
-                                            $selectedChecklistStatus = array_key_exists($selectedChecklistStatus, $checklistStatusOptions)
-                                                ? $selectedChecklistStatus
-                                                : \App\Support\PatrolChecklist::STATUS_NORMAL;
+                                            $selectedChecklistStatus = old("checklist_statuses.{$field}");
                                         @endphp
-                                        <div class="min-h-28 rounded-md border border-blue-100 bg-white p-3 text-sm text-slate-700 shadow-sm transition hover:bg-blue-50/70">
-                                            <label for="{{ $field }}_{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" class="flex h-full cursor-pointer flex-col justify-between gap-3">
-                                                <span class="font-semibold text-slate-800">{{ $label }}</span>
-                                                <span class="inline-flex w-fit items-center gap-2 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-800 transition">
-                                                    <input id="{{ $field }}_{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" type="checkbox" name="checklist_statuses[{{ $field }}]" value="{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" class="rounded border-blue-300 text-blue-700 focus:ring-blue-500" required @checked($selectedChecklistStatus === \App\Support\PatrolChecklist::STATUS_NORMAL) @change="checklistPhotoError = ''">
-                                                    Checked
-                                                </span>
+                                        <div class="min-h-24 rounded-md border border-blue-100 bg-white p-3 text-sm text-slate-700 shadow-sm transition hover:bg-blue-50/70">
+                                            <label for="{{ $field }}_{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" class="flex h-full cursor-pointer items-start gap-3">
+                                                <input id="{{ $field }}_{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" type="checkbox" name="checklist_statuses[{{ $field }}]" value="{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" class="mt-0.5 h-5 w-5 shrink-0 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" required @checked($selectedChecklistStatus === \App\Support\PatrolChecklist::STATUS_NORMAL) @change="checklistPhotoError = ''">
+                                                <span class="min-w-0 flex-1 font-semibold leading-6 text-slate-800">{{ $label }}</span>
                                             </label>
                                             <x-input-error :messages="$errors->get('checklist_statuses.'.$field)" class="mt-2" />
                                         </div>
@@ -710,7 +703,7 @@
                                     </div>
 
                                     <p class="mt-2 text-xs text-slate-500">
-                                        Take 1 to 3 photos with the camera. Maximum 3 images total.
+                                        Take the photo in landscape orientation. Take 1 to 3 photos with the camera. Maximum 3 images total.
                                     </p>
 
                                     <div x-show="incidentImagePreviews.length" x-cloak class="mt-3">
