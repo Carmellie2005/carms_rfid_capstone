@@ -54,6 +54,17 @@
         ] : null;
     @endphp
 
+    <x-slot name="header">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 class="text-xl font-semibold leading-tight text-blue-950 dark:text-white">
+                    Welcome, {{ $guardName }}
+                </h2>
+                <p class="mt-1 text-sm text-blue-600 dark:text-slate-200">Ready for checkpoint scanning and patrol documentation</p>
+            </div>
+        </div>
+    </x-slot>
+
     <div class="py-5 sm:py-8">
         <div class="mx-auto max-w-6xl space-y-5 px-4 sm:px-6 lg:px-8">
             @if (session('status'))

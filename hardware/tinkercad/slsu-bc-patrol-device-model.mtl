@@ -1,0 +1,51 @@
+newmtl white_plastic
+Ka 0.95 0.93 0.88
+Kd 0.92 0.90 0.85
+Ks 0.15 0.15 0.15
+
+newmtl black_abs
+Ka 0.02 0.02 0.02
+Kd 0.015 0.015 0.015
+Ks 0.04 0.04 0.04
+
+newmtl black_hole
+Ka 0.0 0.0 0.0
+Kd 0.0 0.0 0.0
+
+newmtl blue_lcd
+Ka 0.0 0.12 0.55
+Kd 0.0 0.22 0.85
+Ks 0.25 0.40 0.80
+
+newmtl clear_acrylic
+Ka 0.70 0.90 1.0
+Kd 0.70 0.90 1.0
+d 0.32
+Tr 0.68
+
+newmtl acrylic_highlight
+Ka 0.95 0.98 1.0
+Kd 0.85 0.93 1.0
+d 0.55
+
+newmtl sticker_white
+Ka 1.0 1.0 1.0
+Kd 1.0 1.0 1.0
+
+newmtl sticker_blue
+Ka 0.0 0.18 0.65
+Kd 0.0 0.27 0.82
+
+newmtl metal_dark
+Ka 0.12 0.12 0.12
+Kd 0.22 0.22 0.22
+Ks 0.40 0.40 0.40
+
+newmtl metal_light
+Ka 0.55 0.55 0.55
+Kd 0.72 0.72 0.72
+Ks 0.80 0.80 0.80
+
+newmtl case_shadow
+Ka 0.50 0.48 0.44
+Kd 0.50 0.48 0.44

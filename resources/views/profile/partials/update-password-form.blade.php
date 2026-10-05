@@ -9,15 +9,8 @@
         </h2>
 
         <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
-            {{ __('Use a password only you know. This will remove the temporary-password requirement if your supervisor assigned or reset your login.') }}
+            {{ __('Use a secure password for your account.') }}
         </p>
-
-        <div class="mt-3 grid gap-2 text-xs font-medium text-slate-600 dark:text-slate-300 sm:grid-cols-2">
-            <span class="rounded-md border border-blue-100 bg-blue-50/50 px-3 py-2 dark:border-slate-700 dark:bg-slate-950/45 dark:text-slate-100">At least 8 characters.</span>
-            <span class="rounded-md border border-blue-100 bg-blue-50/50 px-3 py-2 dark:border-slate-700 dark:bg-slate-950/45 dark:text-slate-100">Better with letters, numbers, or symbols.</span>
-            <span class="rounded-md border border-blue-100 bg-blue-50/50 px-3 py-2 dark:border-slate-700 dark:bg-slate-950/45 dark:text-slate-100">Avoid your name, birthday, or employee number.</span>
-            <span class="rounded-md border border-blue-100 bg-blue-50/50 px-3 py-2 dark:border-slate-700 dark:bg-slate-950/45 dark:text-slate-100">Do not share it with anyone.</span>
-        </div>
     </header>
 
     <form method="post" action="{{ route('password.update') }}" class="mt-5 space-y-4">

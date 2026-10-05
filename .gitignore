@@ -18,3 +18,5 @@ yarn-error.log
 /.idea
 /.vscode
 /.tmp
+hardware/**/.pio
+hardware/**/include/secrets.h

@@ -1,0 +1,107 @@
+FeatureScript 2675;
+import(path : "onshape/std/common.fs", version : "2675.0");
+
+annotation { "Feature Type Name" : "SLSU BC Patrol Device", "Feature Type Description" : "120 mm x 200 mm x 75 mm RFID patrol checkpoint enclosure reference model" }
+export const slsuBcPatrolDevice = defineFeature(function(context is Context, id is Id, definition is map)
+    precondition
+    {
+    }
+    {
+        const whitePlastic = color(0.94, 0.93, 0.88);
+        const blackAbs = color(0.02, 0.02, 0.02);
+        const blue = color(0.00, 0.27, 0.82);
+        const lcdBlue = color(0.00, 0.18, 0.85);
+        const acrylic = color(0.65, 0.88, 1.00);
+        const darkMetal = color(0.18, 0.18, 0.18);
+        const lightMetal = color(0.72, 0.72, 0.72);
+
+        makeBox(context, id + "enclosure_body", vector(-60, -37.5, 0) * millimeter, vector(60, 37.5, 200) * millimeter, "White plastic enclosure 120x200x75mm", whitePlastic);
+        opFillet(context, id + "enclosure_fillet", {
+                "entities" : qCreatedBy(id + "enclosure_body", EntityType.EDGE),
+                "radius" : 4 * millimeter
+        });
+
+        makeBox(context, id + "black_abs_front_bezel", vector(-53, -40.2, 79) * millimeter, vector(53, -37.55, 157) * millimeter, "Black ABS plastic front bezel", blackAbs);
+        makeBox(context, id + "lcd_outer_frame", vector(-39, -42.0, 105) * millimeter, vector(39, -40.2, 135) * millimeter, "LCD outer frame", blackAbs);
+        makeBox(context, id + "lcd_blue_screen", vector(-32, -43.0, 112) * millimeter, vector(32, -42.0, 128) * millimeter, "Blue LCD screen", lcdBlue);
+        makeBox(context, id + "acrylic_lcd_cover", vector(-42, -44.0, 103) * millimeter, vector(42, -43.2, 137) * millimeter, "Acrylic LCD cover", acrylic);
+        makeBox(context, id + "acrylic_highlight", vector(-30, -44.4, 126) * millimeter, vector(-4, -44.0, 134) * millimeter, "Acrylic cover highlight", color(0.90, 0.98, 1.00));
+
+        makeBox(context, id + "scan_sticker", vector(-43, -40.9, 20) * millimeter, vector(43, -40.0, 68) * millimeter, "Scan here sticker", color(1, 1, 1));
+        makeBox(context, id + "sticker_border_top", vector(-41, -41.8, 65.5) * millimeter, vector(41, -40.9, 67) * millimeter, "Sticker blue border top", blue);
+        makeBox(context, id + "sticker_border_bottom", vector(-41, -41.8, 21) * millimeter, vector(41, -40.9, 22.5) * millimeter, "Sticker blue border bottom", blue);
+        makeBox(context, id + "sticker_border_left", vector(-41.5, -41.8, 21) * millimeter, vector(-40, -40.9, 67) * millimeter, "Sticker blue border left", blue);
+        makeBox(context, id + "sticker_border_right", vector(40, -41.8, 21) * millimeter, vector(41.5, -40.9, 67) * millimeter, "Sticker blue border right", blue);
+
+        makeBox(context, id + "rfid_wave_large", vector(-35, -42.3, 36) * millimeter, vector(-33, -41.3, 58) * millimeter, "RFID wave large", blue);
+        makeBox(context, id + "rfid_wave_mid", vector(-29, -42.3, 40) * millimeter, vector(-27, -41.3, 54) * millimeter, "RFID wave middle", blue);
+        makeBox(context, id + "rfid_wave_small", vector(-23, -42.3, 44) * millimeter, vector(-21, -41.3, 50) * millimeter, "RFID wave small", blue);
+        makeBox(context, id + "card_top", vector(-7, -42.3, 58) * millimeter, vector(18, -41.3, 61) * millimeter, "RFID card top", blue);
+        makeBox(context, id + "card_bottom", vector(-7, -42.3, 40) * millimeter, vector(18, -41.3, 43) * millimeter, "RFID card bottom", blue);
+        makeBox(context, id + "card_left", vector(-7, -42.3, 40) * millimeter, vector(-4, -41.3, 61) * millimeter, "RFID card left", blue);
+        makeBox(context, id + "card_right", vector(15, -42.3, 40) * millimeter, vector(18, -41.3, 61) * millimeter, "RFID card right", blue);
+        makeBox(context, id + "scan_text_bar_1", vector(-25, -42.3, 27) * millimeter, vector(-2, -41.3, 30) * millimeter, "SCAN text guide", blue);
+        makeBox(context, id + "scan_text_bar_2", vector(3, -42.3, 27) * millimeter, vector(30, -41.3, 30) * millimeter, "HERE text guide", blue);
+
+        makeFrontScrew(context, id + "front_screw_top_left", -52, 190, darkMetal, lightMetal);
+        makeFrontScrew(context, id + "front_screw_top_right", 52, 190, darkMetal, lightMetal);
+        makeFrontScrew(context, id + "front_screw_bottom_left", -52, 10, darkMetal, lightMetal);
+        makeFrontScrew(context, id + "front_screw_bottom_right", 52, 10, darkMetal, lightMetal);
+
+        makeCylinder(context, id + "buzzer_outer", vector(60, 0, 128) * millimeter, vector(67, 0, 128) * millimeter, 12 * millimeter, "Side buzzer", blackAbs);
+        makeCylinder(context, id + "buzzer_inner", vector(66.5, 0, 128) * millimeter, vector(68, 0, 128) * millimeter, 9 * millimeter, "Buzzer grille", darkMetal);
+        makeBuzzerHole(context, id + "buzzer_hole_center", 0, 0);
+        makeBuzzerHole(context, id + "buzzer_hole_left", -4, 0);
+        makeBuzzerHole(context, id + "buzzer_hole_right", 4, 0);
+        makeBuzzerHole(context, id + "buzzer_hole_top", 0, 4);
+        makeBuzzerHole(context, id + "buzzer_hole_bottom", 0, -4);
+
+        makeCylinder(context, id + "dc_barrel_outer", vector(0, 0, 200) * millimeter, vector(0, 0, 206) * millimeter, 8.5 * millimeter, "DC barrel jack on top", blackAbs);
+        makeCylinder(context, id + "dc_barrel_ring", vector(0, 0, 205.8) * millimeter, vector(0, 0, 207) * millimeter, 5.3 * millimeter, "DC barrel metal ring", lightMetal);
+        makeCylinder(context, id + "dc_barrel_center", vector(0, 0, 206.8) * millimeter, vector(0, 0, 208) * millimeter, 2.3 * millimeter, "DC barrel center hole", blackAbs);
+    }, {});
+
+function makeBox(context is Context, id is Id, corner1 is Vector, corner2 is Vector, partName is string, partColor is Color)
+{
+    fCuboid(context, id, {
+            "corner1" : corner1,
+            "corner2" : corner2
+    });
+    paintBody(context, id, partName, partColor);
+}
+
+function makeCylinder(context is Context, id is Id, bottomCenter is Vector, topCenter is Vector, radius is ValueWithUnits, partName is string, partColor is Color)
+{
+    fCylinder(context, id, {
+            "bottomCenter" : bottomCenter,
+            "topCenter" : topCenter,
+            "radius" : radius
+    });
+    paintBody(context, id, partName, partColor);
+}
+
+function makeFrontScrew(context is Context, id is Id, x is number, z is number, screwColor is Color, slotColor is Color)
+{
+    makeCylinder(context, id + "head", vector(x, -43.0, z) * millimeter, vector(x, -40.2, z) * millimeter, 4.1 * millimeter, "Front screw head", screwColor);
+    makeBox(context, id + "slot_horizontal", vector(x - 2.4, -43.4, z - 0.35) * millimeter, vector(x + 2.4, -42.9, z + 0.35) * millimeter, "Screw slot horizontal", slotColor);
+    makeBox(context, id + "slot_vertical", vector(x - 0.35, -43.4, z - 2.4) * millimeter, vector(x + 0.35, -42.9, z + 2.4) * millimeter, "Screw slot vertical", slotColor);
+}
+
+function makeBuzzerHole(context is Context, id is Id, yOffset is number, zOffset is number)
+{
+    makeCylinder(context, id, vector(67.7, yOffset, 128 + zOffset) * millimeter, vector(68.8, yOffset, 128 + zOffset) * millimeter, 1.2 * millimeter, "Buzzer hole", color(0, 0, 0));
+}
+
+function paintBody(context is Context, id is Id, partName is string, partColor is Color)
+{
+    setProperty(context, {
+            "entities" : qCreatedBy(id, EntityType.BODY),
+            "propertyType" : PropertyType.NAME,
+            "value" : partName
+    });
+    setProperty(context, {
+            "entities" : qCreatedBy(id, EntityType.BODY),
+            "propertyType" : PropertyType.APPEARANCE,
+            "value" : partColor
+    });
+}
