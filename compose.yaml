@@ -77,6 +77,19 @@ services:
       retries: 10
       start_period: 30s
 
+  adminer:
+    image: adminer:4
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "${ADMINER_PORT:-8080}:8080"
+    expose:
+      - "8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: "${ADMINER_DEFAULT_SERVER:-database}"
+
 volumes:
   app_public_uploads:
   app_framework_storage:
