@@ -6,10 +6,35 @@
         </div>
     </x-slot>
 
-    <div class="py-5 sm:py-8">
+    <div
+        class="py-5 sm:py-8"
+        x-data="{
+            pdfPreviewOpen: false,
+            pdfPreviewUrl: '',
+            pdfDownloadUrl: '',
+            pdfPreviewTitle: 'Audit Trail PDF Preview',
+            openAuditPdfPreview(previewUrl, downloadUrl, title) {
+                this.pdfPreviewUrl = previewUrl;
+                this.pdfDownloadUrl = downloadUrl;
+                this.pdfPreviewTitle = title || 'Audit Trail PDF Preview';
+                this.pdfPreviewOpen = true;
+                document.body.classList.add('overflow-y-hidden');
+                this.$nextTick(() => this.$refs.auditPdfCloseButton?.focus());
+            },
+            closeAuditPdfPreview() {
+                this.pdfPreviewOpen = false;
+                this.pdfPreviewUrl = '';
+                this.pdfDownloadUrl = '';
+                document.body.classList.remove('overflow-y-hidden');
+            },
+        }"
+        x-on:keydown.escape.window="pdfPreviewOpen && closeAuditPdfPreview()"
+    >
         <div class="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
             @php
                 $exportQuery = request()->only(['guard_id', 'action', 'date', 'search']);
+                $auditPdfDownloadUrl = route('audit-logs.pdf', $exportQuery);
+                $auditPdfPreviewUrl = route('audit-logs.pdf', array_merge($exportQuery, ['print' => 1]));
             @endphp
 
             <form method="GET" action="{{ route('audit-logs.index') }}" class="grid gap-3 rounded-md border border-blue-100 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 md:grid-cols-2 xl:grid-cols-[minmax(170px,1fr)_minmax(170px,1fr)_minmax(140px,0.75fr)_minmax(220px,1.2fr)_auto] print:hidden">
@@ -42,11 +67,11 @@
                 <div class="flex flex-wrap items-end gap-2 md:col-span-2 xl:col-span-1 xl:self-end xl:justify-end">
                     <button type="submit" class="h-9 rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800">Filter</button>
                     <a href="{{ route('audit-logs.index') }}" class="inline-flex h-9 items-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-200 dark:hover:bg-blue-950/40">Clear</a>
-                    <a href="{{ route('audit-logs.pdf', $exportQuery) }}" class="inline-flex h-9 items-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-200 dark:hover:bg-blue-950/40">
-                        Download PDF
-                    </a>
-                    <a href="{{ route('audit-logs.pdf', array_merge($exportQuery, ['print' => 1])) }}" target="_blank" rel="noopener" class="inline-flex h-9 items-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-200 dark:hover:bg-blue-950/40">
+                    <button type="button" data-skip-global-loader="true" x-on:click="openAuditPdfPreview(@js($auditPdfPreviewUrl), @js($auditPdfDownloadUrl), 'Audit Trail')" class="inline-flex h-9 items-center rounded-md border border-emerald-200 px-3 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 dark:border-emerald-500/45 dark:text-emerald-200 dark:hover:bg-emerald-950/35">
                         Print PDF
+                    </button>
+                    <a href="{{ $auditPdfDownloadUrl }}" class="inline-flex h-9 items-center rounded-md border border-indigo-200 px-3 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 dark:border-indigo-500/45 dark:text-indigo-200 dark:hover:bg-indigo-950/35">
+                        Download PDF
                     </a>
                 </div>
             </form>
@@ -124,5 +149,74 @@
                 </div>
             </section>
         </div>
+
+        <div
+            x-show="pdfPreviewOpen"
+            x-cloak
+            x-transition.opacity.duration.150ms
+            class="fixed inset-0 z-[80] bg-slate-950/60"
+            x-on:click="closeAuditPdfPreview()"
+            aria-hidden="true"
+        ></div>
+
+        <section
+            x-show="pdfPreviewOpen"
+            x-cloak
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 translate-y-3 scale-[0.98]"
+            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+            x-transition:leave-end="opacity-0 translate-y-3 scale-[0.98]"
+            class="fixed inset-0 z-[85] flex items-center justify-center p-3 sm:p-6"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="audit-pdf-preview-title"
+        >
+            <div class="flex h-[min(92dvh,56rem)] w-full max-w-5xl flex-col overflow-hidden rounded-md border border-blue-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900" x-on:click.stop>
+                <div class="flex shrink-0 items-start justify-between gap-3 border-b border-blue-100 px-4 py-3 dark:border-slate-800 sm:px-5">
+                    <div class="min-w-0">
+                        <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">PDF Preview</p>
+                        <h3 id="audit-pdf-preview-title" class="mt-1 truncate text-base font-semibold text-blue-950 dark:text-blue-100" x-text="pdfPreviewTitle"></h3>
+                    </div>
+                    <button
+                        type="button"
+                        x-ref="auditPdfCloseButton"
+                        x-on:click="closeAuditPdfPreview()"
+                        class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-blue-100 text-slate-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
+                        aria-label="Close PDF preview"
+                    >
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="min-h-0 flex-1 bg-slate-100 dark:bg-slate-950">
+                    <iframe
+                        x-bind:src="pdfPreviewOpen ? pdfPreviewUrl : 'about:blank'"
+                        title="Audit trail PDF preview"
+                        class="h-full w-full border-0 bg-white"
+                    ></iframe>
+                </div>
+
+                <div class="flex shrink-0 flex-col gap-2 border-t border-blue-100 px-4 py-3 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-end sm:px-5">
+                    <a
+                        x-bind:href="pdfPreviewUrl"
+                        target="_blank"
+                        rel="noopener"
+                        class="inline-flex h-10 items-center justify-center rounded-md border border-emerald-200 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:border-emerald-500/45 dark:text-emerald-200 dark:hover:bg-emerald-950/35 dark:focus:ring-offset-slate-900"
+                    >
+                        Open / Print
+                    </a>
+                    <a
+                        x-bind:href="pdfDownloadUrl"
+                        class="inline-flex h-10 items-center justify-center rounded-md border border-indigo-200 px-4 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-indigo-500/45 dark:text-indigo-200 dark:hover:bg-indigo-950/35 dark:focus:ring-offset-slate-900"
+                    >
+                        Download PDF
+                    </a>
+                </div>
+            </div>
+        </section>
     </div>
 </x-app-layout>

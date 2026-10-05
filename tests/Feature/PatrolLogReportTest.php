@@ -19,6 +19,8 @@ class PatrolLogReportTest extends TestCase
     {
         $guard = $this->createGuard('SG-FILTER', 'RFID-FILTER');
         $patrolLog = $this->createPatrolLog($guard);
+        $previewUrl = route('patrol-logs.pdf', ['patrolLog' => $patrolLog, 'preview' => 1]);
+        $escapedPreviewUrl = str_replace('/', '\\/', $previewUrl);
 
         $response = $this
             ->actingAs($guard->user)
@@ -29,6 +31,9 @@ class PatrolLogReportTest extends TestCase
             ->assertSee('Date Filter')
             ->assertSee('Download PDF')
             ->assertSee('Print PDF')
+            ->assertSee('PDF Preview')
+            ->assertSee('openPatrolPdfPreview', false)
+            ->assertSee($escapedPreviewUrl, false)
             ->assertSee('/patrol-logs/'.$patrolLog->id.'/pdf', false);
     }
 

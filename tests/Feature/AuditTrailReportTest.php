@@ -48,6 +48,9 @@ class AuditTrailReportTest extends TestCase
             'properties' => ['guard_id' => $guard->id],
         ]);
 
+        $previewUrl = route('audit-logs.pdf', ['guard_id' => $guard->id, 'print' => 1]);
+        $escapedPreviewUrl = str_replace(['/', '&'], ['\\/', '\\u0026'], $previewUrl);
+
         $response = $this
             ->actingAs($supervisor)
             ->get(route('audit-logs.index', ['guard_id' => $guard->id]));
@@ -61,7 +64,10 @@ class AuditTrailReportTest extends TestCase
             ->assertSee('border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700', false)
             ->assertSee('dark:bg-emerald-950/40', false)
             ->assertSee('Download PDF')
-            ->assertSee('Print PDF');
+            ->assertSee('Print PDF')
+            ->assertSee('PDF Preview')
+            ->assertSee('openAuditPdfPreview', false)
+            ->assertSee($escapedPreviewUrl, false);
     }
 
     public function test_audit_trail_shows_safe_summaries_without_raw_details(): void

@@ -35,6 +35,10 @@
         proofPhotoOpen: false,
         proofPhotoSrc: '',
         proofPhotoTitle: '',
+        pdfPreviewOpen: false,
+        pdfPreviewUrl: '',
+        pdfDownloadUrl: '',
+        pdfPreviewTitle: 'Patrol PDF Preview',
         openPatrolDetails(id) {
             this.selectedPatrolId = String(id || '');
             this.detailsOpen = Boolean(this.selectedPatrolId);
@@ -53,7 +57,21 @@
             this.proofPhotoSrc = '';
             this.proofPhotoTitle = '';
         },
-    }" x-on:keydown.escape.window="if (proofPhotoOpen) { closeProofPhoto() } else if (detailsOpen) { closePatrolDetails() }">
+        openPatrolPdfPreview(previewUrl, downloadUrl, title) {
+            this.pdfPreviewUrl = previewUrl;
+            this.pdfDownloadUrl = downloadUrl;
+            this.pdfPreviewTitle = title || 'Patrol PDF Preview';
+            this.pdfPreviewOpen = true;
+            document.body.classList.add('overflow-y-hidden');
+            this.$nextTick(() => this.$refs.patrolPdfCloseButton?.focus());
+        },
+        closePatrolPdfPreview() {
+            this.pdfPreviewOpen = false;
+            this.pdfPreviewUrl = '';
+            this.pdfDownloadUrl = '';
+            document.body.classList.remove('overflow-y-hidden');
+        },
+    }" x-on:keydown.escape.window="if (pdfPreviewOpen) { closePatrolPdfPreview() } else if (proofPhotoOpen) { closeProofPhoto() } else if (detailsOpen) { closePatrolDetails() }">
         <div class="mx-auto max-w-[96rem] space-y-5 px-4 sm:px-6 lg:px-8">
             <form method="GET" action="{{ route('patrol-logs.index') }}" class="grid gap-3 rounded-md border border-blue-100 bg-white p-3 shadow-sm {{ $isSupervisor ? 'md:grid-cols-2 xl:grid-cols-[minmax(150px,0.8fr)_minmax(170px,1fr)_minmax(150px,0.8fr)_minmax(140px,0.75fr)_auto]' : 'md:grid-cols-2 xl:grid-cols-[minmax(150px,0.8fr)_minmax(150px,0.8fr)_minmax(140px,0.75fr)_auto]' }}">
                 <div>
@@ -190,9 +208,9 @@
                         </div>
 
                         <div class="mt-3 flex flex-wrap justify-end gap-2">
-                            <a href="{{ $patrolPdfPreviewUrl }}" target="_blank" rel="noopener" class="inline-flex h-10 items-center justify-center rounded-md border border-emerald-200 bg-white px-3 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                            <button type="button" data-skip-global-loader="true" x-on:click="openPatrolPdfPreview(@js($patrolPdfPreviewUrl), @js($patrolPdfDownloadUrl), @js('Patrol Log - '.($log->checkpoint?->name ?? $log->checkpoint_code ?? 'Patrol')))" class="inline-flex h-10 items-center justify-center rounded-md border border-emerald-200 bg-white px-3 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
                                 Print PDF
-                            </a>
+                            </button>
                             <a href="{{ $patrolPdfDownloadUrl }}" class="inline-flex h-10 items-center justify-center rounded-md border border-indigo-200 bg-white px-3 text-xs font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                                 Download PDF
                             </a>
@@ -282,9 +300,9 @@
                                                     <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
                                                 </svg>
                                             </button>
-                                            <a href="{{ $patrolPdfPreviewUrl }}" target="_blank" rel="noopener" class="inline-flex h-9 items-center justify-center rounded-md border border-emerald-200 bg-white px-3 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                                            <button type="button" data-skip-global-loader="true" x-on:click="openPatrolPdfPreview(@js($patrolPdfPreviewUrl), @js($patrolPdfDownloadUrl), @js('Patrol Log - '.($log->checkpoint?->name ?? $log->checkpoint_code ?? 'Patrol')))" class="inline-flex h-9 items-center justify-center rounded-md border border-emerald-200 bg-white px-3 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
                                                 Print PDF
-                                            </a>
+                                            </button>
                                             <a href="{{ $patrolPdfDownloadUrl }}" class="inline-flex h-9 items-center justify-center rounded-md border border-indigo-200 bg-white px-3 text-xs font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                                                 Download PDF
                                             </a>
@@ -477,9 +495,9 @@
                     </div>
 
                     <div class="flex flex-col gap-2 border-t border-blue-100 bg-white px-5 py-3 sm:flex-row sm:justify-end">
-                        <a href="{{ $detailPdfPreviewUrl }}" target="_blank" rel="noopener" class="inline-flex h-10 items-center justify-center rounded-md border border-emerald-200 bg-white px-4 text-sm font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                        <button type="button" data-skip-global-loader="true" x-on:click="openPatrolPdfPreview(@js($detailPdfPreviewUrl), @js($detailPdfDownloadUrl), @js('Patrol Log - '.($log->checkpoint?->name ?? $log->checkpoint_code ?? 'Patrol')))" class="inline-flex h-10 items-center justify-center rounded-md border border-emerald-200 bg-white px-4 text-sm font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
                             Print PDF
-                        </a>
+                        </button>
                         <a href="{{ $detailPdfDownloadUrl }}" class="inline-flex h-10 items-center justify-center rounded-md border border-indigo-200 bg-white px-4 text-sm font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                             Download PDF
                         </a>
@@ -508,6 +526,79 @@
                     </div>
                 </section>
             </div>
+        </template>
+
+        <template x-teleport="body">
+            <div
+                x-show="pdfPreviewOpen"
+                x-cloak
+                x-transition.opacity.duration.150ms
+                class="fixed inset-0 z-[100] bg-slate-950/60"
+                x-on:click="closePatrolPdfPreview()"
+                aria-hidden="true"
+            ></div>
+        </template>
+
+        <template x-teleport="body">
+            <section
+                x-show="pdfPreviewOpen"
+                x-cloak
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 translate-y-3 scale-[0.98]"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                x-transition:leave-end="opacity-0 translate-y-3 scale-[0.98]"
+                class="fixed inset-0 z-[105] flex items-center justify-center p-3 sm:p-6"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="patrol-pdf-preview-title"
+            >
+                <div class="flex h-[min(92dvh,56rem)] w-full max-w-5xl flex-col overflow-hidden rounded-md border border-blue-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900" x-on:click.stop>
+                    <div class="flex shrink-0 items-start justify-between gap-3 border-b border-blue-100 px-4 py-3 dark:border-slate-800 sm:px-5">
+                        <div class="min-w-0">
+                            <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">PDF Preview</p>
+                            <h3 id="patrol-pdf-preview-title" class="mt-1 truncate text-base font-semibold text-blue-950 dark:text-blue-100" x-text="pdfPreviewTitle"></h3>
+                        </div>
+                        <button
+                            type="button"
+                            x-ref="patrolPdfCloseButton"
+                            x-on:click="closePatrolPdfPreview()"
+                            class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-blue-100 text-slate-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
+                            aria-label="Close PDF preview"
+                        >
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="min-h-0 flex-1 bg-slate-100 dark:bg-slate-950">
+                        <iframe
+                            x-bind:src="pdfPreviewOpen ? pdfPreviewUrl : 'about:blank'"
+                            title="Patrol log PDF preview"
+                            class="h-full w-full border-0 bg-white"
+                        ></iframe>
+                    </div>
+
+                    <div class="flex shrink-0 flex-col gap-2 border-t border-blue-100 px-4 py-3 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-end sm:px-5">
+                        <a
+                            x-bind:href="pdfPreviewUrl"
+                            target="_blank"
+                            rel="noopener"
+                            class="inline-flex h-10 items-center justify-center rounded-md border border-emerald-200 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:border-emerald-500/45 dark:text-emerald-200 dark:hover:bg-emerald-950/35 dark:focus:ring-offset-slate-900"
+                        >
+                            Open / Print
+                        </a>
+                        <a
+                            x-bind:href="pdfDownloadUrl"
+                            class="inline-flex h-10 items-center justify-center rounded-md border border-indigo-200 px-4 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-indigo-500/45 dark:text-indigo-200 dark:hover:bg-indigo-950/35 dark:focus:ring-offset-slate-900"
+                        >
+                            Download PDF
+                        </a>
+                    </div>
+                </div>
+            </section>
         </template>
     </div>
 </x-app-layout>
