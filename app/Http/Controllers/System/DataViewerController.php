@@ -5,20 +5,16 @@ namespace App\Http\Controllers\System;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Checkpoint;
-use App\Models\ChecklistProofPhoto;
 use App\Models\ChecklistResponse;
 use App\Models\Guard;
 use App\Models\IncidentReport;
-use App\Models\IncidentReportImage;
 use App\Models\PatrolLog;
 use App\Models\User;
 use App\Support\PatrolChecklist;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -55,7 +51,6 @@ class DataViewerController extends Controller
             'checkpoints' => $this->checkpoints($request),
             'incidents' => $this->incidents($request),
             'checklists' => $this->checklists($request),
-            'photos' => $this->photos($request),
             'audit_logs' => $this->auditLogs($request),
             default => $this->patrolLogs($request),
         };
@@ -79,8 +74,8 @@ class DataViewerController extends Controller
             ->withQueryString()
             ->through(fn (User $user) => [
                 'id' => $this->textCell('#'.$user->id),
-                'name' => $this->textCell($user->name, $user->email),
-                'username' => $this->textCell($user->username ?: 'No username'),
+                'name' => $this->textCell($user->name, 'Contact details hidden'),
+                'username' => $this->sensitiveCell($user->username ?: $user->email, 'Login identifier masked'),
                 'role' => $this->badgeCell($user->role === 'admin' ? 'Supervisor' : 'Security Guard', $user->role === 'admin' ? 'info' : 'neutral'),
                 'linked_record' => $this->textCell($user->guardProfile?->name ?: 'Not linked', $user->guardProfile?->employee_no),
                 'created_at' => $this->dateCell($user->created_at),
@@ -108,9 +103,8 @@ class DataViewerController extends Controller
             ->withQueryString()
             ->through(fn (Guard $guard) => [
                 'employee' => $this->textCell($guard->name, $guard->employee_no),
-                'contact' => $this->textCell($guard->email ?: 'No email', $guard->phone ?: 'No phone'),
-                'rfid_uid' => $this->textCell($guard->rfid_uid, mono: true),
-                'account' => $this->textCell($guard->user?->username ?: 'No login account', $guard->user?->email),
+                'rfid_uid' => $this->sensitiveCell($guard->rfid_uid, 'RFID UID masked'),
+                'account' => $this->textCell($guard->user ? 'Linked account' : 'No login account', 'Login details hidden'),
                 'records' => $this->textCell($guard->patrol_logs_count.' patrols', $guard->incident_reports_count.' incidents'),
                 'status' => $this->badgeCell(Str::headline($guard->status), $guard->status === 'active' ? 'success' : 'neutral'),
             ]);
@@ -136,7 +130,7 @@ class DataViewerController extends Controller
             ->through(fn (Checkpoint $checkpoint) => [
                 'checkpoint' => $this->textCell($checkpoint->name, $checkpoint->code),
                 'location' => $this->textCell($checkpoint->location),
-                'device' => $this->textCell($checkpoint->device_uid ?: 'No device UID', $checkpoint->reader_last_ip ? 'IP '.$checkpoint->reader_last_ip : null, true),
+                'device' => $this->sensitiveCell($checkpoint->device_uid, 'Device UID masked'),
                 'reader' => $this->textCell(
                     $checkpoint->reader_last_seen_at?->timezone(config('app.timezone'))->format('M d, Y h:i A') ?: 'No heartbeat yet',
                     $checkpoint->reader_last_status ? Str::headline($checkpoint->reader_last_status) : null
@@ -173,10 +167,9 @@ class DataViewerController extends Controller
                 'time' => $this->dateCell($patrolLog->scanned_at),
                 'guard' => $this->textCell($patrolLog->securityGuard?->name ?: 'Unknown guard', $patrolLog->securityGuard?->employee_no ?? 'No guard match'),
                 'checkpoint' => $this->textCell($patrolLog->checkpoint?->name ?: 'Unknown checkpoint', $patrolLog->checkpoint_code),
-                'rfid' => $this->textCell($patrolLog->rfid_uid, Str::headline($patrolLog->rfid_status), true),
+                'rfid' => $this->sensitiveCell($patrolLog->rfid_uid, Str::headline($patrolLog->rfid_status)),
                 'status' => $this->badgeCell($this->statusLabel($patrolLog->status), $this->toneForStatus($patrolLog->status)),
                 'checklist' => $this->textCell($patrolLog->checklistSummary(), $patrolLog->checklistPhotoCount().' proof photos'),
-                'action' => $this->linkCell('PDF', route('patrol-logs.pdf', ['patrolLog' => $patrolLog, 'preview' => 1])),
             ]);
     }
 
@@ -212,7 +205,6 @@ class DataViewerController extends Controller
                 'priority' => $this->badgeCell(Str::headline($incident->priority), $this->toneForPriority($incident->priority)),
                 'status' => $this->badgeCell($this->statusLabel($incident->status), $this->toneForStatus($incident->status)),
                 'photos' => $this->textCell((string) $incident->images->count(), 'incident photos'),
-                'action' => $this->linkCell('PDF', route('incidents.pdf', ['incidentReport' => $incident, 'preview' => 1])),
             ]);
     }
 
@@ -252,38 +244,6 @@ class DataViewerController extends Controller
             });
     }
 
-    private function photos(Request $request): LengthAwarePaginator
-    {
-        $search = $this->searchTerm($request);
-        $type = (string) $request->query('status', '');
-        $date = $this->dateFilter($request);
-
-        $query = DB::query()->fromSub($this->photoUnionQuery(), 'photos')
-            ->when($search !== '', fn (QueryBuilder $query) => $query->where(function (QueryBuilder $query) use ($search) {
-                $query->where('photo_type', 'like', "%{$search}%")
-                    ->orWhere('context', 'like', "%{$search}%")
-                    ->orWhere('guard_name', 'like', "%{$search}%")
-                    ->orWhere('checkpoint_name', 'like', "%{$search}%")
-                    ->orWhere('original_name', 'like', "%{$search}%");
-            }))
-            ->when(in_array($type, ['incident', 'checklist', 'area_selfie'], true), fn (QueryBuilder $query) => $query->where('type_key', $type))
-            ->when($date !== '', fn (QueryBuilder $query) => $this->whereInDay($query, 'created_at', $date))
-            ->orderByDesc('created_at');
-
-        return $query
-            ->paginate(12)
-            ->withQueryString()
-            ->through(fn (object $photo) => [
-                'time' => $this->dateCell($photo->created_at ? Carbon::parse($photo->created_at) : null),
-                'type' => $this->badgeCell($photo->photo_type, $photo->type_key === 'incident' ? 'danger' : 'info'),
-                'context' => $this->textCell($photo->context ?: 'Photo evidence', $photo->original_name ?: Str::headline($photo->source ?: 'camera')),
-                'guard' => $this->textCell($photo->guard_name ?: 'Unknown guard', $photo->guard_employee_no),
-                'checkpoint' => $this->textCell($photo->checkpoint_name ?: 'Unknown checkpoint', $photo->checkpoint_code),
-                'mime' => $this->textCell($photo->mime_type ?: 'image/jpeg', mono: true),
-                'action' => $this->linkCell('View', $this->photoUrl($photo)),
-            ]);
-    }
-
     private function auditLogs(Request $request): LengthAwarePaginator
     {
         $search = $this->searchTerm($request);
@@ -305,87 +265,9 @@ class DataViewerController extends Controller
                 'time' => $this->dateCell($auditLog->created_at),
                 'actor' => $this->textCell($auditLog->actor_name ?: $auditLog->user?->name ?: 'System'),
                 'action' => $this->badgeCell(Str::headline($auditLog->action), $this->toneForStatus($auditLog->resultLabel())),
-                'description' => $this->textCell(Str::limit($auditLog->description, 90), $auditLog->diagnosticSummary()),
+                'description' => $this->textCell(Str::limit($auditLog->description, 90), 'Full technical details stay in Audit Trail'),
                 'subject' => $this->textCell(class_basename((string) $auditLog->subject_type) ?: 'No subject', $auditLog->subject_id ? '#'.$auditLog->subject_id : null),
-                'ip' => $this->textCell($auditLog->ip_address ?: 'No IP recorded', mono: true),
             ]);
-    }
-
-    private function photoUnionQuery(): QueryBuilder
-    {
-        $incidentPhotos = DB::table('incident_report_images')
-            ->leftJoin('incident_reports', 'incident_report_images.incident_report_id', '=', 'incident_reports.id')
-            ->leftJoin('guards', 'incident_reports.guard_id', '=', 'guards.id')
-            ->leftJoin('checkpoints', 'incident_reports.checkpoint_id', '=', 'checkpoints.id')
-            ->select([
-                DB::raw("'incident' as type_key"),
-                DB::raw("'Incident photo' as photo_type"),
-                'incident_report_images.id',
-                'incident_report_images.incident_report_id as parent_id',
-                'incident_report_images.created_at',
-                'incident_report_images.original_name',
-                'incident_report_images.source',
-                'incident_report_images.mime_type',
-                'incident_reports.category as context',
-                'guards.name as guard_name',
-                'guards.employee_no as guard_employee_no',
-                'checkpoints.name as checkpoint_name',
-                'checkpoints.code as checkpoint_code',
-            ]);
-
-        $checklistPhotos = DB::table('checklist_proof_photos')
-            ->leftJoin('patrol_logs', 'checklist_proof_photos.patrol_log_id', '=', 'patrol_logs.id')
-            ->leftJoin('guards', 'patrol_logs.guard_id', '=', 'guards.id')
-            ->leftJoin('checkpoints', 'patrol_logs.checkpoint_id', '=', 'checkpoints.id')
-            ->select([
-                DB::raw("'checklist' as type_key"),
-                DB::raw("'Checklist proof' as photo_type"),
-                'checklist_proof_photos.id',
-                'checklist_proof_photos.patrol_log_id as parent_id',
-                'checklist_proof_photos.created_at',
-                'checklist_proof_photos.original_name',
-                DB::raw("'camera' as source"),
-                'checklist_proof_photos.mime_type',
-                'checklist_proof_photos.item_label as context',
-                'guards.name as guard_name',
-                'guards.employee_no as guard_employee_no',
-                'checkpoints.name as checkpoint_name',
-                'checkpoints.code as checkpoint_code',
-            ]);
-
-        $areaSelfies = DB::table('patrol_logs')
-            ->leftJoin('guards', 'patrol_logs.guard_id', '=', 'guards.id')
-            ->leftJoin('checkpoints', 'patrol_logs.checkpoint_id', '=', 'checkpoints.id')
-            ->where(function (QueryBuilder $query) {
-                $query->whereNotNull('patrol_logs.area_selfie_path')
-                    ->orWhereNotNull('patrol_logs.area_selfie_image_data');
-            })
-            ->select([
-                DB::raw("'area_selfie' as type_key"),
-                DB::raw("'Area selfie' as photo_type"),
-                'patrol_logs.id',
-                'patrol_logs.id as parent_id',
-                'patrol_logs.created_at',
-                DB::raw("null as original_name"),
-                DB::raw("'camera' as source"),
-                'patrol_logs.area_selfie_mime_type as mime_type',
-                DB::raw("'Patrol area selfie' as context"),
-                'guards.name as guard_name',
-                'guards.employee_no as guard_employee_no',
-                'checkpoints.name as checkpoint_name',
-                'checkpoints.code as checkpoint_code',
-            ]);
-
-        return $incidentPhotos->unionAll($checklistPhotos)->unionAll($areaSelfies);
-    }
-
-    private function photoUrl(object $photo): string
-    {
-        return match ($photo->type_key) {
-            'incident' => route('incidents.images.show', [$photo->parent_id, $photo->id]),
-            'checklist' => route('patrol-logs.proof-photos.show', [$photo->parent_id, $photo->id]),
-            default => route('patrol-logs.area-selfie.show', $photo->parent_id),
-        };
     }
 
     private function datasets(): array
@@ -401,7 +283,7 @@ class DataViewerController extends Controller
             'guards' => [
                 'label' => 'Guards',
                 'description' => 'Guard profiles and RFID cards',
-                'columns' => ['employee' => 'Employee', 'contact' => 'Contact', 'rfid_uid' => 'RFID UID', 'account' => 'Account', 'records' => 'Records', 'status' => 'Status'],
+                'columns' => ['employee' => 'Employee', 'rfid_uid' => 'RFID UID', 'account' => 'Account', 'records' => 'Records', 'status' => 'Status'],
                 'filter_label' => 'Status',
                 'filter_options' => ['active' => 'Active', 'inactive' => 'Inactive'],
             ],
@@ -415,7 +297,7 @@ class DataViewerController extends Controller
             'patrol_logs' => [
                 'label' => 'Patrol Logs',
                 'description' => 'RFID scans and patrol submissions',
-                'columns' => ['time' => 'Time', 'guard' => 'Guard', 'checkpoint' => 'Checkpoint', 'rfid' => 'RFID', 'status' => 'Status', 'checklist' => 'Checklist', 'action' => 'Action'],
+                'columns' => ['time' => 'Time', 'guard' => 'Guard', 'checkpoint' => 'Checkpoint', 'rfid' => 'RFID', 'status' => 'Status', 'checklist' => 'Checklist'],
                 'filter_label' => 'Status',
                 'filter_options' => [
                     'valid' => 'Valid',
@@ -431,7 +313,7 @@ class DataViewerController extends Controller
             'incidents' => [
                 'label' => 'Incidents',
                 'description' => 'Submitted incident reports',
-                'columns' => ['time' => 'Time', 'category' => 'Category', 'guard' => 'Guard', 'checkpoint' => 'Checkpoint', 'priority' => 'Priority', 'status' => 'Status', 'photos' => 'Photos', 'action' => 'Action'],
+                'columns' => ['time' => 'Time', 'category' => 'Category', 'guard' => 'Guard', 'checkpoint' => 'Checkpoint', 'priority' => 'Priority', 'status' => 'Status', 'photos' => 'Photos'],
                 'filter_label' => 'Status',
                 'filter_options' => ['submitted' => 'Submitted', 'under_review' => 'Under Review', 'resolved' => 'Resolved'],
             ],
@@ -442,17 +324,10 @@ class DataViewerController extends Controller
                 'filter_label' => null,
                 'filter_options' => [],
             ],
-            'photos' => [
-                'label' => 'Photos',
-                'description' => 'Evidence and proof images',
-                'columns' => ['time' => 'Time', 'type' => 'Type', 'context' => 'Context', 'guard' => 'Guard', 'checkpoint' => 'Checkpoint', 'mime' => 'File Type', 'action' => 'Action'],
-                'filter_label' => 'Photo Type',
-                'filter_options' => ['incident' => 'Incident Photo', 'checklist' => 'Checklist Proof', 'area_selfie' => 'Area Selfie'],
-            ],
             'audit_logs' => [
                 'label' => 'Audit Trail',
                 'description' => 'System activity logs',
-                'columns' => ['time' => 'Time', 'actor' => 'Actor', 'action' => 'Action', 'description' => 'Description', 'subject' => 'Subject', 'ip' => 'IP Address'],
+                'columns' => ['time' => 'Time', 'actor' => 'Actor', 'action' => 'Action', 'description' => 'Description', 'subject' => 'Subject'],
                 'filter_label' => null,
                 'filter_options' => [],
             ],
@@ -468,12 +343,6 @@ class DataViewerController extends Controller
             'patrol_logs' => PatrolLog::count(),
             'incidents' => IncidentReport::count(),
             'checklists' => ChecklistResponse::count(),
-            'photos' => IncidentReportImage::count()
-                + ChecklistProofPhoto::count()
-                + PatrolLog::where(fn (Builder $query) => $query
-                    ->whereNotNull('area_selfie_path')
-                    ->orWhereNotNull('area_selfie_image_data'))
-                    ->count(),
             'audit_logs' => AuditLog::count(),
         ];
     }
@@ -490,7 +359,7 @@ class DataViewerController extends Controller
         return preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) ? $date : '';
     }
 
-    private function whereInDay(Builder|QueryBuilder $query, string $column, string $date): void
+    private function whereInDay(Builder $query, string $column, string $date): void
     {
         $day = Carbon::parse($date, config('app.timezone'));
 
@@ -510,6 +379,35 @@ class DataViewerController extends Controller
         ];
     }
 
+    private function sensitiveCell(?string $value, ?string $subvalue = null): array
+    {
+        return $this->textCell($this->maskedValue($value), $subvalue, true);
+    }
+
+    private function maskedValue(?string $value, int $visibleCharacters = 4): string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return 'Hidden';
+        }
+
+        if (str_contains($value, '@')) {
+            [$local, $domain] = explode('@', $value, 2);
+            $localPrefix = substr($local, 0, min(2, strlen($local)));
+
+            return $localPrefix.'***@'.$domain;
+        }
+
+        $length = strlen($value);
+
+        if ($length <= $visibleCharacters) {
+            return str_repeat('*', $length);
+        }
+
+        return str_repeat('*', min(8, $length - $visibleCharacters)).substr($value, -$visibleCharacters);
+    }
+
     private function dateCell(mixed $date): array
     {
         $date = $date ? Carbon::parse($date)->timezone(config('app.timezone')) : null;
@@ -526,15 +424,6 @@ class DataViewerController extends Controller
             'type' => 'badge',
             'value' => filled($value) ? $value : 'Recorded',
             'tone' => $tone,
-        ];
-    }
-
-    private function linkCell(string $label, string $href): array
-    {
-        return [
-            'type' => 'link',
-            'value' => $label,
-            'href' => $href,
         ];
     }
 

@@ -83,8 +83,10 @@ class DataViewerTest extends TestCase
             ->assertSee('Data Viewer')
             ->assertSee('Viewer Guard')
             ->assertSee('Viewer Checkpoint')
-            ->assertSee('RFID-VIEW')
+            ->assertSee('RFID UID masked')
             ->assertSee('Patrol Logs')
+            ->assertDontSee('RFID-VIEW')
+            ->assertDontSee('viewer.guard@example.com')
             ->assertDontSee('password');
     }
 
