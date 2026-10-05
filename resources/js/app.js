@@ -1665,8 +1665,11 @@ Alpine.data('guardManagementPage', (config = {}) => ({
     selectedGuard: null,
     recordStats: {},
     recordPatrols: [],
+    recordPatrolPagination: {},
+    recordPatrolLoading: false,
     recordIncidents: [],
     recordFaceAttempts: [],
+    recordRecordsUrl: '',
     resizeHandler: null,
     rfidEnrollmentLatestUrl: config.rfidEnrollmentLatestUrl || '',
     rfidEnrollmentInputId: '',
@@ -1802,9 +1805,12 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         this.recordModalOpen = true;
         this.recordLoading = true;
         this.recordError = '';
+        this.recordRecordsUrl = url;
         this.selectedGuard = null;
         this.recordStats = {};
         this.recordPatrols = [];
+        this.recordPatrolPagination = {};
+        this.recordPatrolLoading = false;
         this.recordIncidents = [];
         this.recordFaceAttempts = [];
         this.stopRfidEnrollment();
@@ -1827,6 +1833,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
             this.selectedGuard = data.guard || null;
             this.recordStats = data.stats || {};
             this.recordPatrols = data.patrol_logs || [];
+            this.recordPatrolPagination = data.patrol_pagination || {};
             this.recordIncidents = data.incidents || [];
             this.recordFaceAttempts = data.face_attempts || [];
             this.$nextTick(() => this.$refs.recordCloseButton?.focus());
@@ -1834,6 +1841,45 @@ Alpine.data('guardManagementPage', (config = {}) => ({
             this.recordError = error.message || 'Guard records could not be loaded.';
         } finally {
             this.recordLoading = false;
+        }
+    },
+
+    async loadGuardRecordPatrolPage(page) {
+        const targetPage = Number(page || 1);
+
+        if (! this.recordRecordsUrl || this.recordPatrolLoading || ! Number.isFinite(targetPage) || targetPage < 1) {
+            return;
+        }
+
+        this.recordPatrolLoading = true;
+        this.recordError = '';
+
+        try {
+            const url = new URL(this.recordRecordsUrl, window.location.origin);
+            url.searchParams.set('patrol_page', String(targetPage));
+
+            const response = await fetch(url, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (! response.ok) {
+                throw new Error(data.message || 'Patrol scan records could not be loaded.');
+            }
+
+            this.selectedGuard = data.guard || this.selectedGuard;
+            this.recordStats = data.stats || this.recordStats;
+            this.recordPatrols = data.patrol_logs || [];
+            this.recordPatrolPagination = data.patrol_pagination || {};
+            this.recordIncidents = data.incidents || this.recordIncidents;
+        } catch (error) {
+            this.recordError = error.message || 'Patrol scan records could not be loaded.';
+        } finally {
+            this.recordPatrolLoading = false;
         }
     },
 
@@ -2028,6 +2074,17 @@ Alpine.data('guardManagementPage', (config = {}) => ({
             this.selectedGuard.employee_no || 'No employee number',
             this.selectedGuard.rfid_uid || 'No RFID UID',
         ].join(' / ');
+    },
+
+    recordPatrolShowingLabel() {
+        const pagination = this.recordPatrolPagination || {};
+        const total = Number(pagination.total || 0);
+
+        if (! total) {
+            return 'No patrol scans to display';
+        }
+
+        return `Showing ${pagination.from || 1} to ${pagination.to || total} of ${total} patrol scans`;
     },
 
     badgeClass(value) {

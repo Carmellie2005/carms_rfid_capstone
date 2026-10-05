@@ -48,8 +48,7 @@ class GuardController extends Controller
                 'incidentReport:id,patrol_log_id,title,status,priority',
             ])
             ->latest('scanned_at')
-            ->limit(10)
-            ->get();
+            ->paginate(6, ['*'], 'patrol_page');
 
         $incidents = $guard->incidentReports()
             ->with('checkpoint:id,code,name,location')
@@ -79,7 +78,7 @@ class GuardController extends Controller
                 'suspicious_patrols' => $guard->patrolLogs()->where('status', 'suspicious')->count(),
                 'incident_reports' => $guard->incidentReports()->count(),
             ],
-            'patrol_logs' => $patrolLogs->map(fn ($log) => [
+            'patrol_logs' => $patrolLogs->getCollection()->map(fn ($log) => [
                 'id' => $log->id,
                 'scanned_at' => $this->formatDate($log->scanned_at),
                 'checkpoint' => $log->checkpoint?->name ?? $log->checkpoint_code ?? 'Unknown checkpoint',
@@ -92,6 +91,16 @@ class GuardController extends Controller
                 'incident_title' => $log->incidentReport?->title,
                 'incident_status' => $log->incidentReport?->status,
             ]),
+            'patrol_pagination' => [
+                'current_page' => $patrolLogs->currentPage(),
+                'last_page' => $patrolLogs->lastPage(),
+                'per_page' => $patrolLogs->perPage(),
+                'total' => $patrolLogs->total(),
+                'from' => $patrolLogs->firstItem(),
+                'to' => $patrolLogs->lastItem(),
+                'has_more_pages' => $patrolLogs->hasMorePages(),
+                'on_first_page' => $patrolLogs->onFirstPage(),
+            ],
             'incidents' => $incidents->map(fn ($incident) => [
                 'id' => $incident->id,
                 'title' => $incident->title,

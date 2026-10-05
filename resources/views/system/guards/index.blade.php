@@ -503,6 +503,7 @@
                             <section>
                                 <div class="mb-3 flex items-center justify-between gap-3">
                                     <h4 class="text-sm font-semibold uppercase tracking-wide text-blue-800 dark:text-white">Recent Patrol Scans</h4>
+                                    <span x-show="recordPatrolLoading" x-cloak class="text-xs font-semibold text-blue-600 dark:text-blue-300">Loading...</span>
                                 </div>
                                 <template x-if="recordPatrols.length === 0">
                                     <p class="rounded-md border border-blue-100 px-4 py-5 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">No patrol records yet.</p>
@@ -535,6 +536,34 @@
                                             </template>
                                         </tbody>
                                     </table>
+                                </div>
+                                <div
+                                    x-show="Number(recordPatrolPagination.total || 0) > Number(recordPatrolPagination.per_page || 0)"
+                                    x-cloak
+                                    class="mt-3 flex flex-col gap-3 rounded-md border border-blue-100 bg-blue-50/40 px-3 py-3 text-sm dark:border-slate-700 dark:bg-slate-950/45 sm:flex-row sm:items-center sm:justify-between"
+                                >
+                                    <p class="text-xs font-semibold text-slate-600 dark:text-slate-300" x-text="recordPatrolShowingLabel()"></p>
+                                    <div class="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-xs font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
+                                            x-bind:disabled="recordPatrolLoading || recordPatrolPagination.on_first_page"
+                                            x-on:click="loadGuardRecordPatrolPage(Number(recordPatrolPagination.current_page || 1) - 1)"
+                                        >
+                                            Previous
+                                        </button>
+                                        <span class="whitespace-nowrap text-xs font-semibold text-slate-500 dark:text-slate-400">
+                                            Page <span x-text="recordPatrolPagination.current_page || 1"></span> of <span x-text="recordPatrolPagination.last_page || 1"></span>
+                                        </span>
+                                        <button
+                                            type="button"
+                                            class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-xs font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
+                                            x-bind:disabled="recordPatrolLoading || ! recordPatrolPagination.has_more_pages"
+                                            x-on:click="loadGuardRecordPatrolPage(Number(recordPatrolPagination.current_page || 1) + 1)"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
                                 </div>
                             </section>
 

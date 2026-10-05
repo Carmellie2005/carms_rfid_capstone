@@ -257,6 +257,8 @@ class GuardManagementTest extends TestCase
             ->assertSee('Guard Management')
             ->assertSee('Registered guards, RFID cards, shifts, and login accounts')
             ->assertSee('Guard Profiles')
+            ->assertSee('loadGuardRecordPatrolPage', false)
+            ->assertSee('recordPatrolShowingLabel', false)
             ->assertDontSee('<th class="px-5 py-3">Account</th>', false)
             ->assertDontSee('<dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Account</dt>', false)
             ->assertDontSee('selectedGuard?.username', false)
@@ -371,6 +373,56 @@ class GuardManagementTest extends TestCase
             ->assertJsonPath('stats.incident_reports', 1)
             ->assertJsonPath('patrol_logs.0.checkpoint', 'Modal Checkpoint')
             ->assertJsonPath('incidents.0.title', 'Broken Light');
+    }
+
+    public function test_guard_records_patrol_scans_are_paginated_for_modal(): void
+    {
+        $supervisor = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'supervisor',
+        ]);
+
+        $guard = Guard::create([
+            'user_id' => User::factory()->create(['role' => 'guard'])->id,
+            'employee_no' => 'SG-PAGED-MODAL',
+            'name' => 'Paged Modal Guard',
+            'email' => 'paged.modal.guard@example.com',
+            'phone' => '09171234567',
+            'rfid_uid' => 'RFID-PAGED-MODAL',
+            'shift' => 'Night Shift',
+            'status' => 'active',
+        ]);
+
+        foreach (range(1, 7) as $number) {
+            PatrolLog::create([
+                'guard_id' => $guard->id,
+                'checkpoint_id' => null,
+                'rfid_uid' => $guard->rfid_uid,
+                'checkpoint_code' => sprintf('CP-PAGED-%02d', $number),
+                'rfid_status' => 'valid',
+                'status' => 'valid',
+                'scanned_at' => now()->addMinutes($number),
+            ]);
+        }
+
+        $this
+            ->actingAs($supervisor)
+            ->getJson(route('guards.records', $guard))
+            ->assertOk()
+            ->assertJsonCount(6, 'patrol_logs')
+            ->assertJsonPath('patrol_logs.0.checkpoint_code', 'CP-PAGED-07')
+            ->assertJsonPath('patrol_pagination.total', 7)
+            ->assertJsonPath('patrol_pagination.current_page', 1)
+            ->assertJsonPath('patrol_pagination.has_more_pages', true);
+
+        $this
+            ->actingAs($supervisor)
+            ->getJson(route('guards.records', ['guard' => $guard, 'patrol_page' => 2]))
+            ->assertOk()
+            ->assertJsonCount(1, 'patrol_logs')
+            ->assertJsonPath('patrol_logs.0.checkpoint_code', 'CP-PAGED-01')
+            ->assertJsonPath('patrol_pagination.current_page', 2)
+            ->assertJsonPath('patrol_pagination.on_first_page', false);
     }
 
     public function test_guard_cannot_fetch_guard_records_for_modal(): void
