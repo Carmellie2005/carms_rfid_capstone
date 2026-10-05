@@ -750,7 +750,7 @@ Alpine.data('patrolScan', (config = {}) => ({
         } else if (this.pendingScan && this.areaSelfieComplete()) {
             this.checklistModalOpen = true;
             this.scanMessage = 'Area selfie captured. Complete the checklist.';
-            this.$nextTick(() => document.getElementById('doors_locked_normal')?.focus());
+            this.$nextTick(() => document.getElementById('doors_checked_normal')?.focus());
         } else if (this.pendingScan) {
             this.scanMessage = 'RFID accepted. Take the required area selfie.';
         } else if (! this.pendingScan) {
@@ -1113,7 +1113,7 @@ Alpine.data('patrolScan', (config = {}) => ({
 
                 if (this.areaSelfieComplete()) {
                     this.checklistModalOpen = true;
-                    this.$nextTick(() => document.getElementById('doors_locked_normal')?.focus());
+                    this.$nextTick(() => document.getElementById('doors_checked_normal')?.focus());
                 }
             } else if (data.message) {
                 this.scanMessage = data.message;
@@ -1136,7 +1136,7 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.areaSelfieError = '';
         this.checklistModalOpen = true;
         this.incidentModalOpen = false;
-        this.$nextTick(() => document.getElementById('doors_locked_normal')?.focus());
+        this.$nextTick(() => document.getElementById('doors_checked_normal')?.focus());
     },
 
     openCancelScanModal() {
@@ -1381,7 +1381,7 @@ Alpine.data('patrolScan', (config = {}) => ({
 
         this.incidentModalOpen = false;
         this.checklistModalOpen = true;
-        this.$nextTick(() => document.getElementById('doors_locked_normal')?.focus());
+        this.$nextTick(() => document.getElementById('doors_checked_normal')?.focus());
     },
 
     handleIncidentToggle(event) {
@@ -1407,6 +1407,10 @@ Alpine.data('patrolScan', (config = {}) => ({
 
         if (this.$refs.incidentCameraImages) {
             this.$refs.incidentCameraImages.value = '';
+        }
+
+        if (this.$refs.incidentCameraCapture) {
+            this.$refs.incidentCameraCapture.value = '';
         }
 
         if (this.$refs.incidentDescription) {
@@ -1478,6 +1482,76 @@ Alpine.data('patrolScan', (config = {}) => ({
         }
 
         return this.updateIncidentImageCount(event);
+    },
+
+    assignFilesToInput(input, files) {
+        if (! input || typeof DataTransfer === 'undefined') {
+            return false;
+        }
+
+        const transfer = new DataTransfer();
+
+        files.slice(0, 3).forEach((file) => transfer.items.add(file));
+        input.files = transfer.files;
+
+        return true;
+    },
+
+    async addIncidentCameraImage(event) {
+        const input = event?.target;
+
+        if (! input) {
+            return false;
+        }
+
+        this.imageCompressionBusy = true;
+        this.imageCompressionMessage = 'Preparing captured photo...';
+
+        try {
+            await replaceInputImagesWithCompressedCopies(input, {
+                maxSize: 1280,
+                quality: 0.72,
+            });
+        } finally {
+            this.imageCompressionBusy = false;
+            this.imageCompressionMessage = '';
+        }
+
+        const file = input.files?.[0];
+
+        if (! file) {
+            return this.updateIncidentImageCount();
+        }
+
+        if (file.type && ! file.type.startsWith('image/')) {
+            input.value = '';
+            this.incidentImageError = 'Choose a valid incident photo.';
+            return false;
+        }
+
+        const cameraInput = this.$refs.incidentCameraImages;
+        const currentCameraFiles = Array.from(cameraInput?.files || []);
+        const nextCameraFiles = [...currentCameraFiles, file];
+        const total = this.incidentFileCount('incidentUploadImages') + nextCameraFiles.length;
+
+        if (total > 3) {
+            input.value = '';
+            this.incidentImageError = 'Attach up to 3 incident images only.';
+            this.updateIncidentImageCount();
+            return false;
+        }
+
+        if (! this.assignFilesToInput(cameraInput, nextCameraFiles)) {
+            input.value = '';
+            this.incidentImageError = 'This browser could not keep multiple camera photos. Please upload the images instead.';
+            this.updateIncidentImageCount();
+            return false;
+        }
+
+        input.value = '';
+        this.incidentImageError = '';
+
+        return this.updateIncidentImageCount();
     },
 
     clearIncidentImagePreviews() {

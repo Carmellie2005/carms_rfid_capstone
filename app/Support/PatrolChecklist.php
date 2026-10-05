@@ -13,15 +13,22 @@ class PatrolChecklist
     public const STATUS_NOT_APPLICABLE = 'na';
 
     public const ITEMS = [
-        'doors_locked' => 'Doors, gates, and locks checked',
-        'lighting_ok' => 'Lighting and visibility checked',
-        'cctv_alarm_checked' => 'CCTV/security equipment area checked',
+        'doors_checked' => 'Doors checked',
+        'gates_checked' => 'Gates checked',
+        'locks_checked' => 'Locks checked',
+        'lighting_ok' => 'Lighting checked',
+        'visibility_checked' => 'Visibility checked',
+        'cctv_alarm_checked' => 'CCTV/security equipment checked',
         'no_unauthorized_person' => 'No suspicious person, item, or vehicle observed',
-        'safety_hazard' => 'No damage, obstruction, leak, or safety hazard observed',
+        'safety_hazard' => 'No damage or safety hazard observed',
     ];
 
     public const STATUS_OPTIONS = [
-        self::STATUS_NORMAL => 'Normal',
+        self::STATUS_NORMAL => 'Checked',
+    ];
+
+    private const STATUS_LABELS = [
+        self::STATUS_NORMAL => 'Checked',
         self::STATUS_ISSUE => 'Issue Found',
         self::STATUS_NOT_APPLICABLE => 'Not Applicable',
     ];
@@ -107,7 +114,7 @@ class PatrolChecklist
     {
         $status = self::normalizeStatus($status);
 
-        return $status ? self::STATUS_OPTIONS[$status] : null;
+        return $status ? self::STATUS_LABELS[$status] : null;
     }
 
     public static function statusBadgeClasses(?string $status): string
@@ -133,7 +140,7 @@ class PatrolChecklist
                     'field' => $field,
                     'label' => $label,
                     'status' => self::normalizeStatus($statuses[$field] ?? null) ?? self::STATUS_NORMAL,
-                    'status_label' => self::statusLabel($statuses[$field] ?? null) ?? self::STATUS_OPTIONS[self::STATUS_NORMAL],
+                    'status_label' => self::statusLabel($statuses[$field] ?? null) ?? self::STATUS_LABELS[self::STATUS_NORMAL],
                 ])
                 ->values();
         }
@@ -144,7 +151,7 @@ class PatrolChecklist
                 'field' => $field,
                 'label' => $label,
                 'status' => self::STATUS_NORMAL,
-                'status_label' => self::STATUS_OPTIONS[self::STATUS_NORMAL],
+                'status_label' => self::STATUS_LABELS[self::STATUS_NORMAL],
             ])
             ->values();
     }
@@ -157,7 +164,7 @@ class PatrolChecklist
 
     private static function normalizeStatus(mixed $status): ?string
     {
-        return is_string($status) && array_key_exists($status, self::STATUS_OPTIONS)
+        return is_string($status) && array_key_exists($status, self::STATUS_LABELS)
             ? $status
             : null;
     }
