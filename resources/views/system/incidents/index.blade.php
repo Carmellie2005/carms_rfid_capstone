@@ -108,11 +108,11 @@
                                             type="button"
                                             data-skip-global-loader="true"
                                             x-on:click="openIncidentPdfPreview(@js($incidentPdfPreviewUrl), @js($incidentPdfDownloadUrl), @js($incidentPdfTitle))"
-                                            class="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950"
+                                            class="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-emerald-200 px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:border-emerald-500/45 dark:text-emerald-200 dark:hover:bg-emerald-950/35 dark:focus:ring-offset-slate-950"
                                         >
                                             Print PDF
                                         </button>
-                                        <a href="{{ $incidentPdfDownloadUrl }}" class="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950">
+                                        <a href="{{ $incidentPdfDownloadUrl }}" class="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-indigo-200 px-3 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-indigo-500/45 dark:text-indigo-200 dark:hover:bg-indigo-950/35 dark:focus:ring-offset-slate-950">
                                             Download PDF
                                         </a>
                                     </div>
@@ -251,13 +251,13 @@
                         x-bind:href="pdfPreviewUrl"
                         target="_blank"
                         rel="noopener"
-                        class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 px-4 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
+                        class="inline-flex h-10 items-center justify-center rounded-md border border-emerald-200 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:border-emerald-500/45 dark:text-emerald-200 dark:hover:bg-emerald-950/35 dark:focus:ring-offset-slate-900"
                     >
                         Open / Print
                     </a>
                     <a
                         x-bind:href="pdfDownloadUrl"
-                        class="inline-flex h-10 items-center justify-center rounded-md bg-blue-700 px-4 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                        class="inline-flex h-10 items-center justify-center rounded-md border border-indigo-200 px-4 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-indigo-500/45 dark:text-indigo-200 dark:hover:bg-indigo-950/35 dark:focus:ring-offset-slate-900"
                     >
                         Download PDF
                     </a>
