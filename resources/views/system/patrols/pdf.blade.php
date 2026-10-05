@@ -239,12 +239,21 @@
             z-index: 1;
         }
 
-        .checklist-label {
+        .checklist-label,
+        .checklist-continuation-label {
             top: 478pt;
         }
 
         .checklist-table {
             top: 504pt;
+        }
+
+        .checklist-continuation-label {
+            top: 164pt;
+        }
+
+        .checklist-table-continuation {
+            top: 190pt;
         }
 
         .checklist-table td {
@@ -271,6 +280,27 @@
             position: absolute;
             text-align: justify;
             top: 686pt;
+            width: 467.21pt;
+            z-index: 1;
+        }
+
+        .notes-continuation-label {
+            font-size: 11pt;
+            font-weight: 700;
+            left: 72.5pt;
+            position: absolute;
+            top: 164pt;
+            width: 467.21pt;
+            z-index: 1;
+        }
+
+        .notes-continuation-body {
+            font-size: 11pt;
+            left: 72.5pt;
+            line-height: 1.25;
+            position: absolute;
+            text-align: justify;
+            top: 187pt;
             width: 467.21pt;
             z-index: 1;
         }
@@ -374,6 +404,105 @@
         $bagongSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/bagong-pilipinas.png'));
         $qsSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/qs-rated-good.png'));
         $socotecSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/socotec-iso9001.jpg'));
+        $textLength = fn (string $value): int => function_exists('mb_strlen') ? mb_strlen($value) : strlen($value);
+        $textSlice = fn (string $value, int $start, ?int $length = null): string => function_exists('mb_substr')
+            ? mb_substr($value, $start, $length)
+            : substr($value, $start, $length);
+        $normalizeText = fn (string $value): string => trim(preg_replace("/\r\n|\r/", "\n", $value));
+        $splitText = function (string $text, int $firstLimit, int $continuationLimit, string $fallback) use ($normalizeText, $textLength, $textSlice): array {
+            $chunks = [];
+            $remaining = $normalizeText($text);
+            $limit = $firstLimit;
+
+            while ($remaining !== '') {
+                if ($limit <= 0) {
+                    $limit = $continuationLimit;
+                    continue;
+                }
+
+                if ($textLength($remaining) <= $limit) {
+                    $chunks[] = $remaining;
+                    break;
+                }
+
+                $breakAt = $limit;
+
+                if (preg_match('/^(.{1,'.$limit.'})(?:\s+|$)/us', $remaining, $matches)) {
+                    $breakAt = max(1, $textLength($matches[1]));
+                }
+
+                $chunk = trim($textSlice($remaining, 0, $breakAt));
+                $remaining = trim($textSlice($remaining, $breakAt));
+
+                if ($chunk === '') {
+                    $chunk = trim($textSlice($remaining, 0, $limit));
+                    $remaining = trim($textSlice($remaining, $limit));
+                }
+
+                $chunks[] = $chunk;
+                $limit = $continuationLimit;
+            }
+
+            return $chunks !== [] ? $chunks : [$fallback];
+        };
+        $estimatedChecklistRowHeight = function (array $item) use ($textLength): float {
+            return $textLength((string) ($item['label'] ?? '')) > 42 ? 32.0 : 21.0;
+        };
+        $checklistRows = $checklistItems->isEmpty()
+            ? collect([[
+                'label' => 'No checklist status recorded.',
+                'status_label' => '',
+                'row_height' => 21.0,
+            ]])
+            : $checklistItems
+                ->map(fn (array $item): array => [
+                    ...$item,
+                    'row_height' => $estimatedChecklistRowHeight($item),
+                ])
+                ->values();
+        $chunkRowsByHeight = function ($rows, float $maxHeight) {
+            $chunks = collect();
+            $current = collect();
+            $currentHeight = 0.0;
+
+            foreach ($rows as $row) {
+                $rowHeight = (float) ($row['row_height'] ?? 21.0);
+
+                if ($current->isNotEmpty() && ($currentHeight + $rowHeight) > $maxHeight) {
+                    $chunks->push($current);
+                    $current = collect();
+                    $currentHeight = 0.0;
+                }
+
+                $current->push($row);
+                $currentHeight += $rowHeight;
+            }
+
+            if ($current->isNotEmpty()) {
+                $chunks->push($current);
+            }
+
+            return $chunks;
+        };
+        $contentBottom = 724.0;
+        $firstChecklistTableTop = 504.0;
+        $continuationChecklistTableTop = 190.0;
+        $checklistChunks = $chunkRowsByHeight($checklistRows, $contentBottom - $firstChecklistTableTop);
+        $firstChecklistRows = $checklistChunks->shift() ?? collect();
+        $continuationChecklistChunks = $checklistChunks
+            ->flatMap(fn ($chunk) => $chunkRowsByHeight($chunk, $contentBottom - $continuationChecklistTableTop))
+            ->values();
+        $firstChecklistHeight = $firstChecklistRows->sum(fn (array $row): float => (float) ($row['row_height'] ?? 21.0));
+        $notesLabelTop = $firstChecklistTableTop + $firstChecklistHeight + 16.0;
+        $notesBodyTop = $notesLabelTop + 21.0;
+        $notesAvailableOnFirstPage = $contentBottom - $notesBodyTop;
+        $notesCanStartOnFirstPage = $continuationChecklistChunks->isEmpty() && $notesAvailableOnFirstPage >= 32.0;
+        $firstNotesLimit = $notesCanStartOnFirstPage
+            ? max(120, (int) floor($notesAvailableOnFirstPage / 14.0) * 82)
+            : 0;
+        $remarksChunks = collect($splitText($remarks, $firstNotesLimit, 3000, 'No remarks recorded.'));
+        $firstRemarks = $notesCanStartOnFirstPage ? $remarksChunks->shift() : null;
+        $continuationRemarksChunks = $remarksChunks->values();
     @endphp
 
     @php
@@ -465,21 +594,44 @@
 
         <div class="checklist-label">Patrol Checklist:</div>
         <table class="checklist-table">
-            @forelse ($checklistItems as $item)
+            @foreach ($firstChecklistRows as $item)
                 <tr>
-                    <td>{{ $item['label'] }}</td>
-                    <td class="status-cell">{{ $item['status_label'] }}</td>
+                    <td style="height: {{ number_format((float) $item['row_height'], 2, '.', '') }}pt;">{{ $item['label'] }}</td>
+                    <td class="status-cell" style="height: {{ number_format((float) $item['row_height'], 2, '.', '') }}pt;">{{ $item['status_label'] }}</td>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="2">No checklist status recorded.</td>
-                </tr>
-            @endforelse
+            @endforeach
         </table>
 
-        <div class="notes-label">Remarks / Notes:</div>
-        <div class="notes-body">{!! nl2br(e($remarks)) !!}</div>
+        @if ($firstRemarks !== null)
+            <div class="notes-label" style="top: {{ number_format($notesLabelTop, 2, '.', '') }}pt;">Remarks / Notes:</div>
+            <div class="notes-body" style="top: {{ number_format($notesBodyTop, 2, '.', '') }}pt;">{!! nl2br(e($firstRemarks)) !!}</div>
+        @endif
     </section>
+
+    @foreach ($continuationChecklistChunks as $checklistChunk)
+        <section class="page">
+            {!! $pageChrome() !!}
+
+            <div class="checklist-continuation-label">Patrol Checklist Continued:</div>
+            <table class="checklist-table checklist-table-continuation">
+                @foreach ($checklistChunk as $item)
+                    <tr>
+                        <td style="height: {{ number_format((float) $item['row_height'], 2, '.', '') }}pt;">{{ $item['label'] }}</td>
+                        <td class="status-cell" style="height: {{ number_format((float) $item['row_height'], 2, '.', '') }}pt;">{{ $item['status_label'] }}</td>
+                    </tr>
+                @endforeach
+            </table>
+        </section>
+    @endforeach
+
+    @foreach ($continuationRemarksChunks as $remarksChunk)
+        <section class="page">
+            {!! $pageChrome() !!}
+
+            <div class="notes-continuation-label">{{ $firstRemarks === null && $loop->first ? 'Remarks / Notes:' : 'Remarks / Notes Continued:' }}</div>
+            <div class="notes-continuation-body">{!! nl2br(e($remarksChunk)) !!}</div>
+        </section>
+    @endforeach
 
     @forelse ($documentationImages->chunk(2) as $imagePair)
         <section class="page">

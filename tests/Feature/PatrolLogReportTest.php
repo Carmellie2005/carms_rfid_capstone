@@ -67,6 +67,28 @@ class PatrolLogReportTest extends TestCase
         $this->assertStringContainsString('inline', $response->headers->get('content-disposition'));
     }
 
+    public function test_patrol_pdf_moves_remarks_to_next_page_when_checklist_is_tall(): void
+    {
+        $guard = $this->createGuard('SG-LAYOUT', 'RFID-LAYOUT');
+        $patrolLog = $this->createPatrolLog($guard);
+
+        $patrolLog->checklistResponse()->create([
+            'item_statuses' => array_fill_keys(PatrolChecklist::fields(), PatrolChecklist::STATUS_NORMAL),
+            'remarks' => 'No remarks recorded.',
+        ]);
+        $patrolLog->load(['securityGuard', 'checkpoint', 'checklistResponse.proofPhotos', 'incidentReport']);
+
+        $html = view('system.patrols.pdf', [
+            'patrolLog' => $patrolLog,
+            'imageDataUris' => collect(),
+            'generatedAt' => Carbon::parse('2026-10-05 20:00:00', config('app.timezone')),
+        ])->render();
+
+        $this->assertStringContainsString('style="height: 32.00pt;"', $html);
+        $this->assertStringContainsString('class="notes-continuation-label">Remarks / Notes:</div>', $html);
+        $this->assertStringNotContainsString('class="notes-label">Remarks / Notes:</div>', $html);
+    }
+
     public function test_guard_can_download_own_patrol_log_pdf(): void
     {
         $guard = $this->createGuard('SG-OWN', 'RFID-OWN');
