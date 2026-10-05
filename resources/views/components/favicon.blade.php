@@ -6,6 +6,6 @@
 <meta name="apple-mobile-web-app-title" content="SLSU BC Patrol">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="icon" type="image/png" sizes="512x512" href="{{ asset('favicon.png') }}?v=slsu-logo-v13">
-<link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}?v=slsu-tab-logo-v1">
-<link rel="shortcut icon" href="{{ asset('favicon.ico') }}?v=slsu-tab-logo-v1">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}?v=slsu-tab-logo-v2">
+<link rel="shortcut icon" href="{{ asset('favicon.ico') }}?v=slsu-tab-logo-v2">
 <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}?v=slsu-logo-v13">
