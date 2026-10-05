@@ -125,6 +125,23 @@ class GuardPatrolController extends Controller
             'incident_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
             'incident_camera_images' => ['nullable', 'array', 'max:3'],
             'incident_camera_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
+        ], [
+            ...PatrolChecklist::validationMessages(),
+            'patrol_log_id.required' => 'Scan your RFID card before submitting the patrol record.',
+            'patrol_log_id.exists' => 'This pending RFID scan is no longer available. Please scan your card again.',
+            'area_selfie_capture.required' => 'Please take the required area selfie before submitting.',
+            'area_selfie_captured_at.required' => 'Please retake the area selfie so the capture time can be saved.',
+            'area_selfie_latitude.required' => 'Location is required before submitting. Please enable GPS/location services and take the photo again.',
+            'area_selfie_longitude.required' => 'Location is required before submitting. Please enable GPS/location services and take the photo again.',
+            'area_selfie_latitude.numeric' => 'The GPS location could not be read. Please take the photo again.',
+            'area_selfie_longitude.numeric' => 'The GPS location could not be read. Please take the photo again.',
+            'incident_category.required_if' => 'Please choose an incident category.',
+            'incident_description.required_if' => 'Please describe what happened in the incident report.',
+            'incident_camera_images.array' => 'Please take at least one incident photo before submitting the incident report.',
+            'incident_camera_images.max' => 'Please take up to 3 incident photos only.',
+            'incident_camera_images.*.image' => 'Please take a valid incident photo.',
+            'incident_camera_images.*.mimes' => 'Incident photos must be JPG, PNG, or WEBP.',
+            'incident_camera_images.*.max' => 'Each incident photo must be 12 MB or smaller.',
         ]);
 
         if (! PatrolSchedule::isOpen()) {
@@ -477,11 +494,11 @@ class GuardPatrolController extends Controller
         }
 
         if (count($incidentImageFiles) > 3) {
-            return 'Attach up to 3 incident images only.';
+            return 'Please take up to 3 incident photos only.';
         }
 
         if (count($incidentImageFiles) === 0) {
-            return 'Attach at least one incident image before submitting the incident report.';
+            return 'Please take at least one incident photo before submitting the incident report.';
         }
 
         return null;

@@ -92,6 +92,15 @@ class IncidentReportController extends Controller
             'remove_image_ids.*' => ['integer'],
             'incident_camera_images' => ['nullable', 'array', 'max:3'],
             'incident_camera_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
+        ], [
+            'category.required' => 'Please choose an incident category.',
+            'priority.required' => 'Please choose the incident priority.',
+            'description.required' => 'Please describe what happened in the incident report.',
+            'incident_camera_images.array' => 'Please take a valid incident photo.',
+            'incident_camera_images.max' => 'Please keep up to 3 incident photos only.',
+            'incident_camera_images.*.image' => 'Please take a valid incident photo.',
+            'incident_camera_images.*.mimes' => 'Incident photos must be JPG, PNG, or WEBP.',
+            'incident_camera_images.*.max' => 'Each incident photo must be 12 MB or smaller.',
         ]);
 
         $removeImageIds = collect($data['remove_image_ids'] ?? [])

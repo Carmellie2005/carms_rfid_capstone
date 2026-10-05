@@ -542,6 +542,7 @@
                                 <h4 class="text-base font-semibold text-blue-950">Checkpoint Checklist</h4>
                                 <p x-show="imageCompressionMessage" x-cloak x-text="imageCompressionMessage" class="mt-3 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-800"></p>
                                 <p x-show="checklistPhotoError" x-cloak x-text="checklistPhotoError" class="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700"></p>
+                                <x-input-error :messages="$errors->get('checklist_statuses')" class="mt-3" />
                                 <x-input-error :messages="$errors->get('checklist_photos')" class="mt-3" />
                                 <div class="mt-4 grid gap-3 sm:grid-cols-2">
                                     @foreach ($checkpointChecklistItems as $field => $label)
@@ -550,7 +551,7 @@
                                         @endphp
                                         <div class="min-h-24 rounded-md border border-blue-100 bg-white p-3 text-sm text-slate-700 shadow-sm transition hover:bg-blue-50/70">
                                             <label for="{{ $field }}_{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" class="flex h-full cursor-pointer items-start gap-3">
-                                                <input id="{{ $field }}_{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" type="checkbox" name="checklist_statuses[{{ $field }}]" value="{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" class="mt-0.5 h-5 w-5 shrink-0 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" required @checked($selectedChecklistStatus === \App\Support\PatrolChecklist::STATUS_NORMAL) @change="checklistPhotoError = ''">
+                                                <input id="{{ $field }}_{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" type="checkbox" name="checklist_statuses[{{ $field }}]" value="{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" class="mt-0.5 h-5 w-5 shrink-0 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" @checked($selectedChecklistStatus === \App\Support\PatrolChecklist::STATUS_NORMAL) @change="checklistPhotoError = ''">
                                                 <span class="min-w-0 flex-1 font-semibold leading-6 text-slate-800">{{ $label }}</span>
                                             </label>
                                             <x-input-error :messages="$errors->get('checklist_statuses.'.$field)" class="mt-2" />

@@ -82,6 +82,21 @@ class PatrolChecklist
         ];
     }
 
+    public static function validationMessages(): array
+    {
+        return [
+            'checklist_statuses.required' => 'Please check all patrol checklist items before submitting.',
+            'checklist_statuses.array' => 'Please check all patrol checklist items before submitting.',
+            'checklist_statuses.size' => 'Please check all patrol checklist items before submitting.',
+            ...collect(self::ITEMS)
+                ->flatMap(fn (string $label, string $field) => [
+                    "checklist_statuses.{$field}.required" => "Please confirm: {$label}.",
+                    "checklist_statuses.{$field}.in" => "Please check {$label} before submitting.",
+                ])
+                ->all(),
+        ];
+    }
+
     public static function valuesFromRequest(Request $request): array
     {
         $statuses = self::statusesFromRequest($request);

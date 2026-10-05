@@ -1336,6 +1336,20 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.selectedChecklistPhoto = null;
     },
 
+    validateChecklistCompletion() {
+        const missingItems = this.checklistItems
+            .filter((item) => ! document.querySelector(`input[name="checklist_statuses[${item.field}]"]:checked`))
+            .map((item) => item.label);
+
+        if (missingItems.length > 0) {
+            this.checklistPhotoError = `Please check all patrol checklist items before submitting: ${missingItems.join(', ')}.`;
+            return false;
+        }
+
+        this.checklistPhotoError = '';
+        return true;
+    },
+
     validateChecklistPhotos() {
         const missingIssuePhotos = this.checklistItems
             .filter((item) => {
@@ -1512,7 +1526,7 @@ Alpine.data('patrolScan', (config = {}) => ({
 
         if (total > 3) {
             input.value = '';
-            this.incidentImageError = 'Attach up to 3 incident images only.';
+            this.incidentImageError = 'Please take up to 3 incident photos only.';
             this.updateIncidentImageCount();
             return false;
         }
@@ -1561,7 +1575,7 @@ Alpine.data('patrolScan', (config = {}) => ({
             event.target.value = '';
             cameraCount = this.incidentFileCount('incidentCameraImages');
             total = cameraCount;
-            this.incidentImageError = 'Attach up to 3 incident images only.';
+            this.incidentImageError = 'Please take up to 3 incident photos only.';
             this.incidentImageCount = total;
             this.refreshIncidentImagePreviews();
 
@@ -1573,7 +1587,7 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.incidentFormError = '';
 
         if (this.incident && total === 0) {
-            this.incidentImageError = 'Attach at least one incident image before submitting.';
+            this.incidentImageError = 'Please take at least one incident photo before submitting the incident report.';
 
             return false;
         }
@@ -1615,7 +1629,7 @@ Alpine.data('patrolScan', (config = {}) => ({
             return;
         }
 
-        if (! this.validateChecklistPhotos()) {
+        if (! this.validateChecklistCompletion() || ! this.validateChecklistPhotos()) {
             event.preventDefault();
             this.checklistModalOpen = true;
             return;
