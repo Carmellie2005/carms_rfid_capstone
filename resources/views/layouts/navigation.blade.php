@@ -36,6 +36,7 @@
         'patrols' => '<svg class="'.$class.'" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 18.5c2.5 1.5 5.5 1.5 8 0 2.8-1.7 3.2-5.1.9-7.1L9.1 6.3C7.2 4.7 8.3 2 10.8 2H18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><path d="M17 2h1.5A2.5 2.5 0 0 1 21 4.5V6M6 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>',
         'incidents' => '<svg class="'.$class.'" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 4.2 2.7 17.4A2 2 0 0 0 4.4 20h15.2a2 2 0 0 0 1.7-2.6L13.7 4.2a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>',
         'reports' => '<svg class="'.$class.'" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /><path d="M14 3v5h5M8.5 14h7M8.5 17h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>',
+        'data' => '<svg class="'.$class.'" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 6.5C5 4.6 8.1 3 12 3s7 1.6 7 3.5S15.9 10 12 10 5 8.4 5 6.5Z" stroke="currentColor" stroke-width="2" /><path d="M5 6.5v5C5 13.4 8.1 15 12 15s7-1.6 7-3.5v-5M5 11.5v5C5 18.4 8.1 20 12 20s7-1.6 7-3.5v-5" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>',
         'scan' => '<svg class="'.$class.'" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5h5v5H5V5Zm9 0h5v5h-5V5ZM5 14h5v5H5v-5Zm10 1h4m-4 4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>',
         'scan_issues' => '<svg class="'.$class.'" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5h5v5H5V5Zm9 0h5v5h-5V5ZM5 14h5v5H5v-5Zm10 1h4m-2-2v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>',
         'readers' => '<svg class="'.$class.'" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 9.5h8v5H5v-5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /><path d="M7.5 17h3M7.5 7h3M16 8c1.3 1.2 1.3 4.8 0 6M19 5c3 3.4 3 10.6 0 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>',
@@ -75,6 +76,7 @@
             ['label' => 'Dashboard', 'href' => route('dashboard'), 'icon' => 'dashboard', 'active' => request()->routeIs('dashboard')],
             ['label' => 'Guards', 'href' => route('guards.index'), 'icon' => 'users', 'active' => request()->routeIs('guards.*')],
             ['label' => 'Checkpoints', 'href' => route('checkpoints.index'), 'icon' => 'checkpoints', 'active' => request()->routeIs('checkpoints.*')],
+            ['label' => 'Data Viewer', 'href' => route('data-viewer.index'), 'icon' => 'data', 'active' => request()->routeIs('data-viewer.*')],
             ['label' => 'Patrol Logs', 'href' => route('patrol-logs.index'), 'icon' => 'patrols', 'active' => request()->routeIs('patrol-logs.*')],
             ['label' => 'Scan Issues', 'href' => route('scan-issues.index'), 'icon' => 'scan_issues', 'active' => request()->routeIs('scan-issues.*')],
             ['label' => 'Incidents', 'href' => route('incidents.index'), 'icon' => 'incidents', 'active' => request()->routeIs('incidents.*')],
@@ -206,6 +208,11 @@
                     <a href="{{ route('checkpoints.index') }}" class="{{ $linkClasses(request()->routeIs('checkpoints.*')) }}" @click="sidebarOpen = false">
                         {!! $navIcon('checkpoints') !!}
                         <span>Checkpoints</span>
+                    </a>
+
+                    <a href="{{ route('data-viewer.index') }}" class="{{ $linkClasses(request()->routeIs('data-viewer.*')) }}" @click="sidebarOpen = false">
+                        {!! $navIcon('data') !!}
+                        <span>Data Viewer</span>
                     </a>
 
                     @foreach ($managementSections as $section)
