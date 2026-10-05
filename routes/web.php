@@ -3,7 +3,6 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\System\AuditLogController;
 use App\Http\Controllers\System\CheckpointController;
-use App\Http\Controllers\System\DataViewerController;
 use App\Http\Controllers\System\DashboardController;
 use App\Http\Controllers\System\GuardController;
 use App\Http\Controllers\System\GuardPatrolController;
@@ -68,7 +67,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/guards/{guard}/records', [GuardController::class, 'records'])->name('guards.records');
         Route::resource('guards', GuardController::class)->except(['show']);
         Route::resource('checkpoints', CheckpointController::class)->except(['show']);
-        Route::get('/data-viewer', DataViewerController::class)->name('data-viewer.index');
         Route::get('/incidents', [IncidentReportController::class, 'index'])->name('incidents.index');
         Route::patch('/incidents/{incidentReport}', [IncidentReportController::class, 'update'])->name('incidents.update');
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
