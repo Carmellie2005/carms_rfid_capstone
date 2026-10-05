@@ -90,8 +90,6 @@ class IncidentReportController extends Controller
             'description' => ['required', 'string', 'max:3000'],
             'remove_image_ids' => ['nullable', 'array'],
             'remove_image_ids.*' => ['integer'],
-            'incident_images' => ['nullable', 'array', 'max:3'],
-            'incident_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
             'incident_camera_images' => ['nullable', 'array', 'max:3'],
             'incident_camera_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
         ]);
@@ -111,13 +109,13 @@ class IncidentReportController extends Controller
         if ($totalImageCount < 1) {
             return back()
                 ->withInput()
-                ->withErrors(['incident_images' => 'Keep at least one incident image or attach a new one before saving.']);
+                ->withErrors(['incident_camera_images' => 'Keep at least one incident photo or take a new one before saving.']);
         }
 
         if ($totalImageCount > 3) {
             return back()
                 ->withInput()
-                ->withErrors(['incident_images' => 'Keep up to 3 incident images only. Remove an existing image before adding another.']);
+                ->withErrors(['incident_camera_images' => 'Keep up to 3 incident photos only. Remove an existing image before taking another.']);
         }
 
         $before = $incidentReport->only(['category', 'priority', 'severity', 'description', 'image_path']);
@@ -237,7 +235,6 @@ class IncidentReportController extends Controller
     private function incidentImageFiles(Request $request): array
     {
         return collect([
-            ...$this->uploadedFilesWithSource($request->file('incident_images', []), 'upload'),
             ...$this->uploadedFilesWithSource($request->file('incident_camera_images', []), 'camera'),
         ])
             ->filter(fn ($item) => $item['file'] instanceof UploadedFile && $item['file']->isValid())

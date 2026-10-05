@@ -123,8 +123,6 @@ class GuardPatrolController extends Controller
             'incident_priority' => ['nullable', Rule::in(['low', 'normal', 'high', 'critical'])],
             'incident_description' => ['nullable', 'required_if:has_incident,1', 'string', 'max:3000'],
             'incident_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
-            'incident_images' => ['nullable', 'array', 'max:3'],
-            'incident_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
             'incident_camera_images' => ['nullable', 'array', 'max:3'],
             'incident_camera_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
         ]);
@@ -173,7 +171,7 @@ class GuardPatrolController extends Controller
         if ($incidentImageError) {
             return back()
                 ->withInput()
-                ->withErrors(['incident_images' => $incidentImageError]);
+                ->withErrors(['incident_camera_images' => $incidentImageError]);
         }
 
         DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $patrolStatus, $areaSelfieImage, $selfieCapturedAt, $checklistProofPhotoFiles, $incidentImageFiles, $submittedAt, &$incidentReport) {
@@ -478,10 +476,6 @@ class GuardPatrolController extends Controller
             return null;
         }
 
-        $uploadCount = $this->uploadedFileCount($request->file('incident_images', []));
-        $cameraCount = $this->uploadedFileCount($request->file('incident_camera_images', []))
-            + $this->uploadedFileCount($request->file('incident_image'));
-
         if (count($incidentImageFiles) > 3) {
             return 'Attach up to 3 incident images only.';
         }
@@ -490,17 +484,12 @@ class GuardPatrolController extends Controller
             return 'Attach at least one incident image before submitting the incident report.';
         }
 
-        if ($uploadCount === 1 && $cameraCount === 0) {
-            return 'Upload at least 2 images, or use Take Photo for a single camera image.';
-        }
-
         return null;
     }
 
     private function incidentImageFiles(Request $request): array
     {
         return collect([
-            ...$this->uploadedFilesWithSource($request->file('incident_images', []), 'upload'),
             ...$this->uploadedFilesWithSource($request->file('incident_camera_images', []), 'camera'),
             ...$this->uploadedFilesWithSource($request->file('incident_image'), 'camera'),
         ])

@@ -124,19 +124,13 @@
                     @endif
 
                     <div class="mt-5 rounded-md border border-dashed border-blue-200 bg-blue-50/60 p-3">
-                        <div class="grid gap-2 sm:grid-cols-2">
-                            <label for="incident_images" class="inline-flex h-11 cursor-pointer items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50">
-                                Upload Images
-                                <input id="incident_images" name="incident_images[]" type="file" accept="image/*" multiple class="sr-only">
-                            </label>
-                            <label for="incident_camera_images" class="inline-flex h-11 cursor-pointer items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50">
+                        <div>
+                            <label for="incident_camera_images" class="inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50">
                                 Take Photo
                                 <input id="incident_camera_images" name="incident_camera_images[]" type="file" accept="image/*" capture="environment" class="sr-only">
                             </label>
                         </div>
                         <p class="mt-2 text-xs text-slate-500">New photos are added to the existing evidence unless selected photos are removed.</p>
-                        <x-input-error :messages="$errors->get('incident_images')" class="mt-2" />
-                        <x-input-error :messages="$errors->get('incident_images.*')" class="mt-2" />
                         <x-input-error :messages="$errors->get('incident_camera_images')" class="mt-2" />
                         <x-input-error :messages="$errors->get('incident_camera_images.*')" class="mt-2" />
                     </div>

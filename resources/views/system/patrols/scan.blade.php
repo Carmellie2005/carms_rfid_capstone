@@ -13,8 +13,6 @@
             || $errors->has('incident_priority')
             || $errors->has('incident_description')
             || $errors->has('incident_image')
-            || $errors->has('incident_images')
-            || $errors->has('incident_images.*')
             || $errors->has('incident_camera_images')
             || $errors->has('incident_camera_images.*');
         $openIncident = $incidentDefault && old('patrol_log_id') && $incidentFormHasErrors;
@@ -699,15 +697,8 @@
                                     Incident Images <span class="text-red-600">*</span>
                                 </span>
                                 <div class="mt-1 rounded-md border border-dashed border-blue-200 bg-blue-50/60 p-3">
-                                    <div class="grid gap-2 sm:grid-cols-2">
-                                        <label for="incident_images" class="inline-flex h-11 cursor-pointer items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50">
-                                            <svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                <path d="M12 5v14m7-7H5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                            </svg>
-                                            Upload Images
-                                            <input x-ref="incidentUploadImages" id="incident_images" name="incident_images[]" type="file" accept="image/*" multiple class="sr-only" @change="prepareIncidentImages($event)">
-                                        </label>
-                                        <button type="button" class="inline-flex h-11 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50" @click="$refs.incidentCameraCapture?.click()">
+                                    <div>
+                                        <button type="button" class="inline-flex h-11 w-full items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50" @click="$refs.incidentCameraCapture?.click()">
                                             <svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                                 <path d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
                                                 <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
@@ -719,7 +710,7 @@
                                     </div>
 
                                     <p class="mt-2 text-xs text-slate-500">
-                                        Take 1 to 3 photos with the camera, or upload 2 to 3 images. Maximum 3 images total.
+                                        Take 1 to 3 photos with the camera. Maximum 3 images total.
                                     </p>
 
                                     <div x-show="incidentImagePreviews.length" x-cloak class="mt-3">
@@ -739,8 +730,6 @@
                                     <p x-show="incidentImageError" x-cloak class="mt-2 text-xs font-semibold text-red-700" x-text="incidentImageError"></p>
                                 </div>
                                 <x-input-error :messages="$errors->get('incident_image')" class="mt-2" />
-                                <x-input-error :messages="$errors->get('incident_images')" class="mt-2" />
-                                <x-input-error :messages="$errors->get('incident_images.*')" class="mt-2" />
                                 <x-input-error :messages="$errors->get('incident_camera_images')" class="mt-2" />
                                 <x-input-error :messages="$errors->get('incident_camera_images.*')" class="mt-2" />
                             </div>

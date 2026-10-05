@@ -1401,10 +1401,6 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.incidentImageCount = 0;
         this.clearIncidentImagePreviews();
 
-        if (this.$refs.incidentUploadImages) {
-            this.$refs.incidentUploadImages.value = '';
-        }
-
         if (this.$refs.incidentCameraImages) {
             this.$refs.incidentCameraImages.value = '';
         }
@@ -1461,27 +1457,7 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     incidentFiles() {
-        return [
-            ...Array.from(this.$refs.incidentUploadImages?.files || []),
-            ...Array.from(this.$refs.incidentCameraImages?.files || []),
-        ];
-    },
-
-    async prepareIncidentImages(event) {
-        this.imageCompressionBusy = true;
-        this.imageCompressionMessage = 'Preparing selected photos...';
-
-        try {
-            await replaceInputImagesWithCompressedCopies(event?.target, {
-                maxSize: 1280,
-                quality: 0.72,
-            });
-        } finally {
-            this.imageCompressionBusy = false;
-            this.imageCompressionMessage = '';
-        }
-
-        return this.updateIncidentImageCount(event);
+        return Array.from(this.$refs.incidentCameraImages?.files || []);
     },
 
     assignFilesToInput(input, files) {
@@ -1532,7 +1508,7 @@ Alpine.data('patrolScan', (config = {}) => ({
         const cameraInput = this.$refs.incidentCameraImages;
         const currentCameraFiles = Array.from(cameraInput?.files || []);
         const nextCameraFiles = [...currentCameraFiles, file];
-        const total = this.incidentFileCount('incidentUploadImages') + nextCameraFiles.length;
+        const total = nextCameraFiles.length;
 
         if (total > 3) {
             input.value = '';
@@ -1543,7 +1519,7 @@ Alpine.data('patrolScan', (config = {}) => ({
 
         if (! this.assignFilesToInput(cameraInput, nextCameraFiles)) {
             input.value = '';
-            this.incidentImageError = 'This browser could not keep multiple camera photos. Please upload the images instead.';
+            this.incidentImageError = 'This browser could not keep multiple camera photos. Please take the photos again.';
             this.updateIncidentImageCount();
             return false;
         }
@@ -1578,15 +1554,13 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     updateIncidentImageCount(event = null) {
-        let uploadCount = this.incidentFileCount('incidentUploadImages');
         let cameraCount = this.incidentFileCount('incidentCameraImages');
-        let total = uploadCount + cameraCount;
+        let total = cameraCount;
 
         if (total > 3 && event?.target) {
             event.target.value = '';
-            uploadCount = this.incidentFileCount('incidentUploadImages');
             cameraCount = this.incidentFileCount('incidentCameraImages');
-            total = uploadCount + cameraCount;
+            total = cameraCount;
             this.incidentImageError = 'Attach up to 3 incident images only.';
             this.incidentImageCount = total;
             this.refreshIncidentImagePreviews();
@@ -1600,12 +1574,6 @@ Alpine.data('patrolScan', (config = {}) => ({
 
         if (this.incident && total === 0) {
             this.incidentImageError = 'Attach at least one incident image before submitting.';
-
-            return false;
-        }
-
-        if (uploadCount === 1 && cameraCount === 0) {
-            this.incidentImageError = 'Upload at least 2 images, or use Take Photo for one camera image.';
 
             return false;
         }
