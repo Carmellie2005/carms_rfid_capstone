@@ -32,7 +32,7 @@ class PatrolAreaSelfieTest extends TestCase
     {
         [$user, $guard, $checkpoint] = $this->guardAndCheckpoint();
 
-        $response = $this->postJson(route('api.rfid-scan'), [
+        $response = $this->withRfidDeviceToken()->postJson(route('api.rfid-scan'), [
             'rfid_uid' => 'F33C8D37',
             'device_uid' => 'ESP32-IT-01',
         ]);
@@ -59,7 +59,7 @@ class PatrolAreaSelfieTest extends TestCase
         [$user, $guard, $checkpoint] = $this->guardAndCheckpoint();
         $user->update(['must_change_password' => true]);
 
-        $response = $this->postJson(route('api.rfid-scan'), [
+        $response = $this->withRfidDeviceToken()->postJson(route('api.rfid-scan'), [
             'rfid_uid' => 'F33C8D37',
             'device_uid' => 'ESP32-IT-01',
         ]);

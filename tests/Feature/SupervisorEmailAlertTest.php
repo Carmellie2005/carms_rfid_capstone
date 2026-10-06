@@ -77,6 +77,7 @@ class SupervisorEmailAlertTest extends TestCase
         $this->travelToPatrolWindow();
 
         $this
+            ->withRfidDeviceToken()
             ->postJson(route('api.rfid-scan'), [
                 'rfid_uid' => 'UNASSIGNED123',
                 'device_uid' => 'ESP32-UNKNOWN',

@@ -31,4 +31,8 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'rfid' => [
+        'device_token' => env('RFID_DEVICE_TOKEN'),
+    ],
+
 ];

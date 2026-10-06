@@ -206,6 +206,7 @@ class GuardController extends Controller
         $passwordRules = $guard?->user_id
             ? ['nullable', 'confirmed', Password::min(8)]
             : ['required', 'confirmed', Password::min(8)];
+        $employeeNoRules = ['required', 'string', 'max:50', 'regex:/^[A-Z0-9._-]+$/i', Rule::unique('guards', 'employee_no')->ignore($guardId)];
 
         if ($request->filled('rfid_uid')) {
             $request->merge([
@@ -213,8 +214,21 @@ class GuardController extends Controller
             ]);
         }
 
+        if ($request->filled('employee_no')) {
+            $employeeNo = strtoupper(trim((string) $request->input('employee_no')));
+
+            $request->merge([
+                'employee_no' => $employeeNo,
+                'username' => Str::lower($employeeNo),
+            ]);
+        }
+
+        if (! $guard?->exists) {
+            $employeeNoRules[] = 'regex:/^BCP-[A-Z0-9]+$/i';
+        }
+
         $data = $request->validate([
-            'employee_no' => ['required', 'string', 'max:50', Rule::unique('guards', 'employee_no')->ignore($guardId)],
+            'employee_no' => $employeeNoRules,
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
             'phone' => ['nullable', 'string', 'max:30'],
@@ -224,10 +238,13 @@ class GuardController extends Controller
             'username' => ['required', 'string', 'max:255', new UsernameOrEmail, Rule::unique('users', 'username')->ignore($userId), Rule::unique('users', 'email')->ignore($userId)],
             'password' => $passwordRules,
         ], [
+            'employee_no.regex' => $guard?->exists
+                ? 'The guard number may only contain letters, numbers, dots, underscores, and dashes.'
+                : 'Use the BCP guard number format, for example BCP-001.',
             'rfid_uid.unique' => 'This RFID card is already assigned to another guard. Please use another card or update the existing guard profile.',
         ]);
 
-        $username = Str::lower(trim($data['username']));
+        $username = Str::lower(trim($data['employee_no']));
 
         $guardData = collect($data)->only([
             'employee_no',
@@ -277,10 +294,6 @@ class GuardController extends Controller
 
     private function accountEmail(?string $email, string $username): string
     {
-        if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
-            return $username;
-        }
-
         if (filled($email)) {
             return $email;
         }

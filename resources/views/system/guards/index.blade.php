@@ -199,8 +199,9 @@
                         <div class="mobile-scroll-area flex-1 overflow-y-auto px-5 py-5">
                             <div class="grid gap-4 md:grid-cols-2">
                                 <div>
-                                    <label for="create_employee_no" class="sr-only">Employee No.</label>
-                                    <input id="create_employee_no" x-ref="createGuardFirstField" name="employee_no" value="{{ old('employee_no', $newGuard->employee_no) }}" placeholder="SG-03" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required>
+                                    <label for="create_employee_no" class="sr-only">Guard No.</label>
+                                    <input id="create_employee_no" x-ref="createGuardFirstField" name="employee_no" value="{{ old('employee_no', $newGuard->employee_no) }}" placeholder="BCP-001" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required>
+                                    <p class="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">This Guard No. is also the guard login username.</p>
                                     <x-input-error :messages="$errors->get('employee_no')" class="mt-2" />
                                 </div>
                                 <div>
@@ -210,7 +211,7 @@
                                 </div>
                                 <div>
                                     <label for="create_email" class="sr-only">Email</label>
-                                    <input id="create_email" name="email" type="email" value="{{ old('email', $newGuard->email) }}" placeholder="first.last@localguard.com" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500">
+                                    <input id="create_email" name="email" type="email" value="{{ old('email', $newGuard->email) }}" placeholder="Optional email address" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500">
                                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
                                 </div>
                                 <div>
@@ -250,11 +251,7 @@
                                 </div>
                                 <div class="border-t border-blue-100 pt-4 dark:border-slate-700 md:col-span-2">
                                     <h4 class="text-base font-semibold text-blue-950 dark:text-white">Login Account</h4>
-                                </div>
-                                <div>
-                                    <label for="create_username" class="sr-only">Username or Email</label>
-                                    <input id="create_username" name="username" type="text" value="{{ old('username', $newGuard->user?->username) }}" placeholder="first.last@localguard.com" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required autocomplete="username" inputmode="email">
-                                    <x-input-error :messages="$errors->get('username')" class="mt-2" />
+                                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">The guard will sign in using the Guard No. above, for example BCP-001.</p>
                                 </div>
                                 <div>
                                     <label for="create_password" class="sr-only">Password</label>

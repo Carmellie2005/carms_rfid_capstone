@@ -12,17 +12,18 @@
 
 <div class="grid gap-5 md:grid-cols-2">
     <div>
-        <label for="{{ $fieldPrefix }}_employee_no" class="sr-only">Employee No.</label>
+        <label for="{{ $fieldPrefix }}_employee_no" class="sr-only">Guard No.</label>
         <input
             id="{{ $fieldPrefix }}_employee_no"
             @if ($formContext === 'create') x-ref="createGuardFirstField" @endif
             @if ($guard->exists) data-edit-guard-first-field="{{ $guard->id }}" @endif
             name="employee_no"
             value="{{ $valueFor('employee_no', $guard->employee_no) }}"
-            placeholder="SG-03"
+            placeholder="BCP-001"
             class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500"
             required
         >
+        <p class="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">This Guard No. is also the guard login username.</p>
         <x-input-error :messages="$errorFor('employee_no')" class="mt-2" />
     </div>
 
@@ -34,7 +35,7 @@
 
     <div>
         <label for="{{ $fieldPrefix }}_email" class="sr-only">Email</label>
-        <input id="{{ $fieldPrefix }}_email" name="email" type="email" value="{{ $valueFor('email', $guard->email) }}" placeholder="first.last@localguard.com" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500">
+        <input id="{{ $fieldPrefix }}_email" name="email" type="email" value="{{ $valueFor('email', $guard->email) }}" placeholder="Optional email address" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500">
         <x-input-error :messages="$errorFor('email')" class="mt-2" />
     </div>
 
@@ -79,12 +80,7 @@
 
     <div class="border-t border-blue-100 pt-5 dark:border-slate-700 md:col-span-2">
         <h4 class="text-base font-semibold text-blue-950 dark:text-white">Login Account</h4>
-    </div>
-
-    <div>
-        <label for="{{ $fieldPrefix }}_username" class="sr-only">Username or Email</label>
-        <input id="{{ $fieldPrefix }}_username" name="username" type="text" value="{{ $valueFor('username', $guard->user?->username) }}" placeholder="first.last@localguard.com" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required autocomplete="username" inputmode="email">
-        <x-input-error :messages="$errorFor('username')" class="mt-2" />
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">The guard will sign in using the Guard No. above, for example BCP-001.</p>
     </div>
 
     <div>

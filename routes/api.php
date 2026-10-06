@@ -21,6 +21,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::match(['get', 'post'], '/rfid-scan', RfidScanController::class)->name('api.rfid-scan');
-Route::match(['get', 'post'], '/rfid-enrollment', RfidEnrollmentController::class)->name('api.rfid-enrollment');
-Route::match(['get', 'post'], '/rfid-heartbeat', RfidHeartbeatController::class)->name('api.rfid-heartbeat');
+Route::middleware('rfid.device')->group(function () {
+    Route::match(['get', 'post'], '/rfid-scan', RfidScanController::class)->name('api.rfid-scan');
+    Route::match(['get', 'post'], '/rfid-enrollment', RfidEnrollmentController::class)->name('api.rfid-enrollment');
+    Route::match(['get', 'post'], '/rfid-heartbeat', RfidHeartbeatController::class)->name('api.rfid-heartbeat');
+});

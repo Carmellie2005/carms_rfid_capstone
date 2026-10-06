@@ -24,7 +24,7 @@ class GuardManagementTest extends TestCase
         $response = $this
             ->actingAs($supervisor)
             ->post(route('guards.store'), [
-                'employee_no' => 'SG-NO-UPLOAD',
+                'employee_no' => 'BCP-001',
                 'name' => 'No Upload Guard',
                 'email' => 'no.upload.guard@example.com',
                 'phone' => '09171234567',
@@ -32,7 +32,6 @@ class GuardManagementTest extends TestCase
                 'shift' => 'Night Shift',
                 'status' => 'active',
                 'notes' => null,
-                'username' => 'no.upload.guard',
                 'password' => 'password',
                 'password_confirmation' => 'password',
             ]);
@@ -41,10 +40,12 @@ class GuardManagementTest extends TestCase
             ->assertSessionHasNoErrors()
             ->assertRedirect(route('guards.index'));
 
-        $guard = Guard::where('employee_no', 'SG-NO-UPLOAD')->firstOrFail();
+        $guard = Guard::where('employee_no', 'BCP-001')->firstOrFail();
 
         $this->assertSame('RFID-NO-UPLOAD', $guard->rfid_uid);
-        $this->assertTrue($guard->user()->firstOrFail()->must_change_password);
+        $user = $guard->user()->firstOrFail();
+        $this->assertSame('bcp-001', $user->username);
+        $this->assertTrue($user->must_change_password);
     }
 
     public function test_guard_shift_is_locked_to_night_shift(): void
@@ -57,7 +58,7 @@ class GuardManagementTest extends TestCase
         $this
             ->actingAs($supervisor)
             ->post(route('guards.store'), [
-                'employee_no' => 'SG-LOCKED-SHIFT',
+                'employee_no' => 'BCP-002',
                 'name' => 'Locked Shift Guard',
                 'email' => 'locked.shift@example.com',
                 'phone' => '09171234567',
@@ -72,14 +73,14 @@ class GuardManagementTest extends TestCase
             ->assertSessionHasNoErrors()
             ->assertRedirect(route('guards.index'));
 
-        $guard = Guard::where('employee_no', 'SG-LOCKED-SHIFT')->firstOrFail();
+        $guard = Guard::where('employee_no', 'BCP-002')->firstOrFail();
 
         $this->assertSame('Night Shift', $guard->shift);
 
         $this
             ->actingAs($supervisor)
             ->put(route('guards.update', $guard), [
-                'employee_no' => 'SG-LOCKED-SHIFT',
+                'employee_no' => 'BCP-002',
                 'name' => 'Locked Shift Guard',
                 'email' => 'locked.shift@example.com',
                 'phone' => '09171234567',
@@ -118,7 +119,7 @@ class GuardManagementTest extends TestCase
         $this
             ->actingAs($supervisor)
             ->post(route('guards.store'), [
-                'employee_no' => 'SG-DUPLICATE',
+                'employee_no' => 'BCP-003',
                 'name' => 'Duplicate Guard',
                 'email' => 'duplicate.guard@example.com',
                 'phone' => '09170000000',
@@ -181,7 +182,7 @@ class GuardManagementTest extends TestCase
         $this->assertTrue($guardUser->refresh()->must_change_password);
     }
 
-    public function test_supervisor_can_create_guard_with_email_as_username(): void
+    public function test_supervisor_can_create_guard_with_guard_number_as_username(): void
     {
         $supervisor = User::factory()->create([
             'role' => 'admin',
@@ -191,15 +192,14 @@ class GuardManagementTest extends TestCase
         $response = $this
             ->actingAs($supervisor)
             ->post(route('guards.store'), [
-                'employee_no' => 'SG-EMAIL-LOGIN',
-                'name' => 'Email Login Guard',
+                'employee_no' => 'BCP-004',
+                'name' => 'Guard Number Login Guard',
                 'email' => null,
                 'phone' => '09171234567',
                 'rfid_uid' => 'RFID-EMAIL-LOGIN',
                 'shift' => 'Night Shift',
                 'status' => 'active',
                 'notes' => null,
-                'username' => 'email.login.guard@example.com',
                 'password' => 'password',
                 'password_confirmation' => 'password',
             ]);
@@ -208,11 +208,11 @@ class GuardManagementTest extends TestCase
             ->assertSessionHasNoErrors()
             ->assertRedirect(route('guards.index'));
 
-        $guard = Guard::where('employee_no', 'SG-EMAIL-LOGIN')->firstOrFail();
-        $user = User::where('username', 'email.login.guard@example.com')->firstOrFail();
+        $guard = Guard::where('employee_no', 'BCP-004')->firstOrFail();
+        $user = User::where('username', 'bcp-004')->firstOrFail();
 
         $this->assertSame($user->id, $guard->user_id);
-        $this->assertSame('email.login.guard@example.com', $user->email);
+        $this->assertSame('bcp-004@guards.campusrfid.local', $user->email);
     }
 
     public function test_supervisor_guard_form_has_no_face_upload_field(): void
@@ -254,6 +254,7 @@ class GuardManagementTest extends TestCase
             ->assertSee('Scan Card')
             ->assertSee("startRfidEnrollment('create_rfid_uid')", false)
             ->assertSee('Create Guard Account')
+            ->assertSee('The guard will sign in using the Guard No. above, for example BCP-001.')
             ->assertSee('Guard Management')
             ->assertSee('Registered guards, RFID cards, shifts, and login accounts')
             ->assertSee('Guard Profiles')
@@ -264,6 +265,7 @@ class GuardManagementTest extends TestCase
             ->assertDontSee('selectedGuard?.username', false)
             ->assertDontSee('selectedGuard.role.charAt', false)
             ->assertDontSee('selectedGuard?.email', false)
+            ->assertDontSee('create_username', false)
             ->assertDontSee('selectedGuard?.shift', false)
             ->assertDontSee('Shift / Status')
             ->assertSee('dark:bg-slate-900', false)
