@@ -21,7 +21,6 @@ class RfidEnrollmentTest extends TestCase
         ]);
 
         $this
-            ->withRfidDeviceToken()
             ->postJson(route('api.rfid-enrollment'), [
                 'rfid_uid' => 'f33c8d37',
                 'device_uid' => 'enrollment-reader',
