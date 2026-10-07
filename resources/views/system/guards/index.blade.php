@@ -5,6 +5,12 @@
         $editDrawerGuardId = $errors->any() && \Illuminate\Support\Str::startsWith((string) $guardFormContext, 'edit-')
             ? \Illuminate\Support\Str::after($guardFormContext, 'edit-')
             : '';
+        $resetPasswordGuardId = $errors->any() && \Illuminate\Support\Str::startsWith((string) $guardFormContext, 'reset-password-')
+            ? \Illuminate\Support\Str::after($guardFormContext, 'reset-password-')
+            : '';
+        $resetPasswordGuard = filled($resetPasswordGuardId)
+            ? $guards->getCollection()->firstWhere('id', (int) $resetPasswordGuardId)
+            : null;
     @endphp
 
     <x-slot name="header">
@@ -32,6 +38,10 @@
             createModalOpen: @js($createDrawerOpen),
             editModalOpen: @js(filled($editDrawerGuardId)),
             editGuardId: @js((string) $editDrawerGuardId),
+            resetPasswordModalOpen: @js(filled($resetPasswordGuard)),
+            resetPasswordGuardId: @js((string) ($resetPasswordGuard?->id ?? '')),
+            resetPasswordGuardName: @js($resetPasswordGuard?->name ?? ''),
+            resetPasswordAction: @js($resetPasswordGuard ? route('guards.password.reset', $resetPasswordGuard) : ''),
             rfidEnrollmentLatestUrl: @js(route('guards.rfid-enrollment.latest')),
         })"
         x-on:open-create-guard.window="openCreateGuardModal()"
@@ -86,6 +96,7 @@
                         </dl>
 
                         <div class="mt-3 grid grid-cols-2 gap-2">
+                            <button type="button" data-reset-action="{{ route('guards.password.reset', $guard) }}" data-reset-guard-id="{{ $guard->id }}" data-reset-name="{{ $guard->name }}" x-on:click="openResetPasswordModal($event.currentTarget.dataset.resetAction, $event.currentTarget.dataset.resetName, $event.currentTarget.dataset.resetGuardId)" class="col-span-2 inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-amber-200 px-2 text-xs font-semibold text-amber-800 hover:bg-amber-50 dark:border-amber-400/45 dark:text-amber-200 dark:hover:bg-amber-950/35">Reset Password</button>
                             <button type="button" data-edit-guard-id="{{ $guard->id }}" x-on:click="openEditGuardModal($event.currentTarget.dataset.editGuardId)" class="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-2 text-xs font-semibold text-blue-700 hover:bg-blue-50 dark:border-slate-700 dark:text-white dark:hover:bg-slate-800">Edit</button>
                             <button type="button" data-delete-action="{{ route('guards.destroy', $guard) }}" data-delete-name="{{ $guard->name }}" x-on:click="openDeleteGuardModal($event.currentTarget.dataset.deleteAction, $event.currentTarget.dataset.deleteName)" class="inline-flex h-9 w-full items-center justify-center whitespace-nowrap rounded-md border border-red-200 px-2 text-xs font-semibold text-red-700 hover:bg-red-50">Delete</button>
                         </div>
@@ -139,6 +150,7 @@
                                     <td class="px-5 py-4">
                                         <div class="flex justify-end gap-2">
                                             <button type="button" data-edit-guard-id="{{ $guard->id }}" x-on:click="openEditGuardModal($event.currentTarget.dataset.editGuardId)" class="rounded-md border border-blue-200 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50 dark:border-slate-700 dark:text-white dark:hover:bg-slate-800">Edit</button>
+                                            <button type="button" data-reset-action="{{ route('guards.password.reset', $guard) }}" data-reset-guard-id="{{ $guard->id }}" data-reset-name="{{ $guard->name }}" x-on:click="openResetPasswordModal($event.currentTarget.dataset.resetAction, $event.currentTarget.dataset.resetName, $event.currentTarget.dataset.resetGuardId)" class="rounded-md border border-amber-200 px-3 py-2 text-xs font-semibold text-amber-800 hover:bg-amber-50 dark:border-amber-400/45 dark:text-amber-200 dark:hover:bg-amber-950/35">Reset Password</button>
                                             <button type="button" data-delete-action="{{ route('guards.destroy', $guard) }}" data-delete-name="{{ $guard->name }}" x-on:click="openDeleteGuardModal($event.currentTarget.dataset.deleteAction, $event.currentTarget.dataset.deleteName)" class="rounded-md border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50">Delete</button>
                                         </div>
                                     </td>
@@ -396,6 +408,62 @@
                     </section>
                 </div>
             @endforeach
+            </div>
+
+            <div
+                x-show="resetPasswordModalOpen"
+                x-cloak
+                x-transition.opacity.duration.200ms
+                x-on:click.self="closeResetPasswordModal()"
+                x-on:keydown.escape.window="closeResetPasswordModal()"
+                class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/60 p-4"
+            >
+                <section
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="reset-password-title"
+                    class="w-full max-w-md select-none overflow-hidden rounded-lg bg-white shadow-2xl dark:bg-slate-900"
+                >
+                    <div class="border-b border-amber-100 px-5 py-4 dark:border-slate-700">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">Guard Account</p>
+                        <h3 id="reset-password-title" class="mt-1 text-lg font-semibold text-blue-950 dark:text-white">Reset Guard Password</h3>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                            Assign a temporary password to
+                            <span class="font-semibold text-slate-900 dark:text-white" x-text="resetPasswordGuardName || 'this guard'"></span>.
+                        </p>
+                    </div>
+
+                    <form method="POST" x-ref="resetPasswordForm" x-bind:action="resetPasswordAction" class="space-y-4 px-5 py-5">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="_guard_form" x-bind:value="resetPasswordFormContext()">
+
+                        <div class="rounded-md border border-amber-100 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-400/40 dark:bg-amber-950/35 dark:text-amber-100">
+                            The guard will use this temporary password once, then the system will require them to create a new password after login.
+                        </div>
+
+                        <div>
+                            <label for="reset_password" class="sr-only">Temporary Password</label>
+                            <x-password-input id="reset_password" name="password" placeholder="Temporary password, 8+ characters" autocomplete="new-password" :required="true" show-label="Show temporary password" hide-label="Hide temporary password" x-ref="resetPasswordFirstField" />
+                            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                        </div>
+
+                        <div>
+                            <label for="reset_password_confirmation" class="sr-only">Confirm Temporary Password</label>
+                            <x-password-input id="reset_password_confirmation" name="password_confirmation" placeholder="Retype temporary password" autocomplete="new-password" :required="true" show-label="Show confirm temporary password" hide-label="Hide confirm temporary password" />
+                            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+                        </div>
+
+                        <div class="flex flex-col-reverse gap-2 border-t border-amber-100 pt-4 dark:border-slate-700 sm:flex-row sm:justify-end">
+                            <button type="button" x-ref="resetPasswordCancelButton" x-on:click="closeResetPasswordModal()" class="inline-flex h-10 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900">
+                                Cancel
+                            </button>
+                            <button type="submit" class="inline-flex h-10 items-center justify-center rounded-md bg-amber-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900">
+                                Reset Password
+                            </button>
+                        </div>
+                    </form>
+                </section>
             </div>
 
             <div

@@ -65,6 +65,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', DashboardController::class)->middleware('verified')->name('dashboard');
         Route::get('/guards/rfid-enrollment/latest', [RfidEnrollmentController::class, 'latest'])->name('guards.rfid-enrollment.latest');
         Route::get('/guards/{guard}/records', [GuardController::class, 'records'])->name('guards.records');
+        Route::put('/guards/{guard}/password', [GuardController::class, 'resetPassword'])->name('guards.password.reset');
         Route::resource('guards', GuardController::class)->except(['show']);
         Route::resource('checkpoints', CheckpointController::class)->except(['show']);
         Route::get('/incidents', [IncidentReportController::class, 'index'])->name('incidents.index');

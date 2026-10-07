@@ -177,6 +177,47 @@ class GuardController extends Controller
         return redirect()->route('guards.index')->with('status', 'Guard profile and login account updated.');
     }
 
+    public function resetPassword(Request $request, Guard $guard): RedirectResponse
+    {
+        abort_if($guard->employee_no === 'UNKNOWN', 404);
+
+        $data = $request->validate([
+            'password' => ['required', 'confirmed', Password::min(8)],
+        ]);
+
+        DB::transaction(function () use ($guard, $data) {
+            $guard->loadMissing('user');
+
+            $username = Str::lower(trim($guard->employee_no));
+            $user = $guard->user ?? new User();
+
+            $user->forceFill([
+                'name' => $guard->name,
+                'username' => $username,
+                'email' => $this->accountEmail($guard->email, $username),
+                'role' => 'guard',
+                'password' => Hash::make($data['password']),
+                'must_change_password' => true,
+                'guard_tutorial_completed_at' => null,
+            ]);
+
+            $user->save();
+
+            if (! $guard->user_id) {
+                $guard->forceFill(['user_id' => $user->id])->save();
+            }
+        });
+
+        AuditLogger::record('guard_password_reset', 'Guard temporary password reset by supervisor.', $guard, [
+            'employee_no' => $guard->employee_no,
+            'guard_name' => $guard->name,
+        ]);
+
+        return redirect()
+            ->route('guards.index')
+            ->with('status', "Temporary password assigned to {$guard->name}. The guard must change it after login.");
+    }
+
     public function destroy(Guard $guard): RedirectResponse
     {
         AuditLogger::record('guard_deleted', 'Guard profile and login account removed.', $guard, [

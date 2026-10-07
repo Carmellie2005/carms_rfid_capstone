@@ -1675,6 +1675,10 @@ Alpine.data('guardManagementPage', (config = {}) => ({
     deleteModalOpen: false,
     deleteGuardAction: '',
     deleteGuardName: '',
+    resetPasswordModalOpen: Boolean(config.resetPasswordModalOpen),
+    resetPasswordAction: config.resetPasswordAction || '',
+    resetPasswordGuardId: config.resetPasswordGuardId ? String(config.resetPasswordGuardId) : '',
+    resetPasswordGuardName: config.resetPasswordGuardName || '',
     recordModalOpen: false,
     recordLoading: false,
     recordError: '',
@@ -1711,6 +1715,10 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         if (this.editModalOpen && this.editGuardId) {
             this.$nextTick(() => this.focusEditGuardField());
         }
+
+        if (this.resetPasswordModalOpen) {
+            this.$nextTick(() => this.$refs.resetPasswordFirstField?.focus());
+        }
     },
 
     destroy() {
@@ -1742,6 +1750,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         this.editModalOpen = false;
         this.editGuardId = '';
         this.deleteModalOpen = false;
+        this.resetPasswordModalOpen = false;
         this.recordModalOpen = false;
         this.stopRfidEnrollment();
         this.createModalOpen = true;
@@ -1759,6 +1768,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         this.createModalOpen = false;
         this.recordModalOpen = false;
         this.deleteModalOpen = false;
+        this.resetPasswordModalOpen = false;
         this.stopRfidEnrollment();
         this.editGuardId = String(guardId || '');
         this.editModalOpen = Boolean(this.editGuardId);
@@ -1786,6 +1796,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         this.editModalOpen = false;
         this.editGuardId = '';
         this.recordModalOpen = false;
+        this.resetPasswordModalOpen = false;
         this.stopRfidEnrollment();
         this.deleteGuardAction = action || '';
         this.deleteGuardName = name || 'this guard';
@@ -1799,6 +1810,33 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         this.deleteGuardAction = '';
         this.deleteGuardName = '';
         this.updateBodyScrollLock();
+    },
+
+    openResetPasswordModal(action, name, guardId = '') {
+        this.createModalOpen = false;
+        this.editModalOpen = false;
+        this.editGuardId = '';
+        this.deleteModalOpen = false;
+        this.recordModalOpen = false;
+        this.stopRfidEnrollment();
+        this.resetPasswordAction = action || '';
+        this.resetPasswordGuardName = name || 'this guard';
+        this.resetPasswordGuardId = String(guardId || '');
+        this.resetPasswordModalOpen = true;
+        this.updateBodyScrollLock();
+        this.$nextTick(() => this.$refs.resetPasswordFirstField?.focus());
+    },
+
+    closeResetPasswordModal() {
+        this.resetPasswordModalOpen = false;
+        this.resetPasswordAction = '';
+        this.resetPasswordGuardName = '';
+        this.resetPasswordGuardId = '';
+        this.updateBodyScrollLock();
+    },
+
+    resetPasswordFormContext() {
+        return this.resetPasswordGuardId ? `reset-password-${this.resetPasswordGuardId}` : 'reset-password';
     },
 
     submitDeleteGuard() {
@@ -1818,6 +1856,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
         this.editModalOpen = false;
         this.editGuardId = '';
         this.deleteModalOpen = false;
+        this.resetPasswordModalOpen = false;
         this.recordModalOpen = true;
         this.recordLoading = true;
         this.recordError = '';
@@ -2077,6 +2116,7 @@ Alpine.data('guardManagementPage', (config = {}) => ({
             'overflow-y-hidden',
             this.recordModalOpen
                 || this.deleteModalOpen
+                || this.resetPasswordModalOpen
                 || (this.isCompactPanelViewport() && this.sidePanelOpen()),
         );
     },

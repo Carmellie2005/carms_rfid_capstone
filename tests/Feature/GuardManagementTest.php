@@ -8,6 +8,7 @@ use App\Models\IncidentReport;
 use App\Models\PatrolLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class GuardManagementTest extends TestCase
@@ -180,6 +181,54 @@ class GuardManagementTest extends TestCase
             ->assertRedirect(route('guards.index'));
 
         $this->assertTrue($guardUser->refresh()->must_change_password);
+    }
+
+    public function test_supervisor_can_reset_guard_password_from_guard_profiles(): void
+    {
+        $supervisor = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'supervisor',
+        ]);
+        $guardUser = User::factory()->create([
+            'role' => 'guard',
+            'username' => 'bcp-reset',
+            'email' => 'bcp-reset@guards.campusrfid.local',
+            'must_change_password' => false,
+            'guard_tutorial_completed_at' => now(),
+        ]);
+        $guard = Guard::create([
+            'user_id' => $guardUser->id,
+            'employee_no' => 'BCP-RESET',
+            'name' => 'Forgot Password Guard',
+            'email' => null,
+            'phone' => '09171234567',
+            'rfid_uid' => 'RFID-FORGOT',
+            'shift' => 'Night Shift',
+            'status' => 'active',
+        ]);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->put(route('guards.password.reset', $guard), [
+                '_guard_form' => 'reset-password-'.$guard->id,
+                'password' => 'temp-pass-2026',
+                'password_confirmation' => 'temp-pass-2026',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('guards.index'));
+
+        $guardUser->refresh();
+
+        $this->assertTrue(Hash::check('temp-pass-2026', $guardUser->password));
+        $this->assertTrue($guardUser->must_change_password);
+        $this->assertNull($guardUser->guard_tutorial_completed_at);
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'guard_password_reset',
+            'subject_type' => Guard::class,
+            'subject_id' => $guard->id,
+        ]);
     }
 
     public function test_supervisor_can_create_guard_with_guard_number_as_username(): void
