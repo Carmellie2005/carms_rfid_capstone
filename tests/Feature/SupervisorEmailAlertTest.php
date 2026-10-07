@@ -74,18 +74,18 @@ class SupervisorEmailAlertTest extends TestCase
     {
         Mail::fake();
         config(['mail.supervisor_alert_to' => 'supervisor@example.com']);
-        $this->travelToPatrolWindow();
+        [$user, $guard] = $this->guardAndCheckpoint();
 
         $this
             ->postJson(route('api.rfid-scan'), [
-                'rfid_uid' => 'UNASSIGNED123',
+                'rfid_uid' => $guard->rfid_uid,
                 'device_uid' => 'ESP32-UNKNOWN',
             ])
             ->assertUnprocessable();
 
         Mail::assertSent(RfidScanIssueMail::class, function (RfidScanIssueMail $mail) {
             return $mail->hasTo('supervisor@example.com')
-                && $mail->patrolLog->rfid_uid === 'UNASSIGNED123'
+                && $mail->patrolLog->rfid_uid === 'F33C8D37'
                 && $mail->patrolLog->status === 'invalid';
         });
     }

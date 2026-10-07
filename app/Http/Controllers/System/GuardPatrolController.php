@@ -581,18 +581,6 @@ class GuardPatrolController extends Controller
         ];
     }
 
-    private function unknownGuard(): Guard
-    {
-        return Guard::firstOrCreate(
-            ['employee_no' => 'UNKNOWN'],
-            [
-                'name' => 'Unregistered RFID Card',
-                'rfid_uid' => 'UNKNOWN',
-                'status' => 'inactive',
-            ]
-        );
-    }
-
     private function severityFromPriority(string $priority): string
     {
         return match ($priority) {

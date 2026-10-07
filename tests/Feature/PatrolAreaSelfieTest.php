@@ -81,6 +81,36 @@ class PatrolAreaSelfieTest extends TestCase
         ]);
     }
 
+    public function test_unregistered_rfid_scan_is_rejected_without_patrol_record(): void
+    {
+        [$user, $guard, $checkpoint] = $this->guardAndCheckpoint();
+
+        $response = $this->postJson(route('api.rfid-scan'), [
+            'rfid_uid' => 'UNREGISTERED123',
+            'device_uid' => 'ESP32-IT-01',
+        ]);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJson([
+                'message' => 'RFID card is not registered to any guard. Scan rejected.',
+                'status' => 'unregistered_rfid',
+                'guard' => null,
+            ]);
+
+        $this->assertDatabaseCount('patrol_logs', 0);
+        $this->assertDatabaseCount('audit_logs', 0);
+        $this->assertDatabaseMissing('guards', [
+            'employee_no' => 'UNKNOWN',
+            'rfid_uid' => 'UNKNOWN',
+        ]);
+
+        $checkpoint->refresh();
+
+        $this->assertSame('unregistered_rfid', $checkpoint->reader_last_status);
+        $this->assertSame('RFID card is not registered to any guard. Scan rejected.', $checkpoint->reader_last_message);
+    }
+
     public function test_guard_can_complete_patrol_after_area_selfie_and_checklist(): void
     {
         Storage::fake('public');

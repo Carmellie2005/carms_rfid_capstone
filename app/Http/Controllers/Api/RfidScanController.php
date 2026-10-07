@@ -63,10 +63,27 @@ class RfidScanController extends Controller
         $isValid = $registeredActiveScan && ! $requiresPasswordChange;
         $diagnostic = $this->scanDiagnostic($matchedGuard, $guard, $matchedCheckpoint, $checkpoint, $registeredActiveScan, $requiresPasswordChange);
 
+        if (! $matchedGuard) {
+            $message = 'RFID card is not registered to any guard. Scan rejected.';
+
+            $this->markReaderSeen($matchedCheckpoint, $request, 'unregistered_rfid', $message);
+
+            return response()->json([
+                'message' => $message,
+                'diagnostic' => $diagnostic,
+                'status' => 'unregistered_rfid',
+                'patrol_window' => PatrolSchedule::windowLabel(),
+                'testing_mode' => PatrolSchedule::isTestingMode(),
+                'testing_notice' => PatrolSchedule::isTestingMode() ? PatrolSchedule::testingNotice() : null,
+                'guard' => null,
+                'checkpoint' => $checkpoint?->only(['id', 'code', 'name', 'location']),
+            ], 422);
+        }
+
         if (! PatrolSchedule::isOpen()) {
             $scheduleMessage = PatrolSchedule::closedMessage();
             $patrolLog = PatrolLog::create([
-                'guard_id' => $matchedGuard?->id ?? $this->unknownGuard()->id,
+                'guard_id' => $matchedGuard->id,
                 'checkpoint_id' => $matchedCheckpoint?->id,
                 'rfid_uid' => $rfidUid,
                 'checkpoint_code' => $matchedCheckpoint?->code ?? $checkpointToken,
@@ -123,7 +140,7 @@ class RfidScanController extends Controller
         };
 
         $patrolLog = PatrolLog::create([
-            'guard_id' => $matchedGuard?->id ?? $this->unknownGuard()->id,
+            'guard_id' => $matchedGuard->id,
             'checkpoint_id' => $matchedCheckpoint?->id,
             'rfid_uid' => $rfidUid,
             'checkpoint_code' => $matchedCheckpoint?->code ?? $checkpointToken,
@@ -260,15 +277,4 @@ class RfidScanController extends Controller
         ]);
     }
 
-    private function unknownGuard(): Guard
-    {
-        return Guard::firstOrCreate(
-            ['employee_no' => 'UNKNOWN'],
-            [
-                'name' => 'Unregistered RFID Card',
-                'rfid_uid' => 'UNKNOWN',
-                'status' => 'inactive',
-            ]
-        );
-    }
 }
