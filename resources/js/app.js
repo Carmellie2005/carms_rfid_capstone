@@ -332,6 +332,7 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
     installModalOpen: false,
     message: '',
     promptListener: null,
+    installConfirmationTimer: null,
 
     init() {
         this.installed = isPwaInstalled();
@@ -353,6 +354,7 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
         }, 3000);
 
         window.addEventListener('appinstalled', () => {
+            this.clearInstallConfirmationTimer();
             this.installed = true;
             this.canInstall = false;
             this.deferredPrompt = null;
@@ -366,6 +368,17 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
         if (this.promptListener) {
             pwaInstallPromptListeners.delete(this.promptListener);
         }
+
+        this.clearInstallConfirmationTimer();
+    },
+
+    clearInstallConfirmationTimer() {
+        if (! this.installConfirmationTimer) {
+            return;
+        }
+
+        clearTimeout(this.installConfirmationTimer);
+        this.installConfirmationTimer = null;
     },
 
     syncInstallPrompt() {
@@ -386,7 +399,7 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
     },
 
     canDismissInstallModal() {
-        return this.installModalOpen && ! this.isBusy();
+        return this.installModalOpen && ! ['preparing', 'prompting'].includes(this.installState);
     },
 
     closeInstallModal() {
@@ -407,14 +420,14 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
         }
 
         if (this.installState === 'installing') {
-            return 'Installing...';
+            return 'Installing in browser';
         }
 
         if (this.installState === 'installed') {
             return 'Installed successfully';
         }
 
-        if (this.message === 'Installation cancelled.') {
+        if (this.message === 'Installation was cancelled. No app was installed.') {
             return 'Installation cancelled';
         }
 
@@ -431,7 +444,7 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
         }
 
         if (this.installState === 'installing') {
-            return 'Please wait while the app is installed.';
+            return 'Finish the browser install popup. The success message will appear after the browser confirms the app was installed.';
         }
 
         if (this.installState === 'installed') {
@@ -541,12 +554,23 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
 
         const choice = await prompt.userChoice.catch(() => ({ outcome: 'dismissed' }));
 
+        this.clearInstallConfirmationTimer();
+
         if (choice.outcome === 'accepted') {
             this.installState = 'installing';
-            this.message = `Installing ${this.appName}...`;
+            this.message = `Waiting for your browser to confirm ${this.appName} was installed.`;
+            this.installConfirmationTimer = setTimeout(() => {
+                if (this.installed || this.installState !== 'installing') {
+                    return;
+                }
+
+                this.installState = 'idle';
+                this.message = 'Install request was accepted. If the browser is still showing the install popup, finish it there. The app will show as installed once the browser confirms.';
+                this.installConfirmationTimer = null;
+            }, 10000);
         } else {
             this.installState = 'idle';
-            this.message = 'Installation cancelled.';
+            this.message = 'Installation was cancelled. No app was installed.';
         }
 
         if (deferredPwaInstallPrompt === prompt) {
@@ -557,15 +581,7 @@ Alpine.data('pwaInstallPrompt', (config = {}) => ({
         this.deferredPrompt = null;
         this.canInstall = false;
 
-        if (choice.outcome === 'accepted') {
-            setTimeout(() => {
-                if (! this.installed) {
-                    this.installed = true;
-                    this.installState = 'installed';
-                    this.message = `${this.appName} installed successfully.`;
-                }
-            }, 1200);
-        }
+        this.installed = isPwaInstalled();
     },
 }));
 
