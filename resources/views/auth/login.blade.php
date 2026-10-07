@@ -145,10 +145,6 @@
                         </label>
                     </div>
 
-                    <p class="rounded-lg border border-blue-100 bg-blue-50/70 px-3 py-2 text-xs font-medium leading-5 text-blue-800 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-100">
-                        Need help signing in? Contact your supervisor or system administrator.
-                    </p>
-
                     <button
                         type="submit"
                         class="inline-flex h-12 w-full items-center justify-center rounded-lg bg-blue-700 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-400"
