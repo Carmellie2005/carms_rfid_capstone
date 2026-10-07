@@ -24,7 +24,7 @@ class ReaderStatusTest extends TestCase
             ->assertDontSee('Manage Checkpoints');
     }
 
-    public function test_reader_status_is_removed_from_supervisor_navigation(): void
+    public function test_reader_status_is_shown_in_supervisor_navigation(): void
     {
         $supervisor = User::factory()->create(['role' => 'admin']);
 
@@ -34,7 +34,7 @@ class ReaderStatusTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertDontSee('Reader Status')
-            ->assertDontSee(route('readers.index'), false);
+            ->assertSee('Reader Status')
+            ->assertSee(route('readers.index'), false);
     }
 }
