@@ -37,6 +37,9 @@ const char* SETUP_AP_PASSWORD = "SLSU2026";
 const char* API_URL =
   "https://slsubcpatrol.site/api/rfid-scan";
 
+const char* HEARTBEAT_URL =
+  "https://slsubcpatrol.site/api/rfid-heartbeat";
+
 // Guard House checkpoint reader
 #define DEVICE_UID "ESP32-GH-01"
 
@@ -70,10 +73,12 @@ const char* API_URL =
 // =====================================================
 
 const unsigned long SCAN_COOLDOWN_MS = 3000;
+const unsigned long HEARTBEAT_INTERVAL_MS = 60000;
 
 const int WIFI_CONNECT_ATTEMPTS = 30;
 
 const int HTTP_TIMEOUT_MS = 65000;
+const int HEARTBEAT_TIMEOUT_MS = 10000;
 
 // =====================================================
 // OBJECTS
@@ -99,6 +104,7 @@ DNSServer dnsServer;
 String lastUid = "";
 
 unsigned long lastScanTime = 0;
+unsigned long lastHeartbeatTime = 0;
 
 // =====================================================
 // BUZZER
@@ -840,6 +846,146 @@ void connectWiFi() {
 }
 
 // =====================================================
+// SEND READER HEARTBEAT TO LARAVEL
+// =====================================================
+
+void sendHeartbeatToLaravel() {
+
+  if (
+    WiFi.status() != WL_CONNECTED
+  ) {
+
+    Serial.println(
+      "Heartbeat skipped. WiFi disconnected."
+    );
+
+    return;
+  }
+
+  String heartbeatEndpoint =
+    String(HEARTBEAT_URL) +
+    "?device_uid=" +
+    DEVICE_UID;
+
+  Serial.println(
+    "---------------------"
+  );
+
+  Serial.println(
+    "Sending reader heartbeat..."
+  );
+
+  Serial.print(
+    "Device: "
+  );
+
+  Serial.println(
+    DEVICE_UID
+  );
+
+  Serial.print(
+    "Heartbeat URL: "
+  );
+
+  Serial.println(
+    heartbeatEndpoint
+  );
+
+  WiFiClientSecure client;
+
+  client.setInsecure();
+
+  HTTPClient http;
+
+  if (
+    !http.begin(
+      client,
+      heartbeatEndpoint
+    )
+  ) {
+
+    Serial.println(
+      "Invalid heartbeat URL"
+    );
+
+    return;
+  }
+
+  http.setTimeout(
+    HEARTBEAT_TIMEOUT_MS
+  );
+
+  http.addHeader(
+    "Accept",
+    "application/json"
+  );
+
+  http.addHeader(
+    "User-Agent",
+    "ESP32-RFID-Heartbeat/1.0"
+  );
+
+  int httpCode =
+    http.GET();
+
+  String response =
+    http.getString();
+
+  Serial.print(
+    "Heartbeat HTTP Code: "
+  );
+
+  Serial.println(
+    httpCode
+  );
+
+  if (
+    httpCode <= 0
+  ) {
+
+    Serial.print(
+      "Heartbeat Error: "
+    );
+
+    Serial.println(
+      http.errorToString(
+        httpCode
+      )
+    );
+  }
+
+  else {
+
+    Serial.println(
+      "Heartbeat Response:"
+    );
+
+    Serial.println(
+      response
+    );
+  }
+
+  http.end();
+}
+
+void handleHeartbeat() {
+
+  if (
+    millis() -
+    lastHeartbeatTime <
+    HEARTBEAT_INTERVAL_MS
+  ) {
+
+    return;
+  }
+
+  lastHeartbeatTime =
+    millis();
+
+  sendHeartbeatToLaravel();
+}
+
+// =====================================================
 // UNKNOWN RFID CHECK
 // =====================================================
 
@@ -1406,6 +1552,11 @@ void setup() {
   // WIFI
   connectWiFi();
 
+  sendHeartbeatToLaravel();
+
+  lastHeartbeatTime =
+    millis();
+
   Serial.println(
     "Ready to Scan RFID Card"
   );
@@ -1416,6 +1567,8 @@ void setup() {
 // =====================================================
 
 void loop() {
+
+  handleHeartbeat();
 
   if (
     !rfid.PICC_IsNewCardPresent()

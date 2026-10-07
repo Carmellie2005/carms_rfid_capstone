@@ -74,6 +74,14 @@
 #define HTTP_TIMEOUT_MS 65000
 #endif
 
+#ifndef HEARTBEAT_INTERVAL_MS
+#define HEARTBEAT_INTERVAL_MS 60000
+#endif
+
+#ifndef HEARTBEAT_TIMEOUT_MS
+#define HEARTBEAT_TIMEOUT_MS 10000
+#endif
+
 constexpr int MODE_ENROLLMENT = 1;
 constexpr int MODE_CHECKPOINT = 2;
 constexpr int buzzerOnLevel = BUZZER_ACTIVE_HIGH ? HIGH : LOW;
@@ -84,6 +92,7 @@ MFRC522 rfid(RFID_SS_PIN, RFID_RST_PIN);
 
 String lastUid = "";
 unsigned long lastScanTime = 0;
+unsigned long lastHeartbeatTime = 0;
 
 String fitLcdText(String text) {
   if (text.length() > LCD_COLUMNS) {
@@ -147,6 +156,21 @@ String apiUrl() {
   }
 
   return base + path;
+}
+
+String heartbeatUrl() {
+  String base = APP_BASE_URL;
+  String path = "/api/rfid-heartbeat";
+
+  if (base.endsWith("/") && path.startsWith("/")) {
+    base.remove(base.length() - 1);
+  }
+
+  if (! base.endsWith("/") && ! path.startsWith("/")) {
+    base += "/";
+  }
+
+  return base + path + "?device_uid=" + DEVICE_UID;
 }
 
 void showReady() {
@@ -278,6 +302,70 @@ void showGuardName(String guardName) {
 
   delay(1800);
   lcdMessage("Patrol Logged", "Thank You");
+}
+
+void sendHeartbeatToServer() {
+  if (DEVICE_MODE == MODE_ENROLLMENT) {
+    return;
+  }
+
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Heartbeat skipped. WiFi disconnected.");
+    return;
+  }
+
+  String url = heartbeatUrl();
+
+  Serial.println();
+  Serial.println("---------------------");
+  Serial.println("Sending reader heartbeat...");
+  Serial.print("Device UID: ");
+  Serial.println(DEVICE_UID);
+  Serial.print("Heartbeat URL: ");
+  Serial.println(url);
+
+  WiFiClientSecure client;
+  client.setInsecure();
+
+  HTTPClient http;
+
+  if (! http.begin(client, url)) {
+    Serial.println("Invalid heartbeat URL.");
+    return;
+  }
+
+  http.setTimeout(HEARTBEAT_TIMEOUT_MS);
+  http.addHeader("Accept", "application/json");
+  http.addHeader("User-Agent", "SLSU-Bontoc-Patrol-ESP32-Heartbeat/1.0");
+
+  int httpCode = http.GET();
+  String response = http.getString();
+
+  Serial.print("Heartbeat HTTP Code: ");
+  Serial.println(httpCode);
+
+  if (httpCode <= 0) {
+    Serial.print("Heartbeat Error: ");
+    Serial.println(http.errorToString(httpCode));
+  } else {
+    Serial.println("Heartbeat Response:");
+    Serial.println(response);
+  }
+
+  http.end();
+}
+
+void handleHeartbeat() {
+  if (DEVICE_MODE == MODE_ENROLLMENT) {
+    return;
+  }
+
+  if (millis() - lastHeartbeatTime < HEARTBEAT_INTERVAL_MS) {
+    return;
+  }
+
+  lastHeartbeatTime = millis();
+  sendHeartbeatToServer();
 }
 
 void handleEnrollmentResponse(int httpCode, String response) {
@@ -467,6 +555,11 @@ void setup() {
   }
 
   connectWiFi();
+
+  if (DEVICE_MODE == MODE_CHECKPOINT) {
+    sendHeartbeatToServer();
+    lastHeartbeatTime = millis();
+  }
 }
 
 void loop() {
@@ -475,6 +568,8 @@ void loop() {
     delay(1000);
     return;
   }
+
+  handleHeartbeat();
 
   if (! rfid.PICC_IsNewCardPresent()) {
     delay(50);
