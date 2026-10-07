@@ -208,9 +208,11 @@
                         </div>
 
                         <div class="mt-3 flex flex-wrap justify-end gap-2">
-                            <button type="button" data-skip-global-loader="true" x-on:click="openPatrolPdfPreview(@js($patrolPdfPreviewUrl), @js($patrolPdfDownloadUrl), @js('Patrol Log - '.($log->checkpoint?->name ?? $log->checkpoint_code ?? 'Patrol')))" class="inline-flex h-10 items-center justify-center rounded-md border border-emerald-200 bg-white px-3 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
-                                Print PDF
-                            </button>
+                            @if ($isSupervisor)
+                                <button type="button" data-skip-global-loader="true" x-on:click="openPatrolPdfPreview(@js($patrolPdfPreviewUrl), @js($patrolPdfDownloadUrl), @js('Patrol Log - '.($log->checkpoint?->name ?? $log->checkpoint_code ?? 'Patrol')))" class="inline-flex h-10 items-center justify-center rounded-md border border-emerald-200 bg-white px-3 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                                    Print PDF
+                                </button>
+                            @endif
                             <a href="{{ $patrolPdfDownloadUrl }}" class="inline-flex h-10 items-center justify-center rounded-md border border-indigo-200 bg-white px-3 text-xs font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                                 Download PDF
                             </a>
@@ -300,9 +302,11 @@
                                                     <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
                                                 </svg>
                                             </button>
-                                            <button type="button" data-skip-global-loader="true" x-on:click="openPatrolPdfPreview(@js($patrolPdfPreviewUrl), @js($patrolPdfDownloadUrl), @js('Patrol Log - '.($log->checkpoint?->name ?? $log->checkpoint_code ?? 'Patrol')))" class="inline-flex h-9 items-center justify-center rounded-md border border-emerald-200 bg-white px-3 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
-                                                Print PDF
-                                            </button>
+                                            @if ($isSupervisor)
+                                                <button type="button" data-skip-global-loader="true" x-on:click="openPatrolPdfPreview(@js($patrolPdfPreviewUrl), @js($patrolPdfDownloadUrl), @js('Patrol Log - '.($log->checkpoint?->name ?? $log->checkpoint_code ?? 'Patrol')))" class="inline-flex h-9 items-center justify-center rounded-md border border-emerald-200 bg-white px-3 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                                                    Print PDF
+                                                </button>
+                                            @endif
                                             <a href="{{ $patrolPdfDownloadUrl }}" class="inline-flex h-9 items-center justify-center rounded-md border border-indigo-200 bg-white px-3 text-xs font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                                                 Download PDF
                                             </a>
@@ -495,9 +499,11 @@
                     </div>
 
                     <div class="flex flex-col gap-2 border-t border-blue-100 bg-white px-5 py-3 sm:flex-row sm:justify-end">
-                        <button type="button" data-skip-global-loader="true" x-on:click="openPatrolPdfPreview(@js($detailPdfPreviewUrl), @js($detailPdfDownloadUrl), @js('Patrol Log - '.($log->checkpoint?->name ?? $log->checkpoint_code ?? 'Patrol')))" class="inline-flex h-10 items-center justify-center rounded-md border border-emerald-200 bg-white px-4 text-sm font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
-                            Print PDF
-                        </button>
+                        @if ($isSupervisor)
+                            <button type="button" data-skip-global-loader="true" x-on:click="openPatrolPdfPreview(@js($detailPdfPreviewUrl), @js($detailPdfDownloadUrl), @js('Patrol Log - '.($log->checkpoint?->name ?? $log->checkpoint_code ?? 'Patrol')))" class="inline-flex h-10 items-center justify-center rounded-md border border-emerald-200 bg-white px-4 text-sm font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                                Print PDF
+                            </button>
+                        @endif
                         <a href="{{ $detailPdfDownloadUrl }}" class="inline-flex h-10 items-center justify-center rounded-md border border-indigo-200 bg-white px-4 text-sm font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                             Download PDF
                         </a>
