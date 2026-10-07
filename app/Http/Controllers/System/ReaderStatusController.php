@@ -11,7 +11,7 @@ class ReaderStatusController extends Controller
 {
     public function index(): View
     {
-        $onlineCutoff = now()->subMinutes(5);
+        $onlineCutoff = now()->subMinutes(2);
 
         $checkpoints = Checkpoint::with(['latestPatrolLog.securityGuard'])
             ->orderBy('code')
