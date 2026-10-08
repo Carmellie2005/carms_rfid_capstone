@@ -335,64 +335,48 @@
                 [
                     'name' => 'Carmela B. Hernandez',
                     'role' => 'Lead Programmer',
-                    'photo' => 'images/developers/carmela.jpg',
                 ],
                 [
                     'name' => 'Cherry Ann R. Himo',
                     'role' => 'Documentation Specialist',
-                    'photo' => 'images/developers/cherry.jpg',
                 ],
                 [
                     'name' => 'Clarice R. Gumapi',
                     'role' => 'System Analyst',
-                    'photo' => 'images/developers/clarice.jpg',
                 ],
                 [
                     'name' => 'Karyl G. Viure',
                     'role' => 'Quality Assurance',
-                    'photo' => 'images/developers/karyl.jpg',
                 ],
             ];
         @endphp
 
-        <section aria-labelledby="development-team-heading" class="bg-white py-8 dark:bg-slate-950 sm:py-10">
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-center gap-3">
-                    <span class="hidden h-px w-16 bg-blue-400 sm:block" aria-hidden="true"></span>
-                    <h2 id="development-team-heading" class="text-center text-xl font-extrabold uppercase text-blue-950 dark:text-white sm:text-2xl">
-                        Meet the Developers
-                    </h2>
-                    <span class="hidden h-px w-16 bg-blue-400 sm:block" aria-hidden="true"></span>
-                </div>
-
-                <div class="mt-7 grid grid-cols-2 gap-x-4 gap-y-7 sm:gap-x-8 lg:grid-cols-4">
-                    @foreach ($developers as $developer)
-                        <article class="min-w-0 text-center">
-                            <img
-                                src="{{ asset($developer['photo']) }}"
-                                alt="{{ $developer['name'] }}"
-                                class="mx-auto h-24 w-24 rounded-full border-[3px] border-blue-300 object-cover object-center shadow-md shadow-blue-950/10 dark:border-blue-500 sm:h-28 sm:w-28 lg:h-32 lg:w-32"
-                            >
-                            <h3 class="mt-3 text-sm font-bold leading-tight text-blue-950 dark:text-white sm:text-base">
-                                {{ $developer['name'] }}
-                            </h3>
-                            <p class="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300 sm:text-sm">
-                                {{ $developer['role'] }}
-                            </p>
-                            <span class="mx-auto mt-3 block h-0.5 w-10 rounded-full bg-blue-500" aria-hidden="true"></span>
-                        </article>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-
         <footer class="border-t border-blue-100 bg-[#eef8ff] text-blue-950 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
-            <div class="mx-auto flex max-w-7xl items-start justify-start px-4 py-8 text-left sm:px-6 lg:px-8">
-                <div class="flex items-center gap-4">
-                    <x-application-logo class="h-14 w-14 rounded-full" />
+            <div class="mx-auto grid max-w-7xl gap-9 px-4 py-9 text-left sm:px-6 lg:grid-cols-[1fr_1.1fr_1.5fr] lg:items-start lg:px-8">
+                <div class="flex items-start gap-4">
+                    <x-application-logo class="h-14 w-14 shrink-0 rounded-full" />
                     <div>
                         <p class="text-2xl font-bold">SLSU BC Patrol</p>
-                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ now()->year }}</p>
+                        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">&copy; {{ now()->year }} All rights reserved.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-lg font-bold text-blue-950 dark:text-white">Southern Leyte State University</p>
+                    <p class="mt-3 text-base leading-7 text-slate-600 dark:text-slate-300">Bontoc Campus</p>
+                    <p class="mt-2 text-base leading-7 text-slate-600 dark:text-slate-300">Security and Safety Services Office</p>
+                    <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">RFID patrol monitoring, checklist proof, reader status, and incident reporting.</p>
+                </div>
+
+                <div class="border-t border-blue-200 pt-6 dark:border-slate-700 sm:grid-cols-2 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Development Team</p>
+                    <div class="mt-4 grid gap-x-8 gap-y-3 sm:grid-cols-2">
+                        @foreach ($developers as $developer)
+                            <p class="text-base font-semibold text-slate-950 dark:text-white">
+                                {{ $developer['name'] }}
+                                <span class="text-sm font-medium text-slate-500 dark:text-slate-400">({{ $developer['role'] }})</span>
+                            </p>
+                        @endforeach
                     </div>
                 </div>
             </div>
