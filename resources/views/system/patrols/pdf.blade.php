@@ -242,6 +242,37 @@
             z-index: 1;
         }
 
+        .checklist-flow-block {
+            left: 72.5pt;
+            position: absolute;
+            top: 478pt;
+            width: 467.21pt;
+            z-index: 1;
+        }
+
+        .checklist-flow-block-continuation {
+            top: 164pt;
+        }
+
+        .checklist-flow-label {
+            font-size: 11pt;
+            font-weight: 700;
+            line-height: 1.2;
+            margin: 0 0 12.8pt;
+        }
+
+        .checklist-flow-block .checklist-table,
+        .checklist-flow-block .notes-table {
+            left: auto;
+            position: static;
+            top: auto;
+            width: 100%;
+        }
+
+        .checklist-flow-block .notes-table {
+            margin-top: 8pt;
+        }
+
         .checklist-label,
         .checklist-continuation-label {
             top: 478pt;
@@ -261,10 +292,11 @@
 
         .checklist-table td {
             font-size: 11pt;
-            height: 21pt;
-            line-height: 1.15;
+            height: 22pt;
+            line-height: 1.2;
             padding: 3pt 6pt;
             vertical-align: middle;
+            word-break: break-word;
         }
 
         .checklist-table .status-cell {
@@ -276,6 +308,7 @@
             font-size: 11pt;
             line-height: 1.2;
             padding: 4pt 6pt;
+            word-break: break-word;
         }
 
         .notes-table .notes-heading {
@@ -432,13 +465,13 @@
             return $chunks !== [] ? $chunks : [$fallback];
         };
         $estimatedChecklistRowHeight = function (array $item) use ($textLength): float {
-            return $textLength((string) ($item['label'] ?? '')) > 42 ? 32.0 : 21.0;
+            return $textLength((string) ($item['label'] ?? '')) > 42 ? 34.0 : 22.0;
         };
         $checklistRows = $checklistItems->isEmpty()
             ? collect([[
                 'label' => 'No checklist status recorded.',
                 'status_label' => '',
-                'row_height' => 21.0,
+                'row_height' => 22.0,
             ]])
             : $checklistItems
                 ->map(fn (array $item): array => [
@@ -452,7 +485,7 @@
             $currentHeight = 0.0;
 
             foreach ($rows as $row) {
-                $rowHeight = (float) ($row['row_height'] ?? 21.0);
+                $rowHeight = (float) ($row['row_height'] ?? 22.0);
 
                 if ($current->isNotEmpty() && ($currentHeight + $rowHeight) > $maxHeight) {
                     $chunks->push($current);
@@ -481,7 +514,7 @@
         $continuationChecklistChunks = $checklistChunks
             ->flatMap(fn ($chunk) => $chunkRowsByHeight($chunk, $contentBottom - $continuationChecklistTableTop))
             ->values();
-        $firstChecklistHeight = $firstChecklistRows->sum(fn (array $row): float => (float) ($row['row_height'] ?? 21.0));
+        $firstChecklistHeight = $firstChecklistRows->sum(fn (array $row): float => (float) ($row['row_height'] ?? 22.0));
         $notesTableTop = $firstChecklistTableTop + $firstChecklistHeight + 8.0;
         $notesAvailableOnFirstPage = $contentBottom - $notesTableTop;
         $notesCanStartOnFirstPage = $continuationChecklistChunks->isEmpty() && $notesAvailableOnFirstPage >= 24.0;
@@ -587,42 +620,46 @@
             </tr>
         </table>
 
-        <div class="checklist-label">Patrol Checklist:</div>
-        <table class="checklist-table">
-            @foreach ($firstChecklistRows as $item)
-                <tr>
-                    <td style="height: {{ number_format((float) $item['row_height'], 2, '.', '') }}pt;">{{ $item['label'] }}</td>
-                    <td class="status-cell" style="height: {{ number_format((float) $item['row_height'], 2, '.', '') }}pt;">{{ $item['status_label'] }}</td>
-                </tr>
-            @endforeach
-        </table>
-
-        @if ($firstRemarks !== null)
-            @php
-                $firstRemarksHeight = $estimateNotesRowHeight($firstRemarks);
-            @endphp
-            <table class="notes-table" style="top: {{ number_format($notesTableTop, 2, '.', '') }}pt;">
-                <tr>
-                    <td class="notes-heading" style="height: {{ number_format($firstRemarksHeight, 2, '.', '') }}pt;">Remarks / Notes:</td>
-                    <td class="notes-value" style="height: {{ number_format($firstRemarksHeight, 2, '.', '') }}pt;">{!! nl2br(e($firstRemarks)) !!}</td>
-                </tr>
-            </table>
-        @endif
-    </section>
-
-    @foreach ($continuationChecklistChunks as $checklistChunk)
-        <section class="page">
-            {!! $pageChrome() !!}
-
-            <div class="checklist-continuation-label">Patrol Checklist Continued:</div>
-            <table class="checklist-table checklist-table-continuation">
-                @foreach ($checklistChunk as $item)
+        <div class="checklist-flow-block">
+            <div class="checklist-flow-label">Patrol Checklist:</div>
+            <table class="checklist-table">
+                @foreach ($firstChecklistRows as $item)
                     <tr>
                         <td style="height: {{ number_format((float) $item['row_height'], 2, '.', '') }}pt;">{{ $item['label'] }}</td>
                         <td class="status-cell" style="height: {{ number_format((float) $item['row_height'], 2, '.', '') }}pt;">{{ $item['status_label'] }}</td>
                     </tr>
                 @endforeach
             </table>
+
+            @if ($firstRemarks !== null)
+                @php
+                    $firstRemarksHeight = $estimateNotesRowHeight($firstRemarks);
+                @endphp
+                <table class="notes-table">
+                    <tr>
+                        <td class="notes-heading" style="height: {{ number_format($firstRemarksHeight, 2, '.', '') }}pt;">Remarks / Notes:</td>
+                        <td class="notes-value" style="height: {{ number_format($firstRemarksHeight, 2, '.', '') }}pt;">{!! nl2br(e($firstRemarks)) !!}</td>
+                    </tr>
+                </table>
+            @endif
+        </div>
+    </section>
+
+    @foreach ($continuationChecklistChunks as $checklistChunk)
+        <section class="page">
+            {!! $pageChrome() !!}
+
+            <div class="checklist-flow-block checklist-flow-block-continuation">
+                <div class="checklist-flow-label">Patrol Checklist Continued:</div>
+                <table class="checklist-table">
+                    @foreach ($checklistChunk as $item)
+                        <tr>
+                            <td style="height: {{ number_format((float) $item['row_height'], 2, '.', '') }}pt;">{{ $item['label'] }}</td>
+                            <td class="status-cell" style="height: {{ number_format((float) $item['row_height'], 2, '.', '') }}pt;">{{ $item['status_label'] }}</td>
+                        </tr>
+                    @endforeach
+                </table>
+            </div>
         </section>
     @endforeach
 
