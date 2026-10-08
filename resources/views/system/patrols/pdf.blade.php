@@ -465,13 +465,13 @@
             return $chunks !== [] ? $chunks : [$fallback];
         };
         $estimatedChecklistRowHeight = function (array $item) use ($textLength): float {
-            return $textLength((string) ($item['label'] ?? '')) > 42 ? 34.0 : 22.0;
+            return $textLength((string) ($item['label'] ?? '')) > 42 ? 44.0 : 28.0;
         };
         $checklistRows = $checklistItems->isEmpty()
             ? collect([[
                 'label' => 'No checklist status recorded.',
                 'status_label' => '',
-                'row_height' => 22.0,
+                'row_height' => 28.0,
             ]])
             : $checklistItems
                 ->map(fn (array $item): array => [
@@ -485,7 +485,7 @@
             $currentHeight = 0.0;
 
             foreach ($rows as $row) {
-                $rowHeight = (float) ($row['row_height'] ?? 22.0);
+                $rowHeight = (float) ($row['row_height'] ?? 28.0);
 
                 if ($current->isNotEmpty() && ($currentHeight + $rowHeight) > $maxHeight) {
                     $chunks->push($current);
@@ -503,7 +503,8 @@
 
             return $chunks;
         };
-        $contentBottom = 724.0;
+        // Dompdf renders table padding/borders taller than CSS height, so reserve extra footer space.
+        $contentBottom = 704.0;
         $firstChecklistTableTop = 504.0;
         $continuationChecklistTableTop = 190.0;
         $notesLineChars = 60;
@@ -514,7 +515,7 @@
         $continuationChecklistChunks = $checklistChunks
             ->flatMap(fn ($chunk) => $chunkRowsByHeight($chunk, $contentBottom - $continuationChecklistTableTop))
             ->values();
-        $firstChecklistHeight = $firstChecklistRows->sum(fn (array $row): float => (float) ($row['row_height'] ?? 22.0));
+        $firstChecklistHeight = $firstChecklistRows->sum(fn (array $row): float => (float) ($row['row_height'] ?? 28.0));
         $notesTableTop = $firstChecklistTableTop + $firstChecklistHeight + 8.0;
         $notesAvailableOnFirstPage = $contentBottom - $notesTableTop;
         $notesCanStartOnFirstPage = $continuationChecklistChunks->isEmpty() && $notesAvailableOnFirstPage >= 24.0;
