@@ -149,19 +149,6 @@
                     })"
                     x-init="boot()"
                 >
-                    <div class="flex justify-end">
-                        <button
-                            type="button"
-                            class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950"
-                            @click="openTutorial()"
-                        >
-                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path d="M12 6v12m0-12 5 3m-5-3-5 3m10 6-5 6-5-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                            View Tutorial
-                        </button>
-                    </div>
-
                     <div
                         x-show="open"
                         x-cloak
