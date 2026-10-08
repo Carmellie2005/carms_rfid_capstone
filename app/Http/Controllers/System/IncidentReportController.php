@@ -38,6 +38,26 @@ class IncidentReportController extends Controller
     {
         $before = $incidentReport->only(['status', 'admin_notes', 'action_taken', 'resolved_at']);
 
+        if ($incidentReport->status === 'resolved') {
+            if ($request->input('review_action') !== 'reopen') {
+                return redirect()
+                    ->route('incidents.index')
+                    ->with('status', 'Resolved incident reports are read-only. Reopen the report before making changes.');
+            }
+
+            $incidentReport->update([
+                'status' => 'under_review',
+                'resolved_at' => null,
+            ]);
+
+            AuditLogger::record('incident_reopened', 'Resolved incident report reopened for review.', $incidentReport, [
+                'before' => $before,
+                'after' => $incidentReport->only(['status', 'admin_notes', 'action_taken', 'resolved_at']),
+            ]);
+
+            return redirect()->route('incidents.index')->with('status', 'Incident report reopened for review.');
+        }
+
         $data = $request->validate([
             'status' => ['required', Rule::in(['submitted', 'under_review', 'resolved'])],
             'admin_notes' => ['nullable', 'string', 'max:2000'],

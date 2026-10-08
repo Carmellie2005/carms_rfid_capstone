@@ -163,29 +163,43 @@
                                 @endif
                             </div>
 
-                            <form method="POST" action="{{ route('incidents.update', $incident) }}" class="rounded-md border border-blue-100 p-4">
-                                @csrf
-                                @method('PATCH')
-                                <div>
-                                    <label for="status-{{ $incident->id }}" class="block text-sm font-medium text-slate-700">Review Status</label>
-                                    <select id="status-{{ $incident->id }}" name="status" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                        @foreach (['submitted' => 'Submitted', 'under_review' => 'Under Review', 'resolved' => 'Resolved'] as $value => $label)
-                                            <option value="{{ $value }}" @selected($incident->status === $value)>{{ $label }}</option>
-                                        @endforeach
-                                    </select>
+                            @if ($incident->status === 'resolved')
+                                <div class="rounded-md border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-950 dark:border-emerald-700/40 dark:bg-emerald-950/25 dark:text-emerald-100">
+                                    <p class="font-bold">Resolved report is read-only</p>
+                                    <p class="mt-1 leading-6">Admin notes and action taken are locked to preserve the official review record. Reopen this report only if another update is needed.</p>
+
+                                    <form method="POST" action="{{ route('incidents.update', $incident) }}" class="mt-4">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="review_action" value="reopen">
+                                        <button class="w-full rounded-md border border-emerald-300 bg-white px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-600 dark:bg-slate-900 dark:text-emerald-100 dark:hover:bg-emerald-950" type="submit">Reopen Report</button>
+                                    </form>
                                 </div>
-                                <div class="mt-3">
-                                    <label for="admin_notes-{{ $incident->id }}" class="sr-only">Admin Notes</label>
-                                    <textarea id="admin_notes-{{ $incident->id }}" name="admin_notes" rows="4" placeholder="Admin Notes" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('admin_notes', $incident->admin_notes) }}</textarea>
-                                </div>
-                                <div class="mt-3">
-                                    <label for="action_taken-{{ $incident->id }}" class="block text-sm font-medium text-slate-700">Action Taken</label>
-                                    <textarea id="action_taken-{{ $incident->id }}" name="action_taken" rows="4" placeholder="Required when marking the report as resolved" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('action_taken', $incident->action_taken) }}</textarea>
-                                    <p class="mt-1 text-xs text-slate-500">Use this to record what was done, such as repairs, inspection, referral, or security response.</p>
-                                    <x-input-error :messages="$errors->get('action_taken')" class="mt-2" />
-                                </div>
-                                <button class="mt-4 w-full rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800" type="submit">Update Report</button>
-                            </form>
+                            @else
+                                <form method="POST" action="{{ route('incidents.update', $incident) }}" class="rounded-md border border-blue-100 p-4">
+                                    @csrf
+                                    @method('PATCH')
+                                    <div>
+                                        <label for="status-{{ $incident->id }}" class="block text-sm font-medium text-slate-700">Review Status</label>
+                                        <select id="status-{{ $incident->id }}" name="status" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                            @foreach (['submitted' => 'Submitted', 'under_review' => 'Under Review', 'resolved' => 'Resolved'] as $value => $label)
+                                                <option value="{{ $value }}" @selected($incident->status === $value)>{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="mt-3">
+                                        <label for="admin_notes-{{ $incident->id }}" class="sr-only">Admin Notes</label>
+                                        <textarea id="admin_notes-{{ $incident->id }}" name="admin_notes" rows="4" placeholder="Admin Notes" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('admin_notes', $incident->admin_notes) }}</textarea>
+                                    </div>
+                                    <div class="mt-3">
+                                        <label for="action_taken-{{ $incident->id }}" class="block text-sm font-medium text-slate-700">Action Taken</label>
+                                        <textarea id="action_taken-{{ $incident->id }}" name="action_taken" rows="4" placeholder="Required when marking the report as resolved" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('action_taken', $incident->action_taken) }}</textarea>
+                                        <p class="mt-1 text-xs text-slate-500">Use this to record what was done, such as repairs, inspection, referral, or security response.</p>
+                                        <x-input-error :messages="$errors->get('action_taken')" class="mt-2" />
+                                    </div>
+                                    <button class="mt-4 w-full rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800" type="submit">Update Report</button>
+                                </form>
+                            @endif
                         </div>
                     </article>
                 @empty
