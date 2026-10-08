@@ -352,29 +352,29 @@
         @endphp
 
         <footer class="border-t border-blue-100 bg-[#eef8ff] text-blue-950 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
-            <div class="mx-auto grid max-w-7xl gap-9 px-4 py-9 text-left sm:px-6 lg:grid-cols-[1fr_1.1fr_1.5fr] lg:items-start lg:px-8">
-                <div class="flex items-start gap-4">
-                    <x-application-logo class="h-14 w-14 shrink-0 rounded-full" />
+            <div class="mx-auto grid max-w-7xl gap-6 px-4 py-5 text-left sm:px-6 lg:grid-cols-[0.95fr_1.05fr_1.55fr] lg:items-start lg:px-8">
+                <div class="flex items-start gap-3">
+                    <x-application-logo class="h-11 w-11 shrink-0 rounded-full" />
                     <div>
-                        <p class="text-2xl font-bold">SLSU BC Patrol</p>
-                        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">&copy; {{ now()->year }} All rights reserved.</p>
+                        <p class="text-xl font-bold">SLSU BC Patrol</p>
+                        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">&copy; {{ now()->year }} All rights reserved.</p>
                     </div>
                 </div>
 
                 <div>
-                    <p class="text-lg font-bold text-blue-950 dark:text-white">Southern Leyte State University</p>
-                    <p class="mt-3 text-base leading-7 text-slate-600 dark:text-slate-300">Bontoc Campus</p>
-                    <p class="mt-2 text-base leading-7 text-slate-600 dark:text-slate-300">Security and Safety Services Office</p>
-                    <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">RFID patrol monitoring, checklist proof, reader status, and incident reporting.</p>
+                    <p class="text-base font-bold text-blue-950 dark:text-white">Southern Leyte State University</p>
+                    <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Bontoc Campus</p>
+                    <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">Security and Safety Services Office</p>
+                    <p class="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">RFID patrol monitoring, checklist proof, reader status, and incident reporting.</p>
                 </div>
 
-                <div class="border-t border-blue-200 pt-6 dark:border-slate-700 sm:grid-cols-2 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Development Team</p>
-                    <div class="mt-4 grid gap-x-8 gap-y-3 sm:grid-cols-2">
+                <div class="border-t border-blue-200 pt-4 dark:border-slate-700 sm:grid-cols-2 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Development Team</p>
+                    <div class="mt-3 grid gap-x-6 gap-y-2 sm:grid-cols-2">
                         @foreach ($developers as $developer)
-                            <p class="text-base font-semibold text-slate-950 dark:text-white">
+                            <p class="text-sm font-semibold text-slate-950 dark:text-white">
                                 {{ $developer['name'] }}
-                                <span class="text-sm font-medium text-slate-500 dark:text-slate-400">({{ $developer['role'] }})</span>
+                                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">({{ $developer['role'] }})</span>
                             </p>
                         @endforeach
                     </div>
