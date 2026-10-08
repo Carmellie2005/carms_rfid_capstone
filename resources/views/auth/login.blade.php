@@ -31,8 +31,27 @@
             class="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-[#eef6ff] px-3 py-16 sm:px-4 sm:py-8 dark:bg-slate-950"
             x-data="{
                 loggingIn: false,
+                lockoutSeconds: @js((int) session('login_lockout_seconds', 0)),
+                lockoutTimer: null,
+                init() {
+                    this.startLockoutCountdown();
+                },
+                startLockoutCountdown() {
+                    if (this.lockoutSeconds <= 0 || this.lockoutTimer) {
+                        return;
+                    }
+
+                    this.lockoutTimer = window.setInterval(() => {
+                        this.lockoutSeconds = Math.max(0, this.lockoutSeconds - 1);
+
+                        if (this.lockoutSeconds === 0) {
+                            window.clearInterval(this.lockoutTimer);
+                            this.lockoutTimer = null;
+                        }
+                    }, 1000);
+                },
                 submitLogin(event) {
-                    if (this.loggingIn) {
+                    if (this.loggingIn || this.lockoutSeconds > 0) {
                         return;
                     }
 
@@ -138,6 +157,14 @@
                         <x-input-error :messages="$errors->get('password')" class="mt-2" />
                     </div>
 
+                    <p
+                        x-show="lockoutSeconds > 0"
+                        x-cloak
+                        class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold leading-5 text-amber-800 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-100"
+                    >
+                        Too many wrong attempts. Please try again in <span x-text="lockoutSeconds"></span> seconds.
+                    </p>
+
                     <div class="flex items-center justify-between gap-4">
                         <label for="remember_me" class="inline-flex items-center text-xs font-medium text-slate-700 dark:text-slate-300">
                             <input id="remember_me" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-blue-700 shadow-sm focus:ring-blue-500" name="remember" value="1" @checked(old('remember'))>
@@ -148,13 +175,13 @@
                     <button
                         type="submit"
                         class="inline-flex h-12 w-full items-center justify-center rounded-lg bg-blue-700 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-400"
-                        :disabled="loggingIn"
+                        :disabled="loggingIn || lockoutSeconds > 0"
                     >
                         <svg x-show="loggingIn" x-cloak class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
                         </svg>
-                        <span x-text="loggingIn ? 'Signing in...' : 'Log in'">Log in</span>
+                        <span x-text="lockoutSeconds > 0 ? `Try again in ${lockoutSeconds}s` : (loggingIn ? 'Signing in...' : 'Log in')">Log in</span>
                     </button>
 
                 </form>

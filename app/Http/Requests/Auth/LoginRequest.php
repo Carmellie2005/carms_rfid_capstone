@@ -11,6 +11,10 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
+    private const MAX_LOGIN_ATTEMPTS = 5;
+
+    private const LOCKOUT_SECONDS = 30;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -54,7 +58,11 @@ class LoginRequest extends FormRequest
             }
         }
 
-        RateLimiter::hit($this->throttleKey());
+        RateLimiter::hit($this->throttleKey(), self::LOCKOUT_SECONDS);
+
+        if (RateLimiter::tooManyAttempts($this->throttleKey(), self::MAX_LOGIN_ATTEMPTS)) {
+            $this->throwLockoutException();
+        }
 
         throw ValidationException::withMessages([
             'email' => trans('auth.failed'),
@@ -68,13 +76,24 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey(), self::MAX_LOGIN_ATTEMPTS)) {
             return;
         }
 
+        $this->throwLockoutException();
+    }
+
+    /**
+     * Throw the validation exception shown while login is temporarily locked.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    private function throwLockoutException(): void
+    {
         event(new Lockout($this));
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
+        $this->session()->flash('login_lockout_seconds', $seconds);
 
         throw ValidationException::withMessages([
             'email' => trans('auth.throttle', [

@@ -104,6 +104,30 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_login_is_locked_for_thirty_seconds_after_five_failed_attempts(): void
+    {
+        $user = User::factory()->create();
+
+        for ($attempt = 1; $attempt <= 5; $attempt++) {
+            $response = $this->from('/login')->post('/login', [
+                'email' => $user->email,
+                'password' => 'wrong-password',
+            ]);
+        }
+
+        $response
+            ->assertRedirect('/login')
+            ->assertSessionHasErrors('email');
+
+        $lockoutSeconds = session('login_lockout_seconds');
+
+        $this->assertIsInt($lockoutSeconds);
+        $this->assertGreaterThan(0, $lockoutSeconds);
+        $this->assertLessThanOrEqual(30, $lockoutSeconds);
+
+        $this->assertGuest();
+    }
+
     public function test_users_can_logout(): void
     {
         $user = User::factory()->create();
