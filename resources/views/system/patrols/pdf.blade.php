@@ -347,6 +347,10 @@
             top: 164pt;
         }
 
+        .review-table-documentation {
+            top: 470pt;
+        }
+
         .review-table td {
             height: 48pt;
             width: 100%;
@@ -364,6 +368,10 @@
             top: 369pt;
             width: 467.21pt;
             z-index: 1;
+        }
+
+        .signature-table-documentation {
+            top: 670pt;
         }
 
         .signature-table td {
@@ -419,6 +427,14 @@
             : 'No incident report attached.';
         $supervisorName = 'Ryan P. Tomol';
         $documentationImages = collect($imageDataUris)->values();
+        $documentationImagePages = $documentationImages->chunk(2)->values();
+
+        if ($documentationImagePages->isNotEmpty() && $documentationImagePages->last()->count() === 2) {
+            $lastDocumentationPage = $documentationImagePages->pop()->values();
+            $documentationImagePages->push($lastDocumentationPage->take(1)->values());
+            $documentationImagePages->push($lastDocumentationPage->slice(1)->values());
+        }
+
         $letterheadSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/slsu-letterhead.png'));
         $bagongSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/bagong-pilipinas.png'));
         $qsSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/qs-rated-good.png'));
@@ -708,7 +724,7 @@
         </section>
     @endforeach
 
-    @forelse ($documentationImages->chunk(2) as $imagePair)
+    @forelse ($documentationImagePages as $imagePair)
         <section class="page">
             {!! $pageChrome() !!}
             <div class="documentation-label">Documentation</div>
@@ -743,52 +759,86 @@
                     alt="Patrol documentation image {{ (($loop->parent->iteration - 1) * 2) + $loop->iteration }}"
                 >
             @endforeach
+
+            @if ($loop->last)
+                <table class="review-table review-table-documentation">
+                    <tr>
+                        <td>
+                            <span class="label">Checklist Summary:</span>
+                            <span class="value">{{ $checklistSummary }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="label">Location Coordinates:</span>
+                            <span class="value">{{ $coordinates }} | Accuracy: {{ $accuracy }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="label">Linked Incident Report:</span>
+                            <span class="value">{{ $attachedIncident }}</span>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="signature-table signature-table-documentation">
+                    <tr>
+                        <td>
+                            <span class="signature-name">{{ $guardName }}</span>
+                            <span class="signature-label">Reporting Guard</span>
+                        </td>
+                        <td>
+                            <span class="signature-name">{{ $supervisorName }}</span>
+                            <span class="signature-label">Supervisor</span>
+                            <span class="office-label">Security and Safety Office</span>
+                        </td>
+                    </tr>
+                </table>
+            @endif
         </section>
     @empty
         <section class="page">
             {!! $pageChrome() !!}
             <div class="documentation-label">Documentation</div>
             <div class="documentation-empty">No patrol documentation image attached.</div>
+
+            <table class="review-table review-table-documentation">
+                <tr>
+                    <td>
+                        <span class="label">Checklist Summary:</span>
+                        <span class="value">{{ $checklistSummary }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="label">Location Coordinates:</span>
+                        <span class="value">{{ $coordinates }} | Accuracy: {{ $accuracy }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="label">Linked Incident Report:</span>
+                        <span class="value">{{ $attachedIncident }}</span>
+                    </td>
+                </tr>
+            </table>
+
+            <table class="signature-table signature-table-documentation">
+                <tr>
+                    <td>
+                        <span class="signature-name">{{ $guardName }}</span>
+                        <span class="signature-label">Reporting Guard</span>
+                    </td>
+                    <td>
+                        <span class="signature-name">{{ $supervisorName }}</span>
+                        <span class="signature-label">Supervisor</span>
+                        <span class="office-label">Security and Safety Office</span>
+                    </td>
+                </tr>
+            </table>
         </section>
     @endforelse
 
-    <section class="page">
-        {!! $pageChrome() !!}
-
-        <table class="review-table">
-            <tr>
-                <td>
-                    <span class="label">Checklist Summary:</span>
-                    <span class="value">{{ $checklistSummary }}</span>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <span class="label">Location Coordinates:</span>
-                    <span class="value">{{ $coordinates }} | Accuracy: {{ $accuracy }}</span>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <span class="label">Linked Incident Report:</span>
-                    <span class="value">{{ $attachedIncident }}</span>
-                </td>
-            </tr>
-        </table>
-
-        <table class="signature-table">
-            <tr>
-                <td>
-                    <span class="signature-name">{{ $guardName }}</span>
-                    <span class="signature-label">Reporting Guard</span>
-                </td>
-                <td>
-                    <span class="signature-name">{{ $supervisorName }}</span>
-                    <span class="signature-label">Supervisor</span>
-                    <span class="office-label">Security and Safety Office</span>
-                </td>
-            </tr>
-        </table>
-    </section>
 </body>
 </html>
