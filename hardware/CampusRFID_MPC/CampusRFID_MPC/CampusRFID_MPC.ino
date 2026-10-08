@@ -15,7 +15,7 @@
 // FIXED CAMPUS WIFI
 // =====================================================
 
-const char* WIFI_SSID = "255.255.255.252";
+const char* WIFI_SSID = "SystemWi-Fi";
 
 // =====================================================
 // TEMPORARY MPC WIFI SETUP NETWORK
@@ -314,7 +314,7 @@ button:hover {
 
 <strong>Campus WiFi:</strong><br>
 
-255.255.255.252
+SystemWi-Fi
 
 </div>
 

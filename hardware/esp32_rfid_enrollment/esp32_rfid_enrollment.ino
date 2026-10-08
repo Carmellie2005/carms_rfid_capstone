@@ -8,7 +8,7 @@
 #include <LiquidCrystal_I2C.h>
 
 // WiFi settings.
-const char* WIFI_SSID = "255.255.255.252";
+const char* WIFI_SSID = "SystemWi-Fi";
 const char* WIFI_PASSWORD = "87654321";
 
 // Guard registration / enrollment endpoint.

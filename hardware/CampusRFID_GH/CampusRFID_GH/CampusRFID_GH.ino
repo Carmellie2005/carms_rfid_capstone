@@ -18,7 +18,7 @@
 // This will NEVER change in the setup page.
 // Only the password will be changed.
 
-const char* WIFI_SSID = "255.255.255.252";
+const char* WIFI_SSID = "SystemWi-Fi";
 
 // =====================================================
 // TEMPORARY ESP32 SETUP WIFI
@@ -385,7 +385,7 @@ button:hover {
 
 <strong>Campus WiFi:</strong><br>
 
-255.255.255.252
+SystemWi-Fi
 
 </div>
 
