@@ -88,7 +88,7 @@
                     @csrf
 
                     <div>
-                        <label for="email" class="sr-only">Guard No. or username</label>
+                        <label for="email" class="sr-only">Account ID</label>
                         <div class="mt-1.5 flex h-12 items-center rounded-lg border border-slate-200 bg-white px-3.5 shadow-sm transition focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 dark:border-slate-700 dark:bg-slate-950 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-950">
                             <svg class="mr-3 h-4 w-4 flex-none text-blue-700 dark:text-blue-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                 <path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm0 2.25c-4.42 0-8 2.47-8 5.5 0 .69.56 1.25 1.25 1.25h13.5c.69 0 1.25-.56 1.25-1.25 0-3.03-3.58-5.5-8-5.5Z" />
@@ -102,7 +102,7 @@
                                 required
                                 autofocus
                                 autocomplete="username"
-                                placeholder="BCP-001 or supervisor username"
+                                placeholder="Enter your account ID"
                             >
                         </div>
                         <x-input-error :messages="$errors->get('email')" class="mt-2" />
