@@ -165,13 +165,6 @@
                         Too many wrong attempts. Please try again in <span x-text="lockoutSeconds"></span> seconds.
                     </p>
 
-                    <div class="flex items-center justify-between gap-4">
-                        <label for="remember_me" class="inline-flex items-center text-xs font-medium text-slate-700 dark:text-slate-300">
-                            <input id="remember_me" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-blue-700 shadow-sm focus:ring-blue-500" name="remember" value="1" @checked(old('remember'))>
-                            <span class="ms-2">Remember me</span>
-                        </label>
-                    </div>
-
                     <button
                         type="submit"
                         class="inline-flex h-12 w-full items-center justify-center rounded-lg bg-blue-700 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-400"

@@ -5,6 +5,8 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
+use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
 
@@ -87,7 +89,16 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('dashboard'));
     }
 
-    public function test_remember_me_sets_a_recaller_cookie(): void
+    public function test_login_screen_does_not_show_remember_me(): void
+    {
+        $response = $this->get('/login');
+
+        $response
+            ->assertOk()
+            ->assertDontSee('Remember me');
+    }
+
+    public function test_remember_me_input_is_ignored(): void
     {
         $user = User::factory()->create();
 
@@ -98,10 +109,10 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertCookie(Auth::guard('web')->getRecallerName());
+        $response->assertCookieMissing(Auth::guard('web')->getRecallerName());
     }
 
-    public function test_login_without_remember_me_does_not_set_a_recaller_cookie(): void
+    public function test_login_does_not_set_a_recaller_cookie(): void
     {
         $user = User::factory()->create();
 
@@ -118,12 +129,32 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->post('/login', [
+        $response = $this->from('/login')->post('/login', [
             'email' => $user->email,
             'password' => 'wrong-password',
         ]);
 
         $this->assertGuest();
+
+        $response
+            ->assertRedirect('/login')
+            ->assertSessionHasErrors([
+                'email' => 'We could not sign you in. Check your account ID and password, then try again.',
+            ]);
+    }
+
+    public function test_expired_session_redirects_to_login_with_clear_message(): void
+    {
+        $request = Request::create('/patrol/scan', 'POST');
+        $request->setLaravelSession($this->app['session.store']);
+
+        $exceptionResponse = $this->app
+            ->make(\App\Exceptions\Handler::class)
+            ->render($request, new TokenMismatchException());
+
+        $this->assertSame(302, $exceptionResponse->getStatusCode());
+        $this->assertSame(route('login'), $exceptionResponse->headers->get('Location'));
+        $this->assertSame('Your session expired. Please log in again.', session('status'));
     }
 
     public function test_login_is_locked_for_thirty_seconds_after_five_failed_attempts(): void

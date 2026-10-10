@@ -51,7 +51,7 @@ class LoginRequest extends FormRequest
             : ['username'];
 
         foreach ($fields as $field) {
-            if (Auth::attempt([$field => $login, 'password' => $this->string('password')->toString()], $this->rememberLogin())) {
+            if (Auth::attempt([$field => $login, 'password' => $this->string('password')->toString()], false)) {
                 RateLimiter::clear($this->throttleKey());
 
                 return;
@@ -111,8 +111,4 @@ class LoginRequest extends FormRequest
         return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
     }
 
-    private function rememberLogin(): bool
-    {
-        return $this->boolean('remember') || $this->boolean('remember_me');
-    }
 }
