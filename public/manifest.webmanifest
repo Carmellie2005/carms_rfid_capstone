@@ -3,7 +3,7 @@
     "name": "SLSU BC Patrol",
     "short_name": "SLSU BC Patrol",
     "description": "SLSU BC patrol monitoring, checkpoint verification, and incident reporting system.",
-    "start_url": "/login",
+    "start_url": "/",
     "scope": "/",
     "display": "standalone",
     "background_color": "#ffffff",

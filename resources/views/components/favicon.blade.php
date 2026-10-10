@@ -1,4 +1,4 @@
-<link rel="manifest" href="{{ asset('manifest.webmanifest') }}?v=slsu-bc-patrol-v14">
+<link rel="manifest" href="{{ asset('manifest.webmanifest') }}?v=slsu-bc-patrol-v15">
 <meta name="theme-color" content="#1d4ed8">
 <meta name="application-name" content="SLSU BC Patrol">
 <meta name="mobile-web-app-capable" content="yes">

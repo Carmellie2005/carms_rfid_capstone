@@ -65,6 +65,28 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('patrol.scan'));
     }
 
+    public function test_authenticated_guard_opening_login_is_redirected_to_scan_checkpoint(): void
+    {
+        $guard = User::factory()->create([
+            'role' => 'guard',
+        ]);
+
+        $response = $this->actingAs($guard)->get('/login');
+
+        $response->assertRedirect(route('patrol.scan'));
+    }
+
+    public function test_authenticated_admin_opening_login_is_redirected_to_dashboard(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        $response = $this->actingAs($admin)->get('/login');
+
+        $response->assertRedirect(route('dashboard'));
+    }
+
     public function test_remember_me_sets_a_recaller_cookie(): void
     {
         $user = User::factory()->create();

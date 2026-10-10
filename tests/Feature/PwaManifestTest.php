@@ -16,7 +16,7 @@ class PwaManifestTest extends TestCase
 
         $this->assertSame('SLSU BC Patrol', $manifest['name']);
         $this->assertSame('SLSU BC Patrol', $manifest['short_name']);
-        $this->assertSame('/login', $manifest['start_url']);
+        $this->assertSame('/', $manifest['start_url']);
 
         $icons = collect($manifest['icons']);
 
