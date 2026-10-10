@@ -77,7 +77,7 @@ class DatabaseSeederTest extends TestCase
         }
     }
 
-    public function test_seeder_replaces_ag_with_guard_house_checkpoint(): void
+    public function test_seeder_replaces_ag_with_ssc_checkpoint(): void
     {
         Checkpoint::create([
             'code' => 'CP-AG-01',
@@ -90,10 +90,10 @@ class DatabaseSeederTest extends TestCase
         $this->seed();
 
         $this->assertDatabaseHas('checkpoints', [
-            'code' => 'CP-GH-01',
-            'name' => 'Guard House',
-            'location' => 'GH',
-            'device_uid' => 'ESP32-GH-01',
+            'code' => 'CP-SSC-01',
+            'name' => 'SSC',
+            'location' => 'SSC',
+            'device_uid' => 'ESP32-SSC-01',
             'status' => 'active',
         ]);
 
@@ -114,7 +114,7 @@ class DatabaseSeederTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('checkpoints', [
-            'code' => 'CP-FI-01',
+            'code' => 'CP-TH-01',
             'name' => 'Tilapia Hatchery',
             'location' => 'Tilapia Hatchery',
             'device_uid' => 'ESP32-TH-01',

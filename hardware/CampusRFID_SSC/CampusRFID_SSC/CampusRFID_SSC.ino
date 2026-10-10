@@ -18,7 +18,7 @@
 // This will NEVER change in the setup page.
 // Only the password will be changed.
 
-const char* WIFI_SSID = "SystemWi-Fi";
+const char* WIFI_SSID = "SSC Room";
 
 // =====================================================
 // TEMPORARY ESP32 SETUP WIFI
@@ -27,7 +27,7 @@ const char* WIFI_SSID = "SystemWi-Fi";
 // This appears only when the ESP32 cannot connect
 // to the campus WiFi.
 
-const char* SETUP_AP_NAME = "SLSU-RFID-GH-SETUP";
+const char* SETUP_AP_NAME = "SLSU-RFID-SSC-SETUP";
 const char* SETUP_AP_PASSWORD = "SLSU2026";
 
 // =====================================================
@@ -40,8 +40,8 @@ const char* API_URL =
 const char* HEARTBEAT_URL =
   "https://slsubcpatrol.site/api/rfid-heartbeat";
 
-// Guard House checkpoint reader
-#define DEVICE_UID "ESP32-GH-01"
+// SSC checkpoint reader
+#define DEVICE_UID "ESP32-SSC-01"
 
 // =====================================================
 // RFID
@@ -385,7 +385,7 @@ button:hover {
 
 <strong>Campus WiFi:</strong><br>
 
-SystemWi-Fi
+SSC Room
 
 </div>
 
@@ -409,7 +409,7 @@ Save Password
 
 <div class="small">
 
-Guard House RFID Checkpoint
+SSC RFID Checkpoint
 
 </div>
 
@@ -1642,7 +1642,7 @@ void setup() {
   );
 
   Serial.println(
-    "Guard House Checkpoint"
+    "SSC Checkpoint"
   );
 
   // RFID

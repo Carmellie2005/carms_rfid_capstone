@@ -5,10 +5,10 @@ This project contains the ESP32 firmware for the SLSU Bontoc Patrol system.
 ## Device Roles
 
 - `enrollment` - used on the Guard Management page. Click **Scan Card**, then tap an RFID card. The UID is sent to `/api/rfid-enrollment`.
-- `checkpoint_gh` - Guard House checkpoint reader.
+- `checkpoint_ssc` - SSC checkpoint reader.
 - `checkpoint_it` - IT Building checkpoint reader.
 - `checkpoint_mpc` - MPC checkpoint reader.
-- `checkpoint_fi` - FI checkpoint reader.
+- `checkpoint_th` - Tilapia Hatchery checkpoint reader.
 - `checkpoint_canteen` - Canteen checkpoint reader.
 - `checkpoint_ag` - AG checkpoint reader.
 
@@ -68,16 +68,22 @@ Upload enrollment reader:
 pio run -e enrollment -t upload
 ```
 
-Upload Guard House checkpoint:
+Upload SSC checkpoint:
 
 ```bash
-pio run -e checkpoint_gh -t upload
+pio run -e checkpoint_ssc -t upload
 ```
 
 Upload IT checkpoint:
 
 ```bash
 pio run -e checkpoint_it -t upload
+```
+
+Upload Tilapia Hatchery checkpoint:
+
+```bash
+pio run -e checkpoint_th -t upload
 ```
 
 Serial monitor:

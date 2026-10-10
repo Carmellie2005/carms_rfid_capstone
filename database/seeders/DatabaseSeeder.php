@@ -66,10 +66,11 @@ class DatabaseSeeder extends Seeder
             'CP-GATE',
             'CP-LAB',
             'CP-PARK',
-            'CP-SSC-01',
             'CP-FH-01',
             'CP-BD-01',
             'CP-AG-01',
+            'CP-GH-01',
+            'CP-FI-01',
         ])->update(['status' => 'inactive']);
     }
 
@@ -88,12 +89,12 @@ class DatabaseSeeder extends Seeder
                 'description' => 'RFID checkpoint for the BITS patrol area.',
             ],
             [
-                'code' => 'CP-GH-01',
-                'name' => 'Guard House',
-                'location' => 'GH',
-                'device_uid' => 'ESP32-GH-01',
+                'code' => 'CP-SSC-01',
+                'name' => 'SSC',
+                'location' => 'SSC',
+                'device_uid' => 'ESP32-SSC-01',
                 'status' => 'active',
-                'description' => 'RFID checkpoint for the Guard House patrol area.',
+                'description' => 'RFID checkpoint for the SSC patrol area.',
             ],
             [
                 'code' => 'CP-CAN-01',
@@ -112,7 +113,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'RFID checkpoint for the MPC patrol area.',
             ],
             [
-                'code' => 'CP-FI-01',
+                'code' => 'CP-TH-01',
                 'name' => 'Tilapia Hatchery',
                 'location' => 'Tilapia Hatchery',
                 'device_uid' => 'ESP32-TH-01',
