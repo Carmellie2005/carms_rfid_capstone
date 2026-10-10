@@ -22,10 +22,12 @@ class Checkpoint extends Model
         'reader_last_ip',
         'reader_last_status',
         'reader_last_message',
+        'reader_diagnostics',
     ];
 
     protected $casts = [
         'reader_last_seen_at' => 'datetime',
+        'reader_diagnostics' => 'array',
     ];
 
     public function patrolLogs(): HasMany

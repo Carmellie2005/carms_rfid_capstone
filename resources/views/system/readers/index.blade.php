@@ -15,7 +15,7 @@
                     ['label' => 'Readers', 'value' => $summary['total'], 'cardClass' => 'border-blue-100 bg-white', 'labelClass' => 'text-blue-700', 'valueClass' => 'text-blue-950'],
                     ['label' => 'Online', 'value' => $summary['online'], 'cardClass' => 'border-emerald-100 bg-emerald-50/60', 'labelClass' => 'text-emerald-700', 'valueClass' => 'text-emerald-900'],
                     ['label' => 'Offline', 'value' => $summary['offline'], 'cardClass' => 'border-amber-100 bg-amber-50/60', 'labelClass' => 'text-amber-700', 'valueClass' => 'text-amber-900'],
-                    ['label' => 'Needs Review', 'value' => $summary['troubleScans'], 'cardClass' => 'border-red-100 bg-red-50/60', 'labelClass' => 'text-red-700', 'valueClass' => 'text-red-900'],
+                    ['label' => 'Device Issues', 'value' => $summary['deviceIssues'], 'cardClass' => 'border-red-100 bg-red-50/60', 'labelClass' => 'text-red-700', 'valueClass' => 'text-red-900'],
                 ] as $item)
                     <div class="min-h-[5.75rem] rounded-md border p-3 shadow-sm sm:p-5 {{ $item['cardClass'] }}">
                         <p class="truncate whitespace-nowrap text-[0.7rem] font-semibold uppercase tracking-wide sm:text-xs {{ $item['labelClass'] }}">{{ $item['label'] }}</p>
@@ -35,6 +35,17 @@
                             'no_device' => ['label' => 'No Device', 'class' => 'bg-red-50 text-red-700 ring-red-200'],
                         ][$state] ?? ['label' => 'Unknown', 'class' => 'bg-slate-50 text-slate-600 ring-slate-200'];
                         $latest = $checkpoint->latestPatrolLog;
+                        $diagnostics = $checkpoint->reader_diagnostics ?? [];
+                        $statusBadgeClass = function (?string $status): string {
+                            return match (strtolower((string) $status)) {
+                                'online', 'connected', 'ready' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+                                'offline', 'failed', 'error', 'disconnected' => 'bg-red-50 text-red-700 ring-red-200',
+                                default => 'bg-slate-50 text-slate-600 ring-slate-200',
+                            };
+                        };
+                        $statusLabel = fn (?string $status): string => filled($status)
+                            ? \Illuminate\Support\Str::headline($status)
+                            : 'Not Reported';
                     @endphp
 
                     <article class="min-w-0 rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-5">
@@ -77,6 +88,51 @@
                                 {{ $checkpoint->reader_last_message }}
                             </p>
                         @endif
+
+                        <div class="mt-3 rounded-md border border-blue-100 bg-blue-50/40 p-3 sm:mt-4">
+                            <div class="flex items-center justify-between gap-3">
+                                <h4 class="text-xs font-semibold uppercase text-blue-800">Device Diagnostics</h4>
+                                @if ($checkpoint->reader_has_device_issue)
+                                    <span class="rounded-md bg-red-50 px-2 py-1 text-[0.65rem] font-semibold uppercase text-red-700 ring-1 ring-red-200">Needs Check</span>
+                                @endif
+                            </div>
+
+                            <dl class="mt-3 grid gap-2 sm:grid-cols-2">
+                                @foreach ([
+                                    ['label' => 'WiFi', 'status' => $diagnostics['wifi_status'] ?? null, 'detail' => filled($diagnostics['wifi_rssi'] ?? null) ? $diagnostics['wifi_rssi'].' dBm' : null],
+                                    ['label' => 'RFID Reader', 'status' => $diagnostics['rfid_status'] ?? null, 'detail' => null],
+                                    ['label' => 'LCD', 'status' => $diagnostics['lcd_status'] ?? null, 'detail' => null],
+                                    ['label' => 'Buzzer', 'status' => $diagnostics['buzzer_status'] ?? null, 'detail' => null],
+                                ] as $component)
+                                    <div class="rounded-md bg-white p-2 ring-1 ring-blue-100">
+                                        <dt class="text-[0.65rem] font-semibold uppercase text-slate-500">{{ $component['label'] }}</dt>
+                                        <dd class="mt-1 flex flex-wrap items-center gap-2">
+                                            <span class="rounded-md px-2 py-1 text-[0.7rem] font-semibold ring-1 {{ $statusBadgeClass($component['status']) }}">
+                                                {{ $statusLabel($component['status']) }}
+                                            </span>
+                                            @if ($component['detail'])
+                                                <span class="font-mono text-[0.7rem] font-medium text-slate-500">{{ $component['detail'] }}</span>
+                                            @endif
+                                        </dd>
+                                    </div>
+                                @endforeach
+                            </dl>
+
+                            <div class="mt-2 grid gap-2 sm:grid-cols-2">
+                                <div class="rounded-md bg-white p-2 ring-1 ring-blue-100">
+                                    <p class="text-[0.65rem] font-semibold uppercase text-slate-500">Device IP</p>
+                                    <p class="mt-1 truncate font-mono text-xs font-medium text-slate-700">{{ $diagnostics['local_ip'] ?? 'Not reported' }}</p>
+                                </div>
+                                <div class="rounded-md bg-white p-2 ring-1 ring-blue-100">
+                                    <p class="text-[0.65rem] font-semibold uppercase text-slate-500">Firmware</p>
+                                    <p class="mt-1 truncate font-mono text-xs font-medium text-slate-700">{{ $diagnostics['firmware'] ?? 'Not reported' }}</p>
+                                </div>
+                            </div>
+
+                            <p class="mt-2 rounded-md bg-white px-2 py-2 text-xs font-medium text-slate-600 ring-1 ring-blue-100">
+                                {{ filled($diagnostics['last_error'] ?? null) ? $diagnostics['last_error'] : 'No device errors reported.' }}
+                            </p>
+                        </div>
                     </article>
                 @empty
                     <div class="col-span-2 rounded-md border border-blue-100 bg-white px-5 py-8 text-center text-slate-500 shadow-sm">

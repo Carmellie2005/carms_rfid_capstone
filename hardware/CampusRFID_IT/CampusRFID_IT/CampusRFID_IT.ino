@@ -958,9 +958,49 @@ void connectWiFi() {
   }
 }
 
-// ======================================================
+// =====================================================
 // SEND READER HEARTBEAT TO LARAVEL
-// ======================================================
+// =====================================================
+
+String healthStatus(bool isOnline) {
+  return isOnline ? "online" : "offline";
+}
+
+bool isRfidReaderOnline() {
+  byte version =
+    rfid.PCD_ReadRegister(
+      MFRC522::VersionReg
+    );
+
+  return
+    version != 0x00 &&
+    version != 0xFF;
+}
+
+bool isLcdOnline() {
+  Wire.beginTransmission(
+    0x27
+  );
+
+  return
+    Wire.endTransmission() == 0;
+}
+
+String deviceLastError(
+  bool rfidOnline,
+  bool lcdOnline
+) {
+
+  if (!rfidOnline) {
+    return "RFID reader not responding";
+  }
+
+  if (!lcdOnline) {
+    return "LCD not responding";
+  }
+
+  return "";
+}
 
 void sendHeartbeatToLaravel() {
 
@@ -975,10 +1015,20 @@ void sendHeartbeatToLaravel() {
     return;
   }
 
+  bool rfidOnline =
+    isRfidReaderOnline();
+
+  bool lcdOnline =
+    isLcdOnline();
+
+  String lastError =
+    deviceLastError(
+      rfidOnline,
+      lcdOnline
+    );
+
   String heartbeatEndpoint =
-    String(HEARTBEAT_URL) +
-    "?device_uid=" +
-    DEVICE_UID;
+    String(HEARTBEAT_URL);
 
   Serial.println(
     "---------------------"
@@ -1029,6 +1079,11 @@ void sendHeartbeatToLaravel() {
   );
 
   http.addHeader(
+    "Content-Type",
+    "application/json"
+  );
+
+  http.addHeader(
     "Accept",
     "application/json"
   );
@@ -1038,8 +1093,58 @@ void sendHeartbeatToLaravel() {
     "ESP32-RFID-Heartbeat/1.0"
   );
 
+  StaticJsonDocument<512> payload;
+
+  payload["device_uid"] =
+    DEVICE_UID;
+
+  payload["wifi_status"] =
+    "connected";
+
+  payload["wifi_rssi"] =
+    WiFi.RSSI();
+
+  payload["local_ip"] =
+    WiFi.localIP().toString();
+
+  payload["rfid_status"] =
+    healthStatus(
+      rfidOnline
+    );
+
+  payload["lcd_status"] =
+    healthStatus(
+      lcdOnline
+    );
+
+  payload["buzzer_status"] =
+    "ready";
+
+  payload["firmware"] =
+    "checkpoint-diagnostics-v1";
+
+  payload["last_error"] =
+    lastError;
+
+  String requestBody;
+
+  serializeJson(
+    payload,
+    requestBody
+  );
+
+  Serial.print(
+    "Heartbeat Body: "
+  );
+
+  Serial.println(
+    requestBody
+  );
+
   int httpCode =
-    http.GET();
+    http.POST(
+      requestBody
+    );
 
   String response =
     http.getString();

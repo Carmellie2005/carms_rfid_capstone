@@ -17,6 +17,12 @@ class RfidHeartbeatController extends Controller
                 'example_get' => url('/api/rfid-heartbeat?device_uid=ESP32-IT-01'),
                 'example_post' => [
                     'device_uid' => 'ESP32-IT-01',
+                    'wifi_status' => 'connected',
+                    'wifi_rssi' => -55,
+                    'local_ip' => '192.168.1.50',
+                    'rfid_status' => 'online',
+                    'lcd_status' => 'online',
+                    'buzzer_status' => 'ready',
                 ],
             ]);
         }
@@ -26,6 +32,14 @@ class RfidHeartbeatController extends Controller
         $data = $request->validate([
             'device_uid' => ['nullable', 'string', 'max:100'],
             'checkpoint_code' => ['nullable', 'string', 'max:100'],
+            'wifi_status' => ['nullable', 'string', 'max:50'],
+            'wifi_rssi' => ['nullable', 'integer', 'between:-120,50'],
+            'local_ip' => ['nullable', 'string', 'max:45'],
+            'rfid_status' => ['nullable', 'string', 'max:50'],
+            'lcd_status' => ['nullable', 'string', 'max:50'],
+            'buzzer_status' => ['nullable', 'string', 'max:50'],
+            'firmware' => ['nullable', 'string', 'max:100'],
+            'last_error' => ['nullable', 'string', 'max:255'],
         ]);
 
         $token = strtoupper(trim($data['checkpoint_code'] ?? ''));
@@ -47,12 +61,20 @@ class RfidHeartbeatController extends Controller
             ? 'Reader heartbeat received.'
             : 'Reader heartbeat received, but checkpoint is inactive.';
 
-        $checkpoint->update([
+        $diagnostics = $this->diagnosticsFrom($data);
+
+        $updates = [
             'reader_last_seen_at' => now(config('app.timezone')),
             'reader_last_ip' => $request->ip(),
             'reader_last_status' => $status,
             'reader_last_message' => $message,
-        ]);
+        ];
+
+        if ($diagnostics !== []) {
+            $updates['reader_diagnostics'] = $diagnostics;
+        }
+
+        $checkpoint->update($updates);
 
         return response()->json([
             'message' => $message,
@@ -63,7 +85,19 @@ class RfidHeartbeatController extends Controller
 
     private function hasHeartbeatPayload(Request $request): bool
     {
-        return collect(['device_uid', 'device', 'reader_uid', 'reader', 'checkpoint_code', 'checkpoint', 'code'])
+        return collect([
+            'device_uid',
+            'device',
+            'reader_uid',
+            'reader',
+            'checkpoint_code',
+            'checkpoint',
+            'code',
+            'wifi_status',
+            'rfid_status',
+            'lcd_status',
+            'buzzer_status',
+        ])
             ->contains(fn ($key) => $request->filled($key));
     }
 
@@ -93,5 +127,31 @@ class RfidHeartbeatController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function diagnosticsFrom(array $data): array
+    {
+        $diagnostics = [];
+
+        foreach ([
+            'wifi_status',
+            'wifi_rssi',
+            'local_ip',
+            'rfid_status',
+            'lcd_status',
+            'buzzer_status',
+            'firmware',
+            'last_error',
+        ] as $key) {
+            if (array_key_exists($key, $data) && filled($data[$key])) {
+                $diagnostics[$key] = $data[$key];
+            }
+        }
+
+        return $diagnostics;
     }
 }
