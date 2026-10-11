@@ -443,11 +443,11 @@
                                 <div class="mt-4 border-t border-blue-100 pt-4">
                                     <h4 class="text-base font-bold text-blue-950">Incident</h4>
                                     @if ($log->incidentReport)
-                                        <div class="mt-3 rounded-md border border-amber-100 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                                            <p class="font-bold">{{ $log->incidentReport->category }}</p>
-                                            <p class="mt-1">Status: {{ str($log->incidentReport->status)->replace('_', ' ')->title() }}</p>
+                                        <div class="mt-3 rounded-md border border-amber-100 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-500/35 dark:bg-amber-950/25 dark:text-amber-100">
+                                            <p class="font-bold text-amber-900 dark:text-amber-100">{{ $log->incidentReport->category }}</p>
+                                            <p class="mt-1 text-amber-800 dark:text-amber-200">Status: {{ str($log->incidentReport->status)->replace('_', ' ')->title() }}</p>
                                             <div class="mt-3 flex flex-wrap gap-2">
-                                                <a href="{{ route('incidents.pdf', $log->incidentReport) }}" class="inline-flex h-9 items-center justify-center rounded-md border border-amber-200 bg-white px-3 text-xs font-bold text-amber-800 transition hover:bg-amber-100">
+                                                <a href="{{ route('incidents.pdf', $log->incidentReport) }}" class="inline-flex h-9 items-center justify-center rounded-md border border-amber-200 bg-white px-3 text-xs font-bold text-amber-800 transition hover:bg-amber-100 dark:border-amber-500/45 dark:bg-slate-950 dark:text-amber-200 dark:hover:bg-amber-950/45">
                                                     Download Incident PDF
                                                 </a>
                                                 @if (! $isSupervisor && $log->incidentReport->canBeEditedByGuard($currentGuardProfile))
