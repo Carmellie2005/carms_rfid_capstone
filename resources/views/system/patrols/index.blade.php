@@ -335,14 +335,14 @@
                     $detailPdfPreviewUrl = route('patrol-logs.pdf', ['patrolLog' => $log, 'preview' => 1, 'v' => $detailPdfVersion]);
                 @endphp
 
-                <section x-show="selectedPatrolId === @js((string) $log->id)" x-cloak class="flex max-h-[88dvh] w-full max-w-5xl flex-col overflow-hidden rounded-md border border-blue-100 bg-white shadow-2xl">
-                    <div class="flex items-start justify-between gap-3 border-b border-blue-100 px-5 py-4">
+                <section x-show="selectedPatrolId === @js((string) $log->id)" x-cloak class="flex max-h-[88dvh] w-full max-w-5xl flex-col overflow-hidden rounded-md border border-blue-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950">
+                    <div class="flex items-start justify-between gap-3 border-b border-blue-100 px-5 py-4 dark:border-slate-800">
                         <div class="min-w-0">
-                            <p class="text-xs font-bold uppercase tracking-wide text-blue-700">Patrol Record</p>
-                            <h3 class="mt-1 text-lg font-bold text-blue-950">Patrol Details</h3>
-                            <p class="mt-1 truncate text-sm text-slate-500">{{ $log->securityGuard?->name ?? 'Unknown guard' }} - {{ $log->checkpoint?->name ?? 'Unknown checkpoint' }}</p>
+                            <p class="text-xs font-bold uppercase tracking-wide text-blue-700 dark:text-blue-300">Patrol Record</p>
+                            <h3 class="mt-1 text-lg font-bold text-blue-950 dark:text-slate-50">Patrol Details</h3>
+                            <p class="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">{{ $log->securityGuard?->name ?? 'Unknown guard' }} - {{ $log->checkpoint?->name ?? 'Unknown checkpoint' }}</p>
                         </div>
-                        <button type="button" class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-blue-100 bg-white text-slate-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="closePatrolDetails()" aria-label="Close patrol details">
+                        <button type="button" class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-blue-100 bg-white text-slate-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950" @click="closePatrolDetails()" aria-label="Close patrol details">
                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                 <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                             </svg>
@@ -350,31 +350,31 @@
                     </div>
 
                     <div class="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-                        <dl class="grid gap-3 rounded-md border border-blue-100 bg-blue-50/30 p-4 text-sm sm:grid-cols-2 lg:grid-cols-5">
-                            <div class="min-w-0 lg:border-r lg:border-blue-100 lg:pr-3">
-                                <dt class="font-bold text-slate-600">Guard</dt>
+                        <dl class="grid gap-3 rounded-md border border-blue-100 bg-blue-50/30 p-4 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-none sm:grid-cols-2 lg:grid-cols-5">
+                            <div class="min-w-0 lg:border-r lg:border-blue-100 lg:pr-3 dark:lg:border-slate-700">
+                                <dt class="font-bold text-slate-600 dark:text-slate-300">Guard</dt>
                                 <dd class="mt-1 min-w-0">
-                                    <p class="truncate font-semibold text-blue-950">{{ $log->securityGuard?->name ?? 'Unknown' }}</p>
-                                    <p class="truncate text-xs text-slate-500">{{ $log->securityGuard?->employee_no ?? 'No guard match' }}</p>
+                                    <p class="truncate font-semibold text-blue-950 dark:text-slate-50">{{ $log->securityGuard?->name ?? 'Unknown' }}</p>
+                                    <p class="truncate text-xs text-slate-500 dark:text-slate-400">{{ $log->securityGuard?->employee_no ?? 'No guard match' }}</p>
                                 </dd>
                             </div>
-                            <div class="min-w-0 lg:border-r lg:border-blue-100 lg:pr-3">
-                                <dt class="font-bold text-slate-600">Checkpoint</dt>
+                            <div class="min-w-0 lg:border-r lg:border-blue-100 lg:pr-3 dark:lg:border-slate-700">
+                                <dt class="font-bold text-slate-600 dark:text-slate-300">Checkpoint</dt>
                                 <dd class="mt-1 min-w-0">
-                                    <p class="truncate font-semibold text-blue-950">{{ $log->checkpoint?->name ?? 'Unknown' }}</p>
-                                    <p class="truncate font-mono text-xs text-slate-500">{{ $log->checkpoint_code }}</p>
+                                    <p class="truncate font-semibold text-blue-950 dark:text-slate-50">{{ $log->checkpoint?->name ?? 'Unknown' }}</p>
+                                    <p class="truncate font-mono text-xs text-slate-500 dark:text-slate-400">{{ $log->checkpoint_code }}</p>
                                 </dd>
                             </div>
-                            <div class="min-w-0 lg:border-r lg:border-blue-100 lg:pr-3">
-                                <dt class="font-bold text-slate-600">Time</dt>
-                                <dd class="mt-1 text-slate-700">{{ $detailScanTime?->format('M d, Y h:i A') ?? 'No scan time' }}</dd>
+                            <div class="min-w-0 lg:border-r lg:border-blue-100 lg:pr-3 dark:lg:border-slate-700">
+                                <dt class="font-bold text-slate-600 dark:text-slate-300">Time</dt>
+                                <dd class="mt-1 text-slate-700 dark:text-slate-100">{{ $detailScanTime?->format('M d, Y h:i A') ?? 'No scan time' }}</dd>
                             </div>
-                            <div class="min-w-0 lg:border-r lg:border-blue-100 lg:pr-3">
-                                <dt class="font-bold text-slate-600">RFID</dt>
-                                <dd class="mt-1 truncate font-mono text-slate-700">{{ $log->rfid_uid }}</dd>
+                            <div class="min-w-0 lg:border-r lg:border-blue-100 lg:pr-3 dark:lg:border-slate-700">
+                                <dt class="font-bold text-slate-600 dark:text-slate-300">RFID</dt>
+                                <dd class="mt-1 truncate font-mono text-slate-700 dark:text-slate-100">{{ $log->rfid_uid }}</dd>
                             </div>
                             <div class="min-w-0">
-                                <dt class="font-bold text-slate-600">Status</dt>
+                                <dt class="font-bold text-slate-600 dark:text-slate-300">Status</dt>
                                 <dd class="mt-1">
                                     <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-bold ring-1 {{ \App\Support\StatusBadge::patrol($log->status) }}">
                                         {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
@@ -382,12 +382,12 @@
                                 </dd>
                             </div>
                             <div class="min-w-0 sm:col-span-2 lg:col-span-5">
-                                <dt class="font-bold text-slate-600">Area Selfie</dt>
-                                <dd class="mt-1 text-slate-700">
+                                <dt class="font-bold text-slate-600 dark:text-slate-300">Area Selfie</dt>
+                                <dd class="mt-1 text-slate-700 dark:text-slate-100">
                                     @if ($detailAreaSelfieUrl)
                                         Captured {{ $detailSelfieTime?->format('M d, Y h:i A') ?? 'with patrol record' }}
                                         @if ($log->area_selfie_latitude && $log->area_selfie_longitude)
-                                            <span class="block font-mono text-xs text-slate-500">{{ number_format((float) $log->area_selfie_latitude, 6) }}, {{ number_format((float) $log->area_selfie_longitude, 6) }}</span>
+                                            <span class="block font-mono text-xs text-slate-500 dark:text-slate-400">{{ number_format((float) $log->area_selfie_latitude, 6) }}, {{ number_format((float) $log->area_selfie_longitude, 6) }}</span>
                                         @endif
                                     @else
                                         Not captured
