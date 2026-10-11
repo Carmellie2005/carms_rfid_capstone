@@ -197,14 +197,14 @@
 
                         <div class="mt-3 flex flex-wrap justify-end gap-2">
                             @if ($isSupervisor)
-                                <button type="button" data-skip-global-loader="true" x-on:click="openPatrolPdfPreview(@js($patrolPdfPreviewUrl), @js($patrolPdfDownloadUrl), @js('Patrol Log - '.($log->checkpoint?->name ?? $log->checkpoint_code ?? 'Patrol')))" class="inline-flex h-10 items-center justify-center rounded-md border border-emerald-200 bg-white px-3 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                                <button type="button" data-skip-global-loader="true" x-on:click="openPatrolPdfPreview(@js($patrolPdfPreviewUrl), @js($patrolPdfDownloadUrl), @js('Patrol Log - '.($log->checkpoint?->name ?? $log->checkpoint_code ?? 'Patrol')))" class="inline-flex h-10 items-center justify-center rounded-md border border-emerald-200 bg-white px-3 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:border-emerald-500/45 dark:bg-slate-950/60 dark:text-emerald-200 dark:hover:bg-emerald-950/40 dark:focus:ring-offset-slate-900">
                                     Print PDF
                                 </button>
                             @endif
-                            <a href="{{ $patrolPdfDownloadUrl }}" class="inline-flex h-10 items-center justify-center rounded-md border border-indigo-200 bg-white px-3 text-xs font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                            <a href="{{ $patrolPdfDownloadUrl }}" class="inline-flex h-10 items-center justify-center rounded-md border border-indigo-200 bg-white px-3 text-xs font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-indigo-500/45 dark:bg-slate-950/60 dark:text-indigo-200 dark:hover:bg-indigo-950/40 dark:focus:ring-offset-slate-900">
                                 Download PDF
                             </a>
-                            <button type="button" class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-blue-200 bg-white px-3 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openPatrolDetails(@js((string) $log->id))" aria-label="View patrol details for {{ $log->securityGuard?->name ?? 'this patrol log' }}">
+                            <button type="button" class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-blue-200 bg-white px-3 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-blue-500/35 dark:bg-slate-950/60 dark:text-blue-200 dark:hover:bg-blue-950/40 dark:focus:ring-offset-slate-900" @click="openPatrolDetails(@js((string) $log->id))" aria-label="View patrol details for {{ $log->securityGuard?->name ?? 'this patrol log' }}">
                                 <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                     <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                     <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
@@ -284,18 +284,18 @@
                                     </td>
                                     <td class="px-5 py-4">
                                         <div class="flex flex-wrap justify-center gap-2">
-                                            <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-blue-200 bg-white text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="openPatrolDetails(@js((string) $log->id))" aria-label="View patrol details for {{ $log->securityGuard?->name ?? 'this patrol log' }}" title="View patrol details">
+                                            <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-blue-200 bg-white text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-blue-500/35 dark:bg-slate-950/60 dark:text-blue-200 dark:hover:bg-blue-950/40 dark:focus:ring-offset-slate-900" @click="openPatrolDetails(@js((string) $log->id))" aria-label="View patrol details for {{ $log->securityGuard?->name ?? 'this patrol log' }}" title="View patrol details">
                                                 <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                                     <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                                     <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
                                                 </svg>
                                             </button>
                                             @if ($isSupervisor)
-                                                <button type="button" data-skip-global-loader="true" x-on:click="openPatrolPdfPreview(@js($patrolPdfPreviewUrl), @js($patrolPdfDownloadUrl), @js('Patrol Log - '.($log->checkpoint?->name ?? $log->checkpoint_code ?? 'Patrol')))" class="inline-flex h-9 items-center justify-center rounded-md border border-emerald-200 bg-white px-3 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                                                <button type="button" data-skip-global-loader="true" x-on:click="openPatrolPdfPreview(@js($patrolPdfPreviewUrl), @js($patrolPdfDownloadUrl), @js('Patrol Log - '.($log->checkpoint?->name ?? $log->checkpoint_code ?? 'Patrol')))" class="inline-flex h-9 items-center justify-center rounded-md border border-emerald-200 bg-white px-3 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:border-emerald-500/45 dark:bg-slate-950/60 dark:text-emerald-200 dark:hover:bg-emerald-950/40 dark:focus:ring-offset-slate-900">
                                                     Print PDF
                                                 </button>
                                             @endif
-                                            <a href="{{ $patrolPdfDownloadUrl }}" class="inline-flex h-9 items-center justify-center rounded-md border border-indigo-200 bg-white px-3 text-xs font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                            <a href="{{ $patrolPdfDownloadUrl }}" class="inline-flex h-9 items-center justify-center rounded-md border border-indigo-200 bg-white px-3 text-xs font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-indigo-500/45 dark:bg-slate-950/60 dark:text-indigo-200 dark:hover:bg-indigo-950/40 dark:focus:ring-offset-slate-900">
                                                 Download PDF
                                             </a>
                                         </div>
@@ -488,14 +488,14 @@
 
                     <div class="flex flex-col gap-2 border-t border-blue-100 bg-white px-5 py-3 sm:flex-row sm:justify-end">
                         @if ($isSupervisor)
-                            <button type="button" data-skip-global-loader="true" x-on:click="openPatrolPdfPreview(@js($detailPdfPreviewUrl), @js($detailPdfDownloadUrl), @js('Patrol Log - '.($log->checkpoint?->name ?? $log->checkpoint_code ?? 'Patrol')))" class="inline-flex h-10 items-center justify-center rounded-md border border-emerald-200 bg-white px-4 text-sm font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                            <button type="button" data-skip-global-loader="true" x-on:click="openPatrolPdfPreview(@js($detailPdfPreviewUrl), @js($detailPdfDownloadUrl), @js('Patrol Log - '.($log->checkpoint?->name ?? $log->checkpoint_code ?? 'Patrol')))" class="inline-flex h-10 items-center justify-center rounded-md border border-emerald-200 bg-white px-4 text-sm font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:border-emerald-500/45 dark:bg-slate-950/60 dark:text-emerald-200 dark:hover:bg-emerald-950/40 dark:focus:ring-offset-slate-900">
                                 Print PDF
                             </button>
                         @endif
-                        <a href="{{ $detailPdfDownloadUrl }}" class="inline-flex h-10 items-center justify-center rounded-md border border-indigo-200 bg-white px-4 text-sm font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        <a href="{{ $detailPdfDownloadUrl }}" class="inline-flex h-10 items-center justify-center rounded-md border border-indigo-200 bg-white px-4 text-sm font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-indigo-500/45 dark:bg-slate-950/60 dark:text-indigo-200 dark:hover:bg-indigo-950/40 dark:focus:ring-offset-slate-900">
                             Download PDF
                         </a>
-                        <button type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" @click="closePatrolDetails()">
+                        <button type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-blue-500/35 dark:bg-slate-950/60 dark:text-blue-200 dark:hover:bg-blue-950/40 dark:focus:ring-offset-slate-900" @click="closePatrolDetails()">
                             Close
                         </button>
                     </div>
