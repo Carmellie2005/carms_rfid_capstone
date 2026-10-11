@@ -133,9 +133,9 @@ class PatrolChecklist
     public static function statusBadgeClasses(?string $status): string
     {
         return match (self::normalizeStatus($status)) {
-            self::STATUS_ISSUE => 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-950/45 dark:text-amber-200 dark:ring-amber-500/45',
+            self::STATUS_ISSUE => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-700/60',
             self::STATUS_NOT_APPLICABLE => 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-600',
-            default => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/45 dark:text-emerald-200 dark:ring-emerald-500/45',
+            default => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-700/60',
         };
     }
 
