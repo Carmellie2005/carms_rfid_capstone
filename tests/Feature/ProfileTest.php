@@ -311,7 +311,7 @@ class ProfileTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
-        Guard::create([
+        $guard = Guard::create([
             'user_id' => $user->id,
             'employee_no' => 'SG-LOCKED',
             'name' => 'Locked Guard',
@@ -340,6 +340,7 @@ class ProfileTest extends TestCase
         $this->assertSame('assigned.guard', $user->username);
         $this->assertSame('assigned.guard@example.com', $user->email);
         $this->assertSame('09179999999', $user->phone);
+        $this->assertSame('09179999999', $guard->refresh()->phone);
         $this->assertSame('1999-09-12', $user->birthday->toDateString());
         $this->assertNotNull($user->email_verified_at);
     }

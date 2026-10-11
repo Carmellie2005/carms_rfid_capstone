@@ -40,12 +40,6 @@
     </div>
 
     <div>
-        <label for="{{ $fieldPrefix }}_phone" class="sr-only">Phone</label>
-        <input id="{{ $fieldPrefix }}_phone" name="phone" value="{{ $valueFor('phone', $guard->phone) }}" placeholder="09XX XXX XXXX" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500">
-        <x-input-error :messages="$errorFor('phone')" class="mt-2" />
-    </div>
-
-    <div>
         <label for="{{ $fieldPrefix }}_rfid_uid" class="sr-only">RFID UID</label>
         <div class="mt-1 flex gap-2">
             <input id="{{ $fieldPrefix }}_rfid_uid" name="rfid_uid" value="{{ $valueFor('rfid_uid', $guard->rfid_uid) }}" placeholder="F33C8D37" data-current-guard-id="{{ $guard->exists ? $guard->id : '' }}" x-on:input="clearRfidEnrollmentConflict('{{ $fieldPrefix }}_rfid_uid')" x-bind:class="hasRfidEnrollmentConflictFor('{{ $fieldPrefix }}_rfid_uid') ? 'border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:text-red-100' : ''" class="block min-w-0 flex-1 rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500" required>

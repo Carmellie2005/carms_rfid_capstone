@@ -55,6 +55,15 @@ class ProfileController extends Controller
             }
 
             $user->save();
+
+            if (
+                $user->role === 'guard' &&
+                array_key_exists('phone', $data)
+            ) {
+                $user->guardProfile()->update([
+                    'phone' => $data['phone'],
+                ]);
+            }
         });
 
         AuditLogger::record('profile_updated', 'Profile settings updated.', $user);

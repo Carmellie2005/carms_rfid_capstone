@@ -142,11 +142,12 @@ class PatrolAreaSelfieTest extends TestCase
 
         $this->assertDatabaseHas('checklist_responses', [
             'patrol_log_id' => $patrolLog->id,
-            'doors_locked' => 1,
+            'doors_checked' => 1,
+            'gates_checked' => 1,
+            'locks_checked' => 1,
             'lighting_ok' => 1,
+            'visibility_checked' => 1,
             'cctv_alarm_checked' => 1,
-            'no_unauthorized_person' => 1,
-            'safety_hazard' => 1,
         ]);
         $this->assertDatabaseCount('checklist_proof_photos', 0);
     }
@@ -213,7 +214,7 @@ class PatrolAreaSelfieTest extends TestCase
                 'patrol_log_id' => $patrolLog->id,
                 ...$this->areaSelfiePayload(),
                 ...$checklistStatuses,
-                ...$this->checklistProofPhotos('doors_locked'),
+                ...$this->checklistProofPhotos('doors_checked'),
             ]);
 
         $response
@@ -244,7 +245,7 @@ class PatrolAreaSelfieTest extends TestCase
             ->assertSee('areaSelfieCameraOpen', false)
             ->assertSee('openAreaSelfieCamera()', false)
             ->assertSee('captureAreaSelfie()', false)
-            ->assertSee('checklist_statuses[doors_locked]', false)
+            ->assertSee('checklist_statuses[doors_checked]', false)
             ->assertDontSee('Start Face Verification')
             ->assertDontSee('Face Verify')
             ->assertDontSee('face-verification-circle');

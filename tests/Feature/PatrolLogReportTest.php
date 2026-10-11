@@ -19,8 +19,6 @@ class PatrolLogReportTest extends TestCase
     {
         $guard = $this->createGuard('SG-FILTER', 'RFID-FILTER');
         $patrolLog = $this->createPatrolLog($guard);
-        $previewUrl = route('patrol-logs.pdf', ['patrolLog' => $patrolLog, 'preview' => 1]);
-        $escapedPreviewUrl = str_replace('/', '\\/', $previewUrl);
 
         $response = $this
             ->actingAs($guard->user)
@@ -30,10 +28,9 @@ class PatrolLogReportTest extends TestCase
             ->assertOk()
             ->assertSee('Date Filter')
             ->assertSee('Download PDF')
-            ->assertSee('Print PDF')
+            ->assertDontSee('Print PDF')
             ->assertSee('PDF Preview')
             ->assertSee('openPatrolPdfPreview', false)
-            ->assertSee($escapedPreviewUrl, false)
             ->assertSee('/patrol-logs/'.$patrolLog->id.'/pdf', false);
     }
 
@@ -67,7 +64,7 @@ class PatrolLogReportTest extends TestCase
         $this->assertStringContainsString('inline', $response->headers->get('content-disposition'));
     }
 
-    public function test_patrol_pdf_moves_remarks_to_next_page_when_checklist_is_tall(): void
+    public function test_patrol_pdf_keeps_remarks_with_compact_checklist(): void
     {
         $guard = $this->createGuard('SG-LAYOUT', 'RFID-LAYOUT');
         $patrolLog = $this->createPatrolLog($guard);
@@ -84,9 +81,11 @@ class PatrolLogReportTest extends TestCase
             'generatedAt' => Carbon::parse('2026-10-05 20:00:00', config('app.timezone')),
         ])->render();
 
-        $this->assertStringContainsString('style="height: 32.00pt;"', $html);
-        $this->assertStringContainsString('class="notes-continuation-label">Remarks / Notes:</div>', $html);
-        $this->assertStringNotContainsString('class="notes-label">Remarks / Notes:</div>', $html);
+        $this->assertStringContainsString('style="height: 28.00pt;"', $html);
+        $this->assertStringContainsString('Remarks / Notes:', $html);
+        $this->assertStringNotContainsString('No suspicious person, item, or vehicle observed', $html);
+        $this->assertStringNotContainsString('No damage or safety hazard observed', $html);
+        $this->assertStringNotContainsString('Patrol Checklist Continued', $html);
     }
 
     public function test_guard_can_download_own_patrol_log_pdf(): void
@@ -120,11 +119,12 @@ class PatrolLogReportTest extends TestCase
         $patrolLog = $this->createPatrolLog($guard);
         $checklist = $patrolLog->checklistResponse()->create([
             'item_statuses' => [
-                'doors_locked' => PatrolChecklist::STATUS_NORMAL,
+                'doors_checked' => PatrolChecklist::STATUS_NORMAL,
+                'gates_checked' => PatrolChecklist::STATUS_NORMAL,
+                'locks_checked' => PatrolChecklist::STATUS_NORMAL,
                 'lighting_ok' => PatrolChecklist::STATUS_ISSUE,
+                'visibility_checked' => PatrolChecklist::STATUS_NORMAL,
                 'cctv_alarm_checked' => PatrolChecklist::STATUS_NORMAL,
-                'no_unauthorized_person' => PatrolChecklist::STATUS_NORMAL,
-                'safety_hazard' => PatrolChecklist::STATUS_NORMAL,
             ],
         ]);
         $proofPhoto = $checklist->proofPhotos()->create([

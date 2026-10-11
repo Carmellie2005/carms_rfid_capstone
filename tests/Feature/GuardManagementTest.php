@@ -44,6 +44,7 @@ class GuardManagementTest extends TestCase
         $guard = Guard::where('employee_no', 'BCP-001')->firstOrFail();
 
         $this->assertSame('RFID-NO-UPLOAD', $guard->rfid_uid);
+        $this->assertNull($guard->phone);
         $user = $guard->user()->firstOrFail();
         $this->assertSame('bcp-001', $user->username);
         $this->assertTrue($user->must_change_password);
@@ -279,6 +280,7 @@ class GuardManagementTest extends TestCase
             ->assertOk()
             ->assertSee('aria-label="Show password"', false)
             ->assertSee('aria-label="Show confirm password"', false)
+            ->assertDontSee('name="phone"', false)
             ->assertDontSee('name="face_images[]', false)
             ->assertDontSee('Face Image');
     }
@@ -303,6 +305,7 @@ class GuardManagementTest extends TestCase
             ->assertSee('Scan Card')
             ->assertSee("startRfidEnrollment('create_rfid_uid')", false)
             ->assertSee('Create Guard Account')
+            ->assertDontSee('create_phone', false)
             ->assertSee('The guard will sign in using the Guard No. above, for example BCP-001.')
             ->assertSee('Guard Management')
             ->assertSee('Registered guards, RFID cards, shifts, and login accounts')

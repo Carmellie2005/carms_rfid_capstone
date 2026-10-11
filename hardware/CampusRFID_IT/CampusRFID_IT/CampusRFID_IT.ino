@@ -12,10 +12,16 @@
 #include <DNSServer.h>
 
 // ======================================================
-// FIXED CAMPUS WIFI
+// WIFI NETWORKS
 // ======================================================
 
-const char* WIFI_SSID = "SystemWi-Fi";
+const char* WIFI_SSID = "BITS 01";
+
+// Optional fallback networks for pilot testing.
+// Leave blank if not available. Open WiFi must not require a captive portal/login page.
+const char* OPEN_WIFI_SSID = "SLSU BC Student's Wi-Fi";
+const char* BACKUP_WIFI_SSID = "";
+const char* BACKUP_WIFI_PASSWORD = "";
 
 // ======================================================
 // TEMPORARY IT WIFI SETUP NETWORK
@@ -482,9 +488,13 @@ button:hover {
 
 <div class="info">
 
-<strong>Campus WiFi:</strong><br>
+<strong>Primary Campus WiFi:</strong><br>
 
-SystemWi-Fi
+BITS 01
+
+<br><br>
+
+Optional fallback WiFi networks can also be configured in the sketch.
 
 </div>
 
@@ -808,6 +818,151 @@ The IT Building RFID device will restart automatically.
 // WIFI CONNECTION
 // ======================================================
 
+bool hasConfiguredText(
+  const char* value
+) {
+
+  return value != nullptr &&
+    String(value).length() > 0;
+}
+
+bool tryWiFiNetwork(
+  const char* ssid,
+  const char* password
+) {
+
+  if (
+    !hasConfiguredText(ssid)
+  ) {
+
+    return false;
+  }
+
+  Serial.print(
+    "Trying WiFi: "
+  );
+
+  Serial.println(
+    ssid
+  );
+
+  lcdMessage(
+    "Trying WiFi",
+    String(ssid)
+  );
+
+  WiFi.disconnect();
+
+  delay(500);
+
+  WiFi.mode(
+    WIFI_STA
+  );
+
+  WiFi.setSleep(
+    false
+  );
+
+  if (
+    hasConfiguredText(password)
+  ) {
+
+    WiFi.begin(
+      ssid,
+      password
+    );
+  }
+  else {
+
+    WiFi.begin(
+      ssid
+    );
+  }
+
+  int attempts = 0;
+
+  while (
+    WiFi.status() != WL_CONNECTED &&
+    attempts < WIFI_CONNECT_ATTEMPTS
+  ) {
+
+    delay(500);
+
+    Serial.print(".");
+
+    attempts++;
+  }
+
+  Serial.println();
+
+  if (
+    WiFi.status() == WL_CONNECTED
+  ) {
+
+    return true;
+  }
+
+  Serial.print(
+    "Failed WiFi: "
+  );
+
+  Serial.println(
+    ssid
+  );
+
+  return false;
+}
+
+void showWiFiConnected() {
+
+  Serial.println(
+    "WiFi Connected"
+  );
+
+  Serial.print(
+    "SSID: "
+  );
+
+  Serial.println(
+    WiFi.SSID()
+  );
+
+  Serial.print(
+    "IP Address: "
+  );
+
+  Serial.println(
+    WiFi.localIP()
+  );
+
+  Serial.print(
+    "Device: "
+  );
+
+  Serial.println(
+    DEVICE_UID
+  );
+
+  Serial.print(
+    "API URL: "
+  );
+
+  Serial.println(
+    API_URL
+  );
+
+  lcdMessage(
+    "WiFi Connected",
+    WiFi.localIP().toString()
+  );
+
+  successBeep();
+
+  delay(1500);
+
+  showReady();
+}
+
 void connectWiFi() {
 
   Serial.println();
@@ -825,137 +980,91 @@ void connectWiFi() {
     getSavedWiFiPassword();
 
   // ==================================================
-  // NO SAVED PASSWORD
+  // PRIMARY WIFI USING SAVED PASSWORD
   // ==================================================
+
+  if (
+    savedPassword.length() > 0 &&
+    tryWiFiNetwork(
+      WIFI_SSID,
+      savedPassword.c_str()
+    )
+  ) {
+
+    showWiFiConnected();
+
+    return;
+  }
 
   if (
     savedPassword.length() == 0
   ) {
 
     Serial.println(
-      "No saved WiFi password."
+      "No saved password for primary WiFi."
     );
+  }
+  else {
 
-    startWiFiSetupPortal();
+    Serial.println(
+      "Primary WiFi failed."
+    );
+  }
+
+  // ==================================================
+  // OPTIONAL OPEN WIFI FALLBACK
+  // ==================================================
+
+  if (
+    tryWiFiNetwork(
+      OPEN_WIFI_SSID,
+      nullptr
+    )
+  ) {
+
+    showWiFiConnected();
 
     return;
   }
 
   // ==================================================
-  // CONNECT TO FIXED SSID
-  // ==================================================
-
-  WiFi.mode(
-    WIFI_STA
-  );
-
-  WiFi.setSleep(
-    false
-  );
-
-  WiFi.begin(
-    WIFI_SSID,
-    savedPassword.c_str()
-  );
-
-  int attempts = 0;
-
-  while (
-    WiFi.status() != WL_CONNECTED &&
-    attempts < WIFI_CONNECT_ATTEMPTS
-  ) {
-
-    delay(500);
-
-    Serial.print(".");
-
-    attempts++;
-  }
-
-  // ==================================================
-  // WIFI CONNECTED
+  // OPTIONAL SECURED WIFI FALLBACK
   // ==================================================
 
   if (
-    WiFi.status() ==
-    WL_CONNECTED
+    tryWiFiNetwork(
+      BACKUP_WIFI_SSID,
+      BACKUP_WIFI_PASSWORD
+    )
   ) {
 
-    Serial.println();
+    showWiFiConnected();
 
-    Serial.println(
-      "WiFi Connected"
-    );
-
-    Serial.print(
-      "SSID: "
-    );
-
-    Serial.println(
-      WiFi.SSID()
-    );
-
-    Serial.print(
-      "IP Address: "
-    );
-
-    Serial.println(
-      WiFi.localIP()
-    );
-
-    Serial.print(
-      "Device: "
-    );
-
-    Serial.println(
-      DEVICE_UID
-    );
-
-    Serial.print(
-      "API URL: "
-    );
-
-    Serial.println(
-      API_URL
-    );
-
-    lcdMessage(
-      "WiFi Connected",
-      WiFi.localIP().toString()
-    );
-
-    successBeep();
-
-    delay(1500);
-
-    showReady();
+    return;
   }
 
   // ==================================================
-  // PASSWORD FAILED
+  // ALL WIFI OPTIONS FAILED
   // ==================================================
 
-  else {
+  Serial.println();
 
-    Serial.println();
+  Serial.println(
+    "All WiFi options failed."
+  );
 
-    Serial.println(
-      "Saved WiFi password failed."
-    );
+  Serial.println(
+    "Starting IT WiFi setup portal..."
+  );
 
-    Serial.println(
-      "Starting IT WiFi setup portal..."
-    );
+  lcdMessage(
+    "WiFi Setup",
+    "Required"
+  );
 
-    lcdMessage(
-      "WiFi Changed?",
-      "Setup Required"
-    );
+  delay(2000);
 
-    delay(2000);
-
-    startWiFiSetupPortal();
-  }
+  startWiFiSetupPortal();
 }
 
 // =====================================================

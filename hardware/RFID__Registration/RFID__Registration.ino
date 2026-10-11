@@ -12,10 +12,17 @@
 #include <DNSServer.h>
 
 // ======================================================
-// FIXED CAMPUS WIFI
+// WIFI NETWORKS
 // ======================================================
 
 const char* WIFI_SSID = "SystemWi-Fi";
+
+// Public/open fallback networks for pilot testing.
+// These must not require a captive portal/login page.
+const char* OPEN_WIFI_SSID = "STARLINK";
+const char* SECOND_OPEN_WIFI_SSID = "SLSU BC Student's Wi-Fi";
+const char* BACKUP_WIFI_SSID = "";
+const char* BACKUP_WIFI_PASSWORD = "";
 
 // ======================================================
 // TEMPORARY REGISTRATION WIFI SETUP NETWORK
@@ -31,7 +38,7 @@ const char* SETUP_AP_PASSWORD = "SLSU2026";
 const char* API_URL =
   "https://slsubcpatrol.site/api/rfid-enrollment";
 
-#define DEVICE_UID "ESP32-REG-01";
+#define DEVICE_UID "ESP32-REG-01"
 
 // ======================================================
 // RFID PINS
@@ -379,9 +386,16 @@ button {
 
 <div class="info">
 
-<strong>Campus WiFi:</strong><br>
+<strong>Primary Campus WiFi:</strong><br>
 
 SystemWi-Fi
+
+<br><br>
+
+Public fallback WiFi:<br>
+
+STARLINK<br>
+SLSU BC Student's Wi-Fi
 
 </div>
 
@@ -701,42 +715,42 @@ The RFID registration reader will restart automatically.
 // WIFI CONNECTION
 // ======================================================
 
-void connectWiFi() {
+bool hasConfiguredText(
+  const char* value
+) {
 
-  Serial.println();
+  return value != nullptr &&
+    String(value).length() > 0;
+}
+
+bool tryWiFiNetwork(
+  const char* ssid,
+  const char* password
+) {
+
+  if (
+    !hasConfiguredText(ssid)
+  ) {
+
+    return false;
+  }
+
+  Serial.print(
+    "Trying WiFi: "
+  );
 
   Serial.println(
-    "Connecting RFID registration reader..."
+    ssid
   );
 
   lcdMessage(
-    "Connecting WiFi",
-    "Please wait..."
+    "Trying WiFi",
+    String(ssid)
   );
 
-  String savedPassword =
-    getSavedWiFiPassword();
+  WiFi.disconnect();
 
-  // ==================================================
-  // NO SAVED PASSWORD
-  // ==================================================
-
-  if (
-    savedPassword.length() == 0
-  ) {
-
-    Serial.println(
-      "No saved WiFi password."
-    );
-
-    startWiFiSetupPortal();
-
-    return;
-  }
-
-  // ==================================================
-  // CONNECT USING SAVED PASSWORD
-  // ==================================================
+  delay(500);
 
   WiFi.mode(
     WIFI_STA
@@ -746,10 +760,21 @@ void connectWiFi() {
     false
   );
 
-  WiFi.begin(
-    WIFI_SSID,
-    savedPassword.c_str()
-  );
+  if (
+    hasConfiguredText(password)
+  ) {
+
+    WiFi.begin(
+      ssid,
+      password
+    );
+  }
+  else {
+
+    WiFi.begin(
+      ssid
+    );
+  }
 
   int attempts = 0;
 
@@ -768,86 +793,187 @@ void connectWiFi() {
 
   Serial.println();
 
-  // ==================================================
-  // CONNECTED
-  // ==================================================
-
   if (
     WiFi.status() ==
     WL_CONNECTED
   ) {
 
-    Serial.println(
-      "WiFi Connected"
-    );
-
-    Serial.print(
-      "SSID: "
-    );
-
-    Serial.println(
-      WiFi.SSID()
-    );
-
-    Serial.print(
-      "IP Address: "
-    );
-
-    Serial.println(
-      WiFi.localIP()
-    );
-
-    Serial.print(
-      "Device: "
-    );
-
-    Serial.println(
-      DEVICE_UID
-    );
-
-    Serial.print(
-      "API URL: "
-    );
-
-    Serial.println(
-      API_URL
-    );
-
-    wifiConnectedBeep();
-
-    lcdMessage(
-      "WiFi Connected",
-      WiFi.localIP().toString()
-    );
-
-    delay(1500);
-
-    showReady(true);
+    return true;
   }
 
+  Serial.print(
+    "Failed WiFi: "
+  );
+
+  Serial.println(
+    ssid
+  );
+
+  return false;
+}
+
+void showWiFiConnected() {
+
+  Serial.println(
+    "WiFi Connected"
+  );
+
+  Serial.print(
+    "SSID: "
+  );
+
+  Serial.println(
+    WiFi.SSID()
+  );
+
+  Serial.print(
+    "IP Address: "
+  );
+
+  Serial.println(
+    WiFi.localIP()
+  );
+
+  Serial.print(
+    "Device: "
+  );
+
+  Serial.println(
+    DEVICE_UID
+  );
+
+  Serial.print(
+    "API URL: "
+  );
+
+  Serial.println(
+    API_URL
+  );
+
+  wifiConnectedBeep();
+
+  lcdMessage(
+    "WiFi Connected",
+    WiFi.localIP().toString()
+  );
+
+  delay(1500);
+
+  showReady(true);
+}
+
+void connectWiFi() {
+
+  Serial.println();
+
+  Serial.println(
+    "Connecting RFID registration reader..."
+  );
+
+  lcdMessage(
+    "Connecting WiFi",
+    "Please wait..."
+  );
+
+  String savedPassword =
+    getSavedWiFiPassword();
+
   // ==================================================
-  // SAVED PASSWORD FAILED
+  // PRIMARY WIFI USING SAVED PASSWORD
   // ==================================================
 
+  if (
+    savedPassword.length() > 0 &&
+    tryWiFiNetwork(
+      WIFI_SSID,
+      savedPassword.c_str()
+    )
+  ) {
+
+    showWiFiConnected();
+
+    return;
+  }
+
+  if (
+    savedPassword.length() == 0
+  ) {
+
+    Serial.println(
+      "No saved password for primary WiFi."
+    );
+  }
   else {
 
     Serial.println(
-      "Saved WiFi password failed."
+      "Primary WiFi failed."
     );
-
-    Serial.println(
-      "Starting registration WiFi setup portal..."
-    );
-
-    lcdMessage(
-      "WiFi Changed?",
-      "Setup Required"
-    );
-
-    delay(2000);
-
-    startWiFiSetupPortal();
   }
+
+  // ==================================================
+  // PUBLIC WIFI FALLBACKS
+  // ==================================================
+
+  if (
+    tryWiFiNetwork(
+      OPEN_WIFI_SSID,
+      nullptr
+    )
+  ) {
+
+    showWiFiConnected();
+
+    return;
+  }
+
+  if (
+    tryWiFiNetwork(
+      SECOND_OPEN_WIFI_SSID,
+      nullptr
+    )
+  ) {
+
+    showWiFiConnected();
+
+    return;
+  }
+
+  // ==================================================
+  // OPTIONAL SECURED WIFI FALLBACK
+  // ==================================================
+
+  if (
+    tryWiFiNetwork(
+      BACKUP_WIFI_SSID,
+      BACKUP_WIFI_PASSWORD
+    )
+  ) {
+
+    showWiFiConnected();
+
+    return;
+  }
+
+  // ==================================================
+  // ALL WIFI OPTIONS FAILED
+  // ==================================================
+
+  Serial.println(
+    "All WiFi options failed."
+  );
+
+  Serial.println(
+    "Starting registration WiFi setup portal..."
+  );
+
+  lcdMessage(
+    "WiFi Setup",
+    "Required"
+  );
+
+  delay(2000);
+
+  startWiFiSetupPortal();
 }
 
 // ======================================================

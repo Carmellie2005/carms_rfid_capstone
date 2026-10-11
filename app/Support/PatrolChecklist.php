@@ -19,8 +19,6 @@ class PatrolChecklist
         'lighting_ok' => 'Lighting checked',
         'visibility_checked' => 'Visibility checked',
         'cctv_alarm_checked' => 'CCTV/security equipment checked',
-        'no_unauthorized_person' => 'No suspicious person, item, or vehicle observed',
-        'safety_hazard' => 'No damage or safety hazard observed',
     ];
 
     public const STATUS_OPTIONS = [

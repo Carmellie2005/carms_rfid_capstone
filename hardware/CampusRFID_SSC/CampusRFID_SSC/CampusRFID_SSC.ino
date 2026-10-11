@@ -19,6 +19,7 @@
 // Only the password will be changed.
 
 const char* WIFI_SSID = "SSC Room";
+const char* WIFI_PASSWORD = "SLSU_BC_SSC_2026";
 
 // =====================================================
 // TEMPORARY ESP32 SETUP WIFI
@@ -729,16 +730,12 @@ void connectWiFi() {
   ) {
 
     Serial.println(
-      "No saved WiFi password."
+      "No saved WiFi password. Trying built-in password."
     );
-
-    startWiFiSetupPortal();
-
-    return;
   }
 
   // =================================================
-  // CONNECT USING FIXED SSID
+  // CONNECT USING BUILT-IN PASSWORD
   // =================================================
 
   WiFi.mode(
@@ -751,7 +748,7 @@ void connectWiFi() {
 
   WiFi.begin(
     WIFI_SSID,
-    savedPassword.c_str()
+    WIFI_PASSWORD
   );
 
   int attempts = 0;
@@ -766,6 +763,45 @@ void connectWiFi() {
     Serial.print(".");
 
     attempts++;
+  }
+
+  // =================================================
+  // FALL BACK TO SAVED PASSWORD IF BUILT-IN FAILS
+  // =================================================
+
+  if (
+    WiFi.status() != WL_CONNECTED &&
+    savedPassword.length() > 0
+  ) {
+
+    Serial.println();
+
+    Serial.println(
+      "Built-in password failed. Trying saved password."
+    );
+
+    WiFi.disconnect();
+
+    delay(500);
+
+    WiFi.begin(
+      WIFI_SSID,
+      savedPassword.c_str()
+    );
+
+    attempts = 0;
+
+    while (
+      WiFi.status() != WL_CONNECTED &&
+      attempts < WIFI_CONNECT_ATTEMPTS
+    ) {
+
+      delay(500);
+
+      Serial.print(".");
+
+      attempts++;
+    }
   }
 
   // =================================================
@@ -827,7 +863,7 @@ void connectWiFi() {
     Serial.println();
 
     Serial.println(
-      "Saved password failed."
+      "All WiFi password attempts failed."
     );
 
     Serial.println(
