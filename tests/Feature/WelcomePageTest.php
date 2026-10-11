@@ -18,24 +18,19 @@ class WelcomePageTest extends TestCase
             ->assertSee('text-xs leading-5 text-slate-600', false);
     }
 
-    public function test_public_landing_page_shows_development_team_photos(): void
+    public function test_public_landing_page_shows_development_team_footer(): void
     {
         $response = $this->get('/');
 
         $response
             ->assertOk()
-            ->assertSee('Meet the Developers')
-            ->assertSee('images/developers/carmela.jpg')
-            ->assertSee('images/developers/cherry.jpg')
-            ->assertSee('images/developers/clarice.jpg')
-            ->assertSee('images/developers/karyl.jpg')
-            ->assertSee('bg-white py-8 dark:bg-slate-950 sm:py-10', false)
-            ->assertSee('h-24 w-24 rounded-full border-[3px]', false)
-            ->assertSee('lg:h-32 lg:w-32', false)
             ->assertSee('bg-[#eef8ff] text-blue-950', false)
-            ->assertSee('items-start justify-start', false)
-            ->assertSee('h-14 w-14 rounded-full', false)
+            ->assertSee('Development Team')
+            ->assertSee('h-11 w-11 shrink-0 rounded-full', false)
             ->assertDontSee('All rights reserved.')
+            ->assertDontSee('&copy;', false)
+            ->assertDontSee('Meet the Developers')
+            ->assertDontSee('images/developers/carmela.jpg')
             ->assertDontSee('San Ramon, Bontoc, Southern Leyte')
             ->assertDontSee('cd_bt@southernleytestateu.edu.ph')
             ->assertDontSee('www.southernleytestateu.edu.ph')

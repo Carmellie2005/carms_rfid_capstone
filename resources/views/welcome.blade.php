@@ -357,7 +357,6 @@
                     <x-application-logo class="h-11 w-11 shrink-0 rounded-full" />
                     <div>
                         <p class="text-xl font-bold">SLSU BC Patrol</p>
-                        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">&copy; {{ now()->year }} All rights reserved.</p>
                     </div>
                 </div>
 
