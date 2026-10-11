@@ -7,22 +7,6 @@
     </x-slot>
 
     @php
-        $statusClasses = [
-            'invalid' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/35 dark:text-red-200 dark:ring-red-400/45',
-            'suspicious' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45',
-            'pending_face' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
-            'pending_selfie' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
-            'profile_incomplete' => 'bg-violet-50 text-violet-700 ring-violet-200 dark:bg-violet-950/35 dark:text-violet-200 dark:ring-violet-400/45',
-            'outside_schedule' => 'bg-orange-50 text-orange-700 ring-orange-200 dark:bg-orange-950/35 dark:text-orange-200 dark:ring-orange-400/45',
-            'expired' => 'bg-slate-50 text-slate-700 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60',
-        ];
-
-        $severityClasses = [
-            'ok' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45',
-            'warning' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45',
-            'danger' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/35 dark:text-red-200 dark:ring-red-400/45',
-        ];
-
         $summaryCards = [
             ['label' => 'Total Issues', 'value' => $summary['total'], 'labelClass' => 'text-blue-700 dark:text-blue-300', 'valueClass' => 'text-blue-950 dark:text-blue-100'],
             ['label' => 'Unregistered RFID', 'value' => $summary['unregistered'], 'labelClass' => 'text-red-700 dark:text-red-300', 'valueClass' => 'text-red-900 dark:text-red-100'],
@@ -83,8 +67,8 @@
                                 @php
                                     $log = $item['log'];
                                     $scanTime = $log->scanned_at?->timezone(config('app.timezone'));
-                                    $statusClass = $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200';
-                                    $severityClass = $severityClasses[$item['severity']] ?? 'bg-slate-50 text-slate-700 ring-slate-200';
+                                    $statusClass = \App\Support\StatusBadge::patrol($log->status);
+                                    $severityClass = \App\Support\StatusBadge::severity($item['severity']);
                                 @endphp
                                 <tr class="align-top">
                                     <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-600">{{ $scanTime?->format('M d, Y h:i A') ?? 'Not recorded' }}</td>
@@ -123,8 +107,8 @@
                         @php
                             $log = $item['log'];
                             $scanTime = $log->scanned_at?->timezone(config('app.timezone'));
-                            $statusClass = $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200';
-                            $severityClass = $severityClasses[$item['severity']] ?? 'bg-slate-50 text-slate-700 ring-slate-200';
+                            $statusClass = \App\Support\StatusBadge::patrol($log->status);
+                            $severityClass = \App\Support\StatusBadge::severity($item['severity']);
                         @endphp
                         <article class="min-w-0 rounded-md border border-blue-100 p-3">
                             <div class="flex items-start justify-between gap-2">

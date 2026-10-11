@@ -8,21 +8,6 @@
         </div>
     </x-slot>
 
-    @php
-        $priorityClasses = [
-            'low' => 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-950/35 dark:text-sky-200 dark:ring-sky-400/45',
-            'normal' => 'bg-slate-50 text-slate-700 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60',
-            'high' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45',
-            'critical' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/35 dark:text-red-200 dark:ring-red-400/45',
-        ];
-
-        $statusClasses = [
-            'submitted' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
-            'under_review' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45',
-            'resolved' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45',
-        ];
-    @endphp
-
     <div
         class="py-5 sm:py-8"
         x-data="{
@@ -96,10 +81,10 @@
                                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                     <div class="flex flex-wrap items-center gap-2">
                                         <h3 class="text-lg font-semibold text-blue-950">{{ $incident->category }}</h3>
-                                        <span class="whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $priorityClasses[$incident->priority] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
+                                        <span class="whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::priority($incident->priority) }}">
                                             {{ ucfirst($incident->priority) }}
                                         </span>
-                                        <span class="whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClasses[$incident->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
+                                        <span class="whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::incidentStatus($incident->status) }}">
                                             {{ str($incident->status)->replace('_', ' ')->title() }}
                                         </span>
                                     </div>

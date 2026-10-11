@@ -15,18 +15,6 @@
 
     @php
         $currentGuardProfile = auth()->user()?->guardProfile;
-        $statusClasses = [
-            'valid' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45',
-            'suspicious' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45',
-            'invalid' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/35 dark:text-red-200 dark:ring-red-400/45',
-            'pending_face' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
-            'pending_selfie' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
-            'pending_checklist' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
-            'profile_incomplete' => 'bg-violet-50 text-violet-700 ring-violet-200 dark:bg-violet-950/35 dark:text-violet-200 dark:ring-violet-400/45',
-            'outside_schedule' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-orange-950/35 dark:text-orange-200 dark:ring-orange-400/45',
-            'expired' => 'bg-slate-50 text-slate-700 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60',
-            'not_required' => 'bg-slate-50 text-slate-700 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60',
-        ];
     @endphp
 
     <div class="py-5 sm:py-8" x-data="{
@@ -159,7 +147,7 @@
                                 <p class="truncate text-[0.65rem] font-semibold uppercase text-blue-800 sm:text-xs">{{ $scanTime?->format('M d, Y') ?? 'No date' }}</p>
                                 <p class="mt-1 text-sm font-semibold text-blue-950">{{ $scanTime?->format('h:i A') ?? 'No time' }}</p>
                             </div>
-                            <span class="max-w-[7rem] shrink-0 truncate whitespace-nowrap rounded-md px-2 py-1 text-[0.65rem] font-semibold ring-1 sm:px-2.5 sm:text-xs {{ $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
+                            <span class="max-w-[7rem] shrink-0 truncate whitespace-nowrap rounded-md px-2 py-1 text-[0.65rem] font-semibold ring-1 sm:px-2.5 sm:text-xs {{ \App\Support\StatusBadge::patrol($log->status) }}">
                                 {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
                             </span>
                         </div>
@@ -268,7 +256,7 @@
                                     </td>
                                     <td class="px-5 py-4 font-mono text-slate-700">{{ $log->rfid_uid }}</td>
                                     <td class="px-5 py-4">
-                                        <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
+                                        <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::patrol($log->status) }}">
                                             {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
                                         </span>
                                         @if ($log->notes)
@@ -388,7 +376,7 @@
                             <div class="min-w-0">
                                 <dt class="font-bold text-slate-600">Status</dt>
                                 <dd class="mt-1">
-                                    <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-bold ring-1 {{ $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
+                                    <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-bold ring-1 {{ \App\Support\StatusBadge::patrol($log->status) }}">
                                         {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
                                     </span>
                                 </dd>

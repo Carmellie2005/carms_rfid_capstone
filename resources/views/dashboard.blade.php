@@ -11,33 +11,6 @@
     </x-slot>
 
     @php
-        $statusClasses = [
-            'valid' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45',
-            'suspicious' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45',
-            'invalid' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/35 dark:text-red-200 dark:ring-red-400/45',
-            'pending_face' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
-            'pending_selfie' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
-            'pending_checklist' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
-            'profile_incomplete' => 'bg-violet-50 text-violet-700 ring-violet-200 dark:bg-violet-950/35 dark:text-violet-200 dark:ring-violet-400/45',
-            'outside_schedule' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-orange-950/35 dark:text-orange-200 dark:ring-orange-400/45',
-            'expired' => 'bg-slate-50 text-slate-700 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60',
-            'pending' => 'bg-slate-50 text-slate-700 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60',
-            'not_required' => 'bg-slate-50 text-slate-700 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60',
-        ];
-
-        $priorityClasses = [
-            'low' => 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-950/35 dark:text-sky-200 dark:ring-sky-400/45',
-            'normal' => 'bg-slate-50 text-slate-700 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60',
-            'high' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45',
-            'critical' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/35 dark:text-red-200 dark:ring-red-400/45',
-        ];
-
-        $incidentStatusClasses = [
-            'submitted' => 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-400/45',
-            'under_review' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-400/45',
-            'resolved' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45',
-        ];
-
         $summaryCards = [
             [
                 'label' => 'Active Guards',
@@ -211,7 +184,7 @@
                                         <p class="truncate text-sm font-semibold text-blue-950">{{ $log->securityGuard?->name ?? 'Unknown card' }}</p>
                                         <p class="mt-1 truncate text-xs text-slate-500">{{ $log->securityGuard?->employee_no ?? $log->rfid_uid }}</p>
                                     </div>
-                                    <span class="shrink-0 whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
+                                    <span class="shrink-0 whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::patrol($log->status) }}">
                                         {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
                                     </span>
                                 </div>
@@ -253,7 +226,7 @@
                                         </td>
                                         <td class="px-5 py-4 text-slate-600">{{ $log->checkpoint?->name ?? $log->checkpoint_code }}</td>
                                         <td class="px-5 py-4">
-                                            <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClasses[$log->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
+                                            <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::patrol($log->status) }}">
                                                 {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
                                             </span>
                                         </td>
@@ -316,12 +289,12 @@
                                     <p class="truncate text-sm font-semibold text-blue-950">{{ $incident->category }}</p>
                                     <p class="mt-1 truncate text-xs text-slate-500">{{ $incident->checkpoint?->name ?? 'Unassigned' }}</p>
                                 </div>
-                                <span class="shrink-0 whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $incidentStatusClasses[$incident->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
+                                <span class="shrink-0 whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::incidentStatus($incident->status) }}">
                                     {{ str($incident->status)->replace('_', ' ')->title() }}
                                 </span>
                             </div>
                             <div class="mt-3 flex flex-wrap gap-2">
-                                <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $priorityClasses[$incident->priority] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
+                                <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::priority($incident->priority) }}">
                                     {{ ucfirst($incident->priority) }}
                                 </span>
                                 <span class="text-xs text-slate-500">{{ $incidentTime?->format('M d, Y h:i A') ?? 'Not recorded' }}</span>
@@ -352,12 +325,12 @@
                                     <td class="px-5 py-4 font-medium text-slate-900">{{ $incident->category }}</td>
                                     <td class="px-5 py-4 text-slate-600">{{ $incident->checkpoint?->name ?? 'Unassigned' }}</td>
                                     <td class="px-5 py-4">
-                                        <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $priorityClasses[$incident->priority] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
+                                        <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::priority($incident->priority) }}">
                                             {{ ucfirst($incident->priority) }}
                                         </span>
                                     </td>
                                     <td class="px-5 py-4">
-                                        <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $incidentStatusClasses[$incident->status] ?? 'bg-slate-50 text-slate-700 ring-slate-200' }}">
+                                        <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::incidentStatus($incident->status) }}">
                                             {{ str($incident->status)->replace('_', ' ')->title() }}
                                         </span>
                                     </td>
