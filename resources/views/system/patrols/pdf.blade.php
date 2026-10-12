@@ -166,7 +166,6 @@
         .report-table,
         .details-table,
         .checklist-table,
-        .notes-table,
         .review-table,
         .signature-table {
             border-collapse: collapse;
@@ -176,7 +175,6 @@
         .report-table,
         .details-table,
         .checklist-table,
-        .notes-table,
         .review-table {
             left: 72.5pt;
             position: absolute;
@@ -195,7 +193,6 @@
         .report-table td,
         .details-table td,
         .checklist-table td,
-        .notes-table td,
         .review-table td {
             border: 0.75pt solid #111111;
             font-size: 11pt;
@@ -232,7 +229,6 @@
         }
 
         .checklist-label,
-        .notes-label,
         .documentation-label {
             font-size: 11pt;
             font-weight: 700;
@@ -261,16 +257,11 @@
             margin: 0 0 12.8pt;
         }
 
-        .checklist-flow-block .checklist-table,
-        .checklist-flow-block .notes-table {
+        .checklist-flow-block .checklist-table {
             left: auto;
             position: static;
             top: auto;
             width: 100%;
-        }
-
-        .checklist-flow-block .notes-table {
-            margin-top: 8pt;
         }
 
         .checklist-label,
@@ -302,26 +293,6 @@
         .checklist-table .status-cell {
             text-align: center;
             width: 96pt;
-        }
-
-        .notes-table td {
-            font-size: 11pt;
-            line-height: 1.2;
-            padding: 4pt 6pt;
-            word-break: break-word;
-        }
-
-        .notes-table .notes-heading {
-            font-weight: 700;
-            width: 112pt;
-        }
-
-        .notes-table .notes-value {
-            text-align: justify;
-        }
-
-        .notes-continuation-table {
-            top: 164pt;
         }
 
         .documentation-label {
@@ -421,7 +392,6 @@
             : 'Not recorded';
         $checklistItems = \App\Support\PatrolChecklist::statusSummaries($patrolLog->checklistResponse);
         $checklistSummary = $patrolLog->checklistSummary();
-        $remarks = $patrolLog->checklistResponse?->remarks ?: ($patrolLog->notes ?: 'No remarks recorded.');
         $attachedIncident = $patrolLog->incidentReport
             ? ($patrolLog->incidentReport->category ?? 'Incident report').' - '.str($patrolLog->incidentReport->status ?? 'submitted')->replace('_', ' ')->title()
             : 'No incident report attached.';
@@ -440,46 +410,6 @@
         $qsSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/qs-rated-good.png'));
         $socotecSrc = 'file:///'.str_replace('\\', '/', public_path('images/pdf-template/socotec-iso9001.jpg'));
         $textLength = fn (string $value): int => function_exists('mb_strlen') ? mb_strlen($value) : strlen($value);
-        $textSlice = fn (string $value, int $start, ?int $length = null): string => function_exists('mb_substr')
-            ? mb_substr($value, $start, $length)
-            : substr($value, $start, $length);
-        $normalizeText = fn (string $value): string => trim(preg_replace("/\r\n|\r/", "\n", $value));
-        $splitText = function (string $text, int $firstLimit, int $continuationLimit, string $fallback) use ($normalizeText, $textLength, $textSlice): array {
-            $chunks = [];
-            $remaining = $normalizeText($text);
-            $limit = $firstLimit;
-
-            while ($remaining !== '') {
-                if ($limit <= 0) {
-                    $limit = $continuationLimit;
-                    continue;
-                }
-
-                if ($textLength($remaining) <= $limit) {
-                    $chunks[] = $remaining;
-                    break;
-                }
-
-                $breakAt = $limit;
-
-                if (preg_match('/^(.{1,'.$limit.'})(?:\s+|$)/us', $remaining, $matches)) {
-                    $breakAt = max(1, $textLength($matches[1]));
-                }
-
-                $chunk = trim($textSlice($remaining, 0, $breakAt));
-                $remaining = trim($textSlice($remaining, $breakAt));
-
-                if ($chunk === '') {
-                    $chunk = trim($textSlice($remaining, 0, $limit));
-                    $remaining = trim($textSlice($remaining, $limit));
-                }
-
-                $chunks[] = $chunk;
-                $limit = $continuationLimit;
-            }
-
-            return $chunks !== [] ? $chunks : [$fallback];
-        };
         $estimatedChecklistRowHeight = function (array $item) use ($textLength): float {
             return $textLength((string) ($item['label'] ?? '')) > 42 ? 44.0 : 28.0;
         };
@@ -523,45 +453,11 @@
         $contentBottom = 704.0;
         $firstChecklistTableTop = 446.0;
         $continuationChecklistTableTop = 190.0;
-        $notesLineChars = 60;
-        $notesLineHeight = 14.0;
-        $notesPaddingHeight = 10.0;
         $checklistChunks = $chunkRowsByHeight($checklistRows, $contentBottom - $firstChecklistTableTop);
         $firstChecklistRows = $checklistChunks->shift() ?? collect();
         $continuationChecklistChunks = $checklistChunks
             ->flatMap(fn ($chunk) => $chunkRowsByHeight($chunk, $contentBottom - $continuationChecklistTableTop))
             ->values();
-        $firstChecklistHeight = $firstChecklistRows->sum(fn (array $row): float => (float) ($row['row_height'] ?? 28.0));
-        $notesTableTop = $firstChecklistTableTop + $firstChecklistHeight + 8.0;
-        $notesAvailableOnFirstPage = $contentBottom - $notesTableTop;
-        $notesCanStartOnFirstPage = $continuationChecklistChunks->isEmpty() && $notesAvailableOnFirstPage >= 24.0;
-        $lastContinuationChecklistHeight = $continuationChecklistChunks->isNotEmpty()
-            ? $continuationChecklistChunks->last()->sum(fn (array $row): float => (float) ($row['row_height'] ?? 28.0))
-            : 0.0;
-        $lastContinuationNotesTop = $continuationChecklistTableTop + $lastContinuationChecklistHeight + 8.0;
-        $notesAvailableOnLastContinuationPage = $contentBottom - $lastContinuationNotesTop;
-        $notesCanStartOnLastContinuationPage = $continuationChecklistChunks->isNotEmpty() && $notesAvailableOnLastContinuationPage >= 24.0;
-        $remarksStartPlacement = $notesCanStartOnFirstPage
-            ? 'first'
-            : ($notesCanStartOnLastContinuationPage ? 'last_continuation' : null);
-        $firstNotesAvailableHeight = $remarksStartPlacement === 'first'
-            ? $notesAvailableOnFirstPage
-            : ($remarksStartPlacement === 'last_continuation' ? $notesAvailableOnLastContinuationPage : 0.0);
-        $firstNotesLimit = $remarksStartPlacement !== null
-            ? max($notesLineChars, (int) floor(max(1.0, $firstNotesAvailableHeight - $notesPaddingHeight) / $notesLineHeight) * $notesLineChars)
-            : 0;
-        $continuationNotesLimit = max($notesLineChars, (int) floor((($contentBottom - 164.0) - $notesPaddingHeight) / $notesLineHeight) * $notesLineChars);
-        $remarksChunks = collect($splitText($remarks, $firstNotesLimit, $continuationNotesLimit, 'No remarks recorded.'));
-        $firstRemarks = $remarksStartPlacement !== null ? $remarksChunks->shift() : null;
-        $remarksStartsOnFirstPage = $remarksStartPlacement === 'first';
-        $remarksStartsOnLastContinuationPage = $remarksStartPlacement === 'last_continuation';
-        $continuationRemarksChunks = $remarksChunks->values();
-        $estimateNotesRowHeight = function (string $text) use ($textLength, $notesLineChars, $notesLineHeight, $notesPaddingHeight): float {
-            $lineCount = max(1, (int) ceil(max(1, $textLength($text)) / $notesLineChars));
-            $lineCount += substr_count($text, "\n");
-
-            return max(24.0, ($lineCount * $notesLineHeight) + $notesPaddingHeight);
-        };
     @endphp
 
     @php
@@ -661,18 +557,6 @@
                     </tr>
                 @endforeach
             </table>
-
-            @if ($remarksStartsOnFirstPage && $firstRemarks !== null)
-                @php
-                    $firstRemarksHeight = $estimateNotesRowHeight($firstRemarks);
-                @endphp
-                <table class="notes-table">
-                    <tr>
-                        <td class="notes-heading" style="height: {{ number_format($firstRemarksHeight, 2, '.', '') }}pt;">Remarks / Notes:</td>
-                        <td class="notes-value" style="height: {{ number_format($firstRemarksHeight, 2, '.', '') }}pt;">{!! nl2br(e($firstRemarks)) !!}</td>
-                    </tr>
-                </table>
-            @endif
         </div>
     </section>
 
@@ -690,37 +574,7 @@
                         </tr>
                     @endforeach
                 </table>
-
-                @if ($remarksStartsOnLastContinuationPage && $loop->last && $firstRemarks !== null)
-                    @php
-                        $firstRemarksHeight = $estimateNotesRowHeight($firstRemarks);
-                    @endphp
-                    <table class="notes-table">
-                        <tr>
-                            <td class="notes-heading" style="height: {{ number_format($firstRemarksHeight, 2, '.', '') }}pt;">Remarks / Notes:</td>
-                            <td class="notes-value" style="height: {{ number_format($firstRemarksHeight, 2, '.', '') }}pt;">{!! nl2br(e($firstRemarks)) !!}</td>
-                        </tr>
-                    </table>
-                @endif
             </div>
-        </section>
-    @endforeach
-
-    @foreach ($continuationRemarksChunks as $remarksChunk)
-        <section class="page">
-            {!! $pageChrome() !!}
-
-            @php
-                $remarksChunkHeight = $estimateNotesRowHeight($remarksChunk);
-            @endphp
-            <table class="notes-table notes-continuation-table">
-                <tr>
-                    <td class="notes-heading" style="height: {{ number_format($remarksChunkHeight, 2, '.', '') }}pt;">
-                        {{ $firstRemarks === null && $loop->first ? 'Remarks / Notes:' : 'Remarks Continued:' }}
-                    </td>
-                    <td class="notes-value" style="height: {{ number_format($remarksChunkHeight, 2, '.', '') }}pt;">{!! nl2br(e($remarksChunk)) !!}</td>
-                </tr>
-            </table>
         </section>
     @endforeach
 

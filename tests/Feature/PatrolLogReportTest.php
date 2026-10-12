@@ -64,14 +64,13 @@ class PatrolLogReportTest extends TestCase
         $this->assertStringContainsString('inline', $response->headers->get('content-disposition'));
     }
 
-    public function test_patrol_pdf_keeps_remarks_with_compact_checklist(): void
+    public function test_patrol_pdf_keeps_compact_checklist_without_remarks_section(): void
     {
         $guard = $this->createGuard('SG-LAYOUT', 'RFID-LAYOUT');
         $patrolLog = $this->createPatrolLog($guard);
 
         $patrolLog->checklistResponse()->create([
             'item_statuses' => array_fill_keys(PatrolChecklist::fields(), PatrolChecklist::STATUS_NORMAL),
-            'remarks' => 'No remarks recorded.',
         ]);
         $patrolLog->load(['securityGuard', 'checkpoint', 'checklistResponse.proofPhotos', 'incidentReport']);
 
@@ -82,7 +81,8 @@ class PatrolLogReportTest extends TestCase
         ])->render();
 
         $this->assertStringContainsString('style="height: 28.00pt;"', $html);
-        $this->assertStringContainsString('Remarks / Notes:', $html);
+        $this->assertStringNotContainsString('Remarks / Notes:', $html);
+        $this->assertStringNotContainsString('No remarks recorded.', $html);
         $this->assertStringNotContainsString('No suspicious person, item, or vehicle observed', $html);
         $this->assertStringNotContainsString('No damage or safety hazard observed', $html);
         $this->assertStringNotContainsString('Patrol Checklist Continued', $html);

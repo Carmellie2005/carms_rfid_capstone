@@ -551,11 +551,6 @@
                                         </div>
                                     @endforeach
                                 </div>
-                                <div class="mt-4">
-                                    <label for="remarks" class="sr-only">Remarks</label>
-                                    <textarea id="remarks" name="remarks" rows="4" placeholder="Remarks" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('remarks') }}</textarea>
-                                    <x-input-error :messages="$errors->get('remarks')" class="mt-2" />
-                                </div>
                             </div>
 
                             <div class="rounded-lg border border-blue-100 bg-blue-50/60 p-3 sm:p-4">

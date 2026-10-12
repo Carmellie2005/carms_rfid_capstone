@@ -117,7 +117,6 @@ class GuardPatrolController extends Controller
             ...PatrolChecklist::validationRules(),
             'checklist_photos' => ['nullable', 'array', 'max:'.count(PatrolChecklist::fields())],
             'checklist_photos.*' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
-            'remarks' => ['nullable', 'string', 'max:2000'],
             'has_incident' => ['nullable', 'boolean'],
             'incident_category' => ['nullable', 'required_if:has_incident,1', 'string', 'max:100', Rule::in(PatrolChecklist::incidentCategories())],
             'incident_priority' => ['nullable', 'required_if:has_incident,1', Rule::in(array_keys(PatrolChecklist::incidentPriorityOptions()))],
@@ -212,7 +211,6 @@ class GuardPatrolController extends Controller
             $checklistResponse = $patrolLog->checklistResponse()->create([
                 ...PatrolChecklist::valuesFromRequest($request),
                 'item_statuses' => PatrolChecklist::statusesFromRequest($request),
-                'remarks' => $data['remarks'] ?? null,
             ]);
 
             $this->storeChecklistProofPhotos($checklistResponse, $checklistProofPhotoFiles);

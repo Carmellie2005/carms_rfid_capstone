@@ -411,12 +411,6 @@
                                         @endforelse
                                     </div>
 
-                                    @if ($log->checklistResponse->remarks)
-                                        <div class="mt-4 rounded-md border border-blue-100 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                                            <p class="font-bold text-slate-700">Remarks</p>
-                                            <p class="mt-1">{{ $log->checklistResponse->remarks }}</p>
-                                        </div>
-                                    @endif
                                 @else
                                     <p class="mt-3 rounded-md border border-blue-100 bg-slate-50 px-3 py-2 text-sm text-slate-500">No checklist submitted yet.</p>
                                 @endif

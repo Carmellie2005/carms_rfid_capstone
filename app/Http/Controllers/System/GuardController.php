@@ -44,7 +44,7 @@ class GuardController extends Controller
         $patrolLogs = $guard->patrolLogs()
             ->with([
                 'checkpoint:id,code,name,location',
-                'checklistResponse:id,patrol_log_id,remarks',
+                'checklistResponse:id,patrol_log_id',
                 'incidentReport:id,patrol_log_id,title,status,priority',
             ])
             ->latest('scanned_at')
@@ -87,7 +87,6 @@ class GuardController extends Controller
                 'rfid_status_label' => $this->labelFor($log->rfid_status),
                 'status' => $log->status,
                 'status_label' => $this->labelFor($log->status),
-                'remarks' => $log->checklistResponse?->remarks,
                 'incident_title' => $log->incidentReport?->title,
                 'incident_status' => $log->incidentReport?->status,
             ]),
