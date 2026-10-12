@@ -355,7 +355,7 @@
                                 <x-slot name="trigger">
                                     <button
                                         type="button"
-                                        class="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-blue-100 bg-white text-slate-700 shadow-sm transition hover:bg-blue-50 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950"
+                                        class="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-transparent bg-white text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800 focus:outline-none focus-visible:border-blue-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-50 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-blue-500/45 dark:hover:bg-slate-800 dark:focus-visible:border-blue-500/45 dark:focus-visible:ring-offset-slate-950"
                                         aria-label="Open profile menu"
                                     >
                                         <span class="inline-flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-blue-50 ring-1 ring-blue-100 dark:bg-slate-800 dark:ring-slate-700">
