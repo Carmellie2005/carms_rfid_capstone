@@ -35,6 +35,9 @@ class PatrolChecklist
         'Property Damage / Vandalism',
         'Safety Hazard',
         'Facility Issue',
+        'Equipment Issue',
+        'Obstruction / Blocked Area',
+        'Cleanliness / Sanitation Concern',
         'Lost and Found',
         'Other',
     ];
