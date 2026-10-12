@@ -12,10 +12,14 @@
 #include <DNSServer.h>
 
 // =====================================================
-// FIXED CAMPUS WIFI
+// WIFI NETWORKS
 // =====================================================
 
-const char* WIFI_SSID = "SystemWi-Fi";
+const char* PRIMARY_WIFI_SSID = "Records Office";
+const char* PRIMARY_WIFI_PASSWORD = "RECORDS_2025";
+
+const char* BACKUP_WIFI_SSID = "SystemWi-Fi";
+const char* BACKUP_WIFI_PASSWORD = "SLSU_BC_System_Wifi";
 
 // =====================================================
 // TEMPORARY TILAPIA HATCHERY WIFI SETUP NETWORK
@@ -300,7 +304,11 @@ button:hover {
 
 <div class="info">
 
-<strong>Campus WiFi:</strong><br>
+<strong>Primary WiFi:</strong><br>
+
+Records Office<br><br>
+
+<strong>Backup WiFi:</strong><br>
 
 SystemWi-Fi
 
@@ -309,14 +317,14 @@ SystemWi-Fi
 <form action="/save" method="POST">
 
 <label>
-Enter New WiFi Password:
+Update Backup WiFi Password:
 </label>
 
 <input
 type="password"
 name="password"
 required
-placeholder="Enter campus WiFi password">
+placeholder="Enter SystemWi-Fi password">
 
 <button type="submit">
 Save Password
@@ -509,7 +517,7 @@ h2 {
 <h2>Password Saved</h2>
 
 <p>
-The new campus WiFi password has been saved.
+The new backup WiFi password has been saved.
 </p>
 
 <p>
@@ -616,50 +624,32 @@ The Tilapia Hatchery RFID device will restart automatically.
 // CONNECT WIFI
 // =====================================================
 
-void connectWiFi() {
+bool connectToWiFiNetwork(const char* ssid, const char* password) {
 
-  Serial.println();
+  Serial.print(
+    "Trying WiFi SSID: "
+  );
 
   Serial.println(
-    "Connecting Tilapia Hatchery device to campus WiFi..."
+    ssid
   );
 
   lcdMessage(
     "Connecting WiFi",
-    "Please wait..."
+    String(ssid)
   );
 
-  String savedPassword =
-    getSavedWiFiPassword();
+  WiFi.disconnect(true);
 
-  // =================================================
-  // NO SAVED PASSWORD
-  // =================================================
-
-  if (
-    savedPassword.length() == 0
-  ) {
-
-    Serial.println(
-      "No saved WiFi password."
-    );
-
-    startWiFiSetupPortal();
-
-    return;
-  }
-
-  // =================================================
-  // CONNECT USING SAVED PASSWORD
-  // =================================================
+  delay(300);
 
   WiFi.mode(WIFI_STA);
 
   WiFi.setSleep(false);
 
   WiFi.begin(
-    WIFI_SSID,
-    savedPassword.c_str()
+    ssid,
+    password
   );
 
   int attempts = 0;
@@ -676,89 +666,134 @@ void connectWiFi() {
     attempts++;
   }
 
+  Serial.println();
+
+  return WiFi.status() == WL_CONNECTED;
+}
+
+void showWiFiConnected() {
+
+  Serial.println(
+    "WiFi Connected"
+  );
+
+  Serial.print(
+    "SSID: "
+  );
+
+  Serial.println(
+    WiFi.SSID()
+  );
+
+  Serial.print(
+    "IP Address: "
+  );
+
+  Serial.println(
+    WiFi.localIP()
+  );
+
+  Serial.print(
+    "Device: "
+  );
+
+  Serial.println(
+    DEVICE_UID
+  );
+
+  Serial.print(
+    "API URL: "
+  );
+
+  Serial.println(
+    API_URL
+  );
+
+  lcdMessage(
+    "WiFi Connected",
+    WiFi.localIP().toString()
+  );
+
+  successBeep();
+
+  delay(1500);
+
+  showReady();
+}
+
+void connectWiFi() {
+
+  Serial.println();
+
+  Serial.println(
+    "Connecting Tilapia Hatchery device to campus WiFi..."
+  );
+
+  lcdMessage(
+    "Connecting WiFi",
+    "Please wait..."
+  );
+
+  String savedBackupPassword =
+    getSavedWiFiPassword();
+
   // =================================================
-  // CONNECTED
+  // PRIMARY WIFI
   // =================================================
 
   if (
-    WiFi.status() == WL_CONNECTED
+    connectToWiFiNetwork(
+      PRIMARY_WIFI_SSID,
+      PRIMARY_WIFI_PASSWORD
+    )
   ) {
 
-    Serial.println();
+    showWiFiConnected();
 
-    Serial.println(
-      "WiFi Connected"
-    );
-
-    Serial.print(
-      "SSID: "
-    );
-
-    Serial.println(
-      WiFi.SSID()
-    );
-
-    Serial.print(
-      "IP Address: "
-    );
-
-    Serial.println(
-      WiFi.localIP()
-    );
-
-    Serial.print(
-      "Device: "
-    );
-
-    Serial.println(
-      DEVICE_UID
-    );
-
-    Serial.print(
-      "API URL: "
-    );
-
-    Serial.println(
-      API_URL
-    );
-
-    lcdMessage(
-      "WiFi Connected",
-      WiFi.localIP().toString()
-    );
-
-    successBeep();
-
-    delay(1500);
-
-    showReady();
+    return;
   }
 
+  Serial.println(
+    "Primary WiFi failed."
+  );
+
   // =================================================
-  // SAVED PASSWORD FAILED
+  // BACKUP WIFI
   // =================================================
 
-  else {
+  String backupPassword =
+    savedBackupPassword.length() > 0
+      ? savedBackupPassword
+      : String(BACKUP_WIFI_PASSWORD);
 
-    Serial.println();
+  if (
+    connectToWiFiNetwork(
+      BACKUP_WIFI_SSID,
+      backupPassword.c_str()
+    )
+  ) {
 
-    Serial.println(
-      "Saved password failed."
-    );
+    showWiFiConnected();
 
-    Serial.println(
-      "Starting Tilapia Hatchery setup portal..."
-    );
-
-    lcdMessage(
-      "WiFi Changed?",
-      "Setup Required"
-    );
-
-    delay(2000);
-
-    startWiFiSetupPortal();
+    return;
   }
+
+  Serial.println(
+    "Backup WiFi failed."
+  );
+
+  Serial.println(
+    "Starting Tilapia Hatchery setup portal..."
+  );
+
+  lcdMessage(
+    "WiFi Changed?",
+    "Setup Required"
+  );
+
+  delay(2000);
+
+  startWiFiSetupPortal();
 }
 
 // =====================================================
