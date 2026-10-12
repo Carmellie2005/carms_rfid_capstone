@@ -152,7 +152,7 @@ class NotificationFeed
             'time_label' => static::timeLabel($time),
             'relative_time' => $time?->diffForHumans(),
             'sort_timestamp' => $time?->timestamp ?? 0,
-            'badge' => ucfirst($incident->priority ?: 'Normal'),
+            'badge' => PatrolChecklist::priorityLabel($incident->priority),
             'href' => $user->role === 'admin'
                 ? route('incidents.index', ['status' => $incident->status])
                 : route('patrol-logs.index', ['date' => $incident->incident_at?->toDateString()]),

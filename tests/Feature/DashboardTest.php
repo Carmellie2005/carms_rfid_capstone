@@ -146,7 +146,7 @@ class DashboardTest extends TestCase
             ->assertOk()
             ->assertSee('bg-slate-50 text-slate-700 ring-slate-200', false)
             ->assertSee('bg-blue-50 text-blue-700 ring-blue-200', false)
-            ->assertSee('Normal')
+            ->assertSee('Medium')
             ->assertSee('Submitted');
     }
 }

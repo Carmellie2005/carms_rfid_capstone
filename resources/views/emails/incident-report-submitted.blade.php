@@ -11,7 +11,7 @@
 
 <ul>
     <li><strong>Category:</strong> {{ $incident->category ?: 'Incident report' }}</li>
-    <li><strong>Priority:</strong> {{ ucfirst($incident->priority ?: 'normal') }}</li>
+    <li><strong>Priority:</strong> {{ \App\Support\PatrolChecklist::priorityLabel($incident->priority) }}</li>
     <li><strong>Guard:</strong> {{ $guard?->name ?? 'Unknown guard' }}{{ $guard?->employee_no ? ' ('.$guard->employee_no.')' : '' }}</li>
     <li><strong>Checkpoint:</strong> {{ $checkpoint?->name ?? 'Unassigned checkpoint' }}</li>
     <li><strong>Location:</strong> {{ $incident->location ?: $checkpoint?->location ?: 'Not recorded' }}</li>

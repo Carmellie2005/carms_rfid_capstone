@@ -713,6 +713,8 @@ Alpine.data('patrolScan', (config = {}) => ({
     imageCompressionBusy: false,
     imageCompressionMessage: '',
     checklistItems: config.checklistItems || [],
+    incidentDefaultPriorities: config.incidentDefaultPriorities || {},
+    incidentDefaultPriority: config.incidentDefaultPriority || 'normal',
     checklistPhotoModalOpen: false,
     selectedChecklistPhoto: null,
     pendingScan: config.pendingScan || null,
@@ -1448,8 +1450,20 @@ Alpine.data('patrolScan', (config = {}) => ({
         }
 
         if (this.$refs.incidentPriority) {
-            this.$refs.incidentPriority.value = 'normal';
+            this.$refs.incidentPriority.value = this.incidentPriorityForCategory(this.$refs.incidentCategory?.value);
         }
+    },
+
+    incidentPriorityForCategory(category) {
+        return this.incidentDefaultPriorities[category] || this.incidentDefaultPriority || 'normal';
+    },
+
+    syncIncidentPriorityFromCategory() {
+        if (! this.$refs.incidentPriority) {
+            return;
+        }
+
+        this.$refs.incidentPriority.value = this.incidentPriorityForCategory(this.$refs.incidentCategory?.value);
     },
 
     incidentSummary() {

@@ -331,7 +331,7 @@
 <body>
     @php
         $reportNumber = 'IR-'.str_pad((string) $incident->id, 6, '0', STR_PAD_LEFT);
-        $priority = ucfirst($incident->priority ?? 'normal');
+        $priority = \App\Support\PatrolChecklist::priorityLabel($incident->priority);
         $status = str($incident->status ?? 'submitted')->replace('_', ' ')->title();
         $category = $incident->category ?? 'Uncategorized';
         $incidentDate = $incident->incident_at?->timezone(config('app.timezone'))->format('M d, Y h:i A') ?? 'Not recorded';

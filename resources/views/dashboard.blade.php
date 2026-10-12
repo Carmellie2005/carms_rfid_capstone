@@ -295,7 +295,7 @@
                             </div>
                             <div class="mt-3 flex flex-wrap gap-2">
                                 <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::priority($incident->priority) }}">
-                                    {{ ucfirst($incident->priority) }}
+                                    {{ \App\Support\PatrolChecklist::priorityLabel($incident->priority) }}
                                 </span>
                                 <span class="text-xs text-slate-500">{{ $incidentTime?->format('M d, Y h:i A') ?? 'Not recorded' }}</span>
                             </div>
@@ -326,7 +326,7 @@
                                     <td class="px-5 py-4 text-slate-600">{{ $incident->checkpoint?->name ?? 'Unassigned' }}</td>
                                     <td class="px-5 py-4">
                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::priority($incident->priority) }}">
-                                            {{ ucfirst($incident->priority) }}
+                                            {{ \App\Support\PatrolChecklist::priorityLabel($incident->priority) }}
                                         </span>
                                     </td>
                                     <td class="px-5 py-4">

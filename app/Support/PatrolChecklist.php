@@ -42,6 +42,23 @@ class PatrolChecklist
         'Other',
     ];
 
+    public const INCIDENT_PRIORITY_OPTIONS = [
+        'low' => 'Low',
+        'normal' => 'Medium',
+        'high' => 'High',
+    ];
+
+    public const INCIDENT_DEFAULT_PRIORITIES = [
+        'Property Damage / Vandalism' => 'high',
+        'Safety Hazard' => 'high',
+        'Facility Issue' => 'normal',
+        'Equipment Issue' => 'normal',
+        'Obstruction / Blocked Area' => 'normal',
+        'Cleanliness / Sanitation Concern' => 'low',
+        'Lost and Found' => 'low',
+        'Other' => 'normal',
+    ];
+
     public static function items(): array
     {
         return self::ITEMS;
@@ -65,6 +82,30 @@ class PatrolChecklist
     public static function incidentCategories(): array
     {
         return self::INCIDENT_CATEGORIES;
+    }
+
+    public static function incidentPriorityOptions(): array
+    {
+        return self::INCIDENT_PRIORITY_OPTIONS;
+    }
+
+    public static function incidentDefaultPriorities(): array
+    {
+        return self::INCIDENT_DEFAULT_PRIORITIES;
+    }
+
+    public static function defaultIncidentPriority(?string $category): string
+    {
+        return self::INCIDENT_DEFAULT_PRIORITIES[$category ?? ''] ?? 'normal';
+    }
+
+    public static function priorityLabel(?string $priority): string
+    {
+        return match ($priority) {
+            'low' => 'Low',
+            'high', 'critical' => 'High',
+            default => 'Medium',
+        };
     }
 
     public static function validationRules(): array

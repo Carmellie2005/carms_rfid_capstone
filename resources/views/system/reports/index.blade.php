@@ -194,7 +194,7 @@
                                     <dt class="text-xs font-semibold uppercase text-blue-800">Priority</dt>
                                     <dd class="mt-1">
                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::priority($incident->priority) }}">
-                                            {{ ucfirst($incident->priority) }}
+                                            {{ \App\Support\PatrolChecklist::priorityLabel($incident->priority) }}
                                         </span>
                                     </dd>
                                 </div>
@@ -234,7 +234,7 @@
                                     <td class="px-5 py-4 text-slate-600">{{ $incident->checkpoint?->name ?? 'Unassigned' }}</td>
                                     <td class="px-5 py-4">
                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::priority($incident->priority) }}">
-                                            {{ ucfirst($incident->priority) }}
+                                            {{ \App\Support\PatrolChecklist::priorityLabel($incident->priority) }}
                                         </span>
                                     </td>
                                     <td class="px-5 py-4">

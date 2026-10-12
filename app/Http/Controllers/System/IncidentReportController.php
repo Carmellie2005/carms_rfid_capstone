@@ -26,7 +26,9 @@ class IncidentReportController extends Controller
     {
         $incidents = IncidentReport::with(['securityGuard', 'checkpoint', 'patrolLog', 'images'])
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->status))
-            ->when($request->filled('priority'), fn ($query) => $query->where('priority', $request->priority))
+            ->when($request->filled('priority'), fn ($query) => $request->priority === 'high'
+                ? $query->whereIn('priority', ['high', 'critical'])
+                : $query->where('priority', $request->priority))
             ->latest('incident_at')
             ->paginate(5)
             ->withQueryString();
@@ -89,12 +91,7 @@ class IncidentReportController extends Controller
         return view('system.incidents.guard-edit', [
             'incident' => $incidentReport,
             'incidentCategories' => PatrolChecklist::incidentCategories(),
-            'priorityOptions' => [
-                'low' => 'Low',
-                'normal' => 'Normal',
-                'high' => 'High',
-                'critical' => 'Critical',
-            ],
+            'priorityOptions' => PatrolChecklist::incidentPriorityOptions(),
         ]);
     }
 
@@ -106,7 +103,7 @@ class IncidentReportController extends Controller
 
         $data = $request->validate([
             'category' => ['required', 'string', 'max:100', Rule::in(PatrolChecklist::incidentCategories())],
-            'priority' => ['required', Rule::in(['low', 'normal', 'high', 'critical'])],
+            'priority' => ['required', Rule::in(array_keys(PatrolChecklist::incidentPriorityOptions()))],
             'description' => ['required', 'string', 'max:3000'],
             'remove_image_ids' => ['nullable', 'array'],
             'remove_image_ids.*' => ['integer'],
@@ -352,7 +349,6 @@ class IncidentReportController extends Controller
     private function severityFromPriority(string $priority): string
     {
         return match ($priority) {
-            'critical' => 'critical',
             'high' => 'high',
             'low' => 'low',
             default => 'medium',

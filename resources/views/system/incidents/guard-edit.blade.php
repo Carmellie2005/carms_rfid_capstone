@@ -18,6 +18,7 @@
         $statusLabel = str($incident->status)->replace('_', ' ')->title();
         $incidentImages = $incident->images;
         $removeImageIds = collect(old('remove_image_ids', []))->map(fn ($id) => (string) $id);
+        $selectedPriority = old('priority', $incident->priority === 'critical' ? 'high' : ($incident->priority ?? 'normal'));
     @endphp
 
     <div class="py-5 sm:py-8">
@@ -79,9 +80,10 @@
                             <label for="priority" class="block text-sm font-medium text-slate-700">Priority</label>
                             <select id="priority" name="priority" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                                 @foreach ($priorityOptions as $value => $label)
-                                    <option value="{{ $value }}" @selected(old('priority', $incident->priority ?? 'normal') === $value)>{{ $label }}</option>
+                                    <option value="{{ $value }}" @selected($selectedPriority === $value)>{{ $label }}</option>
                                 @endforeach
                             </select>
+                            <p class="mt-1 text-xs text-slate-500">Use priority to tell the supervisor how soon the report should be reviewed.</p>
                             <x-input-error :messages="$errors->get('priority')" class="mt-2" />
                         </div>
 

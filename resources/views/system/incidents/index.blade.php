@@ -51,7 +51,7 @@
                     <label for="priority" class="block text-xs font-semibold uppercase text-blue-800">Priority</label>
                     <select id="priority" name="priority" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="">All</option>
-                        @foreach (['low' => 'Low', 'normal' => 'Normal', 'high' => 'High', 'critical' => 'Critical'] as $value => $label)
+                        @foreach (\App\Support\PatrolChecklist::incidentPriorityOptions() as $value => $label)
                             <option value="{{ $value }}" @selected(request('priority') === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
@@ -82,7 +82,7 @@
                                     <div class="flex flex-wrap items-center gap-2">
                                         <h3 class="text-lg font-semibold text-blue-950">{{ $incident->category }}</h3>
                                         <span class="whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::priority($incident->priority) }}">
-                                            {{ ucfirst($incident->priority) }}
+                                            {{ \App\Support\PatrolChecklist::priorityLabel($incident->priority) }}
                                         </span>
                                         <span class="whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::incidentStatus($incident->status) }}">
                                             {{ str($incident->status)->replace('_', ' ')->title() }}

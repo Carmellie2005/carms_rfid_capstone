@@ -89,9 +89,9 @@
                 x-show="pageBusy"
                 x-cloak
                 x-transition.opacity.duration.150ms
-                class="fixed inset-0 z-[90] flex items-center justify-center bg-white/75 p-4 backdrop-blur-sm dark:bg-slate-950/75"
+                class="fixed inset-0 z-[90] flex items-center justify-center bg-white/75 px-4 backdrop-blur-md dark:bg-slate-950/80"
             >
-                <x-brand-spinner class="rounded-lg border border-blue-100 bg-white/95 p-6 text-blue-950 shadow-2xl dark:border-slate-800 dark:bg-slate-900/95 dark:text-blue-100">
+                <x-brand-spinner dots class="brand-spinner-floating text-blue-950 dark:text-blue-100">
                     Loading
                     <x-slot name="description">Please wait a moment.</x-slot>
                 </x-brand-spinner>

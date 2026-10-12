@@ -120,7 +120,7 @@ class GuardPatrolController extends Controller
             'remarks' => ['nullable', 'string', 'max:2000'],
             'has_incident' => ['nullable', 'boolean'],
             'incident_category' => ['nullable', 'required_if:has_incident,1', 'string', 'max:100', Rule::in(PatrolChecklist::incidentCategories())],
-            'incident_priority' => ['nullable', Rule::in(['low', 'normal', 'high', 'critical'])],
+            'incident_priority' => ['nullable', 'required_if:has_incident,1', Rule::in(array_keys(PatrolChecklist::incidentPriorityOptions()))],
             'incident_description' => ['nullable', 'required_if:has_incident,1', 'string', 'max:3000'],
             'incident_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
             'incident_camera_images' => ['nullable', 'array', 'max:3'],
@@ -136,6 +136,7 @@ class GuardPatrolController extends Controller
             'area_selfie_latitude.numeric' => 'The GPS location could not be read. Please take the photo again.',
             'area_selfie_longitude.numeric' => 'The GPS location could not be read. Please take the photo again.',
             'incident_category.required_if' => 'Please choose an incident category.',
+            'incident_priority.required_if' => 'Please choose the incident priority.',
             'incident_description.required_if' => 'Please describe what happened in the incident report.',
             'incident_camera_images.array' => 'Please take at least one incident photo before submitting the incident report.',
             'incident_camera_images.max' => 'Please take up to 3 incident photos only.',
@@ -217,6 +218,8 @@ class GuardPatrolController extends Controller
             $this->storeChecklistProofPhotos($checklistResponse, $checklistProofPhotoFiles);
 
             if ($request->boolean('has_incident')) {
+                $incidentPriority = $data['incident_priority'] ?? PatrolChecklist::defaultIncidentPriority($data['incident_category'] ?? null);
+
                 $incidentReport = IncidentReport::create([
                     'patrol_log_id' => $patrolLog->id,
                     'guard_id' => $guard->id,
@@ -224,8 +227,8 @@ class GuardPatrolController extends Controller
                     'title' => $data['incident_category'],
                     'incident_type' => $data['incident_category'],
                     'category' => $data['incident_category'],
-                    'priority' => $data['incident_priority'] ?? 'normal',
-                    'severity' => $this->severityFromPriority($data['incident_priority'] ?? 'normal'),
+                    'priority' => $incidentPriority,
+                    'severity' => $this->severityFromPriority($incidentPriority),
                     'location' => $checkpoint?->location,
                     'incident_at' => $submittedAt,
                     'occurred_at' => $submittedAt,
@@ -584,7 +587,6 @@ class GuardPatrolController extends Controller
     private function severityFromPriority(string $priority): string
     {
         return match ($priority) {
-            'critical' => 'critical',
             'high' => 'high',
             'low' => 'low',
             default => 'medium',

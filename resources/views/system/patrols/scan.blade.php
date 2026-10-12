@@ -3,6 +3,10 @@
         $incidentDefault = (bool) old('has_incident');
         $checkpointChecklistItems = \App\Support\PatrolChecklist::items();
         $incidentCategories = \App\Support\PatrolChecklist::incidentCategories();
+        $incidentPriorityOptions = \App\Support\PatrolChecklist::incidentPriorityOptions();
+        $incidentDefaultPriorities = \App\Support\PatrolChecklist::incidentDefaultPriorities();
+        $selectedIncidentCategory = old('incident_category', $incidentCategories[0] ?? null);
+        $selectedIncidentPriority = old('incident_priority', \App\Support\PatrolChecklist::defaultIncidentPriority($selectedIncidentCategory));
         $guardName = $guardProfile?->name ?? Auth::user()->name;
         $guardEmployeeNo = $guardProfile?->employee_no ?? 'Account only';
         $oldAreaSelfieCapture = old('area_selfie_capture', '');
@@ -258,6 +262,8 @@
                     areaSelfieLongitude: @js(old('area_selfie_longitude', '')),
                     areaSelfieAccuracy: @js(old('area_selfie_accuracy', '')),
                     checklistItems: @js(collect($checkpointChecklistItems)->map(fn ($label, $field) => ['field' => $field, 'label' => $label])->values()),
+                    incidentDefaultPriorities: @js($incidentDefaultPriorities),
+                    incidentDefaultPriority: @js(\App\Support\PatrolChecklist::defaultIncidentPriority($selectedIncidentCategory)),
                 })"
                 x-init="boot()"
                 x-on:submit="handleSubmit($event)"
@@ -649,9 +655,9 @@
 
                             <div>
                                 <label for="incident_category" class="block text-sm font-medium text-slate-700">Category</label>
-                                <select x-ref="incidentCategory" id="incident_category" name="incident_category" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" :required="incident && incidentModalOpen" @change="incidentFormError = ''">
+                                <select x-ref="incidentCategory" id="incident_category" name="incident_category" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" :required="incident && incidentModalOpen" @change="syncIncidentPriorityFromCategory(); incidentFormError = ''">
                                     @foreach ($incidentCategories as $category)
-                                        <option value="{{ $category }}" @selected(old('incident_category') === $category)>{{ $category }}</option>
+                                        <option value="{{ $category }}" @selected($selectedIncidentCategory === $category)>{{ $category }}</option>
                                     @endforeach
                                 </select>
                                 <x-input-error :messages="$errors->get('incident_category')" class="mt-2" />
@@ -660,10 +666,11 @@
                             <div>
                                 <label for="incident_priority" class="block text-sm font-medium text-slate-700">Priority</label>
                                 <select x-ref="incidentPriority" id="incident_priority" name="incident_priority" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                    @foreach (['low' => 'Low', 'normal' => 'Normal', 'high' => 'High', 'critical' => 'Critical'] as $value => $label)
-                                        <option value="{{ $value }}" @selected(old('incident_priority', 'normal') === $value)>{{ $label }}</option>
+                                    @foreach ($incidentPriorityOptions as $value => $label)
+                                        <option value="{{ $value }}" @selected($selectedIncidentPriority === $value)>{{ $label }}</option>
                                     @endforeach
                                 </select>
+                                <p class="mt-1 text-xs text-slate-500">Auto-selected from the category. Adjust if the situation needs faster review.</p>
                                 <x-input-error :messages="$errors->get('incident_priority')" class="mt-2" />
                             </div>
 
@@ -731,8 +738,8 @@
                     </section>
                 </div>
 
-                <div x-show="submittingPatrol" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[95] flex items-center justify-center bg-slate-950/50 p-4">
-                    <x-brand-spinner class="w-full max-w-sm rounded-lg bg-white p-6 text-blue-950 shadow-2xl dark:bg-slate-900 dark:text-blue-100">
+                <div x-show="submittingPatrol" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[95] flex items-center justify-center bg-white/75 px-4 backdrop-blur-md dark:bg-slate-950/80">
+                    <x-brand-spinner dots class="brand-spinner-floating text-blue-950 dark:text-blue-100">
                         Submitting patrol record
                         <x-slot name="description">Please wait while the checkpoint visit is saved.</x-slot>
                     </x-brand-spinner>

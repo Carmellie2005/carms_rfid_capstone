@@ -245,7 +245,7 @@
         .checklist-flow-block {
             left: 72.5pt;
             position: absolute;
-            top: 478pt;
+            top: 392pt;
             width: 467.21pt;
             z-index: 1;
         }
@@ -275,11 +275,11 @@
 
         .checklist-label,
         .checklist-continuation-label {
-            top: 478pt;
+            top: 392pt;
         }
 
         .checklist-table {
-            top: 504pt;
+            top: 418pt;
         }
 
         .checklist-continuation-label {
@@ -521,7 +521,7 @@
         };
         // Dompdf renders table padding/borders taller than CSS height, so reserve extra footer space.
         $contentBottom = 704.0;
-        $firstChecklistTableTop = 504.0;
+        $firstChecklistTableTop = 418.0;
         $continuationChecklistTableTop = 190.0;
         $notesLineChars = 60;
         $notesLineHeight = 14.0;
@@ -531,30 +531,14 @@
         $continuationChecklistChunks = $checklistChunks
             ->flatMap(fn ($chunk) => $chunkRowsByHeight($chunk, $contentBottom - $continuationChecklistTableTop))
             ->values();
-        $firstChecklistHeight = $firstChecklistRows->sum(fn (array $row): float => (float) ($row['row_height'] ?? 28.0));
-        $notesTableTop = $firstChecklistTableTop + $firstChecklistHeight + 8.0;
-        $notesAvailableOnFirstPage = $contentBottom - $notesTableTop;
-        $notesCanStartOnFirstPage = $continuationChecklistChunks->isEmpty() && $notesAvailableOnFirstPage >= 24.0;
-        $lastContinuationChecklistHeight = $continuationChecklistChunks->isNotEmpty()
-            ? $continuationChecklistChunks->last()->sum(fn (array $row): float => (float) ($row['row_height'] ?? 28.0))
-            : 0.0;
-        $lastContinuationNotesTop = $continuationChecklistTableTop + $lastContinuationChecklistHeight + 8.0;
-        $notesAvailableOnLastContinuationPage = $contentBottom - $lastContinuationNotesTop;
-        $notesCanStartOnLastContinuationPage = $continuationChecklistChunks->isNotEmpty() && $notesAvailableOnLastContinuationPage >= 24.0;
-        $remarksStartPlacement = $notesCanStartOnFirstPage
-            ? 'first'
-            : ($notesCanStartOnLastContinuationPage ? 'last_continuation' : null);
-        $firstNotesAvailableHeight = $remarksStartPlacement === 'first'
-            ? $notesAvailableOnFirstPage
-            : ($remarksStartPlacement === 'last_continuation' ? $notesAvailableOnLastContinuationPage : 0.0);
-        $firstNotesLimit = $remarksStartPlacement !== null
-            ? max($notesLineChars, (int) floor(max(1.0, $firstNotesAvailableHeight - $notesPaddingHeight) / $notesLineHeight) * $notesLineChars)
-            : 0;
-        $continuationNotesLimit = max($notesLineChars, (int) floor((($contentBottom - 164.0) - $notesPaddingHeight) / $notesLineHeight) * $notesLineChars);
+        $remarksStartPlacement = null;
+        $firstNotesLimit = 0;
+        $continuationNotesTop = 164.0;
+        $continuationNotesLimit = max($notesLineChars, (int) floor((($contentBottom - $continuationNotesTop) - $notesPaddingHeight) / $notesLineHeight) * $notesLineChars);
         $remarksChunks = collect($splitText($remarks, $firstNotesLimit, $continuationNotesLimit, 'No remarks recorded.'));
-        $firstRemarks = $remarksStartPlacement !== null ? $remarksChunks->shift() : null;
-        $remarksStartsOnFirstPage = $remarksStartPlacement === 'first';
-        $remarksStartsOnLastContinuationPage = $remarksStartPlacement === 'last_continuation';
+        $firstRemarks = null;
+        $remarksStartsOnFirstPage = false;
+        $remarksStartsOnLastContinuationPage = false;
         $continuationRemarksChunks = $remarksChunks->values();
         $estimateNotesRowHeight = function (string $text) use ($textLength, $notesLineChars, $notesLineHeight, $notesPaddingHeight): float {
             $lineCount = max(1, (int) ceil(max(1, $textLength($text)) / $notesLineChars));

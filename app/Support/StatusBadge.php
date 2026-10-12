@@ -41,8 +41,7 @@ class StatusBadge
     {
         return match (self::key($priority)) {
             'low' => self::SKY,
-            'high' => self::WARNING,
-            'critical' => self::DANGER,
+            'high', 'critical' => self::WARNING,
             default => self::FALLBACK,
         };
     }

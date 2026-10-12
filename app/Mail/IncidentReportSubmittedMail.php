@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\IncidentReport;
+use App\Support\PatrolChecklist;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -18,7 +19,7 @@ class IncidentReportSubmittedMail extends Mailable
     public function build(): self
     {
         $category = $this->incidentReport->category ?: 'Incident report';
-        $priority = ucfirst($this->incidentReport->priority ?: 'normal');
+        $priority = PatrolChecklist::priorityLabel($this->incidentReport->priority);
 
         return $this
             ->subject("{$priority} Incident Report: {$category}")

@@ -7,6 +7,7 @@ use App\Models\Checkpoint;
 use App\Models\Guard;
 use App\Models\IncidentReport;
 use App\Models\PatrolLog;
+use App\Support\PatrolChecklist;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -58,12 +59,11 @@ class DashboardController extends Controller
                     ],
                 ],
                 'incidentPriority' => [
-                    'labels' => ['Low', 'Normal', 'High', 'Critical'],
+                    'labels' => array_values(PatrolChecklist::incidentPriorityOptions()),
                     'data' => [
                         IncidentReport::where('priority', 'low')->count(),
                         IncidentReport::where('priority', 'normal')->count(),
-                        IncidentReport::where('priority', 'high')->count(),
-                        IncidentReport::where('priority', 'critical')->count(),
+                        IncidentReport::whereIn('priority', ['high', 'critical'])->count(),
                     ],
                 ],
                 'checkpointActivity' => [

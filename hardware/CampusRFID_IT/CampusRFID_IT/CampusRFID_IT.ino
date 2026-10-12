@@ -22,6 +22,8 @@ const char* WIFI_SSID = "BITS 01";
 const char* OPEN_WIFI_SSID = "SLSU BC Students' Wifi";
 const char* BACKUP_WIFI_SSID = "SystemWi-Fi";
 const char* BACKUP_WIFI_PASSWORD = "SLSU_BC_System_Wifi";
+const char* SECOND_BACKUP_WIFI_SSID = "255.255.255.252";
+const char* SECOND_BACKUP_WIFI_PASSWORD = "12345678";
 
 // ======================================================
 // TEMPORARY IT WIFI SETUP NETWORK
@@ -521,7 +523,8 @@ BITS 01
 
 Fallback WiFi:<br>
 SLSU BC Students' Wifi<br>
-SystemWi-Fi
+SystemWi-Fi<br>
+255.255.255.252
 
 </div>
 
@@ -1093,6 +1096,18 @@ void connectWiFi() {
     tryWiFiNetwork(
       BACKUP_WIFI_SSID,
       BACKUP_WIFI_PASSWORD
+    )
+  ) {
+
+    showWiFiConnected();
+
+    return;
+  }
+
+  if (
+    tryWiFiNetwork(
+      SECOND_BACKUP_WIFI_SSID,
+      SECOND_BACKUP_WIFI_PASSWORD
     )
   ) {
 
