@@ -11,7 +11,7 @@
     }"
     x-init="window.addEventListener('theme-changed', (event) => darkMode = event.detail)"
     @click="toggleTheme()"
-    class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-transparent bg-white text-blue-900 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus-visible:border-blue-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-slate-900 dark:text-blue-100 dark:hover:border-blue-500/45 dark:hover:bg-slate-800 dark:focus-visible:border-blue-500/45 dark:focus-visible:ring-offset-slate-950"
+    class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-200/70 bg-white text-blue-900 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus-visible:border-blue-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-slate-700/60 dark:bg-slate-900 dark:text-blue-100 dark:hover:border-blue-500/45 dark:hover:bg-slate-800 dark:focus-visible:border-blue-500/45 dark:focus-visible:ring-offset-slate-950"
     aria-label="Toggle dark mode"
 >
     <svg x-show="! darkMode" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
