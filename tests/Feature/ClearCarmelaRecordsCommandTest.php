@@ -118,7 +118,7 @@ class ClearCarmelaRecordsCommandTest extends TestCase
             'patrol_log_id' => $patrolLog->id,
             'guard_id' => $guard->id,
             'checkpoint_id' => $checkpoint->id,
-            'category' => 'Suspicious Activity',
+            'category' => 'Facility Issue',
             'priority' => 'normal',
             'severity' => 'medium',
             'incident_at' => now(),

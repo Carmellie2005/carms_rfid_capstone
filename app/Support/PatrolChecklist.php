@@ -13,12 +13,12 @@ class PatrolChecklist
     public const STATUS_NOT_APPLICABLE = 'na';
 
     public const ITEMS = [
-        'doors_checked' => 'Doors checked',
-        'gates_checked' => 'Gates checked',
-        'locks_checked' => 'Locks checked',
-        'lighting_ok' => 'Lighting checked',
-        'visibility_checked' => 'Visibility checked',
-        'cctv_alarm_checked' => 'CCTV/security equipment checked',
+        'doors_checked' => 'Entry points secured',
+        'locks_checked' => 'Locks inspected',
+        'lighting_ok' => 'Lighting functional',
+        'gates_checked' => 'Walkways clear',
+        'visibility_checked' => 'Area visibility clear',
+        'cctv_alarm_checked' => 'Patrol point condition checked',
     ];
 
     public const STATUS_OPTIONS = [
@@ -32,13 +32,9 @@ class PatrolChecklist
     ];
 
     public const INCIDENT_CATEGORIES = [
-        'Suspicious Activity',
-        'Unauthorized Entry / Trespassing',
-        'Theft / Missing Item',
         'Property Damage / Vandalism',
         'Safety Hazard',
         'Facility Issue',
-        'Disturbance / Conflict',
         'Lost and Found',
         'Other',
     ];

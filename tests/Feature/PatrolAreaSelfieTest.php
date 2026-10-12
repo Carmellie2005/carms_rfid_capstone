@@ -199,7 +199,7 @@ class PatrolAreaSelfieTest extends TestCase
         $this->assertSame('cancelled', AuditLog::where('action', 'patrol_scan_cancelled')->first()?->properties['result']);
     }
 
-    public function test_issue_found_checklist_item_requires_its_own_proof_photo(): void
+    public function test_invalid_checklist_status_is_rejected(): void
     {
         Storage::fake('public');
 
@@ -219,7 +219,7 @@ class PatrolAreaSelfieTest extends TestCase
 
         $response
             ->assertRedirect(route('patrol.scan'))
-            ->assertSessionHasErrors('checklist_photos');
+            ->assertSessionHasErrors('checklist_statuses.lighting_ok');
 
         $this->assertSame($guard->id, $patrolLog->guard_id);
         $this->assertDatabaseCount('checklist_responses', 0);
@@ -326,14 +326,12 @@ class PatrolAreaSelfieTest extends TestCase
                 ...$this->areaSelfiePayload(),
                 ...$this->normalChecklistStatuses(),
                 'has_incident' => '1',
-                'incident_category' => 'Theft / Missing Item',
+                'incident_category' => 'Property Damage / Vandalism',
                 'incident_priority' => 'high',
                 'incident_description' => 'Two people were seen near the restricted hallway.',
-                'incident_images' => [
+                'incident_camera_images' => [
                     UploadedFile::fake()->image('hallway-1.jpg'),
                     UploadedFile::fake()->image('hallway-2.jpg'),
-                ],
-                'incident_camera_images' => [
                     UploadedFile::fake()->image('camera-photo.jpg'),
                 ],
             ]);
@@ -347,36 +345,30 @@ class PatrolAreaSelfieTest extends TestCase
 
         $this->assertNotNull($incident);
         $this->assertSame($guard->id, $incident->guard_id);
-        $this->assertSame('Theft / Missing Item', $incident->category);
+        $this->assertSame('Property Damage / Vandalism', $incident->category);
         $this->assertCount(3, $incident->images);
-        $this->assertSame(['upload', 'upload', 'camera'], $incident->images->pluck('source')->all());
+        $this->assertSame(['camera', 'camera', 'camera'], $incident->images->pluck('source')->all());
         $this->assertSame($incident->images->first()->image_path, $incident->image_path);
         $incident->images->each(fn ($image) => Storage::disk('public')->assertExists($image->image_path));
     }
 
-    public function test_patrol_images_are_compressed_before_storage(): void
+    public function test_patrol_and_incident_images_are_compressed_before_storage(): void
     {
         Storage::fake('public');
 
         [$user, $guard, $patrolLog] = $this->pendingAreaSelfiePatrol();
-        $checklistStatuses = $this->normalChecklistStatuses();
-        $checklistStatuses['checklist_statuses']['lighting_ok'] = PatrolChecklist::STATUS_ISSUE;
-
         $response = $this
             ->actingAs($user)
             ->from(route('patrol.scan'))
             ->post(route('patrol.store'), [
                 'patrol_log_id' => $patrolLog->id,
                 ...$this->areaSelfiePayload(),
-                ...$checklistStatuses,
-                'checklist_photos' => [
-                    'lighting_ok' => UploadedFile::fake()->image('lighting-proof.png', 2200, 1600)->size(9000),
-                ],
+                ...$this->normalChecklistStatuses(),
                 'has_incident' => '1',
-                'incident_category' => 'Suspicious Activity',
+                'incident_category' => 'Safety Hazard',
                 'incident_priority' => 'normal',
                 'incident_description' => 'Unknown person stayed near the checkpoint.',
-                'incident_images' => [
+                'incident_camera_images' => [
                     UploadedFile::fake()->image('incident-upload-1.png', 2400, 1800)->size(9000),
                     UploadedFile::fake()->image('incident-upload-2.jpg', 1800, 2400)->size(9000),
                 ],
@@ -392,11 +384,7 @@ class PatrolAreaSelfieTest extends TestCase
         $this->assertSame('image/jpeg', $patrolLog->area_selfie_mime_type);
         $this->assertStoredImageIsCompressedJpeg($patrolLog->area_selfie_path);
 
-        $proofPhoto = $patrolLog->checklistResponse->proofPhotos->first();
-        $this->assertNotNull($proofPhoto);
-        $this->assertSame('image/jpeg', $proofPhoto->mime_type);
-        $this->assertStoredImageIsCompressedJpeg($proofPhoto->image_path);
-        $this->assertSame(base64_encode(Storage::disk('public')->get($proofPhoto->image_path)), $proofPhoto->image_data);
+        $this->assertCount(0, $patrolLog->checklistResponse->proofPhotos);
 
         $incidentImages = $patrolLog->incidentReport->images;
         $this->assertCount(2, $incidentImages);

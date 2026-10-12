@@ -79,7 +79,7 @@ class NotificationReadTest extends TestCase
     {
         $supervisor = User::factory()->create(['role' => 'admin']);
         $incident = IncidentReport::create([
-            'category' => 'Suspicious Activity',
+            'category' => 'Facility Issue',
             'priority' => 'high',
             'severity' => 'high',
             'incident_at' => now(),
@@ -92,7 +92,7 @@ class NotificationReadTest extends TestCase
             ->get('/profile')
             ->assertOk()
             ->assertSee('1 unread alert')
-            ->assertSee('Suspicious Activity')
+            ->assertSee('Facility Issue')
             ->assertSee('Mark as read');
 
         $response = $this
@@ -126,7 +126,7 @@ class NotificationReadTest extends TestCase
             ->assertOk()
             ->assertSee('0 unread alerts')
             ->assertSee('No alerts right now')
-            ->assertDontSee('Suspicious Activity');
+            ->assertDontSee('Facility Issue');
     }
 
     public function test_user_can_mark_all_notifications_as_read(): void
