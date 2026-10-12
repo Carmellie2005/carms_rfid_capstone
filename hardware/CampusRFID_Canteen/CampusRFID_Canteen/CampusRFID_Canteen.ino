@@ -19,7 +19,7 @@ const char* WIFI_SSID = "SystemWi-Fi";
 
 // Public/open fallback for pilot testing.
 // This must not require a captive portal/login page.
-const char* OPEN_WIFI_SSID = "SLSU BC Student's Wi-Fi";
+const char* OPEN_WIFI_SSID = "SLSU BC Students' Wifi";
 
 // =====================================================
 // TEMPORARY CAMPUS CANTEEN WIFI SETUP NETWORK
@@ -312,7 +312,7 @@ SystemWi-Fi
 
 Public fallback WiFi:<br>
 
-SLSU BC Student's Wi-Fi
+SLSU BC Students' Wifi
 
 </div>
 

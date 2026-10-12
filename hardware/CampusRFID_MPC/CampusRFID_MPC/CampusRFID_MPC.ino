@@ -20,7 +20,7 @@ const char* WIFI_PASSWORD = "SLSU_BC_System_Wifi";
 
 // Public/open fallback networks for pilot testing.
 // These must not require a captive portal/login page.
-const char* OPEN_WIFI_SSID = "SLSU BC Student's Wi-Fi";
+const char* OPEN_WIFI_SSID = "SLSU BC Students' Wifi";
 const char* SECOND_OPEN_WIFI_SSID = "STARLINK";
 const char* BACKUP_WIFI_SSID = "";
 const char* BACKUP_WIFI_PASSWORD = "";
@@ -328,7 +328,7 @@ SystemWi-Fi
 
 Public fallback WiFi:<br>
 
-SLSU BC Student's Wi-Fi<br>
+SLSU BC Students' Wifi<br>
 STARLINK
 
 </div>

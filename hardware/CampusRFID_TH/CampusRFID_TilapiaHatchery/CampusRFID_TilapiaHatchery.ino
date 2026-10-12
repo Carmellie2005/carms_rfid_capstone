@@ -15,8 +15,8 @@
 // WIFI NETWORKS
 // =====================================================
 
-const char* PRIMARY_WIFI_SSID = "Records Office";
-const char* PRIMARY_WIFI_PASSWORD = "RECORDS_2025";
+const char* PRIMARY_WIFI_SSID = "RECORDS OFFICE WIFI";
+const char* PRIMARY_WIFI_PASSWORD = "RECORDS_2026";
 
 const char* BACKUP_WIFI_SSID = "SystemWi-Fi";
 const char* BACKUP_WIFI_PASSWORD = "SLSU_BC_System_Wifi";
@@ -306,7 +306,7 @@ button:hover {
 
 <strong>Primary WiFi:</strong><br>
 
-Records Office<br><br>
+RECORDS OFFICE WIFI<br><br>
 
 <strong>Backup WiFi:</strong><br>
 

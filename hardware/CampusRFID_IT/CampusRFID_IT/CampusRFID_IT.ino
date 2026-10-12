@@ -19,9 +19,9 @@ const char* WIFI_SSID = "BITS 01";
 
 // Optional fallback networks for pilot testing.
 // Leave blank if not available. Open WiFi must not require a captive portal/login page.
-const char* OPEN_WIFI_SSID = "SLSU BC Student's Wi-Fi";
-const char* BACKUP_WIFI_SSID = "";
-const char* BACKUP_WIFI_PASSWORD = "";
+const char* OPEN_WIFI_SSID = "SLSU BC Students' Wifi";
+const char* BACKUP_WIFI_SSID = "SystemWi-Fi";
+const char* BACKUP_WIFI_PASSWORD = "SLSU_BC_System_Wifi";
 
 // ======================================================
 // TEMPORARY IT WIFI SETUP NETWORK
@@ -494,7 +494,9 @@ BITS 01
 
 <br><br>
 
-Optional fallback WiFi networks can also be configured in the sketch.
+Fallback WiFi:<br>
+SLSU BC Students' Wifi<br>
+SystemWi-Fi
 
 </div>
 

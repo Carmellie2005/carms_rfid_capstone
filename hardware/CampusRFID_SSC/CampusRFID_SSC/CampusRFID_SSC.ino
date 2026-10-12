@@ -21,6 +21,10 @@
 const char* WIFI_SSID = "SSC Room";
 const char* WIFI_PASSWORD = "SLSU_BC_SSC_2026";
 
+// Public/open fallback for pilot testing.
+// This must not require a captive portal/login page.
+const char* OPEN_WIFI_SSID = "SLSU BC Students' Wifi";
+
 // =====================================================
 // TEMPORARY ESP32 SETUP WIFI
 // =====================================================
@@ -387,6 +391,12 @@ button:hover {
 <strong>Campus WiFi:</strong><br>
 
 SSC Room
+
+<br><br>
+
+Public fallback WiFi:<br>
+
+SLSU BC Students' Wifi
 
 </div>
 
@@ -805,6 +815,43 @@ void connectWiFi() {
   }
 
   // =================================================
+  // FALL BACK TO OPEN PUBLIC WIFI
+  // =================================================
+
+  if (
+    WiFi.status() != WL_CONNECTED
+  ) {
+
+    Serial.println();
+
+    Serial.println(
+      "Password WiFi failed. Trying public fallback WiFi."
+    );
+
+    WiFi.disconnect();
+
+    delay(500);
+
+    WiFi.begin(
+      OPEN_WIFI_SSID
+    );
+
+    attempts = 0;
+
+    while (
+      WiFi.status() != WL_CONNECTED &&
+      attempts < WIFI_CONNECT_ATTEMPTS
+    ) {
+
+      delay(500);
+
+      Serial.print(".");
+
+      attempts++;
+    }
+  }
+
+  // =================================================
   // CONNECTED
   // =================================================
 
@@ -863,7 +910,7 @@ void connectWiFi() {
     Serial.println();
 
     Serial.println(
-      "All WiFi password attempts failed."
+      "All WiFi options failed."
     );
 
     Serial.println(
