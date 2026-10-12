@@ -12,10 +12,14 @@
 #include <DNSServer.h>
 
 // =====================================================
-// FIXED CAMPUS WIFI
+// WIFI NETWORKS
 // =====================================================
 
 const char* WIFI_SSID = "SystemWi-Fi";
+
+// Public/open fallback for pilot testing.
+// This must not require a captive portal/login page.
+const char* OPEN_WIFI_SSID = "SLSU BC Student's Wi-Fi";
 
 // =====================================================
 // TEMPORARY CAMPUS CANTEEN WIFI SETUP NETWORK
@@ -303,6 +307,12 @@ button:hover {
 <strong>Campus WiFi:</strong><br>
 
 SystemWi-Fi
+
+<br><br>
+
+Public fallback WiFi:<br>
+
+SLSU BC Student's Wi-Fi
 
 </div>
 
@@ -615,6 +625,148 @@ The Campus Canteen RFID device will restart automatically.
 // CONNECT WIFI
 // =====================================================
 
+bool hasConfiguredText(
+  const char* value
+) {
+
+  return value != nullptr &&
+    String(value).length() > 0;
+}
+
+bool tryWiFiNetwork(
+  const char* ssid,
+  const char* password
+) {
+
+  if (
+    !hasConfiguredText(ssid)
+  ) {
+
+    return false;
+  }
+
+  Serial.print(
+    "Trying WiFi: "
+  );
+
+  Serial.println(
+    ssid
+  );
+
+  lcdMessage(
+    "Trying WiFi",
+    String(ssid)
+  );
+
+  WiFi.disconnect();
+
+  delay(500);
+
+  WiFi.mode(WIFI_STA);
+
+  WiFi.setSleep(false);
+
+  if (
+    hasConfiguredText(password)
+  ) {
+
+    WiFi.begin(
+      ssid,
+      password
+    );
+  }
+
+  else {
+
+    WiFi.begin(
+      ssid
+    );
+  }
+
+  int attempts = 0;
+
+  while (
+    WiFi.status() != WL_CONNECTED &&
+    attempts < WIFI_CONNECT_ATTEMPTS
+  ) {
+
+    delay(500);
+
+    Serial.print(".");
+
+    attempts++;
+  }
+
+  Serial.println();
+
+  if (
+    WiFi.status() == WL_CONNECTED
+  ) {
+
+    return true;
+  }
+
+  Serial.print(
+    "Failed WiFi: "
+  );
+
+  Serial.println(
+    ssid
+  );
+
+  return false;
+}
+
+void showWiFiConnected() {
+
+  Serial.println(
+    "WiFi Connected"
+  );
+
+  Serial.print(
+    "SSID: "
+  );
+
+  Serial.println(
+    WiFi.SSID()
+  );
+
+  Serial.print(
+    "IP Address: "
+  );
+
+  Serial.println(
+    WiFi.localIP()
+  );
+
+  Serial.print(
+    "Device: "
+  );
+
+  Serial.println(
+    DEVICE_UID
+  );
+
+  Serial.print(
+    "API URL: "
+  );
+
+  Serial.println(
+    API_URL
+  );
+
+  lcdMessage(
+    "WiFi Connected",
+    WiFi.localIP().toString()
+  );
+
+  successBeep();
+
+  delay(1500);
+
+  showReady();
+}
+
 void connectWiFi() {
 
   Serial.println();
@@ -631,121 +783,76 @@ void connectWiFi() {
   String savedPassword =
     getSavedWiFiPassword();
 
-  // No saved password yet
+  // =====================================================
+  // PRIMARY WIFI USING SAVED PASSWORD
+  // =====================================================
+
+  if (
+    savedPassword.length() > 0 &&
+    tryWiFiNetwork(
+      WIFI_SSID,
+      savedPassword.c_str()
+    )
+  ) {
+
+    showWiFiConnected();
+
+    return;
+  }
+
   if (
     savedPassword.length() == 0
   ) {
 
     Serial.println(
-      "No saved WiFi password."
+      "No saved password for primary WiFi."
     );
+  }
 
-    startWiFiSetupPortal();
+  else {
+    Serial.println(
+      "Primary WiFi failed."
+    );
+  }
+
+  // =====================================================
+  // PUBLIC OPEN WIFI FALLBACK
+  // =====================================================
+
+  if (
+    tryWiFiNetwork(
+      OPEN_WIFI_SSID,
+      nullptr
+    )
+  ) {
+
+    showWiFiConnected();
 
     return;
   }
 
-  // Connect using saved password
-  WiFi.mode(WIFI_STA);
+  // =====================================================
+  // ALL WIFI OPTIONS FAILED
+  // =====================================================
 
-  WiFi.setSleep(false);
+  Serial.println();
 
-  WiFi.begin(
-    WIFI_SSID,
-    savedPassword.c_str()
+  Serial.println(
+    "All WiFi options failed."
   );
 
-  int attempts = 0;
+  Serial.println(
+    "Starting Campus Canteen setup portal..."
+  );
 
-  while (
-    WiFi.status() != WL_CONNECTED &&
-    attempts < WIFI_CONNECT_ATTEMPTS
-  ) {
+  lcdMessage(
+    "WiFi Setup",
+    "Required"
+  );
 
-    delay(500);
+  delay(2000);
 
-    Serial.print(".");
-
-    attempts++;
-  }
-
-  // Connected
-  if (
-    WiFi.status() == WL_CONNECTED
-  ) {
-
-    Serial.println();
-
-    Serial.println(
-      "WiFi Connected"
-    );
-
-    Serial.print(
-      "SSID: "
-    );
-
-    Serial.println(
-      WiFi.SSID()
-    );
-
-    Serial.print(
-      "IP Address: "
-    );
-
-    Serial.println(
-      WiFi.localIP()
-    );
-
-    Serial.print(
-      "Device: "
-    );
-
-    Serial.println(
-      DEVICE_UID
-    );
-
-    Serial.print(
-      "API URL: "
-    );
-
-    Serial.println(
-      API_URL
-    );
-
-    lcdMessage(
-      "WiFi Connected",
-      WiFi.localIP().toString()
-    );
-
-    successBeep();
-
-    delay(1500);
-
-    showReady();
-  }
-
-  // Saved password no longer works
-  else {
-
-    Serial.println();
-
-    Serial.println(
-      "Saved password failed."
-    );
-
-    Serial.println(
-      "Starting Campus Canteen setup portal..."
-    );
-
-    lcdMessage(
-      "WiFi Changed?",
-      "Setup Required"
-    );
-
-    delay(2000);
-
-    startWiFiSetupPortal();
-  }
+  startWiFiSetupPortal();
 }
 
 // =====================================================
