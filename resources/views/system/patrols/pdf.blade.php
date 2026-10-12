@@ -296,7 +296,7 @@
         }
 
         .documentation-label {
-            top: 144pt;
+            top: 136pt;
         }
 
         .documentation-photo {
@@ -309,7 +309,7 @@
             left: 72.5pt;
             position: absolute;
             text-align: center;
-            top: 219pt;
+            top: 211pt;
             width: 467.21pt;
             z-index: 1;
         }
@@ -590,7 +590,7 @@
                     $boxWidth = 340.0;
                     $boxHeight = 255.0;
                     $boxLeft = 127.5;
-                    $boxTop = $loop->iteration === 1 ? 170.0 : 444.0;
+                    $boxTop = $loop->iteration === 1 ? 158.0 : 432.0;
                     $naturalWidth = (float) ($image['width'] ?? 0);
                     $naturalHeight = (float) ($image['height'] ?? 0);
 

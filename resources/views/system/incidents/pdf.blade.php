@@ -252,7 +252,7 @@
         }
 
         .documentation-label {
-            top: 164pt;
+            top: 136pt;
         }
 
         .documentation-photo {
@@ -265,11 +265,11 @@
         }
 
         .documentation-photo-slot-1 {
-            top: 190pt;
+            top: 158pt;
         }
 
         .documentation-photo-slot-2 {
-            top: 464pt;
+            top: 432pt;
         }
 
         .documentation-empty {
@@ -277,7 +277,7 @@
             left: 72.5pt;
             position: absolute;
             text-align: center;
-            top: 239pt;
+            top: 211pt;
             width: 467.21pt;
             z-index: 1;
         }
