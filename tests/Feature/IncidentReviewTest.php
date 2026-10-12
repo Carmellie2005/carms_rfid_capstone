@@ -83,7 +83,8 @@ class IncidentReviewTest extends TestCase
             ->assertOk()
             ->assertSee('Resolved report is read-only')
             ->assertSee('Reopen Report')
-            ->assertSee('Reviewed and verified.')
+            ->assertDontSee('Reviewed and verified.')
+            ->assertDontSee('Admin Notes')
             ->assertSee('Area secured.');
     }
 

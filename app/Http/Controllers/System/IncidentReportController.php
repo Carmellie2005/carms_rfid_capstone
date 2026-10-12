@@ -38,7 +38,7 @@ class IncidentReportController extends Controller
 
     public function update(Request $request, IncidentReport $incidentReport): RedirectResponse
     {
-        $before = $incidentReport->only(['status', 'admin_notes', 'action_taken', 'resolved_at']);
+        $before = $incidentReport->only(['status', 'action_taken', 'resolved_at']);
 
         if ($incidentReport->status === 'resolved') {
             if ($request->input('review_action') !== 'reopen') {
@@ -54,7 +54,7 @@ class IncidentReportController extends Controller
 
             AuditLogger::record('incident_reopened', 'Resolved incident report reopened for review.', $incidentReport, [
                 'before' => $before,
-                'after' => $incidentReport->only(['status', 'admin_notes', 'action_taken', 'resolved_at']),
+                'after' => $incidentReport->only(['status', 'action_taken', 'resolved_at']),
             ]);
 
             return redirect()->route('incidents.index')->with('status', 'Incident report reopened for review.');
@@ -62,7 +62,6 @@ class IncidentReportController extends Controller
 
         $data = $request->validate([
             'status' => ['required', Rule::in(['submitted', 'under_review', 'resolved'])],
-            'admin_notes' => ['nullable', 'string', 'max:2000'],
             'action_taken' => ['nullable', 'required_if:status,resolved', 'string', 'max:2000'],
         ]);
 
@@ -76,7 +75,7 @@ class IncidentReportController extends Controller
 
         AuditLogger::record('incident_updated', 'Incident report review status updated.', $incidentReport, [
             'before' => $before,
-            'after' => $incidentReport->only(['status', 'admin_notes', 'action_taken', 'resolved_at']),
+            'after' => $incidentReport->only(['status', 'action_taken', 'resolved_at']),
         ]);
 
         return redirect()->route('incidents.index')->with('status', 'Incident report updated.');

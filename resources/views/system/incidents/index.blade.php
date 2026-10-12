@@ -136,11 +136,6 @@
                                         Incident image is unavailable on this deployment.
                                     </div>
                                 @endif
-                                @if ($incident->admin_notes)
-                                    <div class="mt-4 rounded-md bg-blue-50 p-3 text-sm text-blue-900">
-                                        <span class="font-semibold">Admin notes:</span> {{ $incident->admin_notes }}
-                                    </div>
-                                @endif
                                 @if ($incident->action_taken)
                                     <div class="mt-3 rounded-md border border-emerald-100 bg-emerald-50 p-3 text-sm text-emerald-900 dark:border-emerald-700/40 dark:bg-slate-800/80 dark:text-emerald-100">
                                         <span class="font-semibold">Action taken:</span> {{ $incident->action_taken }}
@@ -151,7 +146,7 @@
                             @if ($incident->status === 'resolved')
                                 <div class="rounded-md border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-950 dark:border-emerald-700/40 dark:bg-emerald-950/25 dark:text-emerald-100">
                                     <p class="font-bold">Resolved report is read-only</p>
-                                    <p class="mt-1 leading-6">Admin notes and action taken are locked to preserve the official review record. Reopen this report only if another update is needed.</p>
+                                    <p class="mt-1 leading-6">Action taken is locked to preserve the official review record. Reopen this report only if another update is needed.</p>
 
                                     <form method="POST" action="{{ route('incidents.update', $incident) }}" class="mt-4">
                                         @csrf
@@ -171,10 +166,6 @@
                                                 <option value="{{ $value }}" @selected($incident->status === $value)>{{ $label }}</option>
                                             @endforeach
                                         </select>
-                                    </div>
-                                    <div class="mt-3">
-                                        <label for="admin_notes-{{ $incident->id }}" class="sr-only">Admin Notes</label>
-                                        <textarea id="admin_notes-{{ $incident->id }}" name="admin_notes" rows="4" placeholder="Admin Notes" class="mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('admin_notes', $incident->admin_notes) }}</textarea>
                                     </div>
                                     <div class="mt-3">
                                         <label for="action_taken-{{ $incident->id }}" class="block text-sm font-medium text-slate-700">Action Taken</label>
