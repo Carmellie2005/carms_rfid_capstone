@@ -3,6 +3,7 @@
     $isGuard = $user->role === 'guard';
     $guardProfile = $isGuard ? $user->guardProfile : null;
     $roleLabel = $isSupervisor ? 'Supervisor' : ucfirst($user->role ?? 'User');
+    $profilePhone = $isGuard ? ($guardProfile?->phone ?? $user->phone) : $user->phone;
 @endphp
 
 <section>
@@ -91,7 +92,7 @@
 
             <div>
                 <x-input-label for="phone" :value="__('Contact Number')" class="sr-only" />
-                <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone', $user->phone)" placeholder="{{ __('Contact Number') }}" autocomplete="tel" />
+                <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone', $profilePhone)" placeholder="{{ __('Contact Number') }}" autocomplete="tel" />
                 <x-input-error class="mt-2" :messages="$errors->get('phone')" />
             </div>
 

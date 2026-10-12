@@ -117,6 +117,7 @@ class ProfileTest extends TestCase
             ->assertSee('RFID-TEST')
             ->assertSee('Night Shift')
             ->assertSee('Apr 12, 1998')
+            ->assertSee('value="09171234567"', false)
             ->assertSee('Update Password')
             ->assertSee('aria-label="Show current password"', false)
             ->assertSee('aria-label="Show new password"', false)
