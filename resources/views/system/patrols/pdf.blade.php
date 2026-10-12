@@ -241,7 +241,7 @@
         .checklist-flow-block {
             left: 72.5pt;
             position: absolute;
-            top: 420pt;
+            top: 482pt;
             width: 467.21pt;
             z-index: 1;
         }
@@ -266,11 +266,11 @@
 
         .checklist-label,
         .checklist-continuation-label {
-            top: 420pt;
+            top: 482pt;
         }
 
         .checklist-table {
-            top: 446pt;
+            top: 508pt;
         }
 
         .checklist-continuation-label {
@@ -451,7 +451,7 @@
         };
         // Dompdf renders table padding/borders taller than CSS height, so reserve extra footer space.
         $contentBottom = 704.0;
-        $firstChecklistTableTop = 446.0;
+        $firstChecklistTableTop = 508.0;
         $continuationChecklistTableTop = 190.0;
         $checklistChunks = $chunkRowsByHeight($checklistRows, $contentBottom - $firstChecklistTableTop);
         $firstChecklistRows = $checklistChunks->shift() ?? collect();
