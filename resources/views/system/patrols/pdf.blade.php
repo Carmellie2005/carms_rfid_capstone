@@ -531,14 +531,30 @@
         $continuationChecklistChunks = $checklistChunks
             ->flatMap(fn ($chunk) => $chunkRowsByHeight($chunk, $contentBottom - $continuationChecklistTableTop))
             ->values();
-        $remarksStartPlacement = null;
-        $firstNotesLimit = 0;
-        $continuationNotesTop = 164.0;
-        $continuationNotesLimit = max($notesLineChars, (int) floor((($contentBottom - $continuationNotesTop) - $notesPaddingHeight) / $notesLineHeight) * $notesLineChars);
+        $firstChecklistHeight = $firstChecklistRows->sum(fn (array $row): float => (float) ($row['row_height'] ?? 28.0));
+        $notesTableTop = $firstChecklistTableTop + $firstChecklistHeight + 8.0;
+        $notesAvailableOnFirstPage = $contentBottom - $notesTableTop;
+        $notesCanStartOnFirstPage = $continuationChecklistChunks->isEmpty() && $notesAvailableOnFirstPage >= 24.0;
+        $lastContinuationChecklistHeight = $continuationChecklistChunks->isNotEmpty()
+            ? $continuationChecklistChunks->last()->sum(fn (array $row): float => (float) ($row['row_height'] ?? 28.0))
+            : 0.0;
+        $lastContinuationNotesTop = $continuationChecklistTableTop + $lastContinuationChecklistHeight + 8.0;
+        $notesAvailableOnLastContinuationPage = $contentBottom - $lastContinuationNotesTop;
+        $notesCanStartOnLastContinuationPage = $continuationChecklistChunks->isNotEmpty() && $notesAvailableOnLastContinuationPage >= 24.0;
+        $remarksStartPlacement = $notesCanStartOnFirstPage
+            ? 'first'
+            : ($notesCanStartOnLastContinuationPage ? 'last_continuation' : null);
+        $firstNotesAvailableHeight = $remarksStartPlacement === 'first'
+            ? $notesAvailableOnFirstPage
+            : ($remarksStartPlacement === 'last_continuation' ? $notesAvailableOnLastContinuationPage : 0.0);
+        $firstNotesLimit = $remarksStartPlacement !== null
+            ? max($notesLineChars, (int) floor(max(1.0, $firstNotesAvailableHeight - $notesPaddingHeight) / $notesLineHeight) * $notesLineChars)
+            : 0;
+        $continuationNotesLimit = max($notesLineChars, (int) floor((($contentBottom - 164.0) - $notesPaddingHeight) / $notesLineHeight) * $notesLineChars);
         $remarksChunks = collect($splitText($remarks, $firstNotesLimit, $continuationNotesLimit, 'No remarks recorded.'));
-        $firstRemarks = null;
-        $remarksStartsOnFirstPage = false;
-        $remarksStartsOnLastContinuationPage = false;
+        $firstRemarks = $remarksStartPlacement !== null ? $remarksChunks->shift() : null;
+        $remarksStartsOnFirstPage = $remarksStartPlacement === 'first';
+        $remarksStartsOnLastContinuationPage = $remarksStartPlacement === 'last_continuation';
         $continuationRemarksChunks = $remarksChunks->values();
         $estimateNotesRowHeight = function (string $text) use ($textLength, $notesLineChars, $notesLineHeight, $notesPaddingHeight): float {
             $lineCount = max(1, (int) ceil(max(1, $textLength($text)) / $notesLineChars));
