@@ -444,11 +444,15 @@ label {
   font-weight: bold;
 }
 
-input[type=password] {
-  width: 100%;
-  padding: 13px;
+.password-field {
+  position: relative;
   margin-top: 8px;
   margin-bottom: 18px;
+}
+
+.password-field input {
+  width: 100%;
+  padding: 13px 52px 13px 13px;
   border: 1px solid #ccc;
   border-radius: 8px;
   box-sizing: border-box;
@@ -467,6 +471,27 @@ button {
 
 button:hover {
   background: #0b315b;
+}
+
+button.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  width: 40px;
+  padding: 8px;
+  transform: translateY(-50%);
+  background: transparent;
+  color: #123f73;
+  border: none;
+  cursor: pointer;
+}
+
+button.password-toggle:hover {
+  background: #eef5ff;
+}
+
+button.password-toggle svg {
+  display: block;
 }
 
 .small {
@@ -506,11 +531,30 @@ SystemWi-Fi
 Enter New WiFi Password:
 </label>
 
+<div class="password-field">
 <input
+id="wifi-password"
 type="password"
 name="password"
 required
 placeholder="Enter campus WiFi password">
+<button
+class="password-toggle"
+type="button"
+aria-label="Show password"
+onclick="togglePassword()">
+<svg id="eye-open" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+<circle cx="12" cy="12" r="3"></circle>
+</svg>
+<svg id="eye-closed" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" style="display:none" aria-hidden="true">
+<path d="M3 3l18 18"></path>
+<path d="M10.6 10.6a3 3 0 0 0 4.2 4.2"></path>
+<path d="M9.9 5.2A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a17.8 17.8 0 0 1-3.2 4.2"></path>
+<path d="M6.1 6.1A17.4 17.4 0 0 0 2 12s3.5 7 10 7c1.4 0 2.7-.3 3.9-.8"></path>
+</svg>
+</button>
+</div>
 
 <button type="submit">
 Save Password
@@ -523,6 +567,18 @@ IT Building RFID Checkpoint
 </div>
 
 </div>
+
+<script>
+function togglePassword() {
+  var input = document.getElementById('wifi-password');
+  var openIcon = document.getElementById('eye-open');
+  var closedIcon = document.getElementById('eye-closed');
+  var showPassword = input.type === 'password';
+  input.type = showPassword ? 'text' : 'password';
+  openIcon.style.display = showPassword ? 'none' : 'block';
+  closedIcon.style.display = showPassword ? 'block' : 'none';
+}
+</script>
 
 </body>
 
