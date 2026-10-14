@@ -198,7 +198,7 @@
                             <img
                                 src="{{ asset('images/kingfisher-mascot.png') }}"
                                 alt="SLSU Kingfisher mascot"
-                                class="max-h-72 w-auto object-contain drop-shadow-xl xl:max-h-80"
+                                class="kingfisher-mascot-dance max-h-72 w-auto object-contain drop-shadow-xl xl:max-h-80"
                                 loading="lazy"
                             >
                         </div>

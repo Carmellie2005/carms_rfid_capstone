@@ -78,6 +78,12 @@
         gap: 0.38rem;
     }
 
+    .kingfisher-mascot-dance {
+        transform-origin: 50% 88%;
+        animation: kingfisher-dance 1.8s ease-in-out infinite;
+        will-change: transform;
+    }
+
     .brand-spinner-dots span {
         height: 0.46rem;
         width: 0.46rem;
@@ -379,6 +385,33 @@
 
     50% {
         transform: translateY(-0.18rem);
+    }
+}
+
+@keyframes kingfisher-dance {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg) scale(1);
+    }
+
+    16% {
+        transform: translateY(-0.45rem) rotate(-4deg) scale(1.015);
+    }
+
+    32% {
+        transform: translateX(0.35rem) translateY(0.08rem) rotate(3deg) scale(0.995);
+    }
+
+    48% {
+        transform: translateY(-0.32rem) rotate(4deg) scale(1.012);
+    }
+
+    64% {
+        transform: translateX(-0.35rem) translateY(0.08rem) rotate(-3deg) scale(0.995);
+    }
+
+    82% {
+        transform: translateY(-0.18rem) rotate(2deg) scale(1.006);
     }
 }
 
