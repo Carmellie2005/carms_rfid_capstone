@@ -17,7 +17,6 @@ class ScanIssueController extends Controller
         'pending_selfie',
         'pending_face',
         'profile_incomplete',
-        'outside_schedule',
         'expired',
     ];
 
@@ -132,10 +131,6 @@ class ScanIssueController extends Controller
             return 'Ask the guard to open Scan Checkpoint, take the required area selfie, and complete the checklist.';
         }
 
-        if ($log->status === 'outside_schedule') {
-            return 'Patrol scans are accepted only during the scheduled patrol window.';
-        }
-
         if ($log->status === 'expired') {
             return 'A newer RFID scan replaced this pending checkpoint scan.';
         }
@@ -151,7 +146,7 @@ class ScanIssueController extends Controller
     {
         return match ($log->status) {
             'invalid', 'suspicious' => 'danger',
-            'profile_incomplete', 'pending_selfie', 'pending_face', 'outside_schedule', 'expired' => 'warning',
+            'profile_incomplete', 'pending_selfie', 'pending_face', 'expired' => 'warning',
             default => 'ok',
         };
     }

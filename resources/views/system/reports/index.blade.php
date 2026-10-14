@@ -18,7 +18,6 @@
             ['label' => 'Invalid Scans', 'value' => $summary['invalid'], 'labelClass' => 'text-red-700 dark:text-red-300', 'valueClass' => 'text-red-900 dark:text-red-100'],
             ['label' => 'Pending Selfie', 'value' => $summary['pendingSelfie'], 'labelClass' => 'text-sky-700 dark:text-sky-300', 'valueClass' => 'text-sky-900 dark:text-sky-100'],
             ['label' => 'Pending Checklist', 'value' => $summary['pendingChecklist'], 'labelClass' => 'text-blue-700 dark:text-blue-300', 'valueClass' => 'text-blue-950 dark:text-blue-100'],
-            ['label' => 'Outside Schedule', 'value' => $summary['outsideSchedule'], 'labelClass' => 'text-orange-700 dark:text-orange-300', 'valueClass' => 'text-orange-900 dark:text-orange-100'],
             ['label' => 'Incidents', 'value' => $summary['incidents'], 'labelClass' => 'text-blue-700 dark:text-blue-300', 'valueClass' => 'text-blue-950 dark:text-blue-100'],
         ];
     @endphp
@@ -63,7 +62,7 @@
                     </div>
                 </div>
 
-                <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-7">
+                <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-6">
                     @foreach ($summaryCards as $card)
                         <div class="min-h-[5.5rem] rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-4 dark:border-slate-700 dark:bg-slate-900">
                             <p class="min-h-8 text-[0.68rem] font-bold uppercase leading-4 tracking-wide sm:text-[0.72rem] {{ $card['labelClass'] }}">{{ $card['label'] }}</p>

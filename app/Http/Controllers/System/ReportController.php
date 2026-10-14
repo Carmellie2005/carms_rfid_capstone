@@ -62,7 +62,6 @@ class ReportController extends Controller
                 'pendingSelfie' => (int) ($patrolStatusCounts['pending_selfie'] ?? 0) + (int) ($patrolStatusCounts['pending_face'] ?? 0),
                 'pendingChecklist' => (int) ($patrolStatusCounts['pending_checklist'] ?? 0),
                 'profileIncomplete' => (int) ($patrolStatusCounts['profile_incomplete'] ?? 0),
-                'outsideSchedule' => (int) ($patrolStatusCounts['outside_schedule'] ?? 0),
                 'incidents' => (clone $incidentQuery)->count(),
             ],
         ]);

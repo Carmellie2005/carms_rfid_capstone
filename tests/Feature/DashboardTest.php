@@ -149,4 +149,24 @@ class DashboardTest extends TestCase
             ->assertSee('Medium')
             ->assertSee('Submitted');
     }
+
+    public function test_dashboard_scan_status_matches_no_schedule_flow(): void
+    {
+        $supervisor = User::factory()->create([
+            'name' => 'Security Supervisor',
+            'role' => 'admin',
+            'username' => 'supervisor',
+        ]);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('dashboard'));
+
+        $response
+            ->assertOk()
+            ->assertSee('Valid, suspicious, invalid, pending selfie, and profile incomplete scans')
+            ->assertSee('Pending Selfie')
+            ->assertDontSee('outside schedule scans')
+            ->assertDontSee('Outside Schedule');
+    }
 }

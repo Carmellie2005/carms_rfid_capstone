@@ -80,4 +80,39 @@ class ReaderStatusTest extends TestCase
             ->assertSee('-55 dBm')
             ->assertSee('No device errors reported.');
     }
+
+    public function test_stale_device_diagnostics_do_not_show_as_online(): void
+    {
+        $checkpoint = Checkpoint::create([
+            'code' => 'CP-OLD-01',
+            'name' => 'Old Device',
+            'location' => 'Testing Area',
+            'device_uid' => 'ESP32-OLD-01',
+            'status' => 'active',
+            'reader_last_seen_at' => now()->subMinutes(10),
+            'reader_last_message' => 'Reader heartbeat received.',
+            'reader_diagnostics' => [
+                'wifi_status' => 'connected',
+                'wifi_rssi' => -55,
+                'local_ip' => '192.168.1.50',
+                'rfid_status' => 'online',
+                'lcd_status' => 'online',
+                'buzzer_status' => 'ready',
+                'firmware' => 'checkpoint-diagnostics-v1',
+            ],
+        ]);
+
+        $supervisor = User::factory()->create(['role' => 'admin']);
+
+        $this
+            ->actingAs($supervisor)
+            ->get(route('readers.index'))
+            ->assertOk()
+            ->assertSee($checkpoint->name)
+            ->assertSee('Offline')
+            ->assertSee('Not online')
+            ->assertDontSee('Connected')
+            ->assertDontSee('Ready')
+            ->assertDontSee('-55 dBm');
+    }
 }

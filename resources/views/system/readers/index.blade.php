@@ -46,6 +46,17 @@
                         $statusLabel = fn (?string $status): string => filled($status)
                             ? \Illuminate\Support\Str::headline($status)
                             : 'Not Reported';
+                        $displayComponentStatus = function (string $field) use ($state, $diagnostics): ?string {
+                            return match ($state) {
+                                'online' => $diagnostics[$field] ?? null,
+                                'offline' => 'offline',
+                                'inactive' => 'inactive',
+                                default => null,
+                            };
+                        };
+                        $onlineOnlyDetail = fn (mixed $value): string => $state === 'online' && filled($value)
+                            ? (string) $value
+                            : ($state === 'online' ? 'Not reported' : 'Not online');
                     @endphp
 
                     <article class="min-w-0 rounded-md border border-blue-100 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-5">
@@ -67,7 +78,7 @@
                             </div>
                             <div class="rounded-md bg-blue-50/60 p-2 dark:bg-slate-800/80 sm:p-3">
                                 <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-blue-200 sm:text-xs">Device IP</dt>
-                                <dd class="mt-1 truncate font-mono text-xs text-slate-800 dark:text-slate-100 sm:text-sm">{{ $diagnostics['local_ip'] ?? 'Not reported' }}</dd>
+                                <dd class="mt-1 truncate font-mono text-xs text-slate-800 dark:text-slate-100 sm:text-sm">{{ $onlineOnlyDetail($diagnostics['local_ip'] ?? null) }}</dd>
                             </div>
                             <div class="rounded-md bg-blue-50/60 p-2 dark:bg-slate-800/80 sm:p-3">
                                 <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-blue-200 sm:text-xs">Last Seen</dt>
@@ -93,10 +104,10 @@
 
                             <dl class="mt-3 grid gap-2 sm:grid-cols-2">
                                 @foreach ([
-                                    ['label' => 'WiFi', 'icon' => 'wifi', 'status' => $diagnostics['wifi_status'] ?? null],
-                                    ['label' => 'RFID Reader', 'icon' => 'reader', 'status' => $diagnostics['rfid_status'] ?? null],
-                                    ['label' => 'LCD', 'icon' => 'lcd', 'status' => $diagnostics['lcd_status'] ?? null],
-                                    ['label' => 'Buzzer', 'icon' => 'buzzer', 'status' => $diagnostics['buzzer_status'] ?? null],
+                                    ['label' => 'WiFi', 'icon' => 'wifi', 'status' => $displayComponentStatus('wifi_status')],
+                                    ['label' => 'RFID Reader', 'icon' => 'reader', 'status' => $displayComponentStatus('rfid_status')],
+                                    ['label' => 'LCD', 'icon' => 'lcd', 'status' => $displayComponentStatus('lcd_status')],
+                                    ['label' => 'Buzzer', 'icon' => 'buzzer', 'status' => $displayComponentStatus('buzzer_status')],
                                 ] as $component)
                                     <div class="flex items-center justify-between gap-3 rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
                                         <dt class="flex min-w-0 items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
@@ -141,7 +152,7 @@
                                 <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
                                     <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">WiFi Signal</p>
                                     <p class="mt-1 truncate font-mono text-xs font-medium text-slate-700 dark:text-slate-200">
-                                        {{ filled($diagnostics['wifi_rssi'] ?? null) ? $diagnostics['wifi_rssi'].' dBm' : 'Not reported' }}
+                                        {{ $state === 'online' && filled($diagnostics['wifi_rssi'] ?? null) ? $diagnostics['wifi_rssi'].' dBm' : ($state === 'online' ? 'Not reported' : 'Not online') }}
                                     </p>
                                 </div>
                                 <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">

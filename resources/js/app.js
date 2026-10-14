@@ -2432,7 +2432,7 @@ Alpine.data('dashboardCharts', (analytics) => ({
                 labels: analytics.scanStatus.labels,
                 datasets: [{
                     data: analytics.scanStatus.data,
-                    backgroundColor: ['#059669', '#d97706', '#dc2626', '#7c3aed', '#f59e0b'],
+                    backgroundColor: ['#059669', '#d97706', '#dc2626', '#0ea5e9', '#7c3aed'],
                     borderColor: '#ffffff',
                     borderWidth: 3,
                 }],

@@ -37,7 +37,6 @@ class ReaderStatusController extends Controller
             'profile_incomplete',
             'pending_selfie',
             'pending_face',
-            'outside_schedule',
             'expired',
         ])->count();
 
