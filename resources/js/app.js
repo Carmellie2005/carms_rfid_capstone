@@ -829,7 +829,7 @@ Alpine.data('patrolScan', (config = {}) => ({
             `Name: ${this.pendingScan?.guard?.name || this.guardName || 'Guard'}`,
             `Location: ${this.areaSelfieLocationLabel()}`,
             `Time: ${this.formatAreaSelfieStampTime(new Date())}`,
-            'GPS: capturing on photo',
+            'GPS: marked on photo',
         ].join(' | ');
     },
 
@@ -841,6 +841,8 @@ Alpine.data('patrolScan', (config = {}) => ({
             hour: 'numeric',
             minute: '2-digit',
             hour12: true,
+            timeZone: 'Asia/Manila',
+            timeZoneName: 'short',
         });
     },
 
@@ -1032,31 +1034,93 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     drawAreaSelfieStamp(context, width, height, capturedAt, coords) {
-        const fontSize = Math.max(18, Math.round(width * 0.026));
-        const padding = Math.round(width * 0.024);
-        const lineHeight = Math.round(fontSize * 1.45);
+        const padding = Math.max(18, Math.round(width * 0.026));
+        const markerSize = Math.max(42, Math.round(width * 0.058));
+        const gap = Math.max(12, Math.round(width * 0.016));
+        const titleFontSize = Math.max(20, Math.round(width * 0.031));
+        const bodyFontSize = Math.max(15, Math.round(width * 0.023));
+        const eyebrowFontSize = Math.max(12, Math.round(width * 0.017));
+        const bodyLineHeight = Math.round(bodyFontSize * 1.42);
+        const contentX = padding + markerSize + gap;
+        const textWidth = Math.max(120, width - contentX - padding);
+        const latitude = Number(coords.latitude);
+        const longitude = Number(coords.longitude);
+        const accuracy = Number(coords.accuracy);
+        const accuracyText = Number.isFinite(accuracy) && accuracy > 0
+            ? `Accuracy +/- ${Math.round(accuracy)}m`
+            : 'Accuracy not available';
         const lines = [
-            `Name: ${this.pendingScan?.guard?.name || this.guardName || 'Guard'}`,
-            `Location: ${this.areaSelfieLocationLabel()}`,
-            `Time: ${this.formatAreaSelfieStampTime(capturedAt)}`,
-            `GPS: ${Number(coords.latitude).toFixed(6)}, ${Number(coords.longitude).toFixed(6)}`,
+            {
+                text: 'GEO-MARKED PATROL PROOF',
+                font: `700 ${eyebrowFontSize}px Arial, sans-serif`,
+                color: '#bfdbfe',
+                offset: 0,
+            },
+            {
+                text: this.areaSelfieLocationLabel(),
+                font: `700 ${titleFontSize}px Arial, sans-serif`,
+                color: '#ffffff',
+                offset: Math.round(eyebrowFontSize * 1.55),
+            },
+            {
+                text: `Lat ${latitude.toFixed(6)} | Long ${longitude.toFixed(6)} | ${accuracyText}`,
+                font: `600 ${bodyFontSize}px Arial, sans-serif`,
+                color: '#e0f2fe',
+                offset: Math.round((eyebrowFontSize * 1.55) + (titleFontSize * 1.45)),
+            },
+            {
+                text: this.formatAreaSelfieStampTime(capturedAt),
+                font: `600 ${bodyFontSize}px Arial, sans-serif`,
+                color: '#ffffff',
+                offset: Math.round((eyebrowFontSize * 1.55) + (titleFontSize * 1.45) + bodyLineHeight),
+            },
+            {
+                text: `Guard: ${this.pendingScan?.guard?.name || this.guardName || 'Guard'}`,
+                font: `600 ${bodyFontSize}px Arial, sans-serif`,
+                color: '#cbd5e1',
+                offset: Math.round((eyebrowFontSize * 1.55) + (titleFontSize * 1.45) + (bodyLineHeight * 2)),
+            },
         ];
-        const boxHeight = (lineHeight * lines.length) + (padding * 2);
+        const boxHeight = Math.round((padding * 2) + lines[lines.length - 1].offset + bodyLineHeight);
         const boxTop = Math.max(0, height - boxHeight);
 
-        context.fillStyle = 'rgba(15, 23, 42, 0.78)';
+        context.save();
+        context.fillStyle = 'rgba(15, 23, 42, 0.82)';
         context.fillRect(0, boxTop, width, boxHeight);
-        context.fillStyle = '#ffffff';
-        context.font = `600 ${fontSize}px Arial, sans-serif`;
+        context.fillStyle = 'rgba(37, 99, 235, 0.24)';
+        context.fillRect(0, boxTop, width, Math.max(5, Math.round(width * 0.008)));
+        this.drawAreaSelfieMapMarker(context, padding + (markerSize / 2), boxTop + padding + (markerSize / 2), markerSize);
         context.textBaseline = 'top';
 
-        lines.forEach((line, index) => {
+        lines.forEach((line) => {
+            context.font = line.font;
+            context.fillStyle = line.color;
             context.fillText(
-                this.fitStampText(context, line, width - (padding * 2)),
-                padding,
-                boxTop + padding + (index * lineHeight),
+                this.fitStampText(context, line.text, textWidth),
+                contentX,
+                boxTop + padding + line.offset,
             );
         });
+
+        context.restore();
+    },
+
+    drawAreaSelfieMapMarker(context, centerX, centerY, size) {
+        const radius = size * 0.28;
+        const pinTop = centerY - (size * 0.16);
+
+        context.save();
+        context.fillStyle = '#ef4444';
+        context.beginPath();
+        context.arc(centerX, pinTop, radius, Math.PI * 0.18, Math.PI * 1.82);
+        context.lineTo(centerX, centerY + (size * 0.44));
+        context.closePath();
+        context.fill();
+        context.fillStyle = '#ffffff';
+        context.beginPath();
+        context.arc(centerX, pinTop, radius * 0.42, 0, Math.PI * 2);
+        context.fill();
+        context.restore();
     },
 
     fitStampText(context, text, maxWidth) {
