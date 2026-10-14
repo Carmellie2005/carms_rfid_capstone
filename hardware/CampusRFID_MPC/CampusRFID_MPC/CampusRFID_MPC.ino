@@ -24,6 +24,8 @@ const char* OPEN_WIFI_SSID = "SLSU BC Students' Wifi";
 const char* SECOND_OPEN_WIFI_SSID = "STARLINK";
 const char* BACKUP_WIFI_SSID = "";
 const char* BACKUP_WIFI_PASSWORD = "";
+const char* SECOND_BACKUP_WIFI_SSID = "255.255.255.252";
+const char* SECOND_BACKUP_WIFI_PASSWORD = "12345678";
 
 // =====================================================
 // TEMPORARY MPC WIFI SETUP NETWORK
@@ -942,6 +944,18 @@ void connectWiFi() {
     tryWiFiNetwork(
       BACKUP_WIFI_SSID,
       BACKUP_WIFI_PASSWORD
+    )
+  ) {
+
+    showWiFiConnected();
+
+    return;
+  }
+
+  if (
+    tryWiFiNetwork(
+      SECOND_BACKUP_WIFI_SSID,
+      SECOND_BACKUP_WIFI_PASSWORD
     )
   ) {
 

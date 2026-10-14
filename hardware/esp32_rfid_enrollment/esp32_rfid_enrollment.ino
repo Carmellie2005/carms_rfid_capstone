@@ -10,6 +10,8 @@
 // WiFi settings.
 const char* WIFI_SSID = "SystemWi-Fi";
 const char* WIFI_PASSWORD = "87654321";
+const char* SECOND_BACKUP_WIFI_SSID = "255.255.255.252";
+const char* SECOND_BACKUP_WIFI_PASSWORD = "12345678";
 
 // Guard registration / enrollment endpoint.
 // Use this reader with Guard Management > Scan Card.
@@ -137,6 +139,24 @@ void connectWiFi() {
     delay(500);
     Serial.print(".");
     attempts++;
+  }
+
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println();
+    Serial.println("Primary WiFi failed. Trying second backup WiFi...");
+
+    WiFi.disconnect();
+    delay(500);
+
+    WiFi.begin(SECOND_BACKUP_WIFI_SSID, SECOND_BACKUP_WIFI_PASSWORD);
+
+    attempts = 0;
+
+    while (WiFi.status() != WL_CONNECTED && attempts < WIFI_CONNECT_ATTEMPTS) {
+      delay(500);
+      Serial.print(".");
+      attempts++;
+    }
   }
 
   Serial.println();

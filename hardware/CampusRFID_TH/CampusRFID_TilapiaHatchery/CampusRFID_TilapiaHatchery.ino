@@ -20,6 +20,8 @@ const char* PRIMARY_WIFI_PASSWORD = "RECORDS_2026";
 
 const char* BACKUP_WIFI_SSID = "SystemWi-Fi";
 const char* BACKUP_WIFI_PASSWORD = "SLSU_BC_System_Wifi";
+const char* SECOND_BACKUP_WIFI_SSID = "255.255.255.252";
+const char* SECOND_BACKUP_WIFI_PASSWORD = "12345678";
 
 // =====================================================
 // TEMPORARY TILAPIA HATCHERY WIFI SETUP NETWORK
@@ -836,6 +838,26 @@ void connectWiFi() {
 
   Serial.println(
     "Backup WiFi failed."
+  );
+
+  // =================================================
+  // SECOND BACKUP WIFI
+  // =================================================
+
+  if (
+    connectToWiFiNetwork(
+      SECOND_BACKUP_WIFI_SSID,
+      SECOND_BACKUP_WIFI_PASSWORD
+    )
+  ) {
+
+    showWiFiConnected();
+
+    return;
+  }
+
+  Serial.println(
+    "Second backup WiFi failed."
   );
 
   Serial.println(

@@ -20,6 +20,8 @@ const char* WIFI_SSID = "SystemWi-Fi";
 // Public/open fallback for pilot testing.
 // This must not require a captive portal/login page.
 const char* OPEN_WIFI_SSID = "SLSU BC Students' Wifi";
+const char* SECOND_BACKUP_WIFI_SSID = "255.255.255.252";
+const char* SECOND_BACKUP_WIFI_PASSWORD = "12345678";
 
 // =====================================================
 // TEMPORARY CAMPUS CANTEEN WIFI SETUP NETWORK
@@ -879,6 +881,22 @@ void connectWiFi() {
     tryWiFiNetwork(
       OPEN_WIFI_SSID,
       nullptr
+    )
+  ) {
+
+    showWiFiConnected();
+
+    return;
+  }
+
+  // =====================================================
+  // SECOND SECURED WIFI FALLBACK
+  // =====================================================
+
+  if (
+    tryWiFiNetwork(
+      SECOND_BACKUP_WIFI_SSID,
+      SECOND_BACKUP_WIFI_PASSWORD
     )
   ) {
 
