@@ -3,7 +3,7 @@
         <div>
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-blue-950 dark:text-white">Device Diagnostics</h2>
-                <p class="mt-1 text-sm text-blue-600 dark:text-slate-200">Checkpoint devices, reader health, and component status</p>
+                <p class="mt-1 text-sm text-blue-600 dark:text-slate-200">ESP32 connectivity, component health, and latest device reports</p>
             </div>
         </div>
     </x-slot>
@@ -24,7 +24,7 @@
                 @endforeach
             </section>
 
-            <section class="grid grid-cols-2 gap-3 lg:gap-4">
+            <section class="grid grid-cols-1 gap-3 xl:grid-cols-2 lg:gap-4">
                 @forelse ($checkpoints as $checkpoint)
                     @php
                         $state = $checkpoint->reader_state;
@@ -60,7 +60,7 @@
                             </span>
                         </div>
 
-                        <dl class="mt-4 grid gap-2 sm:mt-5 sm:grid-cols-2 sm:gap-3">
+                        <dl class="mt-4 grid gap-2 sm:mt-5 md:grid-cols-3 sm:gap-3">
                             <div class="rounded-md bg-blue-50/60 p-2 dark:bg-slate-800/80 sm:p-3">
                                 <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-blue-200 sm:text-xs">Device UID</dt>
                                 <dd class="mt-1 truncate font-mono text-xs text-slate-800 dark:text-slate-100 sm:text-sm">{{ $checkpoint->device_uid ?: 'Not assigned' }}</dd>
@@ -72,10 +72,6 @@
                                 </dd>
                             </div>
                             <div class="rounded-md bg-blue-50/60 p-2 dark:bg-slate-800/80 sm:p-3">
-                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-blue-200 sm:text-xs">Reader IP</dt>
-                                <dd class="mt-1 truncate font-mono text-xs text-slate-800 dark:text-slate-100 sm:text-sm">{{ $checkpoint->reader_last_ip ?: 'Not recorded' }}</dd>
-                            </div>
-                            <div class="rounded-md bg-blue-50/60 p-2 dark:bg-slate-800/80 sm:p-3">
                                 <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-blue-200 sm:text-xs">Latest Scan</dt>
                                 <dd class="mt-1 text-xs font-medium text-slate-800 dark:text-slate-100 sm:text-sm">
                                     {{ $latest?->scanned_at?->timezone('Asia/Manila')->format('M d, Y h:i A') ?? 'No scan yet' }}
@@ -84,58 +80,76 @@
                         </dl>
 
                         @if ($checkpoint->reader_last_message)
-                            <p class="mt-3 rounded-md border border-blue-100 bg-white px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 sm:mt-4 sm:text-sm">
-                                {{ $checkpoint->reader_last_message }}
-                            </p>
+                            <div class="mt-3 rounded-md border border-blue-100 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-950 sm:mt-4">
+                                <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Last Device Message</p>
+                                <p class="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300 sm:text-sm">{{ $checkpoint->reader_last_message }}</p>
+                            </div>
                         @endif
 
                         <div class="mt-3 rounded-md border border-blue-100 bg-blue-50/40 p-3 dark:border-slate-700 dark:bg-slate-950/60 sm:mt-4">
                             <div class="flex items-center justify-between gap-3">
-                                <h4 class="text-xs font-semibold uppercase text-blue-800 dark:text-blue-200">Device Diagnostics</h4>
+                                <div>
+                                    <h4 class="text-xs font-semibold uppercase text-blue-800 dark:text-blue-200">Device Diagnostics</h4>
+                                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Status reported by the ESP32 heartbeat.</p>
+                                </div>
                                 @if ($checkpoint->reader_has_device_issue)
                                     <span class="rounded-md bg-red-50 px-2 py-1 text-[0.65rem] font-semibold uppercase text-red-700 ring-1 ring-red-200 dark:bg-red-950/45 dark:text-red-200 dark:ring-red-400/45">Needs Check</span>
                                 @endif
                             </div>
 
-                            <dl class="mt-3 grid gap-2 sm:grid-cols-2">
-                                @foreach ([
-                                    ['label' => 'WiFi', 'status' => $diagnostics['wifi_status'] ?? null, 'detail' => filled($diagnostics['wifi_rssi'] ?? null) ? $diagnostics['wifi_rssi'].' dBm' : null],
-                                    ['label' => 'RFID Reader', 'status' => $diagnostics['rfid_status'] ?? null, 'detail' => null],
-                                    ['label' => 'LCD', 'status' => $diagnostics['lcd_status'] ?? null, 'detail' => null],
-                                    ['label' => 'Buzzer', 'status' => $diagnostics['buzzer_status'] ?? null, 'detail' => null],
-                                ] as $component)
-                                    <div class="rounded-md bg-white p-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
-                                        <dt class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">{{ $component['label'] }}</dt>
-                                        <dd class="mt-1 flex flex-wrap items-center gap-2">
-                                            <span class="rounded-md px-2 py-1 text-[0.7rem] font-semibold ring-1 {{ $statusBadgeClass($component['status']) }}">
-                                                {{ $statusLabel($component['status']) }}
-                                            </span>
-                                            @if ($component['detail'])
-                                                <span class="font-mono text-[0.7rem] font-medium text-slate-500 dark:text-slate-400">{{ $component['detail'] }}</span>
-                                            @endif
-                                        </dd>
-                                    </div>
-                                @endforeach
-                            </dl>
-
-                            <div class="mt-2 grid gap-2 sm:grid-cols-2">
-                                <div class="rounded-md bg-white p-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
-                                    <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Device IP</p>
-                                    <p class="mt-1 truncate font-mono text-xs font-medium text-slate-700 dark:text-slate-200">{{ $diagnostics['local_ip'] ?? 'Not reported' }}</p>
+                            <div class="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(14rem,0.85fr)]">
+                                <div>
+                                    <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Component Health</p>
+                                    <dl class="mt-2 grid gap-2 sm:grid-cols-2">
+                                        @foreach ([
+                                            ['label' => 'WiFi', 'status' => $diagnostics['wifi_status'] ?? null],
+                                            ['label' => 'RFID Reader', 'status' => $diagnostics['rfid_status'] ?? null],
+                                            ['label' => 'LCD', 'status' => $diagnostics['lcd_status'] ?? null],
+                                            ['label' => 'Buzzer', 'status' => $diagnostics['buzzer_status'] ?? null],
+                                        ] as $component)
+                                            <div class="rounded-md bg-white p-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
+                                                <dt class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">{{ $component['label'] }}</dt>
+                                                <dd class="mt-1">
+                                                    <span class="inline-flex rounded-md px-2 py-1 text-[0.7rem] font-semibold ring-1 {{ $statusBadgeClass($component['status']) }}">
+                                                        {{ $statusLabel($component['status']) }}
+                                                    </span>
+                                                </dd>
+                                            </div>
+                                        @endforeach
+                                    </dl>
                                 </div>
-                                <div class="rounded-md bg-white p-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
-                                    <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Firmware</p>
-                                    <p class="mt-1 truncate font-mono text-xs font-medium text-slate-700 dark:text-slate-200">{{ $diagnostics['firmware'] ?? 'Not reported' }}</p>
+
+                                <div>
+                                    <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Network Details</p>
+                                    <dl class="mt-2 grid gap-2">
+                                        <div class="rounded-md bg-white p-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
+                                            <dt class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Device IP</dt>
+                                            <dd class="mt-1 truncate font-mono text-xs font-medium text-slate-700 dark:text-slate-200">{{ $diagnostics['local_ip'] ?? 'Not reported' }}</dd>
+                                        </div>
+                                        <div class="rounded-md bg-white p-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
+                                            <dt class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">WiFi Signal</dt>
+                                            <dd class="mt-1 truncate font-mono text-xs font-medium text-slate-700 dark:text-slate-200">
+                                                {{ filled($diagnostics['wifi_rssi'] ?? null) ? $diagnostics['wifi_rssi'].' dBm' : 'Not reported' }}
+                                            </dd>
+                                        </div>
+                                        <div class="rounded-md bg-white p-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
+                                            <dt class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Firmware</dt>
+                                            <dd class="mt-1 truncate font-mono text-xs font-medium text-slate-700 dark:text-slate-200">{{ $diagnostics['firmware'] ?? 'Not reported' }}</dd>
+                                        </div>
+                                    </dl>
                                 </div>
                             </div>
 
-                            <p class="mt-2 rounded-md bg-white px-2 py-2 text-xs font-medium text-slate-600 ring-1 ring-blue-100 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700">
-                                {{ filled($diagnostics['last_error'] ?? null) ? $diagnostics['last_error'] : 'No device errors reported.' }}
-                            </p>
+                            <div class="mt-3 rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
+                                <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Diagnostic Message</p>
+                                <p class="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+                                    {{ filled($diagnostics['last_error'] ?? null) ? $diagnostics['last_error'] : 'No device errors reported.' }}
+                                </p>
+                            </div>
                         </div>
                     </article>
                 @empty
-                    <div class="col-span-2 rounded-md border border-blue-100 bg-white px-5 py-8 text-center text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                    <div class="rounded-md border border-blue-100 bg-white px-5 py-8 text-center text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 xl:col-span-2">
                         No checkpoints registered.
                     </div>
                 @endforelse
