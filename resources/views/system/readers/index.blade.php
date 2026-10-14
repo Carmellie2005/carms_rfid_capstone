@@ -2,8 +2,8 @@
     <x-slot name="header">
         <div>
             <div>
-                <h2 class="text-xl font-semibold leading-tight text-blue-950 dark:text-white">RFID Reader Status</h2>
-                <p class="mt-1 text-sm text-blue-600 dark:text-slate-200">Checkpoint devices and reader health</p>
+                <h2 class="text-xl font-semibold leading-tight text-blue-950 dark:text-white">Device Diagnostics</h2>
+                <p class="mt-1 text-sm text-blue-600 dark:text-slate-200">Checkpoint devices, reader health, and component status</p>
             </div>
         </div>
     </x-slot>
@@ -12,7 +12,7 @@
         <div class="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
             <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 @foreach ([
-                    ['label' => 'Readers', 'value' => $summary['total'], 'cardClass' => 'border-blue-100 bg-white dark:border-slate-700 dark:bg-slate-900', 'labelClass' => 'text-blue-700 dark:text-blue-300', 'valueClass' => 'text-blue-950 dark:text-blue-100'],
+                    ['label' => 'Devices', 'value' => $summary['total'], 'cardClass' => 'border-blue-100 bg-white dark:border-slate-700 dark:bg-slate-900', 'labelClass' => 'text-blue-700 dark:text-blue-300', 'valueClass' => 'text-blue-950 dark:text-blue-100'],
                     ['label' => 'Online', 'value' => $summary['online'], 'cardClass' => 'border-emerald-100 bg-emerald-50/60 dark:border-emerald-400/35 dark:bg-emerald-950/25', 'labelClass' => 'text-emerald-700 dark:text-emerald-200', 'valueClass' => 'text-emerald-900 dark:text-emerald-100'],
                     ['label' => 'Offline', 'value' => $summary['offline'], 'cardClass' => 'border-amber-100 bg-amber-50/60 dark:border-amber-400/35 dark:bg-amber-950/25', 'labelClass' => 'text-amber-700 dark:text-amber-200', 'valueClass' => 'text-amber-900 dark:text-amber-100'],
                     ['label' => 'Device Issues', 'value' => $summary['deviceIssues'], 'cardClass' => 'border-red-100 bg-red-50/60 dark:border-red-400/35 dark:bg-red-950/25', 'labelClass' => 'text-red-700 dark:text-red-200', 'valueClass' => 'text-red-900 dark:text-red-100'],

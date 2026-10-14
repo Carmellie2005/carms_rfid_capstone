@@ -364,7 +364,7 @@
                     <p class="text-base font-bold text-blue-950 dark:text-white">Southern Leyte State University</p>
                     <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Bontoc Campus</p>
                     <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">Security and Safety Services Office</p>
-                    <p class="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">RFID patrol monitoring, checklist proof, reader status, and incident reporting.</p>
+                    <p class="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">RFID patrol monitoring, checklist proof, device diagnostics, and incident reporting.</p>
                 </div>
 
                 <div class="border-t border-blue-200 pt-4 dark:border-slate-700 sm:grid-cols-2 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">

@@ -11,7 +11,7 @@ class ReaderStatusTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_reader_status_page_does_not_show_manage_checkpoints_button(): void
+    public function test_device_diagnostics_page_does_not_show_manage_checkpoints_button(): void
     {
         $supervisor = User::factory()->create(['role' => 'admin']);
 
@@ -21,11 +21,11 @@ class ReaderStatusTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('RFID Reader Status')
+            ->assertSee('Device Diagnostics')
             ->assertDontSee('Manage Checkpoints');
     }
 
-    public function test_reader_status_is_shown_in_supervisor_navigation(): void
+    public function test_device_diagnostics_is_shown_in_supervisor_navigation(): void
     {
         $supervisor = User::factory()->create(['role' => 'admin']);
 
@@ -35,7 +35,7 @@ class ReaderStatusTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Reader Status')
+            ->assertSee('Device Diagnostics')
             ->assertSee(route('readers.index'), false);
     }
 

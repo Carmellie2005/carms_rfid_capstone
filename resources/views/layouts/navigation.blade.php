@@ -76,7 +76,7 @@
             ['label' => 'Guards', 'href' => route('guards.index'), 'icon' => 'users', 'active' => request()->routeIs('guards.*')],
             ['label' => 'Checkpoints', 'href' => route('checkpoints.index'), 'icon' => 'checkpoints', 'active' => request()->routeIs('checkpoints.*')],
             ['label' => 'Patrol Logs', 'href' => route('patrol-logs.index'), 'icon' => 'patrols', 'active' => request()->routeIs('patrol-logs.*')],
-            ['label' => 'Reader Status', 'href' => route('readers.index'), 'icon' => 'readers', 'active' => request()->routeIs('readers.*')],
+            ['label' => 'Device Diagnostics', 'href' => route('readers.index'), 'icon' => 'readers', 'active' => request()->routeIs('readers.*')],
             ['label' => 'Scan Issues', 'href' => route('scan-issues.index'), 'icon' => 'scan_issues', 'active' => request()->routeIs('scan-issues.*')],
             ['label' => 'Incidents', 'href' => route('incidents.index'), 'icon' => 'incidents', 'active' => request()->routeIs('incidents.*')],
             ['label' => 'Audit Trail', 'href' => route('audit-logs.index'), 'icon' => 'audit', 'active' => request()->routeIs('audit-logs.*')],
@@ -302,7 +302,7 @@
                 @if ($isSupervisor)
                     <a href="{{ route('readers.index') }}" class="{{ $linkClasses(request()->routeIs('readers.*')) }}" @click="sidebarOpen = false">
                         {!! $navIcon('readers') !!}
-                        <span>Reader Status</span>
+                        <span>Device Diagnostics</span>
                     </a>
 
                     <a href="{{ route('scan-issues.index') }}" class="{{ $linkClasses(request()->routeIs('scan-issues.*')) }}" @click="sidebarOpen = false">
