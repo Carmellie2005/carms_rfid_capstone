@@ -34,6 +34,24 @@ class PatrolLogReportTest extends TestCase
             ->assertSee('/patrol-logs/'.$patrolLog->id.'/pdf', false);
     }
 
+    public function test_patrol_logs_do_not_display_sensitive_rfid_uid(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'admin']);
+        $guard = $this->createGuard('SG-SENSITIVE', 'RFID-SENSITIVE');
+
+        $this->createPatrolLog($guard);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('patrol-logs.index'));
+
+        $response
+            ->assertOk()
+            ->assertDontSee('RFID-SENSITIVE')
+            ->assertDontSee('<th class="px-5 py-3">RFID</th>', false)
+            ->assertDontSee('>RFID</dt>', false);
+    }
+
     public function test_supervisor_can_download_patrol_log_pdf(): void
     {
         $supervisor = User::factory()->create(['role' => 'admin']);

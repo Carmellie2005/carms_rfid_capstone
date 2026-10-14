@@ -163,12 +163,6 @@
                                 <dd class="mt-1 truncate font-medium text-slate-900">{{ $log->checkpoint?->name ?? 'Unknown' }}</dd>
                                 <dd class="truncate font-mono text-xs text-slate-500">{{ $log->checkpoint_code }}</dd>
                             </div>
-                            <div class="grid gap-2 sm:grid-cols-2">
-                                <div class="min-w-0">
-                                    <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 sm:text-xs">RFID</dt>
-                                    <dd class="mt-1 truncate font-mono">{{ $log->rfid_uid }}</dd>
-                                </div>
-                            </div>
                         </dl>
 
                         <div class="mt-3 grid gap-2 rounded-md bg-slate-50 p-3 text-xs text-slate-600 sm:grid-cols-2 sm:text-sm">
@@ -220,13 +214,12 @@
 
             <div class="hidden overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm lg:block">
                 <div class="overflow-x-auto">
-                    <table class="w-full min-w-[84rem] divide-y divide-blue-100 text-sm">
+                    <table class="w-full min-w-[76rem] divide-y divide-blue-100 text-sm">
                         <thead class="bg-blue-50/70 text-left text-xs font-extrabold uppercase text-blue-800">
                             <tr>
                                 <th class="px-5 py-3">Time</th>
                                 <th class="px-5 py-3">Guard</th>
                                 <th class="px-5 py-3">Checkpoint</th>
-                                <th class="px-5 py-3">RFID</th>
                                 <th class="px-5 py-3">Status</th>
                                 <th class="px-5 py-3">Checklist</th>
                                 <th class="px-5 py-3">Incident</th>
@@ -254,7 +247,6 @@
                                         <div class="font-medium text-slate-900">{{ $log->checkpoint?->name ?? 'Unknown' }}</div>
                                         <div class="text-xs font-mono text-slate-500">{{ $log->checkpoint_code }}</div>
                                     </td>
-                                    <td class="px-5 py-4 font-mono text-slate-700">{{ $log->rfid_uid }}</td>
                                     <td class="px-5 py-4">
                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::patrol($log->status) }}">
                                             {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
@@ -303,7 +295,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="px-5 py-8 text-center text-slate-500">No patrol logs found.</td>
+                                    <td colspan="7" class="px-5 py-8 text-center text-slate-500">No patrol logs found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -350,7 +342,7 @@
                     </div>
 
                     <div class="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-                        <dl class="grid gap-3 rounded-md border border-blue-100 bg-blue-50/30 p-4 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-none sm:grid-cols-2 lg:grid-cols-5">
+                        <dl class="grid gap-3 rounded-md border border-blue-100 bg-blue-50/30 p-4 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-none sm:grid-cols-2 lg:grid-cols-4">
                             <div class="min-w-0 lg:border-r lg:border-blue-100 lg:pr-3 dark:lg:border-slate-700">
                                 <dt class="font-bold text-slate-600 dark:text-slate-300">Guard</dt>
                                 <dd class="mt-1 min-w-0">
@@ -369,10 +361,6 @@
                                 <dt class="font-bold text-slate-600 dark:text-slate-300">Time</dt>
                                 <dd class="mt-1 text-slate-700 dark:text-slate-100">{{ $detailScanTime?->format('M d, Y h:i A') ?? 'No scan time' }}</dd>
                             </div>
-                            <div class="min-w-0 lg:border-r lg:border-blue-100 lg:pr-3 dark:lg:border-slate-700">
-                                <dt class="font-bold text-slate-600 dark:text-slate-300">RFID</dt>
-                                <dd class="mt-1 truncate font-mono text-slate-700 dark:text-slate-100">{{ $log->rfid_uid }}</dd>
-                            </div>
                             <div class="min-w-0">
                                 <dt class="font-bold text-slate-600 dark:text-slate-300">Status</dt>
                                 <dd class="mt-1">
@@ -381,7 +369,7 @@
                                     </span>
                                 </dd>
                             </div>
-                            <div class="min-w-0 sm:col-span-2 lg:col-span-5">
+                            <div class="min-w-0 sm:col-span-2 lg:col-span-4">
                                 <dt class="font-bold text-slate-600 dark:text-slate-300">Area Selfie</dt>
                                 <dd class="mt-1 text-slate-700 dark:text-slate-100">
                                     @if ($detailAreaSelfieUrl)
