@@ -93,14 +93,42 @@
 
                             <dl class="mt-3 grid gap-2 sm:grid-cols-2">
                                 @foreach ([
-                                    ['label' => 'WiFi', 'status' => $diagnostics['wifi_status'] ?? null],
-                                    ['label' => 'RFID Reader', 'status' => $diagnostics['rfid_status'] ?? null],
-                                    ['label' => 'LCD', 'status' => $diagnostics['lcd_status'] ?? null],
-                                    ['label' => 'Buzzer', 'status' => $diagnostics['buzzer_status'] ?? null],
+                                    ['label' => 'WiFi', 'icon' => 'wifi', 'status' => $diagnostics['wifi_status'] ?? null],
+                                    ['label' => 'RFID Reader', 'icon' => 'reader', 'status' => $diagnostics['rfid_status'] ?? null],
+                                    ['label' => 'LCD', 'icon' => 'lcd', 'status' => $diagnostics['lcd_status'] ?? null],
+                                    ['label' => 'Buzzer', 'icon' => 'buzzer', 'status' => $diagnostics['buzzer_status'] ?? null],
                                 ] as $component)
                                     <div class="flex items-center justify-between gap-3 rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
-                                        <dt class="text-xs font-semibold text-slate-600 dark:text-slate-300">{{ $component['label'] }}</dt>
-                                        <dd>
+                                        <dt class="flex min-w-0 items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                                            <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-50 text-blue-700 ring-1 ring-blue-100 dark:bg-slate-800 dark:text-blue-200 dark:ring-slate-700">
+                                                @switch($component['icon'])
+                                                    @case('wifi')
+                                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                            <path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                        </svg>
+                                                        @break
+                                                    @case('reader')
+                                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                            <path d="M4 7h10v10H4V7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                                                            <path d="M7 10h4M7 14h2M17 8c1.3 1.5 1.3 6.5 0 8M20 5c3 3.4 3 10.6 0 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                                        </svg>
+                                                        @break
+                                                    @case('lcd')
+                                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                            <path d="M5 5h14v10H5V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                                                            <path d="M9 19h6M12 15v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                                        </svg>
+                                                        @break
+                                                    @default
+                                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                            <path d="M4 10h3l4-4v12l-4-4H4v-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                                                            <path d="M15 9c1.2 1.4 1.2 4.6 0 6M18 6c2.5 3 2.5 9 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                                        </svg>
+                                                @endswitch
+                                            </span>
+                                            <span class="truncate">{{ $component['label'] }}</span>
+                                        </dt>
+                                        <dd class="shrink-0">
                                             <span class="inline-flex rounded-md px-2 py-1 text-[0.7rem] font-semibold ring-1 {{ $statusBadgeClass($component['status']) }}">
                                                 {{ $statusLabel($component['status']) }}
                                             </span>
