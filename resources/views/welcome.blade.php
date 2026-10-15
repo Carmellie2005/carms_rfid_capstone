@@ -31,7 +31,7 @@
             : route('login');
         $pwaStartHref = Route::has('login') ? route('login') : url('/');
     @endphp
-    <body x-data="pwaInstallPrompt({ appName: 'SLSU BC Patrol', startUrl: @js($pwaStartHref) })" class="bg-slate-50 font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+    <body x-data="pwaInstallPrompt({ appName: 'SLSU BC Patrol', startUrl: @js($pwaStartHref) })" class="bg-slate-50 font-sans text-slate-900 antialiased dark:bg-black dark:text-slate-100">
 
         <div
             x-show="installModalOpen"
