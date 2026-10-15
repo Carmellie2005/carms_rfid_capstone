@@ -28,7 +28,7 @@
     </head>
     <body class="font-sans text-slate-900 antialiased dark:text-slate-100">
         <main
-            class="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-[#eef6ff] px-3 py-16 sm:px-4 sm:py-8 dark:bg-black"
+            class="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-[#eef6ff] px-3 py-16 sm:px-4 sm:py-8 dark:bg-slate-950"
             x-data="{
                 loggingIn: false,
                 lockoutSeconds: @js((int) session('login_lockout_seconds', 0)),

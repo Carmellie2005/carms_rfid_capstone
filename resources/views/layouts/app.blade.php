@@ -83,7 +83,7 @@
             x-on:submit="markPageBusy($event)"
             x-on:open-notifications-modal.window="notificationsOpen = true"
             x-on:keydown.escape.window="notificationsOpen = false"
-            class="app-viewport bg-blue-50/60 dark:bg-black lg:overflow-hidden"
+            class="app-viewport bg-blue-50/60 dark:bg-slate-950 lg:overflow-hidden"
         >
             <div
                 x-show="pageBusy"
