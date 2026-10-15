@@ -416,6 +416,41 @@
                 </main>
             </div>
 
+            @if (session('guard_signed_in') && $isGuard)
+                <div
+                    x-data="{ show: true }"
+                    x-init="setTimeout(() => show = false, 5000)"
+                    x-show="show"
+                    x-cloak
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 translate-y-2"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="fixed inset-x-4 top-20 z-[75] mx-auto max-w-sm rounded-md border border-emerald-200 bg-white p-4 shadow-xl dark:border-emerald-900/70 dark:bg-slate-900"
+                    role="status"
+                    aria-live="polite"
+                >
+                    <div class="flex items-start gap-3">
+                        <span class="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300" aria-hidden="true">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none">
+                                <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Signed in successfully</p>
+                            <p class="mt-0.5 text-xs leading-5 text-slate-600 dark:text-slate-300">{{ session('guard_signed_in') }}</p>
+                        </div>
+                        <button type="button" x-on:click="show = false" class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:hover:bg-slate-800 dark:hover:text-slate-200" aria-label="Dismiss sign-in notification">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            @endif
+
             <div
                 x-show="notificationsOpen"
                 x-cloak

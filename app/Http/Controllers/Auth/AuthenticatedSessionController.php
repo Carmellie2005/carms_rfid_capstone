@@ -38,7 +38,13 @@ class AuthenticatedSessionController extends Controller
             ? route('patrol.scan')
             : RouteServiceProvider::HOME;
 
-        return redirect()->intended($home);
+        $response = redirect()->intended($home);
+
+        if ($request->user()->role === 'guard') {
+            $response->with('guard_signed_in', 'Welcome, '.$request->user()->name.'. You are signed in.');
+        }
+
+        return $response;
     }
 
     /**
