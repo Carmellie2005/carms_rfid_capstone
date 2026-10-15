@@ -36,16 +36,34 @@
                         ][$state] ?? ['label' => 'Unknown', 'class' => 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-600'];
                         $latest = $checkpoint->latestPatrolLog;
                         $diagnostics = $checkpoint->reader_diagnostics ?? [];
-                        $statusBadgeClass = function (?string $status): string {
+                        $componentStatus = function (?string $status, string $label): array {
                             return match (strtolower((string) $status)) {
-                                'online', 'connected', 'ready' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-400/45',
-                                'offline', 'failed', 'error', 'disconnected' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-200 dark:ring-red-400/45',
-                                default => 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-600',
+                                'connected' => [
+                                    'label' => 'Connected',
+                                    'icon' => 'plug',
+                                    'title' => $label.' is connected.',
+                                    'class' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-400/45',
+                                ],
+                                'online', 'ready' => [
+                                    'label' => $label === 'Buzzer' ? 'Ready' : 'Detected',
+                                    'icon' => 'plug',
+                                    'title' => $label.' is detected and reporting.',
+                                    'class' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-400/45',
+                                ],
+                                'offline', 'failed', 'error', 'disconnected' => [
+                                    'label' => 'Disconnected',
+                                    'icon' => 'unplug',
+                                    'title' => $label.' is disconnected or not responding.',
+                                    'class' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-200 dark:ring-red-400/45',
+                                ],
+                                default => [
+                                    'label' => 'Not reported',
+                                    'icon' => 'unknown',
+                                    'title' => $label.' status has not been reported.',
+                                    'class' => 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-600',
+                                ],
                             };
                         };
-                        $statusLabel = fn (?string $status): string => filled($status)
-                            ? \Illuminate\Support\Str::headline($status)
-                            : 'Not Reported';
                         $displayComponentStatus = function (string $field) use ($state, $diagnostics): ?string {
                             return match ($state) {
                                 'online' => $diagnostics[$field] ?? null,
@@ -109,6 +127,7 @@
                                     ['label' => 'LCD', 'icon' => 'lcd', 'status' => $displayComponentStatus('lcd_status')],
                                     ['label' => 'Buzzer', 'icon' => 'buzzer', 'status' => $displayComponentStatus('buzzer_status')],
                                 ] as $component)
+                                    @php($componentState = $componentStatus($component['status'], $component['label']))
                                     <div class="flex items-center justify-between gap-3 rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
                                         <dt class="flex min-w-0 items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
                                             <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-50 text-blue-700 ring-1 ring-blue-100 dark:bg-slate-800 dark:text-blue-200 dark:ring-slate-700">
@@ -140,8 +159,22 @@
                                             <span class="truncate">{{ $component['label'] }}</span>
                                         </dt>
                                         <dd class="shrink-0">
-                                            <span class="inline-flex rounded-md px-2 py-1 text-[0.7rem] font-semibold ring-1 {{ $statusBadgeClass($component['status']) }}">
-                                                {{ $statusLabel($component['status']) }}
+                                            <span class="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[0.7rem] font-semibold ring-1 {{ $componentState['class'] }}" title="{{ $componentState['title'] }}">
+                                                @if ($componentState['icon'] === 'plug')
+                                                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                        <path d="M9 7V3m6 4V3M7 7h10v3a5 5 0 0 1-10 0V7Zm5 8v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                    </svg>
+                                                @elseif ($componentState['icon'] === 'unplug')
+                                                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                        <path d="M9 7V3m6 4V3M7 7h10v3a5 5 0 0 1-10 0V7Zm5 8v6M4 4l16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                    </svg>
+                                                @else
+                                                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                        <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2" />
+                                                        <path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                                    </svg>
+                                                @endif
+                                                <span>{{ $componentState['label'] }}</span>
                                             </span>
                                         </dd>
                                     </div>
