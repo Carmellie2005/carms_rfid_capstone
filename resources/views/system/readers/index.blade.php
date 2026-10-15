@@ -58,9 +58,9 @@
                                 ],
                                 default => [
                                     'label' => 'Not reported',
-                                    'icon' => 'unknown',
+                                    'icon' => 'unplug',
                                     'title' => $label.' status has not been reported.',
-                                    'class' => 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-600',
+                                    'class' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-200 dark:ring-red-400/45',
                                 ],
                             };
                         };
@@ -159,21 +159,13 @@
                                             <span class="truncate">{{ $component['label'] }}</span>
                                         </dt>
                                         <dd class="shrink-0">
-                                            <span class="inline-flex h-7 w-7 items-center justify-center rounded-md ring-1 {{ $componentState['class'] }}" title="{{ $componentState['title'] }}" aria-label="{{ $componentState['title'] }}">
-                                                @if ($componentState['icon'] === 'plug')
-                                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                        <path d="M9 7V3m6 4V3M7 7h10v3a5 5 0 0 1-10 0V7Zm5 8v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                    </svg>
-                                                @elseif ($componentState['icon'] === 'unplug')
-                                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                        <path d="M9 7V3m6 4V3M7 7h10v3a5 5 0 0 1-10 0V7Zm5 8v6M4 4l16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                    </svg>
-                                                @else
-                                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                        <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2" />
-                                                        <path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                                    </svg>
-                                                @endif
+                                            <span class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-white p-1 ring-1 {{ $componentState['icon'] === 'plug' ? 'ring-emerald-300' : 'ring-red-300' }} dark:bg-white" title="{{ $componentState['title'] }}" aria-label="{{ $componentState['title'] }}">
+                                                <img
+                                                    src="{{ asset($componentState['icon'] === 'plug' ? 'images/device-status/connected-power-plug.png' : 'images/device-status/disconnected-power-connector.png') }}"
+                                                    alt=""
+                                                    class="h-5 w-5 object-contain"
+                                                    aria-hidden="true"
+                                                >
                                             </span>
                                         </dd>
                                     </div>
