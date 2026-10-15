@@ -72,6 +72,7 @@ const char* HEARTBEAT_URL =
 // =====================================================
 
 const unsigned long SCAN_COOLDOWN_MS = 3000;
+const unsigned long SUCCESS_DUPLICATE_WINDOW_MS = 30000;
 const unsigned long HEARTBEAT_INTERVAL_MS = 60000;
 const int WIFI_CONNECT_ATTEMPTS = 40;
 const int HTTP_TIMEOUT_MS = 65000;
@@ -98,6 +99,8 @@ DNSServer dnsServer;
 
 String lastUid = "";
 unsigned long lastScanTime = 0;
+String lastSuccessfulUid = "";
+unsigned long lastSuccessfulScanTime = 0;
 unsigned long lastHeartbeatTime = 0;
 
 // =====================================================
@@ -120,6 +123,10 @@ void beep(int times, int onTimeMs, int offTimeMs) {
 
 void successBeep() {
   beep(1, 220, 100);
+}
+
+void duplicateBeep() {
+  beep(2, 120, 150);
 }
 
 void failedBeep() {
@@ -1482,6 +1489,9 @@ void sendScanToLaravel(
         response
       );
 
+    lastSuccessfulUid = rfidUid;
+    lastSuccessfulScanTime = millis();
+
     successBeep();
 
     if (!error) {
@@ -1777,6 +1787,38 @@ void loop() {
   );
 
   if (
+    uid == lastSuccessfulUid &&
+    millis() -
+    lastSuccessfulScanTime <
+    SUCCESS_DUPLICATE_WINDOW_MS
+  ) {
+
+    Serial.println(
+      "Successful RFID already scanned."
+    );
+
+    duplicateBeep();
+
+    lcdMessage(
+      "Scanned Twice",
+      "Already Logged"
+    );
+
+    rfid.PICC_HaltA();
+
+    rfid.PCD_StopCrypto1();
+
+    delay(1200);
+
+    lcdMessage(
+      "RFID Ready",
+      "Scan Card"
+    );
+
+    return;
+  }
+
+  if (
     uid == lastUid &&
     millis() -
     lastScanTime <
@@ -1786,6 +1828,8 @@ void loop() {
     Serial.println(
       "Duplicate Scan"
     );
+
+    duplicateBeep();
 
     lcdMessage(
       "Duplicate Scan",

@@ -39,11 +39,6 @@
                 @include('profile.partials.update-profile-information-form')
             </div>
 
-            @if ($isGuard)
-                <div id="update-password" class="scroll-mt-24 rounded-md border border-blue-100 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-4">
-                    @include('profile.partials.update-password-form')
-                </div>
-            @endif
         </div>
     </div>
 </x-app-layout>

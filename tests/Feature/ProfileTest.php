@@ -81,7 +81,7 @@ class ProfileTest extends TestCase
             ->assertSee('aria-label="Show new password"', false)
             ->assertSee('aria-label="Show confirm password"', false)
             ->assertDontSee('temporary_password_current_password', false)
-            ->assertSee('Update Password')
+            ->assertDontSee('Update Password')
             ->assertDontSee('Delete Account');
     }
 
@@ -118,10 +118,10 @@ class ProfileTest extends TestCase
             ->assertSee('Night Shift')
             ->assertSee('Apr 12, 1998')
             ->assertSee('value="09171234567"', false)
-            ->assertSee('Update Password')
-            ->assertSee('aria-label="Show current password"', false)
-            ->assertSee('aria-label="Show new password"', false)
-            ->assertSee('aria-label="Show confirm password"', false)
+            ->assertDontSee('Update Password')
+            ->assertDontSee('aria-label="Show current password"', false)
+            ->assertDontSee('aria-label="Show new password"', false)
+            ->assertDontSee('aria-label="Show confirm password"', false)
             ->assertSee('aria-readonly="true"', false);
     }
 

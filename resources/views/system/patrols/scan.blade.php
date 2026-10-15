@@ -121,7 +121,7 @@
                                 Your supervisor assigned this login. Create your own password first, then return here to scan your RFID card and continue patrol.
                             </p>
                         </div>
-                        <a href="{{ route('profile.edit') }}#update-password" class="inline-flex h-11 w-full items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">
+                        <a href="{{ route('profile.edit') }}" class="inline-flex h-11 w-full items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">
                             Open Profile Settings
                         </a>
                     </div>
