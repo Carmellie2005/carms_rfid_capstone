@@ -235,6 +235,24 @@ class NotificationReadTest extends TestCase
             'status' => 'pending_selfie',
             'scanned_at' => now('Asia/Manila')->subMinute(),
         ]);
+        PatrolLog::create([
+            'guard_id' => $guard->id,
+            'checkpoint_id' => $checkpoint->id,
+            'rfid_uid' => 'RFID-ACTION',
+            'checkpoint_code' => 'CP-ACTION',
+            'rfid_status' => 'valid',
+            'status' => 'pending_face',
+            'scanned_at' => now('Asia/Manila')->subMinutes(3),
+        ]);
+        PatrolLog::create([
+            'guard_id' => $guard->id,
+            'checkpoint_id' => $checkpoint->id,
+            'rfid_uid' => 'RFID-ACTION',
+            'checkpoint_code' => 'CP-ACTION',
+            'rfid_status' => 'profile_incomplete',
+            'status' => 'profile_incomplete',
+            'scanned_at' => now('Asia/Manila')->subMinutes(4),
+        ]);
 
         $this
             ->actingAs($guardUser)
@@ -244,7 +262,9 @@ class NotificationReadTest extends TestCase
             ->assertSee('Pending Selfie scan')
             ->assertSee(route('patrol.scan'), false)
             ->assertDontSee('Guard Submitted Incident')
-            ->assertDontSee('Suspicious scan');
+            ->assertDontSee('Suspicious scan')
+            ->assertDontSee('Pending Face scan')
+            ->assertDontSee('Profile Incomplete scan');
 
         $this
             ->actingAs($guardUser)

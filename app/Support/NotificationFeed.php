@@ -19,7 +19,7 @@ class NotificationFeed
     public const SUPERVISOR_INCIDENT_STATUSES = ['submitted', 'under_review'];
     public const SUPERVISOR_PATROL_STATUSES = ['suspicious', 'invalid', 'outside_schedule'];
     private const GUARD_INCIDENT_STATUSES = [];
-    private const GUARD_ACTION_PATROL_STATUSES = ['pending_selfie', 'pending_face', 'pending_checklist', 'profile_incomplete'];
+    private const GUARD_ACTION_PATROL_STATUSES = ['pending_selfie', 'pending_checklist'];
 
     public static function unreadCountFor(User $user): int
     {
@@ -165,9 +165,7 @@ class NotificationFeed
     {
         $readAt = $patrol->notificationReads->first()?->read_at;
         $time = $patrol->scanned_at;
-        $statusLabel = $patrol->status === 'pending_face'
-            ? 'Pending Selfie'
-            : Str::of($patrol->status)->replace('_', ' ')->title()->toString();
+        $statusLabel = Str::of($patrol->status)->replace('_', ' ')->title()->toString();
 
         return [
             'read_type' => 'patrol',
