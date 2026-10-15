@@ -34,7 +34,6 @@
                             'inactive' => ['label' => 'Inactive', 'class' => 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-600'],
                             'no_device' => ['label' => 'No Device', 'class' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-200 dark:ring-red-400/45'],
                         ][$state] ?? ['label' => 'Unknown', 'class' => 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-600'];
-                        $latest = $checkpoint->latestPatrolLog;
                         $diagnostics = $checkpoint->reader_diagnostics ?? [];
                         $componentStatus = function (?string $status, string $label): array {
                             return match (strtolower((string) $status)) {
@@ -72,9 +71,6 @@
                                 default => null,
                             };
                         };
-                        $onlineOnlyDetail = fn (mixed $value): string => $state === 'online' && filled($value)
-                            ? (string) $value
-                            : ($state === 'online' ? 'Not reported' : 'Not online');
                     @endphp
 
                     <article class="min-w-0 rounded-md border border-blue-100 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-5">
@@ -88,29 +84,6 @@
                                 {{ $stateConfig['label'] }}
                             </span>
                         </div>
-
-                        <dl class="mt-4 grid gap-2 sm:mt-5 sm:grid-cols-2 sm:gap-3">
-                            <div class="rounded-md bg-blue-50/60 p-2 dark:bg-slate-800/80 sm:p-3">
-                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-blue-200 sm:text-xs">Device UID</dt>
-                                <dd class="mt-1 truncate font-mono text-xs text-slate-800 dark:text-slate-100 sm:text-sm">{{ $checkpoint->device_uid ?: 'Not assigned' }}</dd>
-                            </div>
-                            <div class="rounded-md bg-blue-50/60 p-2 dark:bg-slate-800/80 sm:p-3">
-                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-blue-200 sm:text-xs">Device IP</dt>
-                                <dd class="mt-1 truncate font-mono text-xs text-slate-800 dark:text-slate-100 sm:text-sm">{{ $onlineOnlyDetail($diagnostics['local_ip'] ?? null) }}</dd>
-                            </div>
-                            <div class="rounded-md bg-blue-50/60 p-2 dark:bg-slate-800/80 sm:p-3">
-                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-blue-200 sm:text-xs">Last Seen</dt>
-                                <dd class="mt-1 text-xs font-medium text-slate-800 dark:text-slate-100 sm:text-sm">
-                                    {{ $checkpoint->reader_seen_at?->timezone('Asia/Manila')->format('M d, Y h:i A') ?? 'No reader activity' }}
-                                </dd>
-                            </div>
-                            <div class="rounded-md bg-blue-50/60 p-2 dark:bg-slate-800/80 sm:p-3">
-                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-blue-200 sm:text-xs">Latest Scan</dt>
-                                <dd class="mt-1 text-xs font-medium text-slate-800 dark:text-slate-100 sm:text-sm">
-                                    {{ $latest?->scanned_at?->timezone('Asia/Manila')->format('M d, Y h:i A') ?? 'No scan yet' }}
-                                </dd>
-                            </div>
-                        </dl>
 
                         <div class="mt-3 rounded-md border border-blue-100 bg-blue-50/40 p-3 dark:border-slate-700 dark:bg-slate-950/60 sm:mt-4">
                             <div class="flex items-center justify-between gap-3">
