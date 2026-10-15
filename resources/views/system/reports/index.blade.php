@@ -14,9 +14,6 @@
     @php
         $summaryCards = [
             ['label' => 'Valid Patrols', 'value' => $summary['valid'], 'labelClass' => 'text-emerald-700 dark:text-emerald-300', 'valueClass' => 'text-emerald-900 dark:text-emerald-100'],
-            ['label' => 'Suspicious', 'value' => $summary['suspicious'], 'labelClass' => 'text-amber-700 dark:text-amber-300', 'valueClass' => 'text-amber-900 dark:text-amber-100'],
-            ['label' => 'Invalid Scans', 'value' => $summary['invalid'], 'labelClass' => 'text-red-700 dark:text-red-300', 'valueClass' => 'text-red-900 dark:text-red-100'],
-            ['label' => 'Pending Selfie', 'value' => $summary['pendingSelfie'], 'labelClass' => 'text-sky-700 dark:text-sky-300', 'valueClass' => 'text-sky-900 dark:text-sky-100'],
             ['label' => 'Pending Checklist', 'value' => $summary['pendingChecklist'], 'labelClass' => 'text-blue-700 dark:text-blue-300', 'valueClass' => 'text-blue-950 dark:text-blue-100'],
             ['label' => 'Incidents', 'value' => $summary['incidents'], 'labelClass' => 'text-blue-700 dark:text-blue-300', 'valueClass' => 'text-blue-950 dark:text-blue-100'],
         ];
