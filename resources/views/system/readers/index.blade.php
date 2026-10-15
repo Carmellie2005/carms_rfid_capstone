@@ -35,6 +35,7 @@
                             'no_device' => ['label' => 'No Device', 'class' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-200 dark:ring-red-400/45'],
                         ][$state] ?? ['label' => 'Unknown', 'class' => 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-600'];
                         $diagnostics = $checkpoint->reader_diagnostics ?? [];
+                        $latest = $checkpoint->latestPatrolLog;
                         $componentStatus = function (?string $status, string $label): array {
                             return match (strtolower((string) $status)) {
                                 'connected' => [
@@ -145,30 +146,72 @@
                                 @endforeach
                             </dl>
 
-                            <div class="mt-3 grid gap-2 sm:grid-cols-2">
-                                <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
-                                    <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">WiFi Signal</p>
-                                    <p class="mt-1 truncate font-mono text-xs font-medium text-slate-700 dark:text-slate-200">
-                                        {{ $state === 'online' && filled($diagnostics['wifi_rssi'] ?? null) ? $diagnostics['wifi_rssi'].' dBm' : ($state === 'online' ? 'Not reported' : 'Not online') }}
-                                    </p>
-                                </div>
-                                <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
-                                    <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Firmware</p>
-                                    <p class="mt-1 truncate font-mono text-xs font-medium text-slate-700 dark:text-slate-200">{{ $diagnostics['firmware'] ?? 'Not reported' }}</p>
-                                </div>
-                                <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
-                                    <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Last Message</p>
-                                    <p class="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300">
-                                        {{ $checkpoint->reader_last_message ?: 'No heartbeat message yet.' }}
-                                    </p>
-                                </div>
-                                <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
-                                    <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Error Status</p>
-                                    <p class="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300">
-                                        {{ filled($diagnostics['last_error'] ?? null) ? $diagnostics['last_error'] : 'No device errors reported.' }}
-                                    </p>
+                            <div class="mt-3 rounded-md bg-white px-3 py-3 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Latest Scan</p>
+                                        <p class="mt-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
+                                            {{ $latest?->scanned_at?->timezone('Asia/Manila')->format('M d, Y h:i A') ?? 'No scan yet' }}
+                                        </p>
+                                        <p class="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
+                                            Guard: {{ $latest?->securityGuard?->name ?? 'No guard recorded' }}
+                                        </p>
+                                    </div>
+                                    @if ($latest)
+                                        <span class="shrink-0 rounded-md bg-emerald-50 px-2 py-1 text-[0.65rem] font-semibold capitalize text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-400/45">
+                                            {{ str($latest->status)->replace('_', ' ')->title() }}
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
+
+                            <details class="group mt-2">
+                                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 rounded-md border border-blue-100 bg-white px-3 py-2 text-xs font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-slate-800">
+                                    <span>View device details</span>
+                                    <svg class="h-4 w-4 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </summary>
+
+                                <div class="mt-2 grid gap-2 sm:grid-cols-2">
+                                    <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
+                                        <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Device UID</p>
+                                        <p class="mt-1 truncate font-mono text-xs font-medium text-slate-700 dark:text-slate-200">{{ $checkpoint->device_uid ?: 'Not assigned' }}</p>
+                                    </div>
+                                    <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
+                                        <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Device IP</p>
+                                        <p class="mt-1 truncate font-mono text-xs font-medium text-slate-700 dark:text-slate-200">{{ $checkpoint->reader_last_ip ?: 'Not recorded' }}</p>
+                                    </div>
+                                    <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
+                                        <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Last Seen</p>
+                                        <p class="mt-1 text-xs font-medium text-slate-700 dark:text-slate-200">
+                                            {{ $checkpoint->reader_seen_at?->timezone('Asia/Manila')->format('M d, Y h:i A') ?? 'No reader activity' }}
+                                        </p>
+                                    </div>
+                                    <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
+                                        <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">WiFi Signal</p>
+                                        <p class="mt-1 truncate font-mono text-xs font-medium text-slate-700 dark:text-slate-200">
+                                            {{ $state === 'online' && filled($diagnostics['wifi_rssi'] ?? null) ? $diagnostics['wifi_rssi'].' dBm' : ($state === 'online' ? 'Not reported' : 'Not online') }}
+                                        </p>
+                                    </div>
+                                    <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
+                                        <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Firmware</p>
+                                        <p class="mt-1 truncate font-mono text-xs font-medium text-slate-700 dark:text-slate-200">{{ $diagnostics['firmware'] ?? 'Not reported' }}</p>
+                                    </div>
+                                    <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
+                                        <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Last Message</p>
+                                        <p class="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+                                            {{ $checkpoint->reader_last_message ?: 'No heartbeat message yet.' }}
+                                        </p>
+                                    </div>
+                                    <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700 sm:col-span-2">
+                                        <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Error Status</p>
+                                        <p class="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+                                            {{ filled($diagnostics['last_error'] ?? null) ? $diagnostics['last_error'] : 'No device errors reported.' }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </details>
                         </div>
                     </article>
                 @empty
