@@ -48,15 +48,6 @@
                 'accentClass' => 'bg-amber-500 dark:bg-amber-400',
                 'dotClass' => 'bg-amber-500 ring-4 ring-amber-500/10 dark:bg-amber-400 dark:ring-amber-400/15',
             ],
-            [
-                'label' => 'For Review',
-                'value' => $stats['suspiciousScans'],
-                'cardClass' => 'border-red-100 bg-red-50/60 dark:border-red-400/25 dark:bg-slate-950/80',
-                'labelClass' => 'text-red-700 dark:text-red-300',
-                'valueClass' => 'text-red-900 dark:text-slate-50',
-                'accentClass' => 'bg-red-500 dark:bg-red-400',
-                'dotClass' => 'bg-red-500 ring-4 ring-red-500/10 dark:bg-red-400 dark:ring-red-400/15',
-            ],
         ];
 
     @endphp

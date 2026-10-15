@@ -196,7 +196,6 @@
                                 </div>
                             </dl>
 
-                            <p class="mt-3 max-h-[4.5rem] overflow-hidden text-sm text-slate-600">{{ $incident->description }}</p>
                             <a href="{{ route('incidents.pdf', $incident) }}" class="mt-3 inline-flex items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-50">
                                 Download
                             </a>
@@ -215,7 +214,6 @@
                                 <th class="whitespace-nowrap px-5 py-3">Location</th>
                                 <th class="whitespace-nowrap px-5 py-3">Priority</th>
                                 <th class="whitespace-nowrap px-5 py-3">Status</th>
-                                <th class="whitespace-nowrap px-5 py-3">Description</th>
                                 <th class="whitespace-nowrap px-5 py-3 print:hidden">PDF</th>
                             </tr>
                         </thead>
@@ -238,7 +236,6 @@
                                             {{ str($incident->status)->replace('_', ' ')->title() }}
                                         </span>
                                     </td>
-                                    <td class="px-5 py-4 text-slate-600">{{ $incident->description }}</td>
                                     <td class="px-5 py-4 print:hidden">
                                         <a href="{{ route('incidents.pdf', $incident) }}" class="inline-flex items-center justify-center rounded-md border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-50">
                                             Download
@@ -247,7 +244,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-5 py-8 text-center text-slate-500">No incident records for this period.</td>
+                                    <td colspan="6" class="px-5 py-8 text-center text-slate-500">No incident records for this period.</td>
                                 </tr>
                             @endforelse
                         </tbody>

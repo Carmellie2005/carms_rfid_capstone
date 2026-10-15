@@ -28,7 +28,6 @@ class DashboardController extends Controller
                 'activeCheckpoints' => Checkpoint::where('status', 'active')->count(),
                 'todayPatrols' => PatrolLog::whereDate('scanned_at', $today)->where('status', 'valid')->count(),
                 'openIncidents' => IncidentReport::whereIn('status', ['submitted', 'under_review'])->count(),
-                'suspiciousScans' => PatrolLog::whereIn('status', ['invalid', 'suspicious', 'pending_selfie', 'pending_face', 'profile_incomplete'])->count(),
             ],
             'recentPatrols' => PatrolLog::with(['securityGuard', 'checkpoint'])
                 ->where('status', '!=', 'expired')
