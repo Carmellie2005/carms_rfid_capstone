@@ -91,51 +91,10 @@
                 <x-theme-toggle />
             </div>
 
-            <section class="grid w-full max-w-5xl overflow-hidden rounded-xl border border-blue-100 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.12)] md:grid-cols-[1.08fr_0.92fr] dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_18px_45px_rgba(2,6,23,0.42)]">
-                <aside class="relative hidden min-h-[590px] overflow-hidden bg-blue-950 text-white md:flex md:flex-col md:justify-between md:p-8 lg:p-10">
-                    <img src="{{ asset('images/campus-patrol-hero.png') }}" alt="Security guard using an RFID checkpoint device on campus" class="absolute inset-0 h-full w-full object-cover opacity-35" />
-                    <div class="absolute inset-0 bg-blue-950/80" aria-hidden="true"></div>
-
-                    <div class="relative z-10">
-                        <x-application-logo class="h-16 w-16" />
-                        <p class="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-blue-200">SLSU Bontoc Campus</p>
-                        <h2 class="mt-2 max-w-sm text-3xl font-bold leading-tight">Security patrols, connected.</h2>
-                        <p class="mt-4 max-w-sm text-sm leading-6 text-blue-100">Monitor RFID checkpoint scans, patrol proof, and incident reports from one secure system.</p>
-                    </div>
-
-                    <div class="relative z-10 space-y-3 text-sm text-blue-50">
-                        <div class="flex items-center gap-3">
-                            <span class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white/10 text-blue-200" aria-hidden="true">
-                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none">
-                                    <path d="M7 5h10v14H7zM9 8h6M9 12h6M9 16h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                            </span>
-                            <span>RFID checkpoint monitoring</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white/10 text-blue-200" aria-hidden="true">
-                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none">
-                                    <path d="M5 5h14v14H5zM8 9h8M8 13h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                            </span>
-                            <span>Digital patrol records</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white/10 text-blue-200" aria-hidden="true">
-                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none">
-                                    <path d="M12 21s7-3.5 7-9.25V5.5L12 3 5 5.5v6.25C5 17.5 12 21 12 21Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
-                                    <path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                            </span>
-                            <span>Secure incident reporting</span>
-                        </div>
-                    </div>
-                </aside>
-
-                <div class="px-5 py-6 sm:px-8 sm:py-9">
-                    <div class="flex justify-center">
-                        <x-application-logo class="h-16 w-16" />
-                    </div>
+            <section class="w-full max-w-[390px] rounded-xl border border-blue-100 bg-white px-5 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.12)] sm:px-7 dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_18px_45px_rgba(2,6,23,0.42)]">
+                <div class="flex justify-center">
+                    <x-application-logo class="h-16 w-16" />
+                </div>
 
                 <div class="mt-2 text-center">
                     <h1 class="text-2xl font-bold tracking-normal text-slate-900 dark:text-slate-100">Welcome back</h1>
@@ -219,7 +178,6 @@
                     </button>
 
                 </form>
-                </div>
             </section>
         </main>
 
