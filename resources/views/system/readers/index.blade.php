@@ -159,22 +159,21 @@
                                             <span class="truncate">{{ $component['label'] }}</span>
                                         </dt>
                                         <dd class="shrink-0">
-                                            <span class="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[0.7rem] font-semibold ring-1 {{ $componentState['class'] }}" title="{{ $componentState['title'] }}">
+                                            <span class="inline-flex h-7 w-7 items-center justify-center rounded-md ring-1 {{ $componentState['class'] }}" title="{{ $componentState['title'] }}" aria-label="{{ $componentState['title'] }}">
                                                 @if ($componentState['icon'] === 'plug')
-                                                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                                         <path d="M9 7V3m6 4V3M7 7h10v3a5 5 0 0 1-10 0V7Zm5 8v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                                     </svg>
                                                 @elseif ($componentState['icon'] === 'unplug')
-                                                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                                         <path d="M9 7V3m6 4V3M7 7h10v3a5 5 0 0 1-10 0V7Zm5 8v6M4 4l16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                                     </svg>
                                                 @else
-                                                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                                         <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2" />
                                                         <path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                                                     </svg>
                                                 @endif
-                                                <span>{{ $componentState['label'] }}</span>
                                             </span>
                                         </dd>
                                     </div>
