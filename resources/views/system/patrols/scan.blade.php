@@ -369,7 +369,7 @@
                                     </div>
                                     <p class="mt-4 text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">Step 2</p>
                                     <h3 class="mt-1 text-lg font-semibold text-blue-950">Area Selfie</h3>
-                                    <p class="mx-auto mt-1 max-w-sm text-sm leading-5 text-slate-500">Take a photo at the checkpoint area. Allow location when asked so a geo-marked patrol proof stamp can be saved on the photo.</p>
+                                    <p class="mx-auto mt-1 max-w-sm text-sm leading-5 text-slate-500">Take a photo at the checkpoint area. Allow location when asked so GPS can be stamped on the saved photo.</p>
                                     <div class="mt-5 grid gap-2 sm:grid-cols-2">
                                         <button type="button" class="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-blue-700 px-5 text-base font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="openAreaSelfieCamera()" :disabled="cameraOpening || submittingPatrol || cancellingScan">
                                             <svg x-show="! cameraOpening" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">

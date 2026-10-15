@@ -239,7 +239,7 @@ class PatrolAreaSelfieTest extends TestCase
             ->assertSee('Area Selfie')
             ->assertSee('Take Photo')
             ->assertSee('Take a photo at the checkpoint area')
-            ->assertSee('geo-marked patrol proof stamp')
+            ->assertSee('GPS can be stamped on the saved photo')
             ->assertSee('Retake Photo')
             ->assertSee('Cancel Scan')
             ->assertSee('area_selfie_capture', false)
