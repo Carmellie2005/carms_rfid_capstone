@@ -39,25 +39,25 @@
                             return match (strtolower((string) $status)) {
                                 'connected' => [
                                     'label' => 'Connected',
-                                    'icon' => 'plug',
+                                    'connected' => true,
                                     'title' => $label.' is connected.',
                                     'class' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-400/45',
                                 ],
                                 'online', 'ready' => [
                                     'label' => $label === 'Buzzer' ? 'Ready' : 'Detected',
-                                    'icon' => 'plug',
+                                    'connected' => true,
                                     'title' => $label.' is detected and reporting.',
                                     'class' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-400/45',
                                 ],
                                 'offline', 'failed', 'error', 'disconnected' => [
                                     'label' => 'Disconnected',
-                                    'icon' => 'unplug',
+                                    'connected' => false,
                                     'title' => $label.' is disconnected or not responding.',
                                     'class' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-200 dark:ring-red-400/45',
                                 ],
                                 default => [
                                     'label' => 'Not reported',
-                                    'icon' => 'unplug',
+                                    'connected' => false,
                                     'title' => $label.' status has not been reported.',
                                     'class' => 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-200 dark:ring-red-400/45',
                                 ],
@@ -101,6 +101,7 @@
                                     ['label' => 'Buzzer', 'icon' => 'buzzer', 'status' => $displayComponentStatus('buzzer_status')],
                                 ] as $component)
                                     @php($componentState = $componentStatus($component['status'], $component['label']))
+                                    @php($componentIsConnected = $componentState['connected'])
                                     <div class="flex items-center justify-between gap-3 rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
                                         <dt class="flex min-w-0 items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
                                             <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-50 text-blue-700 ring-1 ring-blue-100 dark:bg-slate-800 dark:text-blue-200 dark:ring-slate-700">
@@ -132,13 +133,12 @@
                                             <span class="truncate">{{ $component['label'] }}</span>
                                         </dt>
                                         <dd class="shrink-0">
-                                            <span class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-white p-1 ring-1 {{ $componentState['icon'] === 'plug' ? 'ring-emerald-300' : 'ring-red-300' }} dark:bg-white" title="{{ $componentState['title'] }}" aria-label="{{ $componentState['title'] }}">
-                                                <img
-                                                    src="{{ asset($componentState['icon'] === 'plug' ? 'images/device-status/connected-power-plug.png' : 'images/device-status/disconnected-power-connector.png') }}"
-                                                    alt=""
-                                                    class="h-5 w-5 object-contain"
-                                                    aria-hidden="true"
-                                                >
+                                            <span class="inline-flex h-7 w-10 items-center justify-center rounded-md bg-white px-1.5 ring-1 {{ $componentIsConnected ? 'ring-emerald-300' : 'ring-red-300' }} dark:bg-white" title="{{ $componentState['title'] }}" aria-label="{{ $componentState['title'] }}">
+                                                <span class="relative inline-flex h-3 w-7 items-center justify-between" aria-hidden="true">
+                                                    <span class="relative z-10 h-2.5 w-2.5 rounded-full {{ $componentIsConnected ? 'bg-emerald-500' : 'bg-red-500' }}"></span>
+                                                    <span class="absolute left-2 right-2 top-1/2 {{ $componentIsConnected ? 'h-0.5 bg-emerald-400' : 'w-2 border-t-2 border-dashed border-red-400' }}"></span>
+                                                    <span class="relative z-10 h-2.5 w-2.5 rounded-full {{ $componentIsConnected ? 'bg-emerald-500' : 'bg-red-500' }}"></span>
+                                                </span>
                                             </span>
                                         </dd>
                                     </div>

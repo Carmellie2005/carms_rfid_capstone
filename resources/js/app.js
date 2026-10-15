@@ -2291,7 +2291,6 @@ Alpine.data('dashboardCharts', (analytics) => ({
 
         this.$nextTick(() => {
             this.createPatrolTrendChart();
-            this.createScanStatusChart();
             this.createIncidentPriorityChart();
             this.createCheckpointActivityChart();
         });
@@ -2417,29 +2416,6 @@ Alpine.data('dashboardCharts', (analytics) => ({
             options: {
                 ...this.baseOptions(),
                 scales: this.axisOptions(),
-            },
-        }));
-    },
-
-    createScanStatusChart() {
-        if (! this.$refs.scanStatusChart) {
-            return;
-        }
-
-        this.charts.push(new Chart(this.$refs.scanStatusChart, {
-            type: 'doughnut',
-            data: {
-                labels: analytics.scanStatus.labels,
-                datasets: [{
-                    data: analytics.scanStatus.data,
-                    backgroundColor: ['#059669', '#d97706', '#dc2626', '#0ea5e9', '#7c3aed'],
-                    borderColor: '#ffffff',
-                    borderWidth: 3,
-                }],
-            },
-            options: {
-                ...this.baseOptions(),
-                cutout: this.isCompactChart() ? '62%' : '68%',
             },
         }));
     },

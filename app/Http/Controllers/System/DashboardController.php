@@ -47,16 +47,6 @@ class DashboardController extends Controller
                         ->map(fn ($date) => PatrolLog::whereDate('scanned_at', $date->toDateString())->count())
                         ->values(),
                 ],
-                'scanStatus' => [
-                    'labels' => ['Valid', 'Suspicious', 'Invalid', 'Pending Selfie', 'Profile Incomplete'],
-                    'data' => [
-                        PatrolLog::where('status', 'valid')->count(),
-                        PatrolLog::where('status', 'suspicious')->count(),
-                        PatrolLog::where('status', 'invalid')->count(),
-                        PatrolLog::whereIn('status', ['pending_selfie', 'pending_face'])->count(),
-                        PatrolLog::where('status', 'profile_incomplete')->count(),
-                    ],
-                ],
                 'incidentPriority' => [
                     'labels' => array_values(PatrolChecklist::incidentPriorityOptions()),
                     'data' => [

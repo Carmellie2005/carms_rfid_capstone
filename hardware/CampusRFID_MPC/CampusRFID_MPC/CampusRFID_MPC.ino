@@ -22,8 +22,6 @@ const char* WIFI_PASSWORD = "SLSU_BC_System_Wifi";
 // These must not require a captive portal/login page.
 const char* OPEN_WIFI_SSID = "SLSU BC Students' Wifi";
 const char* SECOND_OPEN_WIFI_SSID = "STARLINK";
-const char* BACKUP_WIFI_SSID = "";
-const char* BACKUP_WIFI_PASSWORD = "";
 const char* SECOND_BACKUP_WIFI_SSID = "255.255.255.252";
 const char* SECOND_BACKUP_WIFI_PASSWORD = "12345678";
 
@@ -78,6 +76,7 @@ const char* HEARTBEAT_URL =
 const unsigned long SCAN_COOLDOWN_MS = 3000;
 const unsigned long SUCCESS_DUPLICATE_WINDOW_MS = 30000;
 const unsigned long HEARTBEAT_INTERVAL_MS = 60000;
+const unsigned long HEARTBEAT_RETRY_INTERVAL_MS = 10000;
 
 const int WIFI_CONNECT_ATTEMPTS = 40;
 
@@ -943,22 +942,6 @@ void connectWiFi() {
     return;
   }
 
-  // =================================================
-  // OPTIONAL SECURED WIFI FALLBACK
-  // =================================================
-
-  if (
-    tryWiFiNetwork(
-      BACKUP_WIFI_SSID,
-      BACKUP_WIFI_PASSWORD
-    )
-  ) {
-
-    showWiFiConnected();
-
-    return;
-  }
-
   if (
     tryWiFiNetwork(
       SECOND_BACKUP_WIFI_SSID,
@@ -1039,7 +1022,7 @@ String deviceLastError(
   return "";
 }
 
-void sendHeartbeatToLaravel() {
+bool sendHeartbeatToLaravel() {
 
   if (
     WiFi.status() != WL_CONNECTED
@@ -1049,7 +1032,7 @@ void sendHeartbeatToLaravel() {
       "Heartbeat skipped. WiFi disconnected."
     );
 
-    return;
+    return false;
   }
 
   bool rfidOnline =
@@ -1108,7 +1091,7 @@ void sendHeartbeatToLaravel() {
       "Invalid heartbeat URL"
     );
 
-    return;
+    return false;
   }
 
   http.setTimeout(
@@ -1220,7 +1203,12 @@ void sendHeartbeatToLaravel() {
     );
   }
 
+  bool heartbeatAccepted =
+    httpCode == 200;
+
   http.end();
+
+  return heartbeatAccepted;
 }
 
 void handleHeartbeat() {
@@ -1234,10 +1222,17 @@ void handleHeartbeat() {
     return;
   }
 
+  bool heartbeatSent =
+    sendHeartbeatToLaravel();
+
   lastHeartbeatTime =
     millis();
 
-  sendHeartbeatToLaravel();
+  if (!heartbeatSent) {
+    lastHeartbeatTime -=
+      HEARTBEAT_INTERVAL_MS -
+      HEARTBEAT_RETRY_INTERVAL_MS;
+  }
 }
 
 // =====================================================
@@ -1864,10 +1859,17 @@ void setup() {
 
   connectWiFi();
 
-  sendHeartbeatToLaravel();
+  bool heartbeatSent =
+    sendHeartbeatToLaravel();
 
   lastHeartbeatTime =
     millis();
+
+  if (!heartbeatSent) {
+    lastHeartbeatTime -=
+      HEARTBEAT_INTERVAL_MS -
+      HEARTBEAT_RETRY_INTERVAL_MS;
+  }
 
   Serial.println(
     "Ready to Scan RFID Card"

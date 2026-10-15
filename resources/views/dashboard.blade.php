@@ -59,14 +59,6 @@
             ],
         ];
 
-        $scanStatusTotal = collect($analytics['scanStatus']['data'])->sum();
-        $scanStatusLegend = [
-            ['label' => 'Valid', 'color' => 'bg-emerald-500'],
-            ['label' => 'Suspicious', 'color' => 'bg-amber-500'],
-            ['label' => 'Invalid', 'color' => 'bg-red-500'],
-            ['label' => 'Pending Selfie', 'color' => 'bg-sky-500'],
-            ['label' => 'Profile Incomplete', 'color' => 'bg-violet-500'],
-        ];
     @endphp
 
     <div class="py-5 sm:py-8">
@@ -111,28 +103,7 @@
                     </div>
                 </div>
 
-                <div class="grid gap-4 lg:grid-cols-2">
-                    <div class="rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
-                        <h3 class="font-semibold text-blue-950">Scan Status</h3>
-                        <p class="mt-1 text-sm leading-5 text-slate-500">Valid, suspicious, invalid, pending selfie, and profile incomplete scans</p>
-                        <div class="mt-3 grid grid-cols-2 items-center gap-x-4 gap-y-1.5 text-xs text-slate-600 sm:text-sm">
-                            @foreach ($scanStatusLegend as $item)
-                                <div class="grid min-w-0 grid-cols-[0.75rem_minmax(0,1fr)] items-center gap-2">
-                                    <span class="h-3 w-3 rounded-full {{ $item['color'] }}" aria-hidden="true"></span>
-                                    <span class="truncate whitespace-nowrap leading-5">{{ $item['label'] }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                        <div class="relative mt-3 h-40 min-w-0 sm:h-44 lg:h-48">
-                            <canvas x-ref="scanStatusChart" class="block h-full w-full" aria-label="Scan status chart"></canvas>
-                            @if ($scanStatusTotal === 0)
-                                <div class="pointer-events-none absolute inset-0 flex items-center justify-center text-sm font-medium text-slate-400">
-                                    No scan data yet
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-
+                <div>
                     <div class="rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
                         <h3 class="font-semibold text-blue-950">Incident Priority</h3>
                         <p class="text-sm text-slate-500">Submitted incidents by priority</p>
