@@ -175,10 +175,6 @@
 
                                 <div class="mt-2 grid gap-2 sm:grid-cols-2">
                                     <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
-                                        <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Device UID</p>
-                                        <p class="mt-1 truncate font-mono text-xs font-medium text-slate-700 dark:text-slate-200">{{ $checkpoint->device_uid ?: 'Not assigned' }}</p>
-                                    </div>
-                                    <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
                                         <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Device IP</p>
                                         <p class="mt-1 truncate font-mono text-xs font-medium text-slate-700 dark:text-slate-200">{{ $checkpoint->reader_last_ip ?: 'Not recorded' }}</p>
                                     </div>
@@ -192,22 +188,6 @@
                                         <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">WiFi Signal</p>
                                         <p class="mt-1 truncate font-mono text-xs font-medium text-slate-700 dark:text-slate-200">
                                             {{ $state === 'online' && filled($diagnostics['wifi_rssi'] ?? null) ? $diagnostics['wifi_rssi'].' dBm' : ($state === 'online' ? 'Not reported' : 'Not online') }}
-                                        </p>
-                                    </div>
-                                    <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
-                                        <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Firmware</p>
-                                        <p class="mt-1 truncate font-mono text-xs font-medium text-slate-700 dark:text-slate-200">{{ $diagnostics['firmware'] ?? 'Not reported' }}</p>
-                                    </div>
-                                    <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700">
-                                        <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Last Message</p>
-                                        <p class="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300">
-                                            {{ $checkpoint->reader_last_message ?: 'No heartbeat message yet.' }}
-                                        </p>
-                                    </div>
-                                    <div class="rounded-md bg-white px-3 py-2 ring-1 ring-blue-100 dark:bg-slate-900 dark:ring-slate-700 sm:col-span-2">
-                                        <p class="text-[0.65rem] font-semibold uppercase text-slate-500 dark:text-slate-400">Error Status</p>
-                                        <p class="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300">
-                                            {{ filled($diagnostics['last_error'] ?? null) ? $diagnostics['last_error'] : 'No device errors reported.' }}
                                         </p>
                                     </div>
                                 </div>

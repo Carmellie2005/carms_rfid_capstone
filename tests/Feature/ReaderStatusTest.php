@@ -78,7 +78,10 @@ class ReaderStatusTest extends TestCase
             ->assertOk()
             ->assertSee('Device Diagnostics')
             ->assertSee('-55 dBm')
-            ->assertSee('No device errors reported.');
+            ->assertDontSee('Firmware')
+            ->assertDontSee('Last Message')
+            ->assertDontSee('Error Status')
+            ->assertDontSee('Device UID');
     }
 
     public function test_stale_device_diagnostics_do_not_show_as_online(): void
