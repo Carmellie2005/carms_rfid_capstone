@@ -74,7 +74,7 @@
     <div
         x-show="sidebarCollapsed"
         style="display: none;"
-        class="sidebar-brand-soft fixed inset-y-0 left-0 z-40 hidden w-16 flex-col items-center border-r border-blue-100 px-2 py-5 dark:border-slate-800 lg:flex"
+        class="fixed inset-y-0 left-0 z-40 hidden w-16 flex-col items-center border-r border-blue-100 bg-white px-2 py-5 dark:border-slate-800 dark:bg-slate-900 lg:flex"
     >
         <button
             type="button"
