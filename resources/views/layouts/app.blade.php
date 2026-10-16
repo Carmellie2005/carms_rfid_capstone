@@ -157,7 +157,7 @@
             @include('layouts.navigation')
 
             <div
-                class="app-content-shell flex min-h-0 flex-col @if ($isSupervisor) pb-20 lg:pb-0 @endif lg:h-full lg:pl-72"
+                class="app-content-shell flex min-h-0 flex-col lg:h-full lg:pl-72"
                 :class="sidebarCollapsed ? 'lg:!pl-16' : 'lg:!pl-72'"
             >
                 <header class="sticky top-0 z-30 shrink-0 border-b border-blue-100 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">

@@ -59,19 +59,17 @@
 @endphp
 
 <nav aria-label="System navigation">
-    @unless ($isSupervisor)
-        <button
-            type="button"
-            x-show="! sidebarOpen"
-            class="fixed left-3 top-3 z-50 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-blue-100 bg-white text-slate-900 shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950 lg:hidden"
-            @click="sidebarOpen = true"
-            aria-label="Open guard menu"
-        >
-            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-            </svg>
-        </button>
-    @endunless
+    <button
+        type="button"
+        x-show="! sidebarOpen"
+        class="fixed left-3 top-3 z-50 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-blue-100 bg-white text-slate-900 shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950 lg:hidden"
+        @click="sidebarOpen = true"
+        aria-label="{{ $isSupervisor ? 'Open sidebar' : 'Open guard menu' }}"
+    >
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+    </button>
 
     <div
         x-show="sidebarCollapsed"
@@ -290,98 +288,4 @@
             @endif
         </div>
     </aside>
-
-    @if ($isSupervisor)
-        <div x-data="{ mobileMoreOpen: false }" x-on:keydown.escape.window="mobileMoreOpen = false" class="lg:hidden">
-            <div
-                x-show="mobileMoreOpen"
-                x-cloak
-                x-transition.opacity.duration.150ms
-                class="fixed inset-0 z-[60] bg-slate-950/45"
-                x-on:click="mobileMoreOpen = false"
-                aria-hidden="true"
-            ></div>
-
-            <section
-                x-show="mobileMoreOpen"
-                x-cloak
-                x-transition:enter="transition ease-out duration-150"
-                x-transition:enter-start="translate-y-3 opacity-0"
-                x-transition:enter-end="translate-y-0 opacity-100"
-                x-transition:leave="transition ease-in duration-100"
-                x-transition:leave-start="translate-y-0 opacity-100"
-                x-transition:leave-end="translate-y-3 opacity-0"
-                class="fixed inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-[70] overflow-hidden rounded-lg border border-blue-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
-                id="mobile-supervisor-more"
-                aria-label="More supervisor options"
-            >
-                <div class="flex items-center justify-between border-b border-blue-100 px-4 py-3 dark:border-slate-800">
-                    <div>
-                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">More</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Supervisor tools</p>
-                    </div>
-                    <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-blue-100 text-slate-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800" x-on:click="mobileMoreOpen = false" aria-label="Close more menu">
-                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                            <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                        </svg>
-                    </button>
-                </div>
-                <div class="grid grid-cols-2 gap-2 p-3">
-                    <a href="{{ route('guards.index') }}" class="{{ $linkClasses(request()->routeIs('guards.*')) }}" x-on:click="mobileMoreOpen = false">
-                        {!! $navIcon('users') !!}
-                        <span>Guard Profiles</span>
-                    </a>
-                    <a href="{{ route('checkpoints.index') }}" class="{{ $linkClasses(request()->routeIs('checkpoints.*')) }}" x-on:click="mobileMoreOpen = false">
-                        {!! $navIcon('checkpoints') !!}
-                        <span>Checkpoints</span>
-                    </a>
-                    <a href="{{ route('readers.index') }}" class="{{ $linkClasses(request()->routeIs('readers.*')) }}" x-on:click="mobileMoreOpen = false">
-                        {!! $navIcon('readers') !!}
-                        <span>Device Diagnostics</span>
-                    </a>
-                    <a href="{{ route('audit-logs.index') }}" class="{{ $linkClasses(request()->routeIs('audit-logs.*')) }}" x-on:click="mobileMoreOpen = false">
-                        {!! $navIcon('audit') !!}
-                        <span>Audit Trail</span>
-                    </a>
-                </div>
-            </section>
-
-            <nav class="fixed inset-x-0 bottom-0 z-50 border-t border-blue-100 bg-white/95 px-2 pt-2 shadow-[0_-4px_18px_rgba(30,64,175,0.08)] backdrop-blur dark:border-slate-800 dark:bg-slate-900/95" aria-label="Mobile supervisor navigation">
-                <div class="mx-auto grid max-w-lg grid-cols-5 gap-1 pb-[env(safe-area-inset-bottom)]">
-                    <a href="{{ route('dashboard') }}" class="{{ $linkClasses(request()->routeIs('dashboard')) }} justify-center px-1 py-1.5 text-[0.68rem]" x-on:click="mobileMoreOpen = false">
-                        {!! $navIcon('dashboard', 'h-5 w-5') !!}
-                        <span class="truncate">Dashboard</span>
-                    </a>
-                    <a href="{{ route('patrol-logs.index') }}" class="{{ $linkClasses(request()->routeIs('patrol-logs.*')) }} justify-center px-1 py-1.5 text-[0.68rem]" x-on:click="mobileMoreOpen = false">
-                        {!! $navIcon('patrols', 'h-5 w-5') !!}
-                        <span class="truncate">Patrols</span>
-                    </a>
-                    <a href="{{ route('incidents.index') }}" class="{{ $linkClasses(request()->routeIs('incidents.*')) }} justify-center px-1 py-1.5 text-[0.68rem]" x-on:click="mobileMoreOpen = false">
-                        {!! $navIcon('incidents', 'h-5 w-5') !!}
-                        <span class="truncate">Incidents</span>
-                    </a>
-                    <button type="button" class="{{ $linkClasses(false) }} justify-center px-1 py-1.5 text-[0.68rem]" x-on:click="mobileMoreOpen = false; $dispatch('open-notifications-modal')" aria-label="Open notifications">
-                        <span class="relative inline-flex">
-                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path d="M15 17H9m9-6a6 6 0 0 0-12 0c0 3-1 4.5-2 6h16c-1-1.5-2-3-2-6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                <path d="M10 20a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                            </svg>
-                            @if ($notificationCount > 0)
-                                <span class="absolute -right-2 -top-2 inline-flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-bold leading-4 text-white">{{ $notificationCount > 99 ? '99+' : $notificationCount }}</span>
-                            @endif
-                        </span>
-                        <span class="truncate">Alerts</span>
-                    </button>
-                    <button type="button" class="{{ $linkClasses(false) }} justify-center px-1 py-1.5 text-[0.68rem]" x-on:click="mobileMoreOpen = ! mobileMoreOpen" :aria-expanded="mobileMoreOpen" aria-controls="mobile-supervisor-more">
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                            <circle cx="5" cy="12" r="1.5" fill="currentColor" />
-                            <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-                            <circle cx="19" cy="12" r="1.5" fill="currentColor" />
-                        </svg>
-                        <span class="truncate">More</span>
-                    </button>
-                </div>
-            </nav>
-        </div>
-    @endif
 </nav>
