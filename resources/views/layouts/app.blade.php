@@ -156,7 +156,7 @@
                 class="app-content-shell flex min-h-0 flex-col lg:h-full lg:pl-72"
                 :class="sidebarCollapsed ? 'lg:!pl-16' : 'lg:!pl-72'"
             >
-                <header class="sticky top-0 z-30 shrink-0 border-b border-blue-100 bg-gradient-to-r from-white via-blue-50/55 to-sky-50/80 backdrop-blur dark:border-slate-800 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                <header class="sticky top-0 z-30 shrink-0 border-b border-blue-100 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
                     <div class="mx-auto flex min-h-[4rem] max-w-7xl items-center justify-between gap-2 py-2 pl-16 pr-3 sm:gap-4 sm:px-6 lg:px-8">
                         <div
                             class="flex min-w-0 items-center gap-3"
