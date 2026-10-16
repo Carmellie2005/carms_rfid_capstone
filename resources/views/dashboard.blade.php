@@ -20,6 +20,7 @@
                 'valueClass' => 'text-emerald-900 dark:text-slate-50',
                 'accentClass' => 'bg-emerald-500 dark:bg-emerald-400',
                 'dotClass' => 'bg-emerald-500 ring-4 ring-emerald-500/10 dark:bg-emerald-400 dark:ring-emerald-400/15',
+                'icon' => 'guards',
             ],
             [
                 'label' => 'Checkpoints',
@@ -29,6 +30,7 @@
                 'valueClass' => 'text-sky-900 dark:text-slate-50',
                 'accentClass' => 'bg-sky-500 dark:bg-sky-400',
                 'dotClass' => 'bg-sky-500 ring-4 ring-sky-500/10 dark:bg-sky-400 dark:ring-sky-400/15',
+                'icon' => 'checkpoints',
             ],
             [
                 'label' => 'Today Patrols',
@@ -38,6 +40,7 @@
                 'valueClass' => 'text-blue-950 dark:text-slate-50',
                 'accentClass' => 'bg-blue-600 dark:bg-indigo-400',
                 'dotClass' => 'bg-blue-600 ring-4 ring-blue-600/10 dark:bg-indigo-400 dark:ring-indigo-400/15',
+                'icon' => 'patrols',
             ],
             [
                 'label' => 'Open Incidents',
@@ -47,6 +50,7 @@
                 'valueClass' => 'text-amber-900 dark:text-slate-50',
                 'accentClass' => 'bg-amber-500 dark:bg-amber-400',
                 'dotClass' => 'bg-amber-500 ring-4 ring-amber-500/10 dark:bg-amber-400 dark:ring-amber-400/15',
+                'icon' => 'incidents',
             ],
         ];
 
@@ -60,16 +64,42 @@
                 </div>
             @endif
 
-            <section class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+            <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 @foreach ($summaryCards as $card)
-                    <div class="system-card-transition relative min-h-[6.25rem] overflow-hidden rounded-md border p-3 shadow-sm dark:shadow-[0_18px_45px_rgba(2,6,23,0.25)] sm:p-5 {{ $card['cardClass'] }}">
+                    <div class="system-card-transition relative min-h-[8.5rem] overflow-hidden rounded-md border p-4 shadow-sm dark:shadow-[0_18px_45px_rgba(2,6,23,0.25)] sm:p-5 {{ $card['cardClass'] }}">
                         <span class="absolute inset-x-0 top-0 h-1 {{ $card['accentClass'] }}" aria-hidden="true"></span>
-                        <div class="flex h-full flex-col justify-between gap-3 pt-2">
-                            <div class="flex items-center justify-between gap-3">
-                                <p class="truncate whitespace-nowrap text-[0.7rem] font-semibold uppercase tracking-wide sm:text-xs {{ $card['labelClass'] }}">{{ $card['label'] }}</p>
+                        <div class="flex h-full flex-col justify-between gap-4 pt-1">
+                            <div class="flex items-start justify-between gap-3">
+                                <span class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-white/75 ring-1 ring-black/5 dark:bg-slate-900/60 dark:ring-white/10 {{ $card['labelClass'] }}" aria-hidden="true">
+                                    @switch ($card['icon'])
+                                        @case ('guards')
+                                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                                                <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                            @break
+                                        @case ('checkpoints')
+                                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                                                <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                                                <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8" />
+                                            </svg>
+                                            @break
+                                        @case ('patrols')
+                                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                                                <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                            @break
+                                        @default
+                                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                                                <path d="M12 9v4m0 4h.01M10.3 4.3 2.8 17.2A2 2 0 0 0 4.5 20h15a2 2 0 0 0 1.7-2.8L13.7 4.3a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                    @endswitch
+                                </span>
                                 <span class="h-2.5 w-2.5 shrink-0 rounded-full {{ $card['dotClass'] }}" aria-hidden="true"></span>
                             </div>
-                            <p class="text-2xl font-semibold sm:text-3xl {{ $card['valueClass'] }}">{{ $card['value'] }}</p>
+                            <div>
+                                <p class="text-2xl font-semibold leading-none sm:text-3xl {{ $card['valueClass'] }}">{{ $card['value'] }}</p>
+                                <p class="mt-2 truncate whitespace-nowrap text-[0.7rem] font-semibold uppercase tracking-wide sm:text-xs {{ $card['labelClass'] }}">{{ $card['label'] }}</p>
+                            </div>
                         </div>
                     </div>
                 @endforeach
@@ -80,7 +110,7 @@
                 x-init="render()"
                 x-on:theme-changed.window="render()"
                 x-on:resize.window.debounce.300ms="render()"
-                class="grid gap-4 xl:grid-cols-2"
+                class="grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(18rem,0.85fr)]"
             >
                 <div class="system-card-transition rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
                     <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
