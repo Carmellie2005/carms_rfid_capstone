@@ -6,6 +6,7 @@ use App\Models\Checkpoint;
 use App\Models\Guard;
 use App\Models\IncidentReport;
 use App\Models\PatrolLog;
+use App\Models\SystemNotification;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,6 +14,47 @@ use Tests\TestCase;
 class NotificationReadTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_guard_sign_in_notification_is_persistent_and_can_be_marked_as_read(): void
+    {
+        $guardUser = User::factory()->create(['role' => 'guard']);
+        $notification = SystemNotification::create([
+            'user_id' => $guardUser->id,
+            'type' => 'Account',
+            'title' => 'Signed in successfully',
+            'body' => 'Welcome, Guard User. You are signed in.',
+            'href' => route('patrol.scan'),
+            'badge' => 'Sign-in',
+        ]);
+
+        $this
+            ->actingAs($guardUser)
+            ->get(route('notifications.index'))
+            ->assertOk()
+            ->assertSee('Signed in successfully')
+            ->assertSee('1 unread alert');
+
+        $this
+            ->actingAs($guardUser)
+            ->post(route('notifications.read'), [
+                'type' => 'system',
+                'id' => $notification->id,
+            ])
+            ->assertRedirect(route('notifications.index'));
+
+        $this->assertDatabaseHas('notification_reads', [
+            'user_id' => $guardUser->id,
+            'notifiable_type' => SystemNotification::class,
+            'notifiable_id' => $notification->id,
+        ]);
+
+        $this
+            ->actingAs($guardUser)
+            ->get(route('notifications.index'))
+            ->assertOk()
+            ->assertSee('Signed in successfully')
+            ->assertSee('0 unread alerts');
+    }
 
     public function test_notification_dropdown_shows_recent_unread_alerts_and_view_all_link(): void
     {

@@ -52,7 +52,7 @@
         @empty
             <div class="px-5 py-10 text-center">
                 <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">No notifications yet</p>
-                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">New incident reports and patrol alerts will appear here.</p>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">New account updates, incident reports, and patrol alerts will appear here.</p>
             </div>
         @endforelse
     </div>

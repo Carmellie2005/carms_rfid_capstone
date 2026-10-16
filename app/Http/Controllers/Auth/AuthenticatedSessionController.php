@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\SystemNotification;
 use App\Providers\RouteServiceProvider;
 use App\Support\AuditLogger;
 use Illuminate\Http\RedirectResponse;
@@ -38,13 +39,18 @@ class AuthenticatedSessionController extends Controller
             ? route('patrol.scan')
             : RouteServiceProvider::HOME;
 
-        $response = redirect()->intended($home);
-
         if ($request->user()->role === 'guard') {
-            $response->with('guard_signed_in', 'Welcome, '.$request->user()->name.'. You are signed in.');
+            SystemNotification::create([
+                'user_id' => $request->user()->id,
+                'type' => 'Account',
+                'title' => 'Signed in successfully',
+                'body' => 'Welcome, '.$request->user()->name.'. You are signed in.',
+                'href' => route('patrol.scan'),
+                'badge' => 'Sign-in',
+            ]);
         }
 
-        return $response;
+        return redirect()->intended($home);
     }
 
     /**

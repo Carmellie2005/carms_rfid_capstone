@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\IncidentReport;
 use App\Models\PatrolLog;
+use App\Models\SystemNotification;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -23,7 +24,8 @@ class NotificationFeed
 
     public static function unreadCountFor(User $user): int
     {
-        return static::incidentQuery($user, true)->count()
+        return static::systemNotificationQuery($user, true)->count()
+            + static::incidentQuery($user, true)->count()
             + static::patrolQuery($user, true)->count();
     }
 
@@ -49,6 +51,7 @@ class NotificationFeed
     public static function unreadSubjectsFor(User $user): array
     {
         return [
+            ...static::systemNotificationQuery($user, true)->get()->all(),
             ...static::incidentQuery($user, true)->get()->all(),
             ...static::patrolQuery($user, true)->get()->all(),
         ];
@@ -56,6 +59,12 @@ class NotificationFeed
 
     public static function authorizedSubject(User $user, string $type, int $id): Model
     {
+        if ($type === 'system') {
+            return static::systemNotificationQuery($user, false)
+                ->whereKey($id)
+                ->firstOrFail();
+        }
+
         if ($type === 'incident') {
             return static::incidentQuery($user, false)
                 ->whereKey($id)
@@ -69,6 +78,10 @@ class NotificationFeed
 
     private static function itemsFor(User $user, bool $unreadOnly): Collection
     {
+        $systemNotifications = static::systemNotificationQuery($user, $unreadOnly, true)
+            ->get()
+            ->map(fn (SystemNotification $notification) => static::systemNotificationItem($notification));
+
         $incidents = static::incidentQuery($user, $unreadOnly, true)
             ->get()
             ->map(fn (IncidentReport $incident) => static::incidentItem($incident, $user));
@@ -77,10 +90,23 @@ class NotificationFeed
             ->get()
             ->map(fn (PatrolLog $patrol) => static::patrolItem($patrol, $user));
 
-        return $incidents
+        return $systemNotifications
+            ->concat($incidents)
             ->concat($patrols)
             ->sortByDesc(fn (array $item) => $item['sort_timestamp'])
             ->values();
+    }
+
+    private static function systemNotificationQuery(User $user, bool $unreadOnly, bool $withNotificationReads = false): Builder
+    {
+        $query = SystemNotification::query()
+            ->where('user_id', $user->id);
+
+        if ($withNotificationReads) {
+            $query->with(['notificationReads' => fn ($query) => $query->where('user_id', $user->id)]);
+        }
+
+        return $unreadOnly ? static::unreadOnly($query, $user) : $query;
     }
 
     private static function incidentQuery(User $user, bool $unreadOnly, bool $withNotificationReads = false): Builder
@@ -136,6 +162,27 @@ class NotificationFeed
     private static function unreadOnly(Builder $query, User $user): Builder
     {
         return $query->whereDoesntHave('notificationReads', fn (Builder $query) => $query->where('user_id', $user->id));
+    }
+
+    private static function systemNotificationItem(SystemNotification $notification): array
+    {
+        $readAt = $notification->notificationReads->first()?->read_at;
+        $time = $notification->created_at;
+
+        return [
+            'read_type' => 'system',
+            'read_id' => $notification->id,
+            'type' => $notification->type,
+            'title' => $notification->title,
+            'body' => $notification->body,
+            'time_label' => static::timeLabel($time),
+            'relative_time' => $time?->diffForHumans(),
+            'sort_timestamp' => $time?->timestamp ?? 0,
+            'badge' => $notification->badge ?: 'System',
+            'href' => $notification->href ?: route('notifications.index'),
+            'is_read' => (bool) $readAt,
+            'read_at_label' => static::timeLabel($readAt),
+        ];
     }
 
     private static function incidentItem(IncidentReport $incident, User $user): array

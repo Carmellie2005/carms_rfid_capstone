@@ -15,7 +15,7 @@ class NotificationReadController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'type' => ['required', Rule::in(['incident', 'patrol'])],
+            'type' => ['required', Rule::in(['system', 'incident', 'patrol'])],
             'id' => ['required', 'integer'],
         ]);
 

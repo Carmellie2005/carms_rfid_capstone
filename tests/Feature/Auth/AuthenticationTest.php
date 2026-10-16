@@ -48,8 +48,14 @@ class AuthenticationTest extends TestCase
 
         $this->assertAuthenticated();
         $response
-            ->assertRedirect(route('patrol.scan'))
-            ->assertSessionHas('guard_signed_in', 'Welcome, '.$user->name.'. You are signed in.');
+            ->assertRedirect(route('patrol.scan'));
+
+        $this->assertDatabaseHas('system_notifications', [
+            'user_id' => $user->id,
+            'title' => 'Signed in successfully',
+            'body' => 'Welcome, '.$user->name.'. You are signed in.',
+            'badge' => 'Sign-in',
+        ]);
     }
 
     public function test_users_can_authenticate_using_an_email_style_username(): void
