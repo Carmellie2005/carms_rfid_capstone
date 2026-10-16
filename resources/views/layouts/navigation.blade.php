@@ -21,7 +21,7 @@
         : $guardSidebarFallbackPhotoUrl;
 
     $linkClasses = fn ($active) => $active
-        ? 'flex items-center gap-3 rounded-lg bg-gradient-to-br from-blue-700 via-blue-600 to-sky-500 px-3 py-2.5 text-sm font-semibold text-white shadow-sm'
+        ? 'flex items-center gap-3 rounded-lg bg-blue-100 px-3 py-2.5 text-sm font-semibold text-blue-800 shadow-sm dark:bg-blue-950 dark:text-blue-100'
         : 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-100';
 
     $navIcon = fn ($icon, $class = 'h-5 w-5 shrink-0') => new \Illuminate\Support\HtmlString(match ($icon) {
@@ -38,7 +38,7 @@
     });
 
     $collapsedLinkClasses = fn ($active) => $active
-        ? 'group relative inline-flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-700 via-blue-600 to-sky-500 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900'
+        ? 'group relative inline-flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:bg-blue-950 dark:text-blue-100 dark:focus:ring-offset-slate-900'
         : 'group relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 transition hover:bg-blue-50 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-100 dark:focus:ring-offset-slate-900';
 
     $collapsedItems = $isSupervisor
