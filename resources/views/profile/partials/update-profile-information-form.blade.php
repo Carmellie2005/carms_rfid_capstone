@@ -148,10 +148,6 @@
                         <dd class="mt-1 font-mono text-sm font-semibold text-slate-800 dark:text-slate-100">{{ $guardProfile->employee_no }}</dd>
                     </div>
                     <div class="border-b border-blue-100 pb-2 dark:border-slate-700">
-                        <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">RFID UID</dt>
-                        <dd class="mt-1 font-mono text-sm font-semibold text-slate-800 dark:text-slate-100">{{ $guardProfile->rfid_uid }}</dd>
-                    </div>
-                    <div class="border-b border-blue-100 pb-2 dark:border-slate-700">
                         <dt class="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-300">Assigned Shift</dt>
                         <dd class="mt-1 text-sm font-semibold text-slate-800 dark:text-white">{{ $guardProfile->shift ?: 'Unassigned' }}</dd>
                     </div>

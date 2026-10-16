@@ -114,7 +114,7 @@ class ProfileTest extends TestCase
             ->assertSee('Security Guard')
             ->assertSee('Security and Safety Services Office')
             ->assertSee('SG-TEST')
-            ->assertSee('RFID-TEST')
+            ->assertDontSee('RFID-TEST')
             ->assertSee('Night Shift')
             ->assertSee('Apr 12, 1998')
             ->assertSee('value="09171234567"', false)
