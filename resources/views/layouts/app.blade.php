@@ -101,6 +101,8 @@
                 </x-brand-spinner>
             </div>
 
+            <x-logout-confirmation />
+
             @if ($requiresGuardPasswordChange)
                 <div
                     x-data="{ ready: false }"
@@ -393,12 +395,9 @@
                                         Profile Settings
                                     </x-dropdown-link>
 
-                                    <form method="POST" action="{{ route('logout') }}" onsubmit="return confirm('Are you sure you want to log out?');">
-                                        @csrf
-                                        <x-dropdown-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').requestSubmit();">
-                                            Log Out
-                                        </x-dropdown-link>
-                                    </form>
+                                    <x-dropdown-link :href="route('logout')" x-on:click.prevent="$dispatch('open-logout-confirmation')">
+                                        Log Out
+                                    </x-dropdown-link>
                                 </x-slot>
                             </x-dropdown>
                         </div>
