@@ -93,7 +93,7 @@
         x-show="! sidebarOpen"
         class="fixed left-3 top-3 z-50 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-blue-100 bg-white text-slate-900 shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950 lg:hidden"
         @click="sidebarOpen = true"
-        aria-label="Open sidebar"
+        aria-label="{{ $isSupervisor ? 'Open sidebar' : 'Open guard menu' }}"
     >
         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -136,8 +136,55 @@
         aria-hidden="true"
     ></div>
 
+    @unless ($isSupervisor)
+        <section
+            x-show="sidebarOpen"
+            x-cloak
+            x-transition:enter="transition ease-out duration-150"
+            x-transition:enter-start="opacity-0 -translate-y-2"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-100"
+            x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 -translate-y-2"
+            class="fixed inset-x-3 top-16 z-50 overflow-hidden rounded-lg border border-blue-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:left-4 sm:right-auto sm:w-80"
+            aria-label="Guard menu"
+        >
+            <div class="flex items-center justify-between border-b border-blue-100 px-4 py-3 dark:border-slate-700">
+                <div>
+                    <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Guard Menu</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Choose an action</p>
+                </div>
+                <button
+                    type="button"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                    @click="sidebarOpen = false"
+                    aria-label="Close guard menu"
+                >
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="space-y-1 p-2">
+                <a href="{{ route('patrol.scan') }}" class="{{ $linkClasses(request()->routeIs('patrol.scan')) }}" @click="sidebarOpen = false">
+                    {!! $navIcon('scan') !!}
+                    <span>Scan Checkpoint</span>
+                </a>
+                <a href="{{ route('patrol-logs.index') }}" class="{{ $linkClasses(request()->routeIs('patrol-logs.*')) }}" @click="sidebarOpen = false">
+                    {!! $navIcon('patrols') !!}
+                    <span>My Patrol Logs</span>
+                </a>
+                <a href="{{ route('profile.edit') }}" class="{{ $linkClasses(request()->routeIs('profile.*')) }}" @click="sidebarOpen = false">
+                    {!! $navIcon('profile') !!}
+                    <span>Profile</span>
+                </a>
+            </div>
+        </section>
+    @endunless
+
     <aside
-        class="fixed inset-y-0 left-0 z-50 flex w-[min(18rem,calc(100vw-1.25rem))] -translate-x-full flex-col border-r border-blue-100 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900 lg:w-72 lg:translate-x-0 lg:shadow-none"
+        class="fixed inset-y-0 left-0 z-50 flex w-[min(18rem,calc(100vw-1.25rem))] -translate-x-full flex-col border-r border-blue-100 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900 lg:w-72 lg:translate-x-0 lg:shadow-none @unless ($isSupervisor) hidden lg:flex @endunless"
         :class="{
             '!translate-x-0': sidebarOpen,
             'lg:!translate-x-0': ! sidebarCollapsed,
