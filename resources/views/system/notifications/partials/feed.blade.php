@@ -57,7 +57,5 @@
         @endforelse
     </div>
 
-    <div class="border-t border-blue-100 px-4 py-4 dark:border-slate-800 sm:px-5">
-        {{ $notifications->links() }}
-    </div>
+    <x-pagination-panel :paginator="$notifications" label="notifications" page-label="Notifications page" class="border-t border-blue-100 px-4 py-4 dark:border-slate-800 sm:px-5" />
 </section>

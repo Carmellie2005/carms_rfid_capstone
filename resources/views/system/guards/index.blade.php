@@ -653,7 +653,7 @@
                 </section>
             </div>
 
-            {{ $guards->links() }}
+            <x-pagination-panel :paginator="$guards" label="guards" page-label="Guards page" class="mt-4" />
         </div>
     </div>
 </x-app-layout>

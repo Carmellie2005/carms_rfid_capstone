@@ -232,9 +232,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="border-t border-blue-100 px-5 py-4">
-                        {{ $recentPatrols->links() }}
-                    </div>
+                    <x-pagination-panel :paginator="$recentPatrols" label="recent patrol logs" page-label="Patrol logs page" class="border-t border-blue-100 px-5 py-4" />
                 </div>
 
                 <div class="system-card-transition rounded-md border border-blue-100 bg-white p-5 shadow-sm">

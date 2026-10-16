@@ -144,9 +144,7 @@
                     @endforelse
                 </div>
 
-                <div class="border-t border-blue-100 px-5 py-4 dark:border-slate-800">
-                    {{ $logs->links() }}
-                </div>
+                <x-pagination-panel :paginator="$logs" label="audit records" page-label="Audit page" class="border-t border-blue-100 px-5 py-4 dark:border-slate-800" />
             </section>
         </div>
 

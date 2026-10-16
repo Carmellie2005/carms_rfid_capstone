@@ -299,7 +299,7 @@
                 </section>
             </div>
 
-            {{ $checkpoints->links() }}
+            <x-pagination-panel :paginator="$checkpoints" label="checkpoints" page-label="Checkpoints page" class="mt-4" />
         </div>
     </div>
 </x-app-layout>

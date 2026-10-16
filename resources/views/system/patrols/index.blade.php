@@ -304,10 +304,6 @@
                 </div>
             </div>
 
-            <div class="rounded-md border border-blue-100 bg-white px-5 py-4 shadow-sm">
-                {{ $logs->links() }}
-            </div>
-
             </div>
         </div>
 
