@@ -105,8 +105,15 @@
                 @endforeach
             </section>
 
-            <section class="system-card-transition rounded-md border border-blue-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/80">
-                <div class="flex flex-col gap-2 border-b border-blue-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5 dark:border-slate-800">
+            <section
+                x-data="dashboardCharts(@js($analytics))"
+                x-init="render()"
+                x-on:theme-changed.window="render()"
+                x-on:resize.window.debounce.300ms="render()"
+                class="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.7fr)]"
+            >
+                <div class="system-card-transition rounded-md border border-blue-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/80">
+                    <div class="flex flex-col gap-2 border-b border-blue-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 dark:border-slate-800">
                     <div>
                         <h3 class="font-semibold text-blue-950 dark:text-white">Duty Today</h3>
                         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Scheduled guards for {{ now(config('app.timezone'))->format('M d, Y') }}</p>
@@ -144,10 +151,26 @@
                 </div>
 
                 @if ($offDutyGuards->isNotEmpty())
-                    <p class="border-t border-blue-50 px-4 py-3 text-xs text-slate-500 sm:px-5 dark:border-slate-800 dark:text-slate-400">
+                    <p class="border-t border-blue-50 px-4 py-2.5 text-xs text-slate-500 sm:px-5 dark:border-slate-800 dark:text-slate-400">
                         Off duty today: {{ $offDutyGuards->pluck('employee_no')->join(', ') }}
                     </p>
                 @endif
+                </div>
+
+                <div class="system-card-transition rounded-md border border-blue-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/80 sm:p-5">
+                    <div>
+                        <h3 class="font-semibold text-blue-950 dark:text-white">Duty Status</h3>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Today's guard schedule</p>
+                    </div>
+                    <div class="relative mt-2 h-44 min-w-0 sm:h-48">
+                        <canvas x-ref="dutyStatusChart" class="block h-full w-full" aria-label="Duty status pie chart"></canvas>
+                        @if (collect($analytics['dutyStatus']['data'])->sum() === 0)
+                            <div class="pointer-events-none absolute inset-0 flex items-center justify-center text-sm font-medium text-slate-400">
+                                No duty data yet
+                            </div>
+                        @endif
+                    </div>
+                </div>
             </section>
 
             <section

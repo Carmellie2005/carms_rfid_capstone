@@ -73,6 +73,14 @@ class DashboardController extends Controller
                     'labels' => $checkpointActivity->pluck('code')->values(),
                     'data' => $checkpointActivity->pluck('valid_patrols_count')->values(),
                 ],
+                'dutyStatus' => [
+                    'labels' => ['Active', 'Not checked in', 'Off duty'],
+                    'data' => [
+                        $onDutyGuards->where('duty_state', 'active')->count(),
+                        $onDutyGuards->where('duty_state', 'not_checked_in')->count(),
+                        $offDutyGuards->count(),
+                    ],
+                ],
             ],
         ]);
     }

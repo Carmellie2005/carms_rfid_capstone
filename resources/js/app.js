@@ -2293,6 +2293,7 @@ Alpine.data('dashboardCharts', (analytics) => ({
             this.createPatrolTrendChart();
             this.createIncidentPriorityChart();
             this.createCheckpointActivityChart();
+            this.createDutyStatusChart();
         });
     },
 
@@ -2464,6 +2465,29 @@ Alpine.data('dashboardCharts', (analytics) => ({
                 indexAxis: 'y',
                 scales: this.axisOptions(),
             },
+        }));
+    },
+
+    createDutyStatusChart() {
+        if (! this.$refs.dutyStatusChart) {
+            return;
+        }
+
+        const options = this.baseOptions({ legend: true });
+        options.plugins.legend.position = this.isCompactChart() ? 'bottom' : 'right';
+
+        this.charts.push(new Chart(this.$refs.dutyStatusChart, {
+            type: 'pie',
+            data: {
+                labels: analytics.dutyStatus.labels,
+                datasets: [{
+                    data: analytics.dutyStatus.data,
+                    backgroundColor: ['#10b981', '#f59e0b', '#94a3b8'],
+                    borderColor: document.documentElement.classList.contains('dark') ? '#020617' : '#ffffff',
+                    borderWidth: 3,
+                }],
+            },
+            options,
         }));
     },
 }));
