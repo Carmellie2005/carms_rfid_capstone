@@ -159,14 +159,14 @@
 
                 <div class="system-card-transition rounded-md border border-blue-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/80 sm:p-5">
                     <div>
-                        <h3 class="font-semibold text-blue-950 dark:text-white">Duty Status</h3>
-                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Today's guard schedule</p>
+                        <h3 class="font-semibold text-blue-950 dark:text-white">Patrol Coverage</h3>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Checkpoint visits for today</p>
                     </div>
                     <div class="relative mt-2 h-44 min-w-0 sm:h-48">
-                        <canvas x-ref="dutyStatusChart" class="block h-full w-full" aria-label="Duty status pie chart"></canvas>
-                        @if (collect($analytics['dutyStatus']['data'])->sum() === 0)
+                        <canvas x-ref="patrolCoverageChart" class="block h-full w-full" aria-label="Patrol coverage pie chart"></canvas>
+                        @if (collect($analytics['patrolCoverage']['data'])->sum() === 0)
                             <div class="pointer-events-none absolute inset-0 flex items-center justify-center text-sm font-medium text-slate-400">
-                                No duty data yet
+                                No patrol data yet
                             </div>
                         @endif
                     </div>

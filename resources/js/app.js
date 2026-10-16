@@ -2293,7 +2293,7 @@ Alpine.data('dashboardCharts', (analytics) => ({
             this.createPatrolTrendChart();
             this.createIncidentPriorityChart();
             this.createCheckpointActivityChart();
-            this.createDutyStatusChart();
+            this.createPatrolCoverageChart();
         });
     },
 
@@ -2468,21 +2468,21 @@ Alpine.data('dashboardCharts', (analytics) => ({
         }));
     },
 
-    createDutyStatusChart() {
-        if (! this.$refs.dutyStatusChart) {
+    createPatrolCoverageChart() {
+        if (! this.$refs.patrolCoverageChart) {
             return;
         }
 
         const options = this.baseOptions({ legend: true });
         options.plugins.legend.position = this.isCompactChart() ? 'bottom' : 'right';
 
-        this.charts.push(new Chart(this.$refs.dutyStatusChart, {
+        this.charts.push(new Chart(this.$refs.patrolCoverageChart, {
             type: 'pie',
             data: {
-                labels: analytics.dutyStatus.labels,
+                labels: analytics.patrolCoverage.labels,
                 datasets: [{
-                    data: analytics.dutyStatus.data,
-                    backgroundColor: ['#10b981', '#f59e0b', '#94a3b8'],
+                    data: analytics.patrolCoverage.data,
+                    backgroundColor: ['#2563eb', '#cbd5e1'],
                     borderColor: document.documentElement.classList.contains('dark') ? '#020617' : '#ffffff',
                     borderWidth: 3,
                 }],

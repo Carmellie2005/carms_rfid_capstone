@@ -207,6 +207,8 @@ class DashboardTest extends TestCase
             ->assertSee('BCP-004')
             ->assertSee('24-hour duty')
             ->assertSee('Evening duty')
+            ->assertSee('Patrol Coverage')
+            ->assertSee('Checkpoint visits for today')
             ->assertSee('Off duty today: BCP-001, BCP-003');
 
         Carbon::setTestNow();

@@ -31,6 +31,13 @@ class DashboardController extends Controller
             ->get();
         $onDutyGuards = DutyRoster::onDutyForDate($todayMoment, $activeGuardProfiles);
         $offDutyGuards = DutyRoster::offDutyForDate($todayMoment, $activeGuardProfiles);
+        $activeCheckpointCount = Checkpoint::where('status', 'active')->count();
+        $coveredCheckpointCount = Checkpoint::query()
+            ->where('status', 'active')
+            ->whereHas('patrolLogs', fn ($query) => $query
+                ->whereDate('scanned_at', $today)
+                ->where('status', 'valid'))
+            ->count();
         $checkpointActivity = Checkpoint::withCount([
             'patrolLogs as valid_patrols_count' => fn ($query) => $query->where('status', 'valid'),
         ])->orderByDesc('valid_patrols_count')->take(6)->get();
@@ -38,7 +45,7 @@ class DashboardController extends Controller
         return view('dashboard', [
             'stats' => [
                 'activeGuards' => $activeGuardProfiles->count(),
-                'activeCheckpoints' => Checkpoint::where('status', 'active')->count(),
+                'activeCheckpoints' => $activeCheckpointCount,
                 'todayPatrols' => PatrolLog::whereDate('scanned_at', $today)->where('status', 'valid')->count(),
                 'openIncidents' => IncidentReport::whereIn('status', ['submitted', 'under_review'])->count(),
             ],
@@ -73,12 +80,11 @@ class DashboardController extends Controller
                     'labels' => $checkpointActivity->pluck('code')->values(),
                     'data' => $checkpointActivity->pluck('valid_patrols_count')->values(),
                 ],
-                'dutyStatus' => [
-                    'labels' => ['Active', 'Not checked in', 'Off duty'],
+                'patrolCoverage' => [
+                    'labels' => ['Scanned', 'Remaining'],
                     'data' => [
-                        $onDutyGuards->where('duty_state', 'active')->count(),
-                        $onDutyGuards->where('duty_state', 'not_checked_in')->count(),
-                        $offDutyGuards->count(),
+                        $coveredCheckpointCount,
+                        max(0, $activeCheckpointCount - $coveredCheckpointCount),
                     ],
                 ],
             ],
