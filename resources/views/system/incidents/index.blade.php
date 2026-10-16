@@ -75,7 +75,7 @@
                         $incidentPdfPreviewUrl = route('incidents.pdf', ['incidentReport' => $incident, 'preview' => 1, 'v' => $incidentPdfVersion]);
                         $incidentPdfTitle = 'Incident Report - '.($incident->category ?: 'Incident');
                     @endphp
-                    <article class="rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
+                    <article class="system-card-transition rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
                         <div class="grid gap-5 lg:grid-cols-[1fr_360px]">
                             <div>
                                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

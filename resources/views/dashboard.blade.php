@@ -62,7 +62,7 @@
 
             <section class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
                 @foreach ($summaryCards as $card)
-                    <div class="relative min-h-[6.25rem] overflow-hidden rounded-md border p-3 shadow-sm transition dark:shadow-[0_18px_45px_rgba(2,6,23,0.25)] sm:p-5 {{ $card['cardClass'] }}">
+                    <div class="system-card-transition relative min-h-[6.25rem] overflow-hidden rounded-md border p-3 shadow-sm dark:shadow-[0_18px_45px_rgba(2,6,23,0.25)] sm:p-5 {{ $card['cardClass'] }}">
                         <span class="absolute inset-x-0 top-0 h-1 {{ $card['accentClass'] }}" aria-hidden="true"></span>
                         <div class="flex h-full flex-col justify-between gap-3 pt-2">
                             <div class="flex items-center justify-between gap-3">
@@ -82,7 +82,7 @@
                 x-on:resize.window.debounce.300ms="render()"
                 class="grid gap-4 xl:grid-cols-2"
             >
-                <div class="rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
+                <div class="system-card-transition rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
                     <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h3 class="font-semibold text-blue-950">Patrol Trend</h3>
@@ -95,7 +95,7 @@
                 </div>
 
                 <div>
-                    <div class="rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
+                    <div class="system-card-transition rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
                         <h3 class="font-semibold text-blue-950">Incident Priority</h3>
                         <p class="text-sm text-slate-500">Submitted incidents by priority</p>
                         <div class="relative mt-3 h-40 min-w-0 sm:h-48 lg:h-52">
@@ -109,7 +109,7 @@
                     </div>
                 </div>
 
-                <div class="rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5 xl:col-span-2">
+                <div class="system-card-transition rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5 xl:col-span-2">
                     <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h3 class="font-semibold text-blue-950">Checkpoint Activity Analytics</h3>
@@ -129,7 +129,7 @@
             </section>
 
             <section class="grid gap-6 xl:grid-cols-[1fr_360px]">
-                <div class="overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm">
+                <div class="system-card-transition overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm">
                     <div class="flex items-center justify-between border-b border-blue-100 px-5 py-4">
                         <h3 class="font-semibold text-blue-950">Recent Patrol Logs</h3>
                         <a href="{{ route('patrol-logs.index') }}" class="text-sm font-medium text-blue-700 hover:text-blue-900">View all</a>
@@ -207,7 +207,7 @@
                     </div>
                 </div>
 
-                <div class="rounded-md border border-blue-100 bg-white p-5 shadow-sm">
+                <div class="system-card-transition rounded-md border border-blue-100 bg-white p-5 shadow-sm">
                     <div class="flex items-center justify-between">
                         <h3 class="font-semibold text-blue-950">Checkpoint Activity</h3>
                         <a href="{{ route('checkpoints.index') }}" class="text-sm font-medium text-blue-700 hover:text-blue-900">Manage</a>
@@ -234,7 +234,7 @@
                 </div>
             </section>
 
-            <section class="overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm">
+            <section class="system-card-transition overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm">
                 <div class="flex items-center justify-between border-b border-blue-100 px-5 py-4">
                     <h3 class="font-semibold text-blue-950">Recent Incidents</h3>
                     <a href="{{ route('incidents.index') }}" class="text-sm font-medium text-blue-700 hover:text-blue-900">Review</a>

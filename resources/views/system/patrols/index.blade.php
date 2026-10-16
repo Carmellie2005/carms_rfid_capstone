@@ -142,7 +142,7 @@
                         $patrolPdfDownloadUrl = route('patrol-logs.pdf', ['patrolLog' => $log, 'download' => 1, 'v' => $patrolPdfVersion]);
                         $patrolPdfPreviewUrl = route('patrol-logs.pdf', ['patrolLog' => $log, 'preview' => 1, 'v' => $patrolPdfVersion]);
                     @endphp
-                    <article class="min-w-0 rounded-md border border-blue-100 bg-white p-3 shadow-sm">
+                    <article class="system-card-transition min-w-0 rounded-md border border-blue-100 bg-white p-3 shadow-sm">
                         <div class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
                                 <p class="truncate text-[0.65rem] font-semibold uppercase text-blue-800 sm:text-xs">{{ $scanTime?->format('M d, Y') ?? 'No date' }}</p>

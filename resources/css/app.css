@@ -98,6 +98,21 @@
         animation: system-page-enter 180ms ease-out both;
     }
 
+    .system-card-transition {
+        transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+    }
+
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        .system-card-transition:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgb(15 23 42 / 0.08);
+        }
+
+        .dark .system-card-transition:hover {
+            box-shadow: 0 8px 20px rgb(2 6 23 / 0.28);
+        }
+    }
+
     .app-viewport {
         height: 100vh;
         height: 100svh;
