@@ -24,11 +24,6 @@
         ? 'flex items-center gap-3 rounded-lg bg-gradient-to-br from-blue-700 via-blue-600 to-sky-500 px-3 py-2.5 text-sm font-semibold text-white shadow-sm'
         : 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-100';
 
-    $subLinkClasses = fn ($active) => $active
-        ? 'block rounded-md bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-800 dark:bg-blue-950 dark:text-blue-100'
-        : 'block rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-blue-50 hover:text-blue-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-100';
-
-    $sectionButtonClasses = 'flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-100';
     $navIcon = fn ($icon, $class = 'h-5 w-5 shrink-0') => new \Illuminate\Support\HtmlString(match ($icon) {
         'dashboard' => '<svg class="'.$class.'" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 13h7V4H4v9Zm0 7h7v-5H4v5Zm9 0h7v-9h-7v9Zm0-11h7V4h-7v5Z" fill="currentColor" /></svg>',
         'users' => '<svg class="'.$class.'" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16 18c0-2.2-1.8-4-4-4s-4 1.8-4 4M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM20 18c0-1.7-1-3.1-2.4-3.7M17 6.2a2.8 2.8 0 0 1 0 5.6M4 18c0-1.7 1-3.1 2.4-3.7M7 6.2a2.8 2.8 0 0 0 0 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>',
@@ -42,28 +37,6 @@
         'profile' => '<svg class="'.$class.'" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>',
         default => '<svg class="'.$class.'" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 7.5A2.5 2.5 0 0 1 7.5 5h9A2.5 2.5 0 0 1 19 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 16.5v-9Z" stroke="currentColor" stroke-width="2" /><path d="M8.5 9.5h7m-7 5h7" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>',
     });
-
-    $sections = [
-        [
-            'label' => 'Patrols',
-            'icon' => 'patrols',
-            'active' => request()->routeIs('patrol-logs.*'),
-            'items' => [
-                ['label' => 'Patrol Logs', 'href' => route('patrol-logs.index'), 'active' => request()->routeIs('patrol-logs.*')],
-            ],
-        ],
-        [
-            'label' => 'Incidents',
-            'icon' => 'incidents',
-            'active' => request()->routeIs('incidents.*'),
-            'items' => [
-                ['label' => 'Incident Reports', 'href' => route('incidents.index'), 'active' => request()->routeIs('incidents.*')],
-            ],
-        ],
-    ];
-
-    $managementSections = [];
-    $monitoringSections = $isSupervisor ? $sections : [];
 
     $collapsedLinkClasses = fn ($active) => $active
         ? 'group relative inline-flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-700 via-blue-600 to-sky-500 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900'
@@ -254,32 +227,6 @@
                         <span>Checkpoints</span>
                     </a>
 
-                    @foreach ($managementSections as $section)
-                    <div x-data="{ expanded: {{ $section['active'] ? 'true' : 'false' }} }" class="rounded-lg">
-                        <button
-                            type="button"
-                            class="{{ $sectionButtonClasses }}"
-                            @click="expanded = ! expanded"
-                            :aria-expanded="expanded"
-                        >
-                            <span class="flex items-center gap-3">
-                                {!! $navIcon($section['icon']) !!}
-                                {{ $section['label'] }}
-                            </span>
-                            <svg class="h-4 w-4" :class="{ 'rotate-180': expanded }" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
-
-                        <div x-show="expanded" style="{{ $section['active'] ? '' : 'display: none;' }}" class="mt-1 space-y-1 pl-8">
-                            @foreach ($section['items'] as $item)
-                                <a href="{{ $item['href'] }}" class="{{ $subLinkClasses($item['active']) }}" @click="sidebarOpen = false">
-                                    {{ $item['label'] }}
-                                </a>
-                            @endforeach
-                        </div>
-                    </div>
-                    @endforeach
                 </div>
             @endif
 
@@ -317,32 +264,15 @@
                 <div class="mt-6 space-y-3">
                     <p class="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Monitoring</p>
 
-                @foreach ($monitoringSections as $section)
-                    <div x-data="{ expanded: {{ $section['active'] ? 'true' : 'false' }} }" class="rounded-lg">
-                        <button
-                            type="button"
-                            class="{{ $sectionButtonClasses }}"
-                            @click="expanded = ! expanded"
-                            :aria-expanded="expanded"
-                        >
-                            <span class="flex items-center gap-3">
-                                {!! $navIcon($section['icon']) !!}
-                                {{ $section['label'] }}
-                            </span>
-                            <svg class="h-4 w-4" :class="{ 'rotate-180': expanded }" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
+                    <a href="{{ route('patrol-logs.index') }}" class="{{ $linkClasses(request()->routeIs('patrol-logs.*')) }}" @click="sidebarOpen = false">
+                        {!! $navIcon('patrols') !!}
+                        <span>Patrol Logs</span>
+                    </a>
 
-                        <div x-show="expanded" style="{{ $section['active'] ? '' : 'display: none;' }}" class="mt-1 space-y-1 pl-8">
-                            @foreach ($section['items'] as $item)
-                                <a href="{{ $item['href'] }}" class="{{ $subLinkClasses($item['active']) }}" @click="sidebarOpen = false">
-                                    {{ $item['label'] }}
-                                </a>
-                            @endforeach
-                        </div>
-                    </div>
-                @endforeach
+                    <a href="{{ route('incidents.index') }}" class="{{ $linkClasses(request()->routeIs('incidents.*')) }}" @click="sidebarOpen = false">
+                        {!! $navIcon('incidents') !!}
+                        <span>Incident Reports</span>
+                    </a>
 
                 @if ($isSupervisor)
                     <a href="{{ route('readers.index') }}" class="{{ $linkClasses(request()->routeIs('readers.*')) }}" @click="sidebarOpen = false">
