@@ -393,9 +393,9 @@
                                         Profile Settings
                                     </x-dropdown-link>
 
-                                    <form method="POST" action="{{ route('logout') }}">
+                                    <form method="POST" action="{{ route('logout') }}" onsubmit="return confirm('Are you sure you want to log out?');">
                                         @csrf
-                                        <x-dropdown-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();">
+                                        <x-dropdown-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').requestSubmit();">
                                             Log Out
                                         </x-dropdown-link>
                                     </form>
