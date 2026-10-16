@@ -62,9 +62,13 @@
         <div
             x-data="{
                 sidebarOpen: false,
-                sidebarCollapsed: false,
+                sidebarCollapsed: window.innerWidth >= 1024 && window.localStorage.getItem('slsu-bc-patrol-sidebar-collapsed') === 'true',
                 notificationsOpen: false,
                 pageBusy: false,
+                setSidebarCollapsed(value) {
+                    this.sidebarCollapsed = value;
+                    window.localStorage.setItem('slsu-bc-patrol-sidebar-collapsed', String(value));
+                },
                 markPageBusy(event) {
                     if (event.defaultPrevented || event.target?.dataset?.skipGlobalLoader === 'true') {
                         return;

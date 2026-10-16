@@ -79,7 +79,7 @@
         <button
             type="button"
             class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-blue-100 bg-white text-slate-900 shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950"
-            @click="sidebarCollapsed = false"
+            @click="setSidebarCollapsed(false)"
             aria-label="Open sidebar"
         >
             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -174,7 +174,7 @@
             <button
                 type="button"
                 class="ml-3 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-white text-slate-900 shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-950"
-                @click="window.innerWidth >= 1024 ? sidebarCollapsed = true : sidebarOpen = false"
+                @click="window.innerWidth >= 1024 ? setSidebarCollapsed(true) : sidebarOpen = false"
                 aria-label="Toggle sidebar"
             >
                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
