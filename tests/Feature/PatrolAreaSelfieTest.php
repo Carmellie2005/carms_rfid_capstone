@@ -244,6 +244,7 @@ class PatrolAreaSelfieTest extends TestCase
             ->assertSee('Cancel Scan')
             ->assertSee('area_selfie_capture', false)
             ->assertSee('areaSelfieCameraOpen', false)
+            ->assertSee('x-teleport="body"', false)
             ->assertSee('openAreaSelfieCamera()', false)
             ->assertSee('captureAreaSelfie()', false)
             ->assertSee('checklist_statuses[doors_checked]', false)

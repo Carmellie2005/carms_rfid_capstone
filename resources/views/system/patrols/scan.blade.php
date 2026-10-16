@@ -467,53 +467,55 @@
                     </div>
                 </section>
 
-                <div x-show="areaSelfieCameraOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[90] flex bg-slate-950 text-white" x-on:keydown.escape.window="areaSelfieCameraOpen && closeAreaSelfieCamera()">
-                    <section class="flex h-[100svh] max-h-[100dvh] w-full flex-col overflow-hidden">
-                        <div class="flex h-14 shrink-0 items-center justify-between gap-3 bg-slate-950/95 px-4">
-                            <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/60 disabled:cursor-not-allowed disabled:opacity-50" @click="closeAreaSelfieCamera()" :disabled="cameraOpening || areaSelfieLocationBusy" aria-label="Close camera">
-                                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                </svg>
-                            </button>
-                            <div class="min-w-0 text-center">
-                                <p class="truncate text-sm font-semibold">Take Photo</p>
-                                <p class="truncate text-[0.68rem] text-white/65" x-text="areaSelfieLocationLabel()"></p>
+                <template x-teleport="body">
+                    <div x-show="areaSelfieCameraOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[110] flex bg-slate-950 text-white" x-on:keydown.escape.window="areaSelfieCameraOpen && closeAreaSelfieCamera()">
+                        <section class="flex h-[100svh] max-h-[100dvh] w-full flex-col overflow-hidden">
+                            <div class="flex h-14 shrink-0 items-center justify-between gap-3 bg-slate-950/95 px-4">
+                                <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/60 disabled:cursor-not-allowed disabled:opacity-50" @click="closeAreaSelfieCamera()" :disabled="cameraOpening || areaSelfieLocationBusy" aria-label="Close camera">
+                                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    </svg>
+                                </button>
+                                <div class="min-w-0 text-center">
+                                    <p class="truncate text-sm font-semibold">Take Photo</p>
+                                    <p class="truncate text-[0.68rem] text-white/65" x-text="areaSelfieLocationLabel()"></p>
+                                </div>
+                                <span class="h-10 w-10" aria-hidden="true"></span>
                             </div>
-                            <span class="h-10 w-10" aria-hidden="true"></span>
-                        </div>
 
-                        <div class="relative flex min-h-0 flex-1 items-center justify-center bg-black">
-                            <video x-ref="areaSelfieVideo" x-show="cameraOpen" x-cloak class="camera-unmirrored max-h-full max-w-full object-contain" autoplay playsinline muted></video>
-                            <div x-show="! cameraOpen" class="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-                                <svg x-show="cameraOpening" class="h-10 w-10 animate-spin text-white/80" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
-                                </svg>
-                                <p class="mt-3 text-sm font-semibold text-white/80" x-text="cameraOpening ? 'Opening camera...' : 'Camera is not open'"></p>
-                            </div>
-                            <div x-show="cameraOpen && ! areaSelfieLocationBusy" x-cloak class="absolute inset-x-3 bottom-3 rounded-md bg-slate-950/75 px-3 py-2 text-xs font-semibold leading-5 text-white shadow-lg">
-                                <p x-text="areaSelfieStampPreview()"></p>
-                            </div>
-                        </div>
-
-                        <div class="shrink-0 space-y-3 bg-slate-950 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
-                            <p x-show="areaSelfieMessage" x-cloak class="text-center text-xs font-semibold text-white/75" x-text="areaSelfieMessage"></p>
-                            <p x-show="cameraError || areaSelfieError" x-cloak class="rounded-md bg-red-500/15 px-3 py-2 text-center text-xs font-semibold text-red-100 ring-1 ring-red-400/30" x-text="cameraError || areaSelfieError"></p>
-                            <div class="flex items-center justify-center">
-                                <button type="button" class="inline-flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-white shadow-lg transition hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:cursor-not-allowed disabled:opacity-60" @click="captureAreaSelfie()" :disabled="! cameraOpen || areaSelfieLocationBusy || submittingPatrol" aria-label="Capture area selfie">
-                                    <span class="h-11 w-11 rounded-full bg-white ring-2 ring-slate-950/80" x-show="! areaSelfieLocationBusy"></span>
-                                    <svg x-show="areaSelfieLocationBusy" x-cloak class="h-7 w-7 animate-spin text-blue-700" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <div class="relative flex min-h-0 flex-1 items-center justify-center bg-black">
+                                <video x-ref="areaSelfieVideo" x-show="cameraOpen" x-cloak class="camera-unmirrored max-h-full max-w-full object-contain" autoplay playsinline muted></video>
+                                <div x-show="! cameraOpen" class="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+                                    <svg x-show="cameraOpening" class="h-10 w-10 animate-spin text-white/80" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
                                     </svg>
-                                </button>
+                                    <p class="mt-3 text-sm font-semibold text-white/80" x-text="cameraOpening ? 'Opening camera...' : 'Camera is not open'"></p>
+                                </div>
+                                <div x-show="cameraOpen && ! areaSelfieLocationBusy" x-cloak class="absolute inset-x-3 bottom-3 rounded-md bg-slate-950/75 px-3 py-2 text-xs font-semibold leading-5 text-white shadow-lg">
+                                    <p x-text="areaSelfieStampPreview()"></p>
+                                </div>
                             </div>
-                            <p class="text-center text-[0.68rem] font-semibold uppercase tracking-wide text-white/50" x-text="areaSelfieLocationBusy ? 'Getting GPS' : 'Photo'"></p>
-                        </div>
 
-                        <canvas x-ref="areaSelfieCanvas" class="hidden"></canvas>
-                    </section>
-                </div>
+                            <div class="shrink-0 space-y-3 bg-slate-950 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
+                                <p x-show="areaSelfieMessage" x-cloak class="text-center text-xs font-semibold text-white/75" x-text="areaSelfieMessage"></p>
+                                <p x-show="cameraError || areaSelfieError" x-cloak class="rounded-md bg-red-500/15 px-3 py-2 text-center text-xs font-semibold text-red-100 ring-1 ring-red-400/30" x-text="cameraError || areaSelfieError"></p>
+                                <div class="flex items-center justify-center">
+                                    <button type="button" class="inline-flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-white shadow-lg transition hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:cursor-not-allowed disabled:opacity-60" @click="captureAreaSelfie()" :disabled="! cameraOpen || areaSelfieLocationBusy || submittingPatrol" aria-label="Capture area selfie">
+                                        <span class="h-11 w-11 rounded-full bg-white ring-2 ring-slate-950/80" x-show="! areaSelfieLocationBusy"></span>
+                                        <svg x-show="areaSelfieLocationBusy" x-cloak class="h-7 w-7 animate-spin text-blue-700" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <p class="text-center text-[0.68rem] font-semibold uppercase tracking-wide text-white/50" x-text="areaSelfieLocationBusy ? 'Getting GPS' : 'Photo'"></p>
+                            </div>
+
+                            <canvas x-ref="areaSelfieCanvas" class="hidden"></canvas>
+                        </section>
+                    </div>
+                </template>
 
                 <div x-show="checklistModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[80] flex items-stretch justify-center overflow-hidden bg-slate-950/55 p-0 sm:items-center sm:px-4 sm:py-6">
                     <section class="flex h-[100svh] max-h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:min-h-0 sm:max-h-[92vh] sm:max-w-5xl sm:rounded-lg">
