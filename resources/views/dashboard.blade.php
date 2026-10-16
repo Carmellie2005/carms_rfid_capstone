@@ -105,6 +105,51 @@
                 @endforeach
             </section>
 
+            <section class="system-card-transition rounded-md border border-blue-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/80">
+                <div class="flex flex-col gap-2 border-b border-blue-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5 dark:border-slate-800">
+                    <div>
+                        <h3 class="font-semibold text-blue-950 dark:text-white">Duty Today</h3>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Scheduled guards for {{ now(config('app.timezone'))->format('M d, Y') }}</p>
+                    </div>
+                    <span class="inline-flex w-fit items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-200 dark:bg-blue-950/40 dark:text-blue-200 dark:ring-blue-400/35">
+                        {{ $onDutyGuards->count() }} {{ $onDutyGuards->count() === 1 ? 'guard' : 'guards' }} on duty
+                    </span>
+                </div>
+
+                <div class="divide-y divide-blue-50 dark:divide-slate-800">
+                    @forelse ($onDutyGuards as $guard)
+                        @php
+                            $isGuardActive = $guard->duty_state === 'active';
+                        @endphp
+                        <div class="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full {{ $isGuardActive ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300' }}" aria-hidden="true">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none">
+                                        <path d="M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </span>
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-semibold text-slate-900 dark:text-white">{{ $guard->name }}</p>
+                                    <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{{ $guard->employee_no }} · {{ $guard->duty_label }}</p>
+                                </div>
+                            </div>
+                            <span class="inline-flex w-fit items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold {{ $isGuardActive ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-400/35' : 'bg-amber-50 text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-400/35' }}">
+                                <span class="h-1.5 w-1.5 rounded-full {{ $isGuardActive ? 'bg-emerald-500' : 'bg-amber-500' }}" aria-hidden="true"></span>
+                                {{ $isGuardActive ? 'Active' : 'Not checked in' }}
+                            </span>
+                        </div>
+                    @empty
+                        <p class="px-4 py-5 text-sm text-slate-500 sm:px-5 dark:text-slate-400">No active guards match today's duty roster.</p>
+                    @endforelse
+                </div>
+
+                @if ($offDutyGuards->isNotEmpty())
+                    <p class="border-t border-blue-50 px-4 py-3 text-xs text-slate-500 sm:px-5 dark:border-slate-800 dark:text-slate-400">
+                        Off duty today: {{ $offDutyGuards->pluck('employee_no')->join(', ') }}
+                    </p>
+                @endif
+            </section>
+
             <section
                 x-data="dashboardCharts(@js($analytics))"
                 x-init="render()"

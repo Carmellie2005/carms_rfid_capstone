@@ -7,7 +7,9 @@ use App\Models\Guard;
 use App\Models\IncidentReport;
 use App\Models\PatrolLog;
 use App\Models\User;
+use App\Support\DutyRoster;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class DashboardTest extends TestCase
@@ -168,5 +170,81 @@ class DashboardTest extends TestCase
             ->assertDontSee('Valid, suspicious, invalid, pending selfie, and profile incomplete scans')
             ->assertDontSee('outside schedule scans')
             ->assertDontSee('Outside Schedule');
+    }
+
+    public function test_dashboard_shows_rotating_duty_and_fixed_evening_guard(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-18 08:00:00', config('app.timezone')));
+
+        $supervisor = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'supervisor',
+        ]);
+
+        foreach ([
+            ['employee_no' => 'BCP-001', 'name' => 'Morning One'],
+            ['employee_no' => 'BCP-002', 'name' => 'Morning Two'],
+            ['employee_no' => 'BCP-003', 'name' => 'Morning Three'],
+            ['employee_no' => 'BCP-004', 'name' => 'Evening Guard'],
+        ] as $guardData) {
+            Guard::create([
+                ...$guardData,
+                'email' => strtolower($guardData['employee_no']).'@example.com',
+                'rfid_uid' => 'RFID-'.$guardData['employee_no'],
+                'shift' => '24-hour duty',
+                'status' => 'active',
+            ]);
+        }
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('dashboard'));
+
+        $response
+            ->assertOk()
+            ->assertSee('Duty Today')
+            ->assertSee('BCP-002')
+            ->assertSee('BCP-004')
+            ->assertSee('24-hour duty')
+            ->assertSee('Evening duty')
+            ->assertSee('Off duty today: BCP-001, BCP-003');
+
+        Carbon::setTestNow();
+    }
+
+    public function test_duty_roster_marks_guard_active_after_a_patrol_scan(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-18 08:00:00', config('app.timezone')));
+
+        $guard = Guard::create([
+            'employee_no' => 'BCP-002',
+            'name' => 'Morning Two',
+            'email' => 'morning.two@example.com',
+            'rfid_uid' => 'RFID-BCP-002',
+            'shift' => '24-hour duty',
+            'status' => 'active',
+        ]);
+
+        $guard->patrolLogs()->create([
+            'rfid_uid' => $guard->rfid_uid,
+            'checkpoint_code' => 'CP-TEST',
+            'rfid_status' => 'valid',
+            'status' => 'valid',
+            'scanned_at' => now(),
+        ]);
+
+        $guards = Guard::query()
+            ->where('status', 'active')
+            ->withCount([
+                'patrolLogs as today_patrols_count' => fn ($query) => $query
+                    ->whereDate('scanned_at', now(config('app.timezone'))->toDateString())
+                    ->where('status', '!=', 'expired'),
+            ])
+            ->get();
+        $onDuty = DutyRoster::onDutyForDate(now(config('app.timezone')), $guards)->first();
+
+        $this->assertSame('active', $onDuty?->duty_state);
+
+        Carbon::setTestNow();
     }
 }
