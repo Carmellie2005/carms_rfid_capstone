@@ -17,6 +17,7 @@ use App\Http\Controllers\System\ReportController;
 use App\Http\Controllers\System\RfidEnrollmentController;
 use App\Http\Controllers\System\ScanIssueController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +41,16 @@ Route::get('/', function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::post('/language', function (Request $request) {
+        $validated = $request->validate([
+            'locale' => ['required', 'string', 'in:en,fil,ceb'],
+        ]);
+
+        $request->session()->put('locale', $validated['locale']);
+
+        return back();
+    })->name('language.update');
+
     Route::get('/csrf-token', fn () => response()->json([
         'token' => csrf_token(),
     ]))->name('csrf.refresh');

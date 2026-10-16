@@ -1,0 +1,61 @@
+{
+    "Main": "Pangunang Menu",
+    "Management": "Pagdumala",
+    "Monitoring": "Pagmonitor",
+    "Account": "Account",
+    "Dashboard": "Dashboard",
+    "Guard Profiles": "Mga Profile sa Guard",
+    "Checkpoints": "Mga Checkpoint",
+    "Patrol Logs": "Mga Rekord sa Patrol",
+    "Incident Reports": "Mga Report sa Insidente",
+    "Device Diagnostics": "Diagnostics sa Device",
+    "Audit Trail": "Rekord sa mga Aksyon",
+    "Scan Checkpoint": "I-scan ang Checkpoint",
+    "My Patrol Logs": "Akong mga Rekord sa Patrol",
+    "Profile": "Profile",
+    "Security Monitoring": "Pagmonitor sa Seguridad",
+    "Today": "Karong Adlawa",
+    "Notifications": "Mga Abiso",
+    "Browser Push": "Browser Push Notification",
+    "Mark all read": "Markahi tanan nga nabasa",
+    "No alerts right now": "Walay bag-ong abiso",
+    "New incident reports and patrol alerts will appear here.": "Dinhi makita ang bag-ong mga report sa insidente ug alerto sa patrol.",
+    "View all notifications": "Tan-awa ang tanang abiso",
+    "Profile Settings": "Mga Setting sa Profile",
+    "Log Out": "Gawas sa Account",
+    "Welcome": "Maayong pag-abot",
+    "Welcome,": "Maayong pag-abot,",
+    "Ready for checkpoint scanning and patrol documentation": "Andam para sa checkpoint scan ug pagrekord sa patrol",
+    "RFID Scan": "RFID Scan",
+    "Area Selfie": "Selfie sa Lugar",
+    "Checklist": "Checklist",
+    "Scan RFID Card": "I-scan ang RFID Card",
+    "RFID scan accepted": "Gidawat ang RFID scan",
+    "Incident Report": "Report sa Insidente",
+    "Password Required": "Kinahanglan Usbon ang Password",
+    "Open Profile Settings": "Ablihi ang Profile Settings",
+    "Active Guards": "Mga Aktibong Guard",
+    "Today Patrols": "Mga Patrol Karong Adlawa",
+    "Open Incidents": "Mga Bukas nga Insidente",
+    "Patrol Trend": "Trend sa Patrol",
+    "Incident Priority": "Priyoridad sa Insidente",
+    "Checkpoint Activity": "Aktibidad sa Checkpoint",
+    "Recent Patrol Logs": "Bag-ong mga Rekord sa Patrol",
+    "Recent Incidents": "Bag-ong mga Insidente"
+    ,"Device Flow": "Daloy sa Device"
+    ,"Checkpoint Scan Progress": "Kauswagan sa Checkpoint Scan"
+    ,"Change your temporary password before scanning": "Usba ang temporary password una mag-scan"
+    ,"Steps 1 and 2 complete": "Kompleto na ang Lakang 1 ug 2"
+    ,"Take Photo": "Pagkuha og Litrato"
+    ,"Step 2": "Lakang 2"
+    ,"Step 1": "Lakang 1"
+    ,"Step 3": "Lakang 3"
+    ,"Location": "Lokasyon"
+    ,"Captured": "Nakuha"
+    ,"Checklist and Incident Report": "Checklist ug Report sa Insidente"
+    ,"Complete the patrol checklist before submitting this checkpoint visit.": "Kompletoha ang patrol checklist una isumite kining pagbisita sa checkpoint."
+    ,"Checkpoint Checklist": "Checklist sa Checkpoint"
+    ,"Cancel Scan": "Kanselahon ang Scan"
+    ,"Cancel this pending scan?": "Kanselahon kining pending scan?"
+    ,"RFID patrol monitoring, checklist proof, and incident reporting": "Pagmonitor sa RFID patrol, ebidensya sa checklist, ug pag-report sa insidente"
+}

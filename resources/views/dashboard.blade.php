@@ -3,9 +3,9 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-blue-950">
-                    Welcome, {{ auth()->user()->name }}
+                    {{ __('Welcome,') }} {{ auth()->user()->name }}
                 </h2>
-                <p class="mt-1 text-sm text-blue-600">RFID patrol monitoring, checklist proof, and incident reporting</p>
+                <p class="mt-1 text-sm text-blue-600">{{ __('RFID patrol monitoring, checklist proof, and incident reporting') }}</p>
             </div>
         </div>
     </x-slot>
@@ -13,7 +13,7 @@
     @php
         $summaryCards = [
             [
-                'label' => 'Active Guards',
+                'label' => __('Active Guards'),
                 'value' => $stats['activeGuards'],
                 'cardClass' => 'border-emerald-100 bg-emerald-50/60 dark:border-emerald-400/25 dark:bg-slate-950/80',
                 'labelClass' => 'text-emerald-700 dark:text-emerald-300',
@@ -23,7 +23,7 @@
                 'icon' => 'guards',
             ],
             [
-                'label' => 'Checkpoints',
+                'label' => __('Checkpoints'),
                 'value' => $stats['activeCheckpoints'],
                 'cardClass' => 'border-sky-100 bg-sky-50/60 dark:border-sky-400/25 dark:bg-slate-950/80',
                 'labelClass' => 'text-sky-700 dark:text-sky-300',
@@ -33,7 +33,7 @@
                 'icon' => 'checkpoints',
             ],
             [
-                'label' => 'Today Patrols',
+                'label' => __('Today Patrols'),
                 'value' => $stats['todayPatrols'],
                 'cardClass' => 'border-blue-100 bg-white dark:border-indigo-400/25 dark:bg-slate-950/80',
                 'labelClass' => 'text-blue-700 dark:text-indigo-300',
@@ -43,7 +43,7 @@
                 'icon' => 'patrols',
             ],
             [
-                'label' => 'Open Incidents',
+                'label' => __('Open Incidents'),
                 'value' => $stats['openIncidents'],
                 'cardClass' => 'border-amber-100 bg-amber-50/60 dark:border-amber-400/25 dark:bg-slate-950/80',
                 'labelClass' => 'text-amber-700 dark:text-amber-300',
@@ -115,7 +115,7 @@
                 <div class="system-card-transition rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
                     <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h3 class="font-semibold text-blue-950">Patrol Trend</h3>
+                            <h3 class="font-semibold text-blue-950">{{ __('Patrol Trend') }}</h3>
                             <p class="text-sm text-slate-500">Total checkpoint scans in the last 7 days</p>
                         </div>
                     </div>
@@ -126,7 +126,7 @@
 
                 <div>
                     <div class="system-card-transition rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
-                        <h3 class="font-semibold text-blue-950">Incident Priority</h3>
+                        <h3 class="font-semibold text-blue-950">{{ __('Incident Priority') }}</h3>
                         <p class="text-sm text-slate-500">Submitted incidents by priority</p>
                         <div class="relative mt-3 h-40 min-w-0 sm:h-48 lg:h-52">
                             <canvas x-ref="incidentPriorityChart" class="block h-full w-full" aria-label="Incident priority chart"></canvas>
@@ -142,7 +142,7 @@
                 <div class="system-card-transition rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5 xl:col-span-2">
                     <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h3 class="font-semibold text-blue-950">Checkpoint Activity Analytics</h3>
+                        <h3 class="font-semibold text-blue-950">{{ __('Checkpoint Activity') }} Analytics</h3>
                             <p class="text-sm text-slate-500">Valid patrols recorded per active checkpoint</p>
                         </div>
                         <a href="{{ route('checkpoints.index') }}" class="text-sm font-medium text-blue-700 hover:text-blue-900">Manage checkpoints</a>
@@ -161,7 +161,7 @@
             <section class="grid gap-6 xl:grid-cols-[1fr_360px]">
                 <div class="system-card-transition overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm">
                     <div class="flex items-center justify-between border-b border-blue-100 px-5 py-4">
-                        <h3 class="font-semibold text-blue-950">Recent Patrol Logs</h3>
+                        <h3 class="font-semibold text-blue-950">{{ __('Recent Patrol Logs') }}</h3>
                         <a href="{{ route('patrol-logs.index') }}" class="text-sm font-medium text-blue-700 hover:text-blue-900">View all</a>
                     </div>
 
@@ -264,7 +264,7 @@
 
             <section class="system-card-transition overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm">
                 <div class="flex items-center justify-between border-b border-blue-100 px-5 py-4">
-                    <h3 class="font-semibold text-blue-950">Recent Incidents</h3>
+                    <h3 class="font-semibold text-blue-950">{{ __('Recent Incidents') }}</h3>
                     <a href="{{ route('incidents.index') }}" class="text-sm font-medium text-blue-700 hover:text-blue-900">Review</a>
                 </div>
 

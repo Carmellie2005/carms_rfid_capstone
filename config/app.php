@@ -85,6 +85,12 @@ return [
 
     'locale' => 'en',
 
+    'supported_locales' => [
+        'en' => 'English',
+        'fil' => 'Tagalog',
+        'ceb' => 'Bisaya / Cebuano',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Application Fallback Locale

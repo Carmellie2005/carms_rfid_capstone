@@ -140,15 +140,15 @@
             <div class="space-y-1 p-2">
                 <a href="{{ route('patrol.scan') }}" class="{{ $linkClasses(request()->routeIs('patrol.scan')) }}" @click="sidebarOpen = false">
                     {!! $navIcon('scan') !!}
-                    <span>Scan Checkpoint</span>
+                    <span>{{ __('Scan Checkpoint') }}</span>
                 </a>
                 <a href="{{ route('patrol-logs.index') }}" class="{{ $linkClasses(request()->routeIs('patrol-logs.*')) }}" @click="sidebarOpen = false">
                     {!! $navIcon('patrols') !!}
-                    <span>My Patrol Logs</span>
+                    <span>{{ __('My Patrol Logs') }}</span>
                 </a>
                 <a href="{{ route('profile.edit') }}" class="{{ $linkClasses(request()->routeIs('profile.*')) }}" @click="sidebarOpen = false">
                     {!! $navIcon('profile') !!}
-                    <span>Profile</span>
+                    <span>{{ __('Profile') }}</span>
                 </a>
             </div>
         </section>
@@ -167,7 +167,7 @@
                 <x-application-logo class="h-14 w-14 shrink-0" />
                 <span class="min-w-0 leading-tight">
                     <span class="block text-sm font-bold text-blue-950 dark:text-blue-100">SLSU BC Patrol</span>
-                    <span class="block text-xs font-medium text-blue-500 dark:text-blue-300">Security Monitoring</span>
+                    <span class="block text-xs font-medium text-blue-500 dark:text-blue-300">{{ __('Security Monitoring') }}</span>
                 </span>
             </a>
 
@@ -185,11 +185,11 @@
 
         <div class="sidebar-scroll-area flex flex-1 flex-col overflow-y-auto px-4 py-5">
             <div class="space-y-1">
-                <p class="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Main</p>
+                <p class="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Main') }}</p>
                 @if ($isSupervisor)
                     <a href="{{ route('dashboard') }}" class="{{ $linkClasses(request()->routeIs('dashboard')) }}" @click="sidebarOpen = false">
                         {!! $navIcon('dashboard') !!}
-                        <span>Dashboard</span>
+                        <span>{{ __('Dashboard') }}</span>
                     </a>
                 @endif
 
@@ -198,7 +198,7 @@
                         <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <path d="M5 5h5v5H5V5Zm9 0h5v5h-5V5ZM5 14h5v5H5v-5Zm10 1h4m-4 4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
-                        <span>Scan Checkpoint</span>
+                        <span>{{ __('Scan Checkpoint') }}</span>
                     </a>
 
                     <a href="{{ route('patrol-logs.index') }}" class="{{ $linkClasses(request()->routeIs('patrol-logs.*')) }}" @click="sidebarOpen = false">
@@ -206,23 +206,23 @@
                             <path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" />
                             <path d="M8.5 8h7M8.5 12h7M8.5 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                         </svg>
-                        <span>My Patrol Logs</span>
+                        <span>{{ __('My Patrol Logs') }}</span>
                     </a>
                 @endunless
             </div>
 
             @if ($isSupervisor)
                 <div class="mt-6 space-y-3">
-                    <p class="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Management</p>
+                    <p class="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Management') }}</p>
 
                     <a href="{{ route('guards.index') }}" class="{{ $linkClasses(request()->routeIs('guards.*')) }}" @click="sidebarOpen = false">
                         {!! $navIcon('users') !!}
-                        <span>Guard Profiles</span>
+                        <span>{{ __('Guard Profiles') }}</span>
                     </a>
 
                     <a href="{{ route('checkpoints.index') }}" class="{{ $linkClasses(request()->routeIs('checkpoints.*')) }}" @click="sidebarOpen = false">
                         {!! $navIcon('checkpoints') !!}
-                        <span>Checkpoints</span>
+                        <span>{{ __('Checkpoints') }}</span>
                     </a>
 
                 </div>
@@ -230,12 +230,12 @@
 
             @unless ($isSupervisor)
                 <div class="mt-6 space-y-1">
-                    <p class="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Account</p>
+                    <p class="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Account') }}</p>
                     <a href="{{ route('profile.edit') }}" class="{{ $linkClasses(request()->routeIs('profile.edit')) }}" @click="sidebarOpen = false">
                         <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
-                        <span>Profile</span>
+                        <span>{{ __('Profile') }}</span>
                     </a>
                 </div>
 
@@ -260,27 +260,27 @@
 
             @if ($isSupervisor)
                 <div class="mt-6 space-y-3">
-                    <p class="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Monitoring</p>
+                    <p class="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Monitoring') }}</p>
 
                     <a href="{{ route('patrol-logs.index') }}" class="{{ $linkClasses(request()->routeIs('patrol-logs.*')) }}" @click="sidebarOpen = false">
                         {!! $navIcon('patrols') !!}
-                        <span>Patrol Logs</span>
+                        <span>{{ __('Patrol Logs') }}</span>
                     </a>
 
                     <a href="{{ route('incidents.index') }}" class="{{ $linkClasses(request()->routeIs('incidents.*')) }}" @click="sidebarOpen = false">
                         {!! $navIcon('incidents') !!}
-                        <span>Incident Reports</span>
+                        <span>{{ __('Incident Reports') }}</span>
                     </a>
 
                 @if ($isSupervisor)
                     <a href="{{ route('readers.index') }}" class="{{ $linkClasses(request()->routeIs('readers.*')) }}" @click="sidebarOpen = false">
                         {!! $navIcon('readers') !!}
-                        <span>Device Diagnostics</span>
+                        <span>{{ __('Device Diagnostics') }}</span>
                     </a>
 
                     <a href="{{ route('audit-logs.index') }}" class="{{ $linkClasses(request()->routeIs('audit-logs.*')) }}" @click="sidebarOpen = false">
                         {!! $navIcon('audit') !!}
-                        <span>Audit Trail</span>
+                        <span>{{ __('Audit Trail') }}</span>
                     </a>
 
                 @endif

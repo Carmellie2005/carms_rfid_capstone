@@ -57,6 +57,7 @@
             $notificationItems = \App\Support\NotificationFeed::unreadItemsFor($user, $notificationPreviewLimit);
             $webPushPublicKey = config('webpush.vapid.public_key');
             $canUseWebPush = $isSupervisor && filled($webPushPublicKey);
+            $availableLocales = config('app.supported_locales', ['en' => 'English']);
         @endphp
 
         <div
@@ -191,7 +192,7 @@
                             }"
                         >
                             <div class="min-w-0">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Today</p>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Today') }}</p>
                                 <p class="truncate text-xs font-semibold text-blue-950 dark:text-blue-100 lg:text-base">
                                     <span class="lg:hidden">{{ $mobileToday }}</span>
                                     <span class="hidden lg:inline">{{ $today }}</span>
@@ -248,7 +249,7 @@
                                     <div class="shrink-0 border-b border-blue-100 px-3 py-3 dark:border-slate-800 sm:px-4">
                                         <div class="flex items-start justify-between gap-3">
                                             <div>
-                                                <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Notifications</p>
+                                                <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ __('Notifications') }}</p>
                                                 <p class="text-xs text-slate-500 dark:text-slate-400">
                                                     @if ($notificationCount > $notificationPreviewLimit)
                                                         Latest {{ $notificationPreviewLimit }} of {{ $notificationCount }} unread alerts
@@ -262,7 +263,7 @@
                                                     <form method="POST" action="{{ route('notifications.read-all') }}">
                                                         @csrf
                                                         <button type="submit" class="inline-flex h-8 items-center justify-center rounded-md border border-blue-200 px-2.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900">
-                                                            Mark all read
+                                                            {{ __('Mark all read') }}
                                                         </button>
                                                     </form>
                                                 @endif
@@ -287,7 +288,7 @@
                                         >
                                             <div class="flex items-center justify-between gap-3">
                                                 <div class="min-w-0">
-                                                    <p class="text-xs font-semibold text-slate-800 dark:text-slate-100">Browser Push</p>
+                                                     <p class="text-xs font-semibold text-slate-800 dark:text-slate-100">{{ __('Browser Push') }}</p>
                                                     <p class="mt-0.5 text-[11px] leading-4 text-slate-500 dark:text-slate-400" x-text="message"></p>
                                                 </div>
                                                 <button
@@ -338,8 +339,8 @@
                                         @empty
                                             <div class="flex items-center justify-center px-4 py-8 text-center">
                                                 <div>
-                                                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">No alerts right now</p>
-                                                    <p class="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">New incident reports and patrol alerts will appear here.</p>
+                                                <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ __('No alerts right now') }}</p>
+                                                <p class="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">{{ __('New incident reports and patrol alerts will appear here.') }}</p>
                                                 </div>
                                             </div>
                                         @endforelse
@@ -347,10 +348,46 @@
 
                                     <div class="shrink-0 px-3 py-3 sm:px-4">
                                         <a href="{{ route('notifications.index') }}" data-skip-global-loader="true" x-on:click.prevent="open = false; $dispatch('open-notifications-modal')" class="inline-flex w-full items-center justify-center rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900">
-                                            View all notifications
+                                            {{ __('View all notifications') }}
                                         </a>
                                     </div>
                                 </section>
+                            </div>
+
+                            <div class="relative" x-data="{ open: false }" x-on:keydown.escape.window="open = false">
+                                <button
+                                    type="button"
+                                    class="inline-flex h-11 items-center justify-center gap-1.5 rounded-lg border border-slate-200/70 bg-white px-2.5 text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800 focus:outline-none focus-visible:border-blue-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-50 dark:border-slate-700/60 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-blue-500/45 dark:hover:bg-slate-800 dark:focus-visible:border-blue-500/45 dark:focus-visible:ring-offset-slate-950 sm:px-3"
+                                    x-on:click="open = ! open"
+                                    :aria-expanded="open"
+                                    aria-label="Change language"
+                                >
+                                    <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                                        <path d="M3 12h18M12 3c2.2 2.4 3.3 5.4 3.3 9S14.2 18.6 12 21c-2.2-2.4-3.3-5.4-3.3-9S9.8 5.4 12 3Z" stroke="currentColor" stroke-width="2" />
+                                    </svg>
+                                    <span class="hidden text-xs font-semibold sm:inline">{{ $availableLocales[app()->getLocale()] ?? 'English' }}</span>
+                                    <svg class="hidden h-4 w-4 sm:inline" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+
+                                <div x-show="open" x-cloak x-transition.opacity.duration.150ms x-on:click.outside="open = false" class="absolute right-0 top-full z-[80] mt-2 w-48 overflow-hidden rounded-md border border-blue-100 bg-white p-1 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                                    @foreach ($availableLocales as $localeCode => $localeLabel)
+                                        <form method="POST" action="{{ route('language.update') }}">
+                                            @csrf
+                                            <input type="hidden" name="locale" value="{{ $localeCode }}">
+                                            <button type="submit" class="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm font-semibold transition hover:bg-blue-50 hover:text-blue-800 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-blue-100">
+                                                <span>{{ $localeLabel }}</span>
+                                                @if (app()->getLocale() === $localeCode)
+                                                    <svg class="h-4 w-4 text-blue-700 dark:text-blue-300" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                        <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                                                    </svg>
+                                                @endif
+                                            </button>
+                                        </form>
+                                    @endforeach
+                                </div>
                             </div>
 
                             <x-theme-toggle />
@@ -390,13 +427,13 @@
                                     </div>
 
                                     <x-dropdown-link :href="route('profile.edit')">
-                                        Profile Settings
+                                        {{ __('Profile Settings') }}
                                     </x-dropdown-link>
 
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
                                         <x-dropdown-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();">
-                                            Log Out
+                                            {{ __('Log Out') }}
                                         </x-dropdown-link>
                                     </form>
                                 </x-slot>
@@ -445,7 +482,7 @@
             >
                 <div class="flex shrink-0 items-center justify-between gap-3 border-b border-blue-100 px-4 py-3 dark:border-slate-800">
                     <div class="min-w-0">
-                        <h2 class="truncate text-base font-semibold text-blue-950 dark:text-blue-100">All Notifications</h2>
+                        <h2 class="truncate text-base font-semibold text-blue-950 dark:text-blue-100">{{ __('Notifications') }}</h2>
                         <p class="text-xs text-slate-500 dark:text-slate-400">{{ $notificationCount }} unread {{ \Illuminate\Support\Str::plural('alert', $notificationCount) }}</p>
                     </div>
                     <div class="flex shrink-0 items-center gap-2">

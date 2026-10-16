@@ -58,10 +58,10 @@
     <x-slot name="header">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="text-xl font-semibold leading-tight text-blue-950 dark:text-white">
-                    Welcome, {{ $guardName }}
+                    <h2 class="text-xl font-semibold leading-tight text-blue-950 dark:text-white">
+                    {{ __('Welcome,') }} {{ $guardName }}
                 </h2>
-                <p class="mt-1 text-sm text-blue-600 dark:text-slate-200">Ready for checkpoint scanning and patrol documentation</p>
+                <p class="mt-1 text-sm text-blue-600 dark:text-slate-200">{{ __('Ready for checkpoint scanning and patrol documentation') }}</p>
             </div>
         </div>
     </x-slot>
@@ -115,14 +115,14 @@
                 <section class="rounded-md border border-amber-200 bg-white p-4 shadow-sm dark:border-amber-400/35 dark:bg-slate-900 sm:p-5">
                     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div class="max-w-2xl">
-                            <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-200">Password Required</p>
-                            <h3 class="mt-1 text-xl font-semibold text-blue-950 dark:text-white">Change your temporary password before scanning</h3>
+                            <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-200">{{ __('Password Required') }}</p>
+                            <h3 class="mt-1 text-xl font-semibold text-blue-950 dark:text-white">{{ __('Change your temporary password before scanning') }}</h3>
                             <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
                                 Your supervisor assigned this login. Create your own password first, then return here to scan your RFID card and continue patrol.
                             </p>
                         </div>
-                        <a href="{{ route('profile.edit') }}" class="inline-flex h-11 w-full items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">
-                            Open Profile Settings
+                            <a href="{{ route('profile.edit') }}" class="inline-flex h-11 w-full items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">
+                            {{ __('Open Profile Settings') }}
                         </a>
                     </div>
 
@@ -282,8 +282,8 @@
                     <div class="space-y-3">
                         <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                             <div>
-                                <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">Device Flow</p>
-                                <h3 class="mt-0.5 text-base font-semibold text-blue-950">Checkpoint Scan Progress</h3>
+                                <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">{{ __('Device Flow') }}</p>
+                                <h3 class="mt-0.5 text-base font-semibold text-blue-950">{{ __('Checkpoint Scan Progress') }}</h3>
                             </div>
                             <span class="inline-flex w-fit items-center gap-2 rounded-md px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-wide ring-1"
                                 :class="areaSelfieComplete() ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : (pendingScan ? 'bg-blue-50 text-blue-700 ring-blue-200' : 'bg-slate-50 text-slate-600 ring-slate-200')"
@@ -320,9 +320,9 @@
                             </div>
 
                             <div class="mt-2 grid grid-cols-3 gap-1 text-center text-[0.62rem] font-bold uppercase tracking-wide sm:text-[0.68rem]">
-                                <span class="whitespace-nowrap" :class="pendingScan ? 'text-emerald-700' : 'text-blue-800'">RFID Scan</span>
-                                <span class="whitespace-nowrap" :class="areaSelfieComplete() ? 'text-emerald-700' : (pendingScan ? 'text-blue-800' : 'text-slate-400')">Area Selfie</span>
-                                <span class="whitespace-nowrap" :class="areaSelfieComplete() ? 'text-blue-800' : 'text-slate-400'">Checklist</span>
+                                <span class="whitespace-nowrap" :class="pendingScan ? 'text-emerald-700' : 'text-blue-800'">{{ __('RFID Scan') }}</span>
+                                <span class="whitespace-nowrap" :class="areaSelfieComplete() ? 'text-emerald-700' : (pendingScan ? 'text-blue-800' : 'text-slate-400')">{{ __('Area Selfie') }}</span>
+                                <span class="whitespace-nowrap" :class="areaSelfieComplete() ? 'text-blue-800' : 'text-slate-400'">{{ __('Checklist') }}</span>
                             </div>
                         </div>
 
@@ -333,8 +333,8 @@
                                         <path d="M7 7.5h10v9H7v-9ZM9.5 4.5h5M9.5 19.5h5M4 10v4M20 10v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
                                 </div>
-                                <p class="mt-3 text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">Step 1</p>
-                                <h3 class="mt-0.5 text-base font-semibold text-blue-950">Scan RFID Card</h3>
+                                <p class="mt-3 text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">{{ __('Step 1') }}</p>
+                                <h3 class="mt-0.5 text-base font-semibold text-blue-950">{{ __('Scan RFID Card') }}</h3>
                                 <p class="mt-1.5 max-w-md text-sm leading-5 text-slate-500" x-text="scanMessage"></p>
                                 <div x-show="patrolScheduleOpen" class="mt-4 inline-flex items-center gap-2 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-800 ring-1 ring-blue-100">
                                     <span class="h-2 w-2 animate-pulse rounded-full bg-blue-700"></span>
@@ -354,7 +354,7 @@
                                             </svg>
                                         </span>
                                         <div class="min-w-0">
-                                            <p class="text-sm font-semibold text-emerald-800">RFID scan accepted</p>
+                                    <p class="text-sm font-semibold text-emerald-800">{{ __('RFID scan accepted') }}</p>
                                             <p class="mt-0.5 truncate text-xs text-emerald-700" x-text="pendingScan?.checkpoint?.name || 'Checkpoint'"></p>
                                         </div>
                                     </div>
@@ -367,8 +367,8 @@
                                             <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
                                         </svg>
                                     </div>
-                                    <p class="mt-4 text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">Step 2</p>
-                                    <h3 class="mt-1 text-lg font-semibold text-blue-950">Area Selfie</h3>
+                                    <p class="mt-4 text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">{{ __('Step 2') }}</p>
+                                    <h3 class="mt-1 text-lg font-semibold text-blue-950">{{ __('Area Selfie') }}</h3>
                                     <p class="mx-auto mt-1 max-w-sm text-sm leading-5 text-slate-500">Take a photo at the checkpoint area. Allow location when asked so GPS can be stamped on the saved photo.</p>
                                     <div class="mt-5 grid gap-2 sm:grid-cols-2">
                                         <button type="button" class="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-blue-700 px-5 text-base font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" @click="openAreaSelfieCamera()" :disabled="cameraOpening || submittingPatrol || cancellingScan">
@@ -401,7 +401,7 @@
                                         <dd class="text-xs text-slate-500" x-text="pendingScan?.guard?.employee_no || guardEmployeeNo"></dd>
                                     </div>
                                     <div class="rounded-md border border-blue-100 bg-white p-3">
-                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Location</dt>
+                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">{{ __('Location') }}</dt>
                                         <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="areaSelfieLocationLabel()"></dd>
                                         <dd class="text-xs text-slate-500" x-text="pendingScan?.checkpoint?.code || pendingScan?.checkpoint_code || ''"></dd>
                                     </div>
@@ -423,7 +423,7 @@
                                             </svg>
                                         </span>
                                         <div>
-                                            <p class="text-sm font-semibold text-emerald-800">Steps 1 and 2 complete</p>
+                                            <p class="text-sm font-semibold text-emerald-800">{{ __('Steps 1 and 2 complete') }}</p>
                                             <p class="mt-0.5 text-xs text-emerald-700">RFID scan and stamped area selfie are ready.</p>
                                         </div>
                                     </div>
@@ -440,12 +440,12 @@
                                             <dd class="text-xs text-slate-500" x-text="pendingScan?.guard?.employee_no || guardEmployeeNo"></dd>
                                         </div>
                                         <div class="rounded-md border border-blue-100 bg-blue-50/40 p-3">
-                                            <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Location</dt>
+                                            <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">{{ __('Location') }}</dt>
                                             <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="areaSelfieLocationLabel()"></dd>
                                             <dd class="text-xs text-slate-500" x-text="areaSelfieGpsLabel()"></dd>
                                         </div>
                                         <div class="rounded-md border border-blue-100 bg-blue-50/40 p-3">
-                                            <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Captured</dt>
+                                            <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">{{ __('Captured') }}</dt>
                                             <dd class="mt-1 text-sm font-semibold text-slate-900" x-text="areaSelfieCapturedLabel()"></dd>
                                         </div>
                                     </dl>
@@ -477,7 +477,7 @@
                                     </svg>
                                 </button>
                                 <div class="min-w-0 text-center">
-                                    <p class="truncate text-sm font-semibold sm:text-base">Take Photo</p>
+                                    <p class="truncate text-sm font-semibold sm:text-base">{{ __('Take Photo') }}</p>
                                     <p class="mt-0.5 flex items-center justify-center gap-1.5 truncate text-[0.68rem] text-white/65 sm:text-xs">
                                         <svg class="h-3.5 w-3.5 shrink-0 text-blue-400" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                             <path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
@@ -527,9 +527,9 @@
                     <section class="flex h-[100svh] max-h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:min-h-0 sm:max-h-[92vh] sm:max-w-5xl sm:rounded-lg">
                         <div class="flex items-start justify-between gap-4 border-b border-blue-100 px-4 py-4 sm:px-5">
                             <div>
-                                <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Step 3</p>
-                                <h3 class="text-lg font-semibold text-blue-950">Checklist and Incident Report</h3>
-                                <p class="mt-1 text-sm text-slate-500">Complete the patrol checklist before submitting this checkpoint visit.</p>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">{{ __('Step 3') }}</p>
+                                <h3 class="text-lg font-semibold text-blue-950">{{ __('Checklist and Incident Report') }}</h3>
+                                <p class="mt-1 text-sm text-slate-500">{{ __('Complete the patrol checklist before submitting this checkpoint visit.') }}</p>
                             </div>
                             <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-blue-100 bg-white text-slate-700 hover:bg-blue-50" @click="checklistModalOpen = false" aria-label="Close checklist modal">
                                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -540,7 +540,7 @@
 
                         <div class="mobile-scroll-area grid flex-1 gap-5 overflow-y-auto p-4 sm:p-5 lg:grid-cols-[1fr_0.95fr]">
                             <div>
-                                <h4 class="text-base font-semibold text-blue-950">Checkpoint Checklist</h4>
+                                <h4 class="text-base font-semibold text-blue-950">{{ __('Checkpoint Checklist') }}</h4>
                                 <p x-show="imageCompressionMessage" x-cloak x-text="imageCompressionMessage" class="mt-3 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-800"></p>
                                 <p x-show="checklistPhotoError" x-cloak x-text="checklistPhotoError" class="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700"></p>
                                 <x-input-error :messages="$errors->get('checklist_statuses')" class="mt-3" />
@@ -564,7 +564,7 @@
                             <div class="rounded-lg border border-blue-100 bg-blue-50/60 p-3 sm:p-4">
                                 <div class="flex flex-col gap-4 border-b border-blue-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
                                     <div>
-                                        <h4 class="text-base font-semibold text-blue-950">Incident Report</h4>
+                                        <h4 class="text-base font-semibold text-blue-950">{{ __('Incident Report') }}</h4>
                                         <p class="mt-1 text-sm text-slate-500">Open a separate form only when something happened.</p>
                                     </div>
                                     <label class="inline-flex w-fit items-center gap-2 rounded-full border border-blue-100 bg-white px-3 py-2 text-sm font-semibold text-blue-800">
@@ -750,8 +750,8 @@
 
                 <div x-show="cancelScanModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[95] flex items-center justify-center bg-slate-950/55 p-4" x-on:click.self="closeCancelScanModal()" x-on:keydown.escape.window="cancelScanModalOpen && closeCancelScanModal()">
                     <section class="w-full max-w-md rounded-md border border-blue-100 bg-white p-5 shadow-2xl">
-                        <p class="text-xs font-bold uppercase tracking-wide text-red-700">Cancel Scan</p>
-                        <h3 class="mt-1 text-lg font-bold text-blue-950">Cancel this pending scan?</h3>
+                        <p class="text-xs font-bold uppercase tracking-wide text-red-700">{{ __('Cancel Scan') }}</p>
+                        <h3 class="mt-1 text-lg font-bold text-blue-950">{{ __('Cancel this pending scan?') }}</h3>
                         <p class="mt-2 text-sm leading-6 text-slate-600">This will remove the current RFID scan from patrol records and return the screen to waiting for a new scan.</p>
                         <p x-show="cancelScanError" x-cloak class="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700" x-text="cancelScanError"></p>
                         <div class="mt-5 grid gap-2 sm:grid-cols-2">
