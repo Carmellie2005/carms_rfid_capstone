@@ -113,21 +113,22 @@
                 </p>
 
                 @if ($logs->hasPages())
-                    <div class="flex items-center gap-2">
+                    <div class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:items-center">
                         @if ($logs->onFirstPage())
-                            <span class="inline-flex h-9 items-center justify-center rounded-md border border-slate-200 px-3 text-xs font-semibold text-slate-400">Previous</span>
+                            <span class="inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-md border border-slate-200 px-3 text-xs font-semibold text-slate-400">Previous</span>
                         @else
-                            <a href="{{ $logs->previousPageUrl() }}" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">Previous</a>
+                            <a href="{{ $logs->previousPageUrl() }}" class="inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">Previous</a>
                         @endif
 
-                        <span class="whitespace-nowrap text-xs font-semibold text-slate-500">
-                            Page {{ $logs->currentPage() }} of {{ $logs->lastPage() }}
+                        <span class="min-w-0 truncate text-center text-xs font-semibold text-slate-500">
+                            <span class="sm:hidden">Page {{ $logs->currentPage() }} of {{ $logs->lastPage() }}</span>
+                            <span class="hidden sm:inline">Page {{ $logs->currentPage() }} of {{ $logs->lastPage() }}</span>
                         </span>
 
                         @if ($logs->hasMorePages())
-                            <a href="{{ $logs->nextPageUrl() }}" class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">Next</a>
+                            <a href="{{ $logs->nextPageUrl() }}" class="inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">Next</a>
                         @else
-                            <span class="inline-flex h-9 items-center justify-center rounded-md border border-slate-200 px-3 text-xs font-semibold text-slate-400">Next</span>
+                            <span class="inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-md border border-slate-200 px-3 text-xs font-semibold text-slate-400">Next</span>
                         @endif
                     </div>
                 @endif
