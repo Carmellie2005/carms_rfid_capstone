@@ -115,9 +115,9 @@
                 @if ($logs->hasPages())
                     <div class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:items-center">
                         @if ($logs->onFirstPage())
-                            <span class="inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-md border border-slate-200 px-3 text-xs font-semibold text-slate-400">Previous</span>
+                            <span aria-label="Previous page" title="Previous page" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-slate-200 text-sm font-semibold text-slate-400">&lt;</span>
                         @else
-                            <a href="{{ $logs->previousPageUrl() }}" class="inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">Previous</a>
+                            <a href="{{ $logs->previousPageUrl() }}" aria-label="Previous page" title="Previous page" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-200 text-sm font-semibold text-blue-700 hover:bg-blue-50">&lt;</a>
                         @endif
 
                         <span class="min-w-0 truncate text-center text-xs font-semibold text-slate-500">
@@ -126,9 +126,9 @@
                         </span>
 
                         @if ($logs->hasMorePages())
-                            <a href="{{ $logs->nextPageUrl() }}" class="inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-md border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">Next</a>
+                            <a href="{{ $logs->nextPageUrl() }}" aria-label="Next page" title="Next page" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-200 text-sm font-semibold text-blue-700 hover:bg-blue-50">&gt;</a>
                         @else
-                            <span class="inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-md border border-slate-200 px-3 text-xs font-semibold text-slate-400">Next</span>
+                            <span aria-label="Next page" title="Next page" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-slate-200 text-sm font-semibold text-slate-400">&gt;</span>
                         @endif
                     </div>
                 @endif

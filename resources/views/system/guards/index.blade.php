@@ -606,22 +606,26 @@
                                     <div class="flex items-center gap-2">
                                         <button
                                             type="button"
+                                            aria-label="Previous page"
+                                            title="Previous page"
                                             class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-xs font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
                                             x-bind:disabled="recordPatrolLoading || recordPatrolPagination.on_first_page"
                                             x-on:click="loadGuardRecordPatrolPage(Number(recordPatrolPagination.current_page || 1) - 1)"
                                         >
-                                            Previous
+                                            &lt;
                                         </button>
                                         <span class="whitespace-nowrap text-xs font-semibold text-slate-500 dark:text-slate-400">
                                             Page <span x-text="recordPatrolPagination.current_page || 1"></span> of <span x-text="recordPatrolPagination.last_page || 1"></span>
                                         </span>
                                         <button
                                             type="button"
+                                            aria-label="Next page"
+                                            title="Next page"
                                             class="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white px-3 text-xs font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900"
                                             x-bind:disabled="recordPatrolLoading || ! recordPatrolPagination.has_more_pages"
                                             x-on:click="loadGuardRecordPatrolPage(Number(recordPatrolPagination.current_page || 1) + 1)"
                                         >
-                                            Next
+                                            &gt;
                                         </button>
                                     </div>
                                 </div>
