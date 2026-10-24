@@ -22,6 +22,7 @@ class DashboardController extends Controller
         $trendDates = collect(range(6, 0))->map(fn (int $daysAgo) => now($timezone)->subDays($daysAgo));
         $activeGuardProfiles = Guard::query()
             ->where('status', 'active')
+            ->with('user')
             ->withCount([
                 'patrolLogs as today_patrols_count' => fn ($query) => $query
                     ->whereDate('scanned_at', $today)

@@ -2,6 +2,7 @@
 
 return [
     'timezone' => env('DUTY_ROSTER_TIMEZONE', 'Asia/Manila'),
+    'online_timeout_minutes' => env('DUTY_ROSTER_ONLINE_TIMEOUT_MINUTES', 3),
 
     // The first rotation day starts with BCP-0002, then advances one guard per day.
     'rotation_start_date' => env('DUTY_ROSTER_START_DATE', '2026-10-18'),

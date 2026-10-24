@@ -58,6 +58,8 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $request->user()?->forceFill(['last_seen_at' => null])->saveQuietly();
+
         AuditLogger::record('user_logout', 'User signed out.', $request->user(), [
             'role' => $request->user()?->role,
         ]);

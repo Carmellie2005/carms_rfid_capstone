@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/csrf-token', fn () => response()->json([
         'token' => csrf_token(),
     ]))->name('csrf.refresh');
+    Route::post('/presence/heartbeat', fn () => response()->noContent())->name('presence.heartbeat');
 
     Route::get('/patrol/scan', [GuardPatrolController::class, 'create'])->name('patrol.scan');
     Route::get('/patrol/pending-scan', [GuardPatrolController::class, 'pendingScan'])->name('patrol.pending-scan');

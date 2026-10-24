@@ -126,11 +126,11 @@
                 <div class="divide-y divide-blue-50 dark:divide-slate-800">
                     @forelse ($onDutyGuards as $guard)
                         @php
-                            $isGuardActive = $guard->duty_state === 'active';
+                            $isGuardOnline = $guard->duty_state === 'online';
                         @endphp
                         <div class="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                             <div class="flex min-w-0 items-center gap-3">
-                                <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full {{ $isGuardActive ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300' }}" aria-hidden="true">
+                                <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full {{ $isGuardOnline ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400' }}" aria-hidden="true">
                                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none">
                                         <path d="M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
@@ -140,9 +140,9 @@
                                     <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{{ $guard->employee_no }} · {{ $guard->duty_label }}</p>
                                 </div>
                             </div>
-                            <span class="inline-flex w-fit items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold {{ $isGuardActive ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-400/35' : 'bg-amber-50 text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-400/35' }}">
-                                <span class="h-1.5 w-1.5 rounded-full {{ $isGuardActive ? 'bg-emerald-500' : 'bg-amber-500' }}" aria-hidden="true"></span>
-                                {{ $isGuardActive ? 'Active' : 'Not checked in' }}
+                            <span class="inline-flex w-fit items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold {{ $isGuardOnline ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-400/35' : 'bg-slate-100 text-slate-600 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700' }}">
+                                <span class="h-1.5 w-1.5 rounded-full {{ $isGuardOnline ? 'bg-emerald-500' : 'bg-slate-400' }}" aria-hidden="true"></span>
+                                {{ $isGuardOnline ? 'Online' : 'Offline' }}
                             </span>
                         </div>
                     @empty

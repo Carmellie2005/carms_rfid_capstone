@@ -103,6 +103,8 @@
 
             <x-logout-confirmation />
 
+            <div x-data="presenceHeartbeat({ url: @js(route('presence.heartbeat')) })" class="hidden" aria-hidden="true"></div>
+
             @if ($requiresGuardPasswordChange)
                 <div
                     x-data="{ ready: false }"

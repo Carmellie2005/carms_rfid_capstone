@@ -16,9 +16,10 @@ class DutyRoster
     {
         $assignedCodes = self::assignedCodes($date);
         $guardsByCode = $guards->keyBy(fn (Guard $guard) => self::normalizeEmployeeNo($guard->employee_no));
+        $onlineCutoff = now($date->getTimezone())->subMinutes((int) config('duty_roster.online_timeout_minutes', 3));
 
         return collect($assignedCodes)
-            ->map(function (string $employeeNo) use ($guardsByCode): ?Guard {
+            ->map(function (string $employeeNo) use ($guardsByCode, $onlineCutoff): ?Guard {
                 $guard = $guardsByCode->get(self::normalizeEmployeeNo($employeeNo));
 
                 if (! $guard) {
@@ -31,7 +32,7 @@ class DutyRoster
                 );
                 $guard->setAttribute(
                     'duty_state',
-                    ((int) ($guard->today_patrols_count ?? 0)) > 0 ? 'active' : 'not_checked_in'
+                    $guard->user?->last_seen_at?->greaterThanOrEqualTo($onlineCutoff) ? 'online' : 'offline'
                 );
 
                 return $guard;

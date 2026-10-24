@@ -28,6 +28,7 @@ class User extends Authenticatable
         'password',
         'must_change_password',
         'guard_tutorial_completed_at',
+        'last_seen_at',
         'role',
         'profile_photo_path',
     ];
@@ -51,6 +52,7 @@ class User extends Authenticatable
         'birthday' => 'date',
         'email_verified_at' => 'datetime',
         'guard_tutorial_completed_at' => 'datetime',
+        'last_seen_at' => 'datetime',
         'must_change_password' => 'boolean',
         'password' => 'hashed',
     ];

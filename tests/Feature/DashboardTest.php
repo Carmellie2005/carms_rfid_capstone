@@ -209,16 +209,23 @@ class DashboardTest extends TestCase
             ->assertSee('Evening duty')
             ->assertSee('Patrol Coverage')
             ->assertSee('Checkpoint visits for today')
+            ->assertSee('Offline')
             ->assertSee('Off duty today: BCP-001, BCP-003');
 
         Carbon::setTestNow();
     }
 
-    public function test_duty_roster_marks_guard_active_after_a_patrol_scan(): void
+    public function test_duty_roster_marks_guard_online_after_recent_app_activity(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-10-18 08:00:00', config('app.timezone')));
 
+        $user = User::factory()->create([
+            'role' => 'guard',
+            'last_seen_at' => now(),
+        ]);
+
         $guard = Guard::create([
+            'user_id' => $user->id,
             'employee_no' => 'BCP-002',
             'name' => 'Morning Two',
             'email' => 'morning.two@example.com',
@@ -227,16 +234,9 @@ class DashboardTest extends TestCase
             'status' => 'active',
         ]);
 
-        $guard->patrolLogs()->create([
-            'rfid_uid' => $guard->rfid_uid,
-            'checkpoint_code' => 'CP-TEST',
-            'rfid_status' => 'valid',
-            'status' => 'valid',
-            'scanned_at' => now(),
-        ]);
-
         $guards = Guard::query()
             ->where('status', 'active')
+            ->with('user')
             ->withCount([
                 'patrolLogs as today_patrols_count' => fn ($query) => $query
                     ->whereDate('scanned_at', now(config('app.timezone'))->toDateString())
@@ -245,8 +245,22 @@ class DashboardTest extends TestCase
             ->get();
         $onDuty = DutyRoster::onDutyForDate(now(config('app.timezone')), $guards)->first();
 
-        $this->assertSame('active', $onDuty?->duty_state);
+        $this->assertSame('online', $onDuty?->duty_state);
 
         Carbon::setTestNow();
+    }
+
+    public function test_guard_presence_heartbeat_updates_last_seen_at(): void
+    {
+        $guard = User::factory()->create([
+            'role' => 'guard',
+            'last_seen_at' => null,
+        ]);
+
+        $this->actingAs($guard)
+            ->post(route('presence.heartbeat'))
+            ->assertNoContent();
+
+        $this->assertNotNull($guard->refresh()->last_seen_at);
     }
 }

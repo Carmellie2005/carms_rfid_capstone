@@ -267,6 +267,36 @@ async function fetchJsonWithCsrf(url, options = {}, retried = false) {
     return response;
 }
 
+Alpine.data('presenceHeartbeat', (config = {}) => ({
+    intervalId: null,
+
+    init() {
+        this.send();
+        this.intervalId = window.setInterval(() => this.send(), config.intervalMs || 60000);
+    },
+
+    destroy() {
+        if (this.intervalId) {
+            window.clearInterval(this.intervalId);
+        }
+    },
+
+    async send() {
+        if (! config.url) {
+            return;
+        }
+
+        try {
+            await fetchJsonWithCsrf(config.url, {
+                method: 'POST',
+                body: JSON.stringify({}),
+            });
+        } catch (error) {
+            // A temporary network failure should not interrupt the guard interface.
+        }
+    },
+}));
+
 function base64UrlToUint8Array(base64UrlString) {
     const padding = '='.repeat((4 - (base64UrlString.length % 4)) % 4);
     const base64 = `${base64UrlString}${padding}`.replace(/-/g, '+').replace(/_/g, '/');
