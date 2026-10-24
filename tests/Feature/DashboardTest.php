@@ -263,4 +263,21 @@ class DashboardTest extends TestCase
 
         $this->assertNotNull($guard->refresh()->last_seen_at);
     }
+
+    public function test_guard_account_avatar_shows_online_presence_indicator(): void
+    {
+        $guard = User::factory()->create([
+            'role' => 'guard',
+            'last_seen_at' => now(),
+        ]);
+
+        $response = $this
+            ->actingAs($guard)
+            ->get(route('patrol.scan'));
+
+        $response
+            ->assertOk()
+            ->assertSee('title="Online"', false)
+            ->assertSee('aria-label="Online"', false);
+    }
 }

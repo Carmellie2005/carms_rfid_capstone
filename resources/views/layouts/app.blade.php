@@ -34,6 +34,8 @@
             $role = $user->role ?? 'admin';
             $isSupervisor = $role === 'admin';
             $isGuard = $role === 'guard';
+            $guardIsOnline = $isGuard
+                && $user?->last_seen_at?->greaterThanOrEqualTo(now()->subMinutes((int) config('duty_roster.online_timeout_minutes', 3)));
             $requiresGuardPasswordChange = $isGuard && (bool) $user?->must_change_password;
             $guardWelcomeName = $isGuard
                 ? trim(\Illuminate\Support\Str::of($user?->name ?: 'there')->before(' ')->toString())
@@ -366,26 +368,32 @@
                                         class="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200/70 bg-white text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800 focus:outline-none focus-visible:border-blue-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-50 dark:border-slate-700/60 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-blue-500/45 dark:hover:bg-slate-800 dark:focus-visible:border-blue-500/45 dark:focus-visible:ring-offset-slate-950"
                                         aria-label="Open profile menu"
                                     >
-                                        <span class="inline-flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-blue-50 ring-1 ring-blue-100 dark:bg-slate-800 dark:ring-slate-700">
+                                        <span class="relative inline-flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-blue-50 ring-1 ring-blue-100 dark:bg-slate-800 dark:ring-slate-700">
                                             <img
                                                 src="{{ $accountPhotoUrl }}"
                                                 alt="{{ $roleLabel }} profile photo"
                                                 onerror="this.onerror=null; this.src='{{ $accountFallbackPhotoUrl }}';"
                                                 class="h-full w-full object-cover"
                                             >
+                                            @if ($isGuard)
+                                                <span class="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full {{ $guardIsOnline ? 'bg-emerald-500' : 'bg-slate-400' }} ring-2 ring-white dark:ring-slate-900" title="{{ $guardIsOnline ? 'Online' : 'Offline' }}" aria-label="{{ $guardIsOnline ? 'Online' : 'Offline' }}"></span>
+                                            @endif
                                         </span>
                                     </button>
                                 </x-slot>
 
                                 <x-slot name="content">
                                     <div class="flex items-center gap-3 border-b border-blue-100 px-4 py-3 dark:border-slate-800">
-                                        <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-50 ring-1 ring-blue-100 dark:bg-slate-800 dark:ring-slate-700">
+                                        <span class="relative inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-50 ring-1 ring-blue-100 dark:bg-slate-800 dark:ring-slate-700">
                                             <img
                                                 src="{{ $accountPhotoUrl }}"
                                                 alt="{{ $roleLabel }} profile photo"
                                                 onerror="this.onerror=null; this.src='{{ $accountFallbackPhotoUrl }}';"
                                                 class="h-full w-full object-cover"
                                             >
+                                            @if ($isGuard)
+                                                <span class="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full {{ $guardIsOnline ? 'bg-emerald-500' : 'bg-slate-400' }} ring-2 ring-white dark:ring-slate-900" title="{{ $guardIsOnline ? 'Online' : 'Offline' }}" aria-label="{{ $guardIsOnline ? 'Online' : 'Offline' }}"></span>
+                                            @endif
                                         </span>
                                         <div class="min-w-0">
                                             <p class="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{{ Auth::user()->name }}</p>

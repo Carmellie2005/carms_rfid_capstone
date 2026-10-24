@@ -1,5 +1,7 @@
 @php
     $isSupervisor = Auth::user()->role === 'admin';
+    $guardIsOnline = ! $isSupervisor
+        && Auth::user()->last_seen_at?->greaterThanOrEqualTo(now()->subMinutes((int) config('duty_roster.online_timeout_minutes', 3)));
     $homeRoute = $isSupervisor ? route('dashboard') : route('patrol.scan');
     $guardSidebarProfile = $isSupervisor ? null : Auth::user()->guardProfile;
     $guardSidebarFullName = trim($guardSidebarProfile?->name ?? Auth::user()->name);
@@ -241,8 +243,9 @@
                 <div class="mt-auto pt-6">
                     <div class="rounded-md border border-blue-100 bg-blue-50/70 p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800/70">
                         <div class="grid grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-2 rounded-md border border-blue-100 bg-white p-2 dark:border-slate-700 dark:bg-slate-900">
-                            <span class="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-blue-50 ring-1 ring-blue-100 dark:bg-slate-800 dark:ring-slate-700">
+                            <span class="relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-blue-50 ring-1 ring-blue-100 dark:bg-slate-800 dark:ring-slate-700">
                                 <img src="{{ $guardSidebarPhotoUrl }}" alt="{{ $guardSidebarFullName }} profile photo" onerror="this.onerror=null; this.src='{{ $guardSidebarFallbackPhotoUrl }}';" class="h-full w-full object-cover">
+                                <span class="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full {{ $guardIsOnline ? 'bg-emerald-500' : 'bg-slate-400' }} ring-2 ring-white dark:ring-slate-900" title="{{ $guardIsOnline ? 'Online' : 'Offline' }}" aria-label="{{ $guardIsOnline ? 'Online' : 'Offline' }}"></span>
                             </span>
                             <div class="min-w-0">
                                 <p class="truncate text-xs font-bold text-slate-900 dark:text-slate-100" title="{{ $guardSidebarFullName }}">{{ $guardSidebarDisplayName }}</p>
