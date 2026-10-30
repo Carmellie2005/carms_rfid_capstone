@@ -38,14 +38,17 @@ class AuthenticatedSessionController extends Controller
         $home = $request->user()->role === 'guard'
             ? route('patrol.scan')
             : RouteServiceProvider::HOME;
+        $notificationHref = $request->user()->role === 'guard'
+            ? route('patrol.scan')
+            : route('dashboard');
 
-        if ($request->user()->role === 'guard') {
+        if (in_array($request->user()->role, ['guard', 'admin'], true)) {
             SystemNotification::create([
                 'user_id' => $request->user()->id,
                 'type' => 'Account',
                 'title' => 'Signed in successfully',
                 'body' => 'Welcome, '.$request->user()->name.'. You are signed in.',
-                'href' => route('patrol.scan'),
+                'href' => $notificationHref,
                 'badge' => 'Sign-in',
             ]);
         }

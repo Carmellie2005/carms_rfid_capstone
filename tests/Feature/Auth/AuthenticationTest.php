@@ -58,6 +58,29 @@ class AuthenticationTest extends TestCase
         ]);
     }
 
+    public function test_supervisors_receive_a_persistent_sign_in_notification(): void
+    {
+        $supervisor = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => $supervisor->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticatedAs($supervisor);
+        $response->assertRedirect(RouteServiceProvider::HOME);
+
+        $this->assertDatabaseHas('system_notifications', [
+            'user_id' => $supervisor->id,
+            'title' => 'Signed in successfully',
+            'body' => 'Welcome, '.$supervisor->name.'. You are signed in.',
+            'href' => route('dashboard'),
+            'badge' => 'Sign-in',
+        ]);
+    }
+
     public function test_users_can_authenticate_using_an_email_style_username(): void
     {
         $user = User::factory()->create([
