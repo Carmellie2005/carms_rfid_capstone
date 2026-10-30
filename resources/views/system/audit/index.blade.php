@@ -61,7 +61,7 @@
                     <input id="date" name="date" type="date" value="{{ request('date') }}" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
                 </div>
                 <div>
-                    <label for="search" class="sr-only">Search</label>
+                    <label for="search" class="block text-xs font-semibold uppercase text-blue-800 dark:text-blue-300">Search</label>
                     <input id="search" name="search" value="{{ request('search') }}" placeholder="Actor, action, or diagnostic" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500">
                 </div>
                 <div class="flex flex-wrap items-end gap-2 md:col-span-2 xl:col-span-1 xl:self-end xl:justify-end">
