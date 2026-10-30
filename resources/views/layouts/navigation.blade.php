@@ -23,7 +23,7 @@
 
     $linkClasses = fn ($active) => $active
         ? 'flex items-center gap-3 rounded-lg bg-blue-100 px-3 py-2.5 text-sm font-semibold text-blue-800 shadow-sm dark:bg-blue-950 dark:text-blue-100'
-        : 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-white/90 transition hover:bg-blue-600 hover:text-white dark:text-white dark:hover:bg-blue-600 dark:hover:text-white';
+        : 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-100';
 
     $navIcon = fn ($icon, $class = 'h-5 w-5 shrink-0') => new \Illuminate\Support\HtmlString(match ($icon) {
         'dashboard' => '<svg class="'.$class.'" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 13h7V4H4v9Zm0 7h7v-5H4v5Zm9 0h7v-9h-7v9Zm0-11h7V4h-7v5Z" fill="currentColor" /></svg>',
@@ -40,7 +40,7 @@
 
     $collapsedLinkClasses = fn ($active) => $active
         ? 'group relative inline-flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:bg-blue-950 dark:text-blue-100 dark:focus:ring-offset-slate-900'
-        : 'group relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-white/90 transition hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 focus:ring-offset-blue-700 dark:text-white dark:hover:bg-blue-600 dark:hover:text-white dark:focus:ring-offset-slate-900';
+        : 'group relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 transition hover:bg-blue-50 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-100 dark:focus:ring-offset-slate-900';
 
     $collapsedItems = $isSupervisor
         ? [
@@ -75,7 +75,7 @@
     <div
         x-show="sidebarCollapsed"
         style="display: none;"
-        class="fixed inset-y-0 left-0 z-40 hidden w-16 flex-col items-center border-r border-blue-600/60 bg-blue-700 px-2 py-5 dark:border-slate-800 dark:bg-slate-900 lg:flex"
+        class="fixed inset-y-0 left-0 z-40 hidden w-16 flex-col items-center border-r border-blue-100 bg-blue-100/70 px-2 py-5 dark:border-slate-800 dark:bg-slate-900 lg:flex"
     >
         <button
             type="button"
@@ -118,17 +118,17 @@
             x-transition:leave="transition ease-in duration-100"
             x-transition:leave-start="opacity-100 translate-y-0"
             x-transition:leave-end="opacity-0 -translate-y-2"
-            class="fixed inset-x-3 top-16 z-50 overflow-hidden rounded-lg border border-blue-500/60 bg-blue-700 shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:left-4 sm:right-auto sm:w-80"
+            class="fixed inset-x-3 top-16 z-50 overflow-hidden rounded-lg border border-blue-100 bg-blue-100/70 shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:left-4 sm:right-auto sm:w-80"
             aria-label="Guard menu"
         >
-            <div class="flex items-center justify-between border-b border-blue-500/60 px-4 py-3 dark:border-slate-700">
+            <div class="flex items-center justify-between border-b border-blue-100 px-4 py-3 dark:border-slate-700">
                 <div>
-                    <p class="text-sm font-bold text-white">Guard Menu</p>
-                    <p class="text-xs text-blue-100">Choose an action</p>
+                    <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Guard Menu</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Choose an action</p>
                 </div>
                 <button
                     type="button"
-                    class="inline-flex h-8 w-8 items-center justify-center rounded-md text-blue-100 hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                     @click="sidebarOpen = false"
                     aria-label="Close guard menu"
                 >
@@ -156,19 +156,19 @@
     @endunless
 
     <aside
-        class="fixed inset-y-0 left-0 z-50 flex w-[min(18rem,calc(100vw-1.25rem))] -translate-x-full flex-col border-r border-blue-600/60 bg-blue-700 shadow-xl dark:border-slate-800 dark:bg-slate-900 lg:w-72 lg:translate-x-0 lg:shadow-none @unless ($isSupervisor) hidden lg:flex @endunless"
+        class="fixed inset-y-0 left-0 z-50 flex w-[min(18rem,calc(100vw-1.25rem))] -translate-x-full flex-col border-r border-blue-100 bg-blue-100/70 shadow-xl dark:border-slate-800 dark:bg-slate-900 lg:w-72 lg:translate-x-0 lg:shadow-none @unless ($isSupervisor) hidden lg:flex @endunless"
         :class="{
             '!translate-x-0': sidebarOpen,
             'lg:!translate-x-0': ! sidebarCollapsed,
             'lg:!-translate-x-full': sidebarCollapsed
         }"
     >
-        <div class="flex h-20 items-center justify-between border-b border-blue-700 bg-blue-800 px-5 dark:border-slate-800 dark:bg-slate-900">
+        <div class="sidebar-brand-soft flex h-20 items-center justify-between border-b border-blue-100 px-5 dark:border-slate-800">
             <a href="{{ $homeRoute }}" class="flex min-w-0 flex-1 items-center gap-3" aria-label="SLSU BC Patrol dashboard" @click="sidebarOpen = false">
                 <x-application-logo class="h-14 w-14 shrink-0" />
                 <span class="min-w-0 leading-tight">
-                    <span class="block text-sm font-bold text-white">SLSU BC Patrol</span>
-                    <span class="block text-xs font-medium text-blue-100">Security Monitoring</span>
+                    <span class="block text-sm font-bold text-blue-950 dark:text-blue-100">SLSU BC Patrol</span>
+                    <span class="block text-xs font-medium text-blue-500 dark:text-blue-300">Security Monitoring</span>
                 </span>
             </a>
 
@@ -186,7 +186,7 @@
 
         <div class="sidebar-scroll-area flex flex-1 flex-col overflow-y-auto px-4 py-5">
             <div class="space-y-1">
-                <p class="px-3 text-xs font-semibold uppercase tracking-wide text-blue-100">Main</p>
+                <p class="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Main</p>
                 @if ($isSupervisor)
                     <a href="{{ route('dashboard') }}" class="{{ $linkClasses(request()->routeIs('dashboard')) }}" @click="sidebarOpen = false">
                         {!! $navIcon('dashboard') !!}
@@ -214,7 +214,7 @@
 
             @if ($isSupervisor)
                 <div class="mt-6 space-y-3">
-                    <p class="px-3 text-xs font-semibold uppercase tracking-wide text-blue-100">Management</p>
+                    <p class="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Management</p>
 
                     <a href="{{ route('guards.index') }}" class="{{ $linkClasses(request()->routeIs('guards.*')) }}" @click="sidebarOpen = false">
                         {!! $navIcon('users') !!}
@@ -231,7 +231,7 @@
 
             @unless ($isSupervisor)
                 <div class="mt-6 space-y-1">
-                    <p class="px-3 text-xs font-semibold uppercase tracking-wide text-blue-100">Account</p>
+                    <p class="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Account</p>
                     <a href="{{ route('profile.edit') }}" class="{{ $linkClasses(request()->routeIs('profile.edit')) }}" @click="sidebarOpen = false">
                         <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
@@ -258,7 +258,7 @@
 
             @if ($isSupervisor)
                 <div class="mt-6 space-y-3">
-                    <p class="px-3 text-xs font-semibold uppercase tracking-wide text-blue-100">Monitoring</p>
+                    <p class="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Monitoring</p>
 
                     <a href="{{ route('patrol-logs.index') }}" class="{{ $linkClasses(request()->routeIs('patrol-logs.*')) }}" @click="sidebarOpen = false">
                         {!! $navIcon('patrols') !!}
