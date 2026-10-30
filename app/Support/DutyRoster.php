@@ -28,7 +28,7 @@ class DutyRoster
 
                 $guard->setAttribute(
                     'duty_label',
-                    in_array($employeeNo, self::rotationGuards(), true) ? '24-hour duty' : 'Evening duty'
+                    in_array($employeeNo, self::rotationGuards(), true) ? '24-hour duty, 8:00 AM start' : 'Evening duty'
                 );
                 $guard->setAttribute(
                     'duty_state',
@@ -68,7 +68,14 @@ class DutyRoster
 
         $timezone = config('duty_roster.timezone', config('app.timezone'));
         $startDate = Carbon::parse(config('duty_roster.rotation_start_date'), $timezone)->startOfDay();
-        $date = $date->copy()->timezone($timezone)->startOfDay();
+        $date = $date->copy()->timezone($timezone);
+        $rotationStartHour = (int) config('duty_roster.rotation_start_hour', 8);
+
+        if ($date->hour < $rotationStartHour) {
+            $date->subDay();
+        }
+
+        $date->startOfDay();
         $daysFromStart = (int) $startDate->diffInDays($date, false);
         $startIndex = array_search(
             self::normalizeEmployeeNo((string) config('duty_roster.rotation_start_guard')),

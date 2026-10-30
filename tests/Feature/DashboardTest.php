@@ -174,7 +174,7 @@ class DashboardTest extends TestCase
 
     public function test_dashboard_shows_rotating_duty_and_fixed_evening_guard(): void
     {
-        Carbon::setTestNow(Carbon::parse('2026-10-18 08:00:00', config('app.timezone')));
+        Carbon::setTestNow(Carbon::parse('2026-10-30 08:00:00', config('app.timezone')));
 
         $supervisor = User::factory()->create([
             'role' => 'admin',
@@ -182,9 +182,9 @@ class DashboardTest extends TestCase
         ]);
 
         foreach ([
-            ['employee_no' => 'BCP-001', 'name' => 'Morning One'],
-            ['employee_no' => 'BCP-002', 'name' => 'Morning Two'],
-            ['employee_no' => 'BCP-003', 'name' => 'Morning Three'],
+            ['employee_no' => 'BCP-001', 'name' => 'Peter Lumoya'],
+            ['employee_no' => 'BCP-002', 'name' => 'Cecilio Vallinas'],
+            ['employee_no' => 'BCP-003', 'name' => 'Jeb Noval'],
             ['employee_no' => 'BCP-004', 'name' => 'Evening Guard'],
         ] as $guardData) {
             Guard::create([
@@ -203,21 +203,21 @@ class DashboardTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('Duty Today')
-            ->assertSee('BCP-002')
+            ->assertSee('BCP-003')
             ->assertSee('BCP-004')
-            ->assertSee('24-hour duty')
+            ->assertSee('24-hour duty, 8:00 AM start')
             ->assertSee('Evening duty')
             ->assertSee('Patrol Coverage')
             ->assertSee('Checkpoint visits for today')
             ->assertSee('Offline')
-            ->assertSee('Off duty today: BCP-001, BCP-003');
+            ->assertSee('Off duty today: BCP-001, BCP-002');
 
         Carbon::setTestNow();
     }
 
     public function test_duty_roster_marks_guard_online_after_recent_app_activity(): void
     {
-        Carbon::setTestNow(Carbon::parse('2026-10-18 08:00:00', config('app.timezone')));
+        Carbon::setTestNow(Carbon::parse('2026-10-30 08:00:00', config('app.timezone')));
 
         $user = User::factory()->create([
             'role' => 'guard',
@@ -226,10 +226,10 @@ class DashboardTest extends TestCase
 
         $guard = Guard::create([
             'user_id' => $user->id,
-            'employee_no' => 'BCP-002',
-            'name' => 'Morning Two',
-            'email' => 'morning.two@example.com',
-            'rfid_uid' => 'RFID-BCP-002',
+            'employee_no' => 'BCP-003',
+            'name' => 'Jeb Noval',
+            'email' => 'jeb.noval@example.com',
+            'rfid_uid' => 'RFID-BCP-003',
             'shift' => '24-hour duty',
             'status' => 'active',
         ]);
@@ -248,6 +248,28 @@ class DashboardTest extends TestCase
         $this->assertSame('online', $onDuty?->duty_state);
 
         Carbon::setTestNow();
+    }
+
+    public function test_morning_duty_rotates_from_jeb_to_peter_then_cecilio(): void
+    {
+        $timezone = config('app.timezone');
+
+        $this->assertSame(
+            ['BCP-0003', 'BCP-0004'],
+            DutyRoster::assignedCodes(Carbon::parse('2026-10-30 08:00:00', $timezone))
+        );
+        $this->assertSame(
+            ['BCP-0001', 'BCP-0004'],
+            DutyRoster::assignedCodes(Carbon::parse('2026-10-31 08:00:00', $timezone))
+        );
+        $this->assertSame(
+            ['BCP-0002', 'BCP-0004'],
+            DutyRoster::assignedCodes(Carbon::parse('2026-11-01 08:00:00', $timezone))
+        );
+        $this->assertSame(
+            ['BCP-0003', 'BCP-0004'],
+            DutyRoster::assignedCodes(Carbon::parse('2026-10-31 07:59:00', $timezone))
+        );
     }
 
     public function test_guard_presence_heartbeat_updates_last_seen_at(): void
