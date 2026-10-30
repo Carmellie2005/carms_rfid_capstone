@@ -75,7 +75,7 @@
     <div
         x-show="sidebarCollapsed"
         style="display: none;"
-        class="fixed inset-y-0 left-0 z-40 hidden w-16 flex-col items-center border-r border-blue-100 bg-white px-2 py-5 dark:border-slate-800 dark:bg-slate-900 lg:flex"
+        class="fixed inset-y-0 left-0 z-40 hidden w-16 flex-col items-center border-r border-blue-100 bg-blue-50/60 px-2 py-5 dark:border-slate-800 dark:bg-slate-900 lg:flex"
     >
         <button
             type="button"
@@ -118,7 +118,7 @@
             x-transition:leave="transition ease-in duration-100"
             x-transition:leave-start="opacity-100 translate-y-0"
             x-transition:leave-end="opacity-0 -translate-y-2"
-            class="fixed inset-x-3 top-16 z-50 overflow-hidden rounded-lg border border-blue-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:left-4 sm:right-auto sm:w-80"
+            class="fixed inset-x-3 top-16 z-50 overflow-hidden rounded-lg border border-blue-100 bg-blue-50/60 shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:left-4 sm:right-auto sm:w-80"
             aria-label="Guard menu"
         >
             <div class="flex items-center justify-between border-b border-blue-100 px-4 py-3 dark:border-slate-700">
@@ -156,7 +156,7 @@
     @endunless
 
     <aside
-        class="fixed inset-y-0 left-0 z-50 flex w-[min(18rem,calc(100vw-1.25rem))] -translate-x-full flex-col border-r border-blue-100 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900 lg:w-72 lg:translate-x-0 lg:shadow-none @unless ($isSupervisor) hidden lg:flex @endunless"
+        class="fixed inset-y-0 left-0 z-50 flex w-[min(18rem,calc(100vw-1.25rem))] -translate-x-full flex-col border-r border-blue-100 bg-blue-50/60 shadow-xl dark:border-slate-800 dark:bg-slate-900 lg:w-72 lg:translate-x-0 lg:shadow-none @unless ($isSupervisor) hidden lg:flex @endunless"
         :class="{
             '!translate-x-0': sidebarOpen,
             'lg:!translate-x-0': ! sidebarCollapsed,
