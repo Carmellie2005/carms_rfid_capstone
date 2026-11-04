@@ -5,7 +5,7 @@
                 <h2 class="text-xl font-semibold leading-tight text-blue-950 dark:text-white">
                     {{ $guard->exists ? 'Edit Guard' : 'New Guard' }}
                 </h2>
-                <p class="mt-1 text-sm text-blue-600 dark:text-slate-200">Guard identity, RFID card, shift, and login account</p>
+                <p class="mt-1 text-sm text-blue-600 dark:text-slate-200">Guard identity, RFID card, duty assignment, and login account</p>
             </div>
             <a href="{{ route('guards.index') }}" class="inline-flex w-full items-center justify-center rounded-md border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800 sm:w-auto">
                 Back

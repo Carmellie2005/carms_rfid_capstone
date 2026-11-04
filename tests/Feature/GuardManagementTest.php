@@ -308,7 +308,7 @@ class GuardManagementTest extends TestCase
             ->assertDontSee('create_phone', false)
             ->assertSee('The guard will sign in using the Guard No. above, for example BCP-001.')
             ->assertSee('Guard Management')
-            ->assertSee('Registered guards, RFID cards, shifts, and login accounts')
+            ->assertSee('Registered guards, RFID cards, daily duty assignments, and login accounts')
             ->assertSee('Guard Profiles')
             ->assertSee('loadGuardRecordPatrolPage', false)
             ->assertSee('recordPatrolShowingLabel', false)

@@ -11,13 +11,18 @@
         $resetPasswordGuard = filled($resetPasswordGuardId)
             ? $guards->getCollection()->firstWhere('id', (int) $resetPasswordGuardId)
             : null;
+        $dutyFor = fn ($guard) => $dutyAssignments[\App\Support\DutyRoster::normalizeEmployeeNo((string) $guard->employee_no)] ?? [
+            'on_duty' => false,
+            'label' => 'Off duty today',
+            'schedule' => 'Not scheduled',
+        ];
     @endphp
 
     <x-slot name="header">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-blue-950 dark:text-white">{{ __('Guard Management') }}</h2>
-                <p class="mt-1 text-sm text-blue-600 dark:text-slate-200">Registered guards, RFID cards, shifts, and login accounts</p>
+                <p class="mt-1 text-sm text-blue-600 dark:text-slate-200">Registered guards, RFID cards, daily duty assignments, and login accounts</p>
             </div>
             <button
                 type="button"
@@ -90,8 +95,10 @@
                                 <dd class="truncate text-xs text-slate-500 dark:text-slate-400">{{ $guard->phone ?? 'No phone' }}</dd>
                             </div>
                             <div class="min-w-0">
-                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-white">Shift</dt>
-                                <dd class="mt-1 truncate dark:text-white">{{ $guard->shift ?? 'Unassigned' }}</dd>
+                                @php($duty = $dutyFor($guard))
+                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800 dark:text-white">Duty Assignment</dt>
+                                <dd class="mt-1 font-semibold {{ $duty['on_duty'] ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300' }}">{{ $duty['label'] }}</dd>
+                                <dd class="text-xs text-slate-500 dark:text-slate-400">{{ $duty['schedule'] }}</dd>
                             </div>
                         </dl>
 
@@ -117,7 +124,7 @@
                                 <th class="px-5 py-3">Employee</th>
                                 <th class="px-5 py-3">Contact</th>
                                 <th class="px-5 py-3">RFID UID</th>
-                                <th class="px-5 py-3">Shift</th>
+                                <th class="px-5 py-3">Duty Assignment</th>
                                 <th class="px-5 py-3">Status</th>
                                 <th class="px-5 py-3 text-right">Actions</th>
                             </tr>
@@ -141,7 +148,13 @@
                                         <div class="text-xs">{{ $guard->phone ?? 'No phone' }}</div>
                                     </td>
                                     <td class="px-5 py-4 font-mono text-slate-700 dark:text-slate-100">{{ $guard->rfid_uid }}</td>
-                                    <td class="px-5 py-4 text-slate-600 dark:text-white">{{ $guard->shift ?? 'Unassigned' }}</td>
+                                    @php($duty = $dutyFor($guard))
+                                    <td class="px-5 py-4">
+                                        <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $duty['on_duty'] ? 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45' : 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60' }}">
+                                            {{ $duty['label'] }}
+                                        </span>
+                                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ $duty['schedule'] }}</div>
+                                    </td>
                                     <td class="px-5 py-4">
                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $guard->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45' : 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60' }}">
                                             {{ ucfirst($guard->status) }}
@@ -244,9 +257,11 @@
                                     <x-input-error :messages="$errors->get('rfid_uid')" class="mt-2" />
                                 </div>
                                 <div>
-                                    <label for="create_shift" class="sr-only">Shift</label>
-                                    <input id="create_shift" name="shift" value="{{ $newGuard->shift ?: 'Night Shift' }}" placeholder="Night Shift" class="mt-1 block w-full rounded-md border-slate-300 bg-slate-100 text-slate-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500" readonly aria-readonly="true">
-                                    <x-input-error :messages="$errors->get('shift')" class="mt-2" />
+                                    <p class="text-sm font-medium text-slate-700 dark:text-white">Duty Assignment</p>
+                                    <div class="mt-1 rounded-md border border-blue-100 bg-blue-50/70 px-3 py-2.5 text-sm font-semibold text-blue-800 dark:border-slate-700 dark:bg-slate-800 dark:text-blue-100">
+                                        Managed by today's Duty Roster
+                                    </div>
+                                    <p class="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">Daily assignments rotate automatically. Use the dashboard to see who is on duty today.</p>
                                 </div>
                                 <div>
                                     <label for="create_status" class="block text-sm font-medium text-slate-700 dark:text-white">Status</label>
@@ -334,11 +349,6 @@
             </div>
 
             @foreach ($guards as $guard)
-                @php
-                    $editGuardPasswordRequired = ! $guard->user_id;
-                    $editGuardFormContext = 'edit-'.$guard->id;
-                @endphp
-
                 <div
                     x-show="editModalOpen && editGuardId === '{{ $guard->id }}'"
                     x-cloak
@@ -385,8 +395,8 @@
                             <div class="mobile-scroll-area flex-1 overflow-y-auto px-5 py-5">
                                 @include('system.guards.partials.form-fields', [
                                     'guard' => $guard,
-                                    'passwordRequired' => $editGuardPasswordRequired,
-                                    'formContext' => $editGuardFormContext,
+                                    'passwordRequired' => ! $guard->user_id,
+                                    'formContext' => 'edit-'.$guard->id,
                                     'fieldPrefix' => 'edit_'.$guard->id,
                                 ])
                             </div>

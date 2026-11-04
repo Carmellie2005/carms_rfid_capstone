@@ -7,6 +7,7 @@ use App\Models\Guard;
 use App\Models\User;
 use App\Rules\UsernameOrEmail;
 use App\Support\AuditLogger;
+use App\Support\DutyRoster;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,11 +24,30 @@ class GuardController extends Controller
 
     public function index(): View
     {
+        $dutyDate = now(config('duty_roster.timezone', config('app.timezone')));
+        $rotationGuardCodes = collect(config('duty_roster.rotation_guards', []))
+            ->map(fn (string $employeeNo) => DutyRoster::normalizeEmployeeNo($employeeNo))
+            ->all();
+        $dutyAssignments = collect(DutyRoster::assignedCodes($dutyDate))
+            ->mapWithKeys(function (string $employeeNo) use ($rotationGuardCodes): array {
+                $normalizedEmployeeNo = DutyRoster::normalizeEmployeeNo($employeeNo);
+
+                return [$normalizedEmployeeNo => [
+                    'on_duty' => true,
+                    'label' => 'On duty today',
+                    'schedule' => in_array($normalizedEmployeeNo, $rotationGuardCodes, true)
+                        ? '24-hour duty'
+                        : 'Evening duty',
+                ]];
+            })
+            ->all();
+
         return view('system.guards.index', [
             'guards' => Guard::with('user')
                 ->where('employee_no', '!=', 'UNKNOWN')
                 ->latest()
                 ->paginate(10),
+            'dutyAssignments' => $dutyAssignments,
             'newGuard' => new Guard([
                 'shift' => self::DEFAULT_SHIFT,
                 'status' => 'active',
