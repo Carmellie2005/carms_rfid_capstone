@@ -14,7 +14,7 @@ class UpdateUserPresence
         $response = $next($request);
         $user = Auth::user();
 
-        if ($user?->role === 'guard') {
+        if ($user) {
             $user->forceFill(['last_seen_at' => now()])->saveQuietly();
         }
 

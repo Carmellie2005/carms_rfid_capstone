@@ -34,8 +34,7 @@
             $role = $user->role ?? 'admin';
             $isSupervisor = $role === 'admin';
             $isGuard = $role === 'guard';
-            $guardIsOnline = $isGuard
-                && $user?->last_seen_at?->greaterThanOrEqualTo(now()->subMinutes((int) config('duty_roster.online_timeout_minutes', 3)));
+            $userIsOnline = $user?->last_seen_at?->greaterThanOrEqualTo(now()->subMinutes((int) config('duty_roster.online_timeout_minutes', 3)));
             $requiresGuardPasswordChange = $isGuard && (bool) $user?->must_change_password;
             $guardWelcomeName = $isGuard
                 ? trim(\Illuminate\Support\Str::of($user?->name ?: 'there')->before(' ')->toString())
@@ -392,8 +391,8 @@
                                                 onerror="this.onerror=null; this.src='{{ $accountFallbackPhotoUrl }}';"
                                                 class="h-full w-full object-cover"
                                             >
-                                            @if ($isGuard)
-                                                <span class="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full {{ $guardIsOnline ? 'bg-emerald-500' : 'bg-slate-400' }} ring-2 ring-white dark:ring-slate-900" title="{{ $guardIsOnline ? 'Online' : 'Offline' }}" aria-label="{{ $guardIsOnline ? 'Online' : 'Offline' }}"></span>
+                                            @if ($isGuard || $isSupervisor)
+                                                <span class="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full {{ $userIsOnline ? 'bg-emerald-500' : 'bg-slate-400' }} ring-2 ring-white dark:ring-slate-900" title="{{ $userIsOnline ? 'Online' : 'Offline' }}" aria-label="{{ $userIsOnline ? 'Online' : 'Offline' }}"></span>
                                             @endif
                                         </span>
                                     </button>
@@ -408,8 +407,8 @@
                                                 onerror="this.onerror=null; this.src='{{ $accountFallbackPhotoUrl }}';"
                                                 class="h-full w-full object-cover"
                                             >
-                                            @if ($isGuard)
-                                                <span class="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full {{ $guardIsOnline ? 'bg-emerald-500' : 'bg-slate-400' }} ring-2 ring-white dark:ring-slate-900" title="{{ $guardIsOnline ? 'Online' : 'Offline' }}" aria-label="{{ $guardIsOnline ? 'Online' : 'Offline' }}"></span>
+                                            @if ($isGuard || $isSupervisor)
+                                                <span class="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full {{ $userIsOnline ? 'bg-emerald-500' : 'bg-slate-400' }} ring-2 ring-white dark:ring-slate-900" title="{{ $userIsOnline ? 'Online' : 'Offline' }}" aria-label="{{ $userIsOnline ? 'Online' : 'Offline' }}"></span>
                                             @endif
                                         </span>
                                         <div class="min-w-0">

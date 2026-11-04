@@ -286,6 +286,20 @@ class DashboardTest extends TestCase
         $this->assertNotNull($guard->refresh()->last_seen_at);
     }
 
+    public function test_supervisor_presence_heartbeat_updates_last_seen_at(): void
+    {
+        $supervisor = User::factory()->create([
+            'role' => 'admin',
+            'last_seen_at' => null,
+        ]);
+
+        $this->actingAs($supervisor)
+            ->post(route('presence.heartbeat'))
+            ->assertNoContent();
+
+        $this->assertNotNull($supervisor->refresh()->last_seen_at);
+    }
+
     public function test_guard_account_avatar_shows_online_presence_indicator(): void
     {
         $guard = User::factory()->create([
@@ -296,6 +310,23 @@ class DashboardTest extends TestCase
         $response = $this
             ->actingAs($guard)
             ->get(route('patrol.scan'));
+
+        $response
+            ->assertOk()
+            ->assertSee('title="Online"', false)
+            ->assertSee('aria-label="Online"', false);
+    }
+
+    public function test_supervisor_account_avatar_shows_online_presence_indicator(): void
+    {
+        $supervisor = User::factory()->create([
+            'role' => 'admin',
+            'last_seen_at' => now(),
+        ]);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('dashboard'));
 
         $response
             ->assertOk()

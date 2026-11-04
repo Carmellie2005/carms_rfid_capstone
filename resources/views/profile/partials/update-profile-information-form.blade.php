@@ -98,7 +98,7 @@
 
             @if ($isGuard || $isSupervisor)
                 <div>
-                    <x-input-label for="birthday" :value="__('Birthday')" class="sr-only" />
+                    <x-input-label for="birthday" :value="__('Birthday')" class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300" />
                     <x-text-input id="birthday" name="birthday" type="date" class="mt-1 block w-full" :value="old('birthday', $user->birthday?->toDateString())" max="{{ now()->toDateString() }}" autocomplete="bday" />
                     <x-input-error class="mt-2" :messages="$errors->get('birthday')" />
                 </div>
