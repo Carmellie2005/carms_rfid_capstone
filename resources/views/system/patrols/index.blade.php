@@ -196,7 +196,7 @@
                                     Print PDF
                                 </button>
                             @endif
-                            <a href="{{ $patrolPdfDownloadUrl }}" class="inline-flex h-10 items-center justify-center rounded-md border border-indigo-200 bg-white px-3 text-xs font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-indigo-500/45 dark:bg-slate-950/60 dark:text-indigo-200 dark:hover:bg-indigo-950/40 dark:focus:ring-offset-slate-900">
+                            <a href="{{ $patrolPdfDownloadUrl }}" class="inline-flex h-10 items-center justify-center rounded-md border border-violet-200 bg-white px-3 text-xs font-bold text-violet-700 shadow-sm transition hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:border-violet-500/45 dark:bg-slate-950/60 dark:text-violet-200 dark:hover:bg-violet-950/40 dark:focus:ring-offset-slate-900">
                                 Download PDF
                             </a>
                             <button type="button" class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-blue-200 bg-white px-3 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-blue-500/35 dark:bg-slate-950/60 dark:text-blue-200 dark:hover:bg-blue-950/40 dark:focus:ring-offset-slate-900" @click="openPatrolDetails(@js((string) $log->id))" aria-label="View patrol details for {{ $log->securityGuard?->name ?? 'this patrol log' }}">
@@ -288,7 +288,7 @@
                                                     Print PDF
                                                 </button>
                                             @endif
-                                            <a href="{{ $patrolPdfDownloadUrl }}" class="inline-flex h-9 items-center justify-center rounded-md border border-indigo-200 bg-white px-3 text-xs font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-indigo-500/45 dark:bg-slate-950/60 dark:text-indigo-200 dark:hover:bg-indigo-950/40 dark:focus:ring-offset-slate-900">
+                                            <a href="{{ $patrolPdfDownloadUrl }}" class="inline-flex h-9 items-center justify-center rounded-md border border-violet-200 bg-white px-3 text-xs font-bold text-violet-700 shadow-sm transition hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:border-violet-500/45 dark:bg-slate-950/60 dark:text-violet-200 dark:hover:bg-violet-950/40 dark:focus:ring-offset-slate-900">
                                                 Download PDF
                                             </a>
                                         </div>
@@ -471,7 +471,7 @@
                                 Print PDF
                             </button>
                         @endif
-                        <a href="{{ $detailPdfDownloadUrl }}" class="inline-flex h-10 items-center justify-center rounded-md border border-indigo-200 bg-white px-4 text-sm font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-indigo-500/45 dark:bg-slate-950/60 dark:text-indigo-200 dark:hover:bg-indigo-950/40 dark:focus:ring-offset-slate-900">
+                        <a href="{{ $detailPdfDownloadUrl }}" class="inline-flex h-10 items-center justify-center rounded-md border border-violet-200 bg-white px-4 text-sm font-bold text-violet-700 shadow-sm transition hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:border-violet-500/45 dark:bg-slate-950/60 dark:text-violet-200 dark:hover:bg-violet-950/40 dark:focus:ring-offset-slate-900">
                             Download PDF
                         </a>
                         <button type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-white px-4 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-blue-500/35 dark:bg-slate-950/60 dark:text-blue-200 dark:hover:bg-blue-950/40 dark:focus:ring-offset-slate-900" @click="closePatrolDetails()">
@@ -565,7 +565,7 @@
                         </a>
                         <a
                             x-bind:href="pdfDownloadUrl"
-                            class="inline-flex h-10 items-center justify-center rounded-md border border-indigo-200 px-4 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-indigo-500/45 dark:text-indigo-200 dark:hover:bg-indigo-950/35 dark:focus:ring-offset-slate-900"
+                            class="inline-flex h-10 items-center justify-center rounded-md border border-violet-200 px-4 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:border-violet-500/45 dark:text-violet-200 dark:hover:bg-violet-950/35 dark:focus:ring-offset-slate-900"
                         >
                             Download PDF
                         </a>

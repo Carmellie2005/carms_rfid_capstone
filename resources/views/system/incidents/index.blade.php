@@ -97,7 +97,7 @@
                                         >
                                             Print PDF
                                         </button>
-                                        <a href="{{ $incidentPdfDownloadUrl }}" class="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-indigo-200 px-3 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-indigo-500/45 dark:text-indigo-200 dark:hover:bg-indigo-950/35 dark:focus:ring-offset-slate-950">
+                                        <a href="{{ $incidentPdfDownloadUrl }}" class="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-violet-200 px-3 py-2 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:border-violet-500/45 dark:text-violet-200 dark:hover:bg-violet-950/35 dark:focus:ring-offset-slate-950">
                                             Download PDF
                                         </a>
                                     </div>
@@ -247,7 +247,7 @@
                     </a>
                     <a
                         x-bind:href="pdfDownloadUrl"
-                        class="inline-flex h-10 items-center justify-center rounded-md border border-indigo-200 px-4 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-indigo-500/45 dark:text-indigo-200 dark:hover:bg-indigo-950/35 dark:focus:ring-offset-slate-900"
+                        class="inline-flex h-10 items-center justify-center rounded-md border border-violet-200 px-4 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:border-violet-500/45 dark:text-violet-200 dark:hover:bg-violet-950/35 dark:focus:ring-offset-slate-900"
                     >
                         Download PDF
                     </a>
