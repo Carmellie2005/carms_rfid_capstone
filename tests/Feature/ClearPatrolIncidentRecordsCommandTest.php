@@ -11,6 +11,8 @@ use App\Models\IncidentReport;
 use App\Models\IncidentReportImage;
 use App\Models\NotificationRead;
 use App\Models\PatrolLog;
+use App\Models\RfidEnrollmentScan;
+use App\Models\SystemNotification;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -37,7 +39,7 @@ class ClearPatrolIncidentRecordsCommandTest extends TestCase
         $this->assertDatabaseHas('incident_reports', ['id' => $incidentReport->id]);
 
         $this->artisan('records:clear-patrol-incidents --force')
-            ->expectsOutputToContain('Patrol and incident records cleared.')
+            ->expectsOutputToContain('Activity, notification, and enrollment records cleared.')
             ->assertExitCode(0);
 
         $this->assertDatabaseHas('users', ['id' => $user->id]);
@@ -51,6 +53,8 @@ class ClearPatrolIncidentRecordsCommandTest extends TestCase
         $this->assertDatabaseMissing('incident_report_images', ['incident_report_id' => $incidentReport->id]);
         $this->assertDatabaseMissing('notification_reads', ['notifiable_id' => $patrolLog->id]);
         $this->assertDatabaseMissing('notification_reads', ['notifiable_id' => $incidentReport->id]);
+        $this->assertDatabaseMissing('system_notifications', ['user_id' => $user->id]);
+        $this->assertDatabaseMissing('rfid_enrollment_scans', ['rfid_uid' => 'TEST-ENROLLMENT']);
         $this->assertDatabaseMissing('audit_logs', ['subject_type' => PatrolLog::class, 'subject_id' => $patrolLog->id]);
         $this->assertDatabaseMissing('audit_logs', ['subject_type' => IncidentReport::class, 'subject_id' => $incidentReport->id]);
         $this->assertDatabaseHas('audit_logs', ['subject_type' => Guard::class, 'subject_id' => $guard->id]);
@@ -140,6 +144,19 @@ class ClearPatrolIncidentRecordsCommandTest extends TestCase
             'notifiable_type' => IncidentReport::class,
             'notifiable_id' => $incidentReport->id,
             'read_at' => now(),
+        ]);
+        SystemNotification::create([
+            'user_id' => $user->id,
+            'type' => 'Account',
+            'title' => 'Signed in successfully',
+            'body' => 'Welcome, Test Guard. You are signed in.',
+            'href' => route('patrol.scan'),
+            'badge' => 'Sign-in',
+        ]);
+        RfidEnrollmentScan::create([
+            'rfid_uid' => 'TEST-ENROLLMENT',
+            'device_uid' => 'ENROLLMENT-READER',
+            'captured_at' => now(),
         ]);
         AuditLog::create([
             'user_id' => $user->id,

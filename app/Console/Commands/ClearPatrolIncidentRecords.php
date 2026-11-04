@@ -15,7 +15,7 @@ class ClearPatrolIncidentRecords extends Command
     protected $signature = 'records:clear-patrol-incidents
         {--force : Delete the records. Without this option, the command only previews counts}';
 
-    protected $description = 'Clear all patrol logs, checklist responses, and incident records while keeping guard and user accounts';
+    protected $description = 'Clear activity, notification, and enrollment records while keeping guard and user accounts';
 
     public function handle(): int
     {
@@ -50,7 +50,7 @@ class ClearPatrolIncidentRecords extends Command
         }
 
         $this->newLine();
-        $this->info('Patrol and incident records cleared.');
+        $this->info('Activity, notification, and enrollment records cleared.');
         $this->table(['Deleted record type', 'Count'], collect($deleted)
             ->map(fn (int $count, string $label): array => [str_replace('_', ' ', $label), $count])
             ->values()
@@ -73,7 +73,9 @@ class ClearPatrolIncidentRecords extends Command
     private function deletionPlan(array $scope): array
     {
         $counts = [
-            'notification_reads' => $this->notificationReadQuery($scope)->count(),
+            'notification_reads' => $this->tableCount('notification_reads'),
+            'system_notifications' => $this->tableCount('system_notifications'),
+            'rfid_enrollment_scans' => $this->tableCount('rfid_enrollment_scans'),
             'audit_logs' => $this->auditLogQuery($scope)->count(),
             'incident_images' => $this->countByColumn('incident_report_images', 'incident_report_id', $scope['incidentIds']),
             'incident_reports' => $scope['incidentIds']->count(),
@@ -97,7 +99,9 @@ class ClearPatrolIncidentRecords extends Command
     private function deleteRecords(array $scope): array
     {
         return [
-            'notification_reads' => $this->notificationReadQuery($scope)->delete(),
+            'notification_reads' => $this->deleteTable('notification_reads'),
+            'system_notifications' => $this->deleteTable('system_notifications'),
+            'rfid_enrollment_scans' => $this->deleteTable('rfid_enrollment_scans'),
             'audit_logs' => $this->auditLogQuery($scope)->delete(),
             'incident_images' => $this->deleteByColumn('incident_report_images', 'incident_report_id', $scope['incidentIds']),
             'incident_reports' => $this->deleteByIds('incident_reports', $scope['incidentIds']),
@@ -310,6 +314,15 @@ class ClearPatrolIncidentRecords extends Command
         }
 
         return DB::table($table)->count();
+    }
+
+    private function deleteTable(string $table): int
+    {
+        if (! Schema::hasTable($table)) {
+            return 0;
+        }
+
+        return DB::table($table)->delete();
     }
 
     private function hasTableColumn(string $table, string $column): bool
