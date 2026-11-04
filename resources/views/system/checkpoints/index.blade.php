@@ -66,10 +66,6 @@
                                 <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Location</dt>
                                 <dd class="mt-1 truncate">{{ $checkpoint->location }}</dd>
                             </div>
-                            <div class="min-w-0">
-                                <dt class="text-[0.65rem] font-semibold uppercase text-blue-800">Device UID</dt>
-                                <dd class="mt-1 truncate font-mono">{{ $checkpoint->device_uid ?? 'None' }}</dd>
-                            </div>
                         </dl>
 
                         <div class="mt-3 grid grid-cols-2 gap-2">
@@ -92,7 +88,6 @@
                             <tr>
                                 <th class="px-5 py-3">Checkpoint</th>
                                 <th class="px-5 py-3">Location</th>
-                                <th class="px-5 py-3">Device UID</th>
                                 <th class="px-5 py-3">Status</th>
                                 <th class="px-5 py-3 text-right">Actions</th>
                             </tr>
@@ -105,7 +100,6 @@
                                         <div class="text-xs font-mono text-slate-500">{{ $checkpoint->code }}</div>
                                     </td>
                                     <td class="px-5 py-4 text-slate-600">{{ $checkpoint->location }}</td>
-                                    <td class="px-5 py-4 font-mono text-slate-700">{{ $checkpoint->device_uid ?? 'None' }}</td>
                                     <td class="px-5 py-4">
                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $checkpoint->status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-400/45' : 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-950/50 dark:text-slate-200 dark:ring-slate-500/60' }}">
                                             {{ ucfirst($checkpoint->status) }}
@@ -120,7 +114,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-5 py-8 text-center text-slate-500">No checkpoints registered.</td>
+                                    <td colspan="4" class="px-5 py-8 text-center text-slate-500">No checkpoints registered.</td>
                                 </tr>
                             @endforelse
                         </tbody>
