@@ -520,11 +520,7 @@
                 </td>
             </tr>
             <tr>
-                <td>
-                    <span class="label">RFID UID:</span>
-                    <span class="value">{{ $patrolLog->rfid_uid ?? 'Not recorded' }}</span>
-                </td>
-                <td>
+                <td colspan="2">
                     <span class="label">RFID Status:</span>
                     <span class="value">{{ $rfidStatus }}</span>
                 </td>
