@@ -377,7 +377,6 @@
         $selfieDate = $patrolLog->area_selfie_captured_at?->timezone(config('app.timezone'))->format('M d, Y h:i A') ?? 'Not recorded';
         $guardName = $patrolLog->securityGuard?->name ?? 'Unknown';
         $employeeNo = $patrolLog->securityGuard?->employee_no ?? 'Not recorded';
-        $guardShift = $patrolLog->securityGuard?->shift ?? 'Not recorded';
         $checkpointCode = $patrolLog->checkpoint?->code ?? $patrolLog->checkpoint_code ?? 'Not recorded';
         $checkpointName = $patrolLog->checkpoint?->name ?? 'Unknown checkpoint';
         $checkpointLocation = $patrolLog->checkpoint?->location ?: $checkpointName;
@@ -526,11 +525,7 @@
                 </td>
             </tr>
             <tr>
-                <td>
-                    <span class="label">Guard Shift:</span>
-                    <span class="value">{{ $guardShift }}</span>
-                </td>
-                <td>
+                <td colspan="2">
                     <span class="label">Patrol Date / Time:</span>
                     <span class="value">{{ $scanDate }}</span>
                 </td>
