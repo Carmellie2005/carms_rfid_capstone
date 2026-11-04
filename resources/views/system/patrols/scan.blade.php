@@ -33,7 +33,6 @@
             : 'Waiting for your ESP32 checkpoint scan.';
         $pendingScan = $pendingPatrol ? [
             'id' => $pendingPatrol->id,
-            'rfid_uid' => $pendingPatrol->rfid_uid,
             'checkpoint_code' => $pendingPatrol->checkpoint_code,
             'status' => $pendingPatrol->status,
             'area_selfie_captured' => $pendingSelfieCaptured,
@@ -404,10 +403,6 @@
                                         <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">Location</dt>
                                         <dd class="mt-1 truncate text-sm font-semibold text-slate-900" x-text="areaSelfieLocationLabel()"></dd>
                                         <dd class="text-xs text-slate-500" x-text="pendingScan?.checkpoint?.code || pendingScan?.checkpoint_code || ''"></dd>
-                                    </div>
-                                    <div class="rounded-md border border-blue-100 bg-white p-3">
-                                        <dt class="text-[0.68rem] font-semibold uppercase text-blue-800">RFID UID</dt>
-                                        <dd class="mt-1 truncate font-mono text-sm text-slate-900" x-text="pendingScan?.rfid_uid || ''"></dd>
                                     </div>
                                 </dl>
 

@@ -250,7 +250,9 @@ class PatrolAreaSelfieTest extends TestCase
             ->assertSee('checklist_statuses[doors_checked]', false)
             ->assertDontSee('Start Face Verification')
             ->assertDontSee('Face Verify')
-            ->assertDontSee('face-verification-circle');
+            ->assertDontSee('face-verification-circle')
+            ->assertDontSee('RFID UID')
+            ->assertDontSee('F33C8D37');
     }
 
     public function test_guard_with_temporary_password_sees_password_prompt_before_scan_form(): void
@@ -288,7 +290,8 @@ class PatrolAreaSelfieTest extends TestCase
             ->assertOk()
             ->assertJsonPath('pending', true)
             ->assertJsonPath('patrol_log.status', 'pending_selfie')
-            ->assertJsonPath('patrol_log.area_selfie_captured', false);
+            ->assertJsonPath('patrol_log.area_selfie_captured', false)
+            ->assertJsonMissingPath('patrol_log.rfid_uid');
     }
 
     public function test_guard_can_view_saved_area_selfie_from_patrol_logs(): void

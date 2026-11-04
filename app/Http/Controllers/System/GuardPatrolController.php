@@ -355,7 +355,6 @@ class GuardPatrolController extends Controller
     {
         return [
             'id' => $patrolLog->id,
-            'rfid_uid' => $patrolLog->rfid_uid,
             'checkpoint_code' => $patrolLog->checkpoint_code,
             'status' => $patrolLog->status,
             'area_selfie_captured' => filled($patrolLog->area_selfie_path) || filled($patrolLog->area_selfie_image_data),
