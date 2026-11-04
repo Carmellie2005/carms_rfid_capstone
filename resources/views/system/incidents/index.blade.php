@@ -186,29 +186,32 @@
             <x-pagination-panel :paginator="$incidents" label="incident reports" page-label="Incident reports page" class="rounded-md border border-blue-100 bg-white px-4 py-3 shadow-sm" />
         </div>
 
-        <div
-            x-show="pdfPreviewOpen"
-            x-cloak
-            x-transition.opacity.duration.150ms
-            class="fixed inset-0 z-[80] bg-slate-950/60"
-            x-on:click="closeIncidentPdfPreview()"
-            aria-hidden="true"
-        ></div>
+        <template x-teleport="body">
+            <div
+                x-show="pdfPreviewOpen"
+                x-cloak
+                x-transition.opacity.duration.150ms
+                class="fixed inset-0 z-[100] bg-slate-950/60"
+                x-on:click="closeIncidentPdfPreview()"
+                aria-hidden="true"
+            ></div>
+        </template>
 
-        <section
-            x-show="pdfPreviewOpen"
-            x-cloak
-            x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0 translate-y-3 scale-[0.98]"
-            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-            x-transition:leave="transition ease-in duration-150"
-            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-            x-transition:leave-end="opacity-0 translate-y-3 scale-[0.98]"
-            class="fixed inset-0 z-[85] flex items-center justify-center p-3 sm:p-6"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="incident-pdf-preview-title"
-        >
+        <template x-teleport="body">
+            <section
+                x-show="pdfPreviewOpen"
+                x-cloak
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 translate-y-3 scale-[0.98]"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                x-transition:leave-end="opacity-0 translate-y-3 scale-100"
+                class="fixed inset-0 z-[105] flex items-center justify-center p-3 sm:p-6"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="incident-pdf-preview-title"
+            >
             <div class="flex h-[min(92dvh,56rem)] w-full max-w-5xl flex-col overflow-hidden rounded-md border border-blue-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900" x-on:click.stop>
                 <div class="flex shrink-0 items-start justify-between gap-3 border-b border-blue-100 px-4 py-3 dark:border-slate-800 sm:px-5">
                     <div class="min-w-0">
@@ -253,6 +256,7 @@
                     </a>
                 </div>
             </div>
-        </section>
+            </section>
+        </template>
     </div>
 </x-app-layout>
