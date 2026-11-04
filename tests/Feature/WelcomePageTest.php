@@ -35,13 +35,13 @@ class WelcomePageTest extends TestCase
             ->assertDontSee('cd_bt@southernleytestateu.edu.ph')
             ->assertDontSee('www.southernleytestateu.edu.ph')
             ->assertSee('Carmela B. Hernandez')
-            ->assertSee('Lead Programmer')
             ->assertSee('Cherry Ann R. Himo')
-            ->assertSee('Documentation Specialist')
             ->assertSee('Clarice R. Gumapi')
-            ->assertSee('System Analyst')
             ->assertSee('Karyl G. Viure')
-            ->assertSee('Quality Assurance');
+            ->assertDontSee('Lead Programmer')
+            ->assertDontSee('Documentation Specialist')
+            ->assertDontSee('System Analyst')
+            ->assertDontSee('Quality Assurance');
     }
 
     public function test_public_landing_page_has_pwa_install_success_modal(): void

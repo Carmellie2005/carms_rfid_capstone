@@ -334,19 +334,15 @@
             $developers = [
                 [
                     'name' => 'Carmela B. Hernandez',
-                    'role' => 'Lead Programmer',
                 ],
                 [
                     'name' => 'Cherry Ann R. Himo',
-                    'role' => 'Documentation Specialist',
                 ],
                 [
                     'name' => 'Clarice R. Gumapi',
-                    'role' => 'System Analyst',
                 ],
                 [
                     'name' => 'Karyl G. Viure',
-                    'role' => 'Quality Assurance',
                 ],
             ];
         @endphp
@@ -373,7 +369,6 @@
                         @foreach ($developers as $developer)
                             <p class="text-sm font-semibold text-slate-950 dark:text-white">
                                 {{ $developer['name'] }}
-                                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">({{ $developer['role'] }})</span>
                             </p>
                         @endforeach
                     </div>
