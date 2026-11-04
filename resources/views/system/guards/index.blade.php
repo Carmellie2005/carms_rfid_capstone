@@ -510,14 +510,15 @@
                 </section>
             </div>
 
-            <div
-                x-show="recordModalOpen"
-                x-cloak
-                x-transition.opacity.duration.200ms
-                x-on:click.self="closeGuardRecord()"
-                x-on:keydown.escape.window="closeGuardRecord()"
-                class="fixed inset-0 z-[80] flex items-stretch justify-center overflow-y-auto bg-slate-950/60 p-0 sm:items-center sm:px-4 sm:py-6"
-            >
+            <template x-teleport="body">
+                <div
+                    x-show="recordModalOpen"
+                    x-cloak
+                    x-transition.opacity.duration.200ms
+                    x-on:click.self="closeGuardRecord()"
+                    x-on:keydown.escape.window="closeGuardRecord()"
+                    class="fixed inset-0 z-[100] flex items-stretch justify-center overflow-y-auto bg-slate-950/60 p-0 sm:items-center sm:px-4 sm:py-6"
+                >
                 <section
                     role="dialog"
                     aria-modal="true"
@@ -665,7 +666,8 @@
                         </div>
                     </div>
                 </section>
-            </div>
+                </div>
+            </template>
 
             <x-pagination-panel :paginator="$guards" label="guards" page-label="Guards page" class="mt-4" />
         </div>
