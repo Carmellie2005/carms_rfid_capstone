@@ -42,10 +42,21 @@
                 : null;
             $guardWelcomeName = filled($guardWelcomeName) ? $guardWelcomeName : 'there';
             $roleLabel = $role === 'admin' ? 'Supervisor' : ucfirst($role);
-            $today = now()->timezone('Asia/Manila')->format('l, F d, Y');
-            $mobileToday = now()->timezone('Asia/Manila')->format('M d, Y');
-            $currentTime = now()->timezone('Asia/Manila')->format('h:i:s A');
-            $currentShortTime = now()->timezone('Asia/Manila')->format('h:i A');
+            $today = now()->timezone('Asia/Manila');
+            $todayLabel = $today->format('l, F d, Y');
+            $calendarWeekday = [
+                1 => 'M',
+                2 => 'TU',
+                3 => 'W',
+                4 => 'TH',
+                5 => 'F',
+                6 => 'SA',
+                7 => 'SU',
+            ][$today->dayOfWeekIso];
+            $calendarDay = $today->format('d');
+            $calendarMonth = strtoupper($today->format('M'));
+            $currentTime = $today->format('h:i:s A');
+            $currentShortTime = $today->format('h:i A');
             $accountIconPath = $isSupervisor
                 ? 'images/user-icons/supervisor-account.png'
                 : 'images/user-icons/guard-account.png';
@@ -196,14 +207,20 @@
                                 }
                             }"
                         >
+                            <div
+                                class="inline-flex h-12 w-11 shrink-0 flex-col overflow-hidden rounded-lg border border-blue-100 bg-blue-50 text-center shadow-sm dark:border-slate-700 dark:bg-slate-800"
+                                title="{{ $todayLabel }}"
+                                aria-label="{{ $todayLabel }}"
+                            >
+                                <span class="bg-blue-700 px-1 py-0.5 text-[0.58rem] font-bold uppercase leading-tight tracking-wide text-white dark:bg-blue-600">{{ $calendarWeekday }}</span>
+                                <span class="flex flex-1 items-center justify-center text-base font-extrabold leading-none text-blue-950 dark:text-white">{{ $calendarDay }}</span>
+                                <span class="pb-1 text-[0.52rem] font-bold uppercase leading-none tracking-wide text-slate-500 dark:text-slate-300">{{ $calendarMonth }}</span>
+                            </div>
                             <div class="min-w-0">
                                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Today</p>
-                                <p class="truncate text-xs font-semibold text-blue-950 dark:text-blue-100 lg:text-base">
-                                    <span class="lg:hidden">{{ $mobileToday }}</span>
-                                    <span class="hidden lg:inline">{{ $today }}</span>
-                                    <span class="text-slate-400">|</span>
-                                    <span class="font-mono lg:hidden" x-text="shortTimeNow">{{ $currentShortTime }}</span>
-                                    <span class="hidden font-mono lg:inline" x-text="timeNow">{{ $currentTime }}</span>
+                                <p class="truncate font-mono text-xs font-semibold text-blue-950 dark:text-blue-100 lg:text-base">
+                                    <span class="lg:hidden" x-text="shortTimeNow">{{ $currentShortTime }}</span>
+                                    <span class="hidden lg:inline" x-text="timeNow">{{ $currentTime }}</span>
                                 </p>
                             </div>
                         </div>
