@@ -234,6 +234,7 @@
                 </div>
 
             <form
+                id="patrol-record-form"
                 method="POST"
                 action="{{ route('patrol.store') }}"
                 enctype="multipart/form-data"
@@ -518,13 +519,14 @@
                     </div>
                 </template>
 
-                <div x-show="checklistModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[80] flex items-stretch justify-center overflow-hidden bg-slate-950/55 p-0 sm:items-center sm:px-4 sm:py-6">
-                    <section class="flex h-[100svh] max-h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:min-h-0 sm:max-h-[92vh] sm:max-w-5xl sm:rounded-lg">
+                <template x-teleport="body">
+                    <div x-show="checklistModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[120] flex items-center justify-center overflow-hidden bg-slate-950/55 p-0 sm:p-4">
+                    <section class="flex h-[100dvh] max-h-[100dvh] w-full min-w-0 flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-h-[92dvh] sm:max-w-5xl sm:rounded-lg">
                         <div class="flex items-start justify-between gap-4 border-b border-blue-100 px-4 py-4 sm:px-5">
-                            <div>
+                            <div class="min-w-0">
                                 <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Step 3</p>
-                                <h3 class="text-lg font-semibold text-blue-950">Checklist and Incident Report</h3>
-                                <p class="mt-1 text-sm text-slate-500">Complete the patrol checklist before submitting this checkpoint visit.</p>
+                                <h3 class="break-words text-lg font-semibold text-blue-950">Checklist and Incident Report</h3>
+                                <p class="mt-1 break-words text-sm text-slate-500">Complete the patrol checklist before submitting this checkpoint visit.</p>
                             </div>
                             <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-blue-100 bg-white text-slate-700 hover:bg-blue-50" @click="checklistModalOpen = false" aria-label="Close checklist modal">
                                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -533,8 +535,9 @@
                             </button>
                         </div>
 
-                        <div class="mobile-scroll-area grid flex-1 gap-5 overflow-y-auto p-4 sm:p-5 lg:grid-cols-[1fr_0.95fr]">
-                            <div>
+                        <div class="mobile-scroll-area min-h-0 flex-1 overflow-y-auto p-3 sm:p-5">
+                            <div class="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.95fr)]">
+                            <div class="min-w-0">
                                 <h4 class="text-base font-semibold text-blue-950">Checkpoint Checklist</h4>
                                 <p x-show="imageCompressionMessage" x-cloak x-text="imageCompressionMessage" class="mt-3 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-800"></p>
                                 <p x-show="checklistPhotoError" x-cloak x-text="checklistPhotoError" class="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700"></p>
@@ -547,7 +550,7 @@
                                         @endphp
                                         <div class="min-h-24 rounded-md border border-blue-100 bg-white p-3 text-sm text-slate-700 shadow-sm transition hover:bg-blue-50/70">
                                             <label for="{{ $field }}_{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" class="flex h-full cursor-pointer items-start gap-3">
-                                                <input id="{{ $field }}_{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" type="checkbox" name="checklist_statuses[{{ $field }}]" value="{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" class="mt-0.5 h-5 w-5 shrink-0 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" @checked($selectedChecklistStatus === \App\Support\PatrolChecklist::STATUS_NORMAL) @change="checklistPhotoError = ''">
+                                                <input id="{{ $field }}_{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" form="patrol-record-form" type="checkbox" name="checklist_statuses[{{ $field }}]" value="{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" class="mt-0.5 h-5 w-5 shrink-0 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" @checked($selectedChecklistStatus === \App\Support\PatrolChecklist::STATUS_NORMAL) @change="checklistPhotoError = ''">
                                                 <span class="min-w-0 flex-1 font-semibold leading-6 text-slate-800">{{ $label }}</span>
                                             </label>
                                             <x-input-error :messages="$errors->get('checklist_statuses.'.$field)" class="mt-2" />
@@ -556,14 +559,14 @@
                                 </div>
                             </div>
 
-                            <div class="rounded-lg border border-blue-100 bg-blue-50/60 p-3 sm:p-4">
+                            <div class="min-w-0 rounded-lg border border-blue-100 bg-blue-50/60 p-3 sm:p-4">
                                 <div class="flex flex-col gap-4 border-b border-blue-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
                                     <div>
-                                        <h4 class="text-base font-semibold text-blue-950">Incident Report</h4>
-                                        <p class="mt-1 text-sm text-slate-500">Open a separate form only when something happened.</p>
+                                        <h4 class="break-words text-base font-semibold text-blue-950">Incident Report</h4>
+                                        <p class="mt-1 break-words text-sm text-slate-500">Open a separate form only when something happened.</p>
                                     </div>
                                     <label class="inline-flex w-fit items-center gap-2 rounded-full border border-blue-100 bg-white px-3 py-2 text-sm font-semibold text-blue-800">
-                                        <input type="checkbox" name="has_incident" value="1" x-model="incident" class="rounded border-slate-300 text-blue-700 focus:ring-blue-500" @checked($incidentDefault) @change="handleIncidentToggle($event)">
+                                        <input form="patrol-record-form" type="checkbox" name="has_incident" value="1" x-model="incident" class="rounded border-slate-300 text-blue-700 focus:ring-blue-500" @checked($incidentDefault) @change="handleIncidentToggle($event)">
                                         Incident observed
                                     </label>
                                 </div>
@@ -605,7 +608,7 @@
                                 <button type="button" class="inline-flex h-11 items-center justify-center rounded-md border border-blue-200 bg-white px-5 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="checklistModalOpen = false" :disabled="submittingPatrol">
                                     Review Scan
                                 </button>
-                                <button type="submit" class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" :disabled="! patrolLogId || ! areaSelfieComplete() || submittingPatrol || imageCompressionBusy" :class="(! patrolLogId || ! areaSelfieComplete() || submittingPatrol || imageCompressionBusy) ? 'cursor-not-allowed opacity-60' : ''">
+                                <button form="patrol-record-form" type="submit" class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" :disabled="! patrolLogId || ! areaSelfieComplete() || submittingPatrol || imageCompressionBusy" :class="(! patrolLogId || ! areaSelfieComplete() || submittingPatrol || imageCompressionBusy) ? 'cursor-not-allowed opacity-60' : ''">
                                     <svg x-show="submittingPatrol || imageCompressionBusy" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
@@ -615,9 +618,11 @@
                             </div>
                         </div>
                     </section>
-                </div>
+                    </div>
+                </template>
 
-                <div x-show="checklistPhotoModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[95] flex items-center justify-center bg-slate-950/70 p-3 sm:p-6" x-on:click.self="closeChecklistPhotoPreview()" x-on:keydown.escape.window="checklistPhotoModalOpen && closeChecklistPhotoPreview()">
+                <template x-teleport="body">
+                <div x-show="checklistPhotoModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[125] flex items-center justify-center bg-slate-950/70 p-3 sm:p-6" x-on:click.self="closeChecklistPhotoPreview()" x-on:keydown.escape.window="checklistPhotoModalOpen && closeChecklistPhotoPreview()">
                     <section class="w-full max-w-2xl overflow-hidden rounded-md bg-white shadow-2xl">
                         <div class="flex items-center justify-between gap-3 border-b border-blue-100 px-4 py-3">
                             <p class="min-w-0 truncate text-sm font-semibold text-blue-950" x-text="selectedChecklistPhoto?.name || 'Checklist proof photo'"></p>
@@ -632,14 +637,16 @@
                         </div>
                     </section>
                 </div>
+                </template>
 
-                <div x-show="incidentModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[85] flex items-stretch justify-center overflow-hidden bg-slate-950/60 p-0 sm:items-center sm:px-4 sm:py-6" x-on:keydown.escape.window="incidentModalOpen && closeIncidentModal()">
-                    <section class="flex h-[100svh] max-h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-h-[92vh] sm:max-w-xl sm:rounded-lg">
+                <template x-teleport="body">
+                <div x-show="incidentModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[120] flex items-center justify-center overflow-hidden bg-slate-950/60 p-0 sm:p-4" x-on:keydown.escape.window="incidentModalOpen && closeIncidentModal()">
+                    <section class="flex h-[100dvh] max-h-[100dvh] w-full min-w-0 flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-h-[92dvh] sm:max-w-xl sm:rounded-lg">
                         <div class="flex shrink-0 items-start justify-between gap-4 border-b border-blue-100 px-4 py-4 sm:px-5">
-                            <div>
+                            <div class="min-w-0">
                                 <p class="text-xs font-semibold uppercase tracking-wide text-amber-700">Incident Report</p>
-                                <h3 class="text-lg font-semibold text-blue-950">Report Observed Incident</h3>
-                                <p class="mt-1 text-sm text-slate-500">This submits together with the completed checklist.</p>
+                                <h3 class="break-words text-lg font-semibold text-blue-950">Report Observed Incident</h3>
+                                <p class="mt-1 break-words text-sm text-slate-500">This submits together with the completed checklist.</p>
                             </div>
                             <button type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-100 bg-white text-slate-700 hover:bg-blue-50" @click="closeIncidentModal()" aria-label="Back to checklist">
                                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -648,12 +655,12 @@
                             </button>
                         </div>
 
-                        <div class="mobile-scroll-area flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
+                        <div class="mobile-scroll-area min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
                             <p x-show="incidentFormError" x-cloak class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700" x-text="incidentFormError"></p>
 
                             <div>
                                 <label for="incident_category" class="block text-sm font-medium text-slate-700">Category</label>
-                                <select x-ref="incidentCategory" id="incident_category" name="incident_category" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" :required="incident && incidentModalOpen" @change="syncIncidentPriorityFromCategory(); incidentFormError = ''">
+                                <select form="patrol-record-form" x-ref="incidentCategory" id="incident_category" name="incident_category" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" :required="incident && incidentModalOpen" @change="syncIncidentPriorityFromCategory(); incidentFormError = ''">
                                     @foreach ($incidentCategories as $category)
                                         <option value="{{ $category }}" @selected($selectedIncidentCategory === $category)>{{ $category }}</option>
                                     @endforeach
@@ -663,7 +670,7 @@
 
                             <div>
                                 <label for="incident_priority" class="block text-sm font-medium text-slate-700">Priority</label>
-                                <select x-ref="incidentPriority" id="incident_priority" name="incident_priority" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <select form="patrol-record-form" x-ref="incidentPriority" id="incident_priority" name="incident_priority" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     @foreach ($incidentPriorityOptions as $value => $label)
                                         <option value="{{ $value }}" @selected($selectedIncidentPriority === $value)>{{ $label }}</option>
                                     @endforeach
@@ -674,7 +681,7 @@
 
                             <div>
                                 <label for="incident_description" class="sr-only">Description</label>
-                                <textarea x-ref="incidentDescription" id="incident_description" name="incident_description" rows="4" placeholder="Description" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" :required="incident && incidentModalOpen" @input="incidentFormError = ''">{{ old('incident_description') }}</textarea>
+                                <textarea form="patrol-record-form" x-ref="incidentDescription" id="incident_description" name="incident_description" rows="4" placeholder="Description" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" :required="incident && incidentModalOpen" @input="incidentFormError = ''">{{ old('incident_description') }}</textarea>
                                 <x-input-error :messages="$errors->get('incident_description')" class="mt-2" />
                             </div>
 
@@ -692,7 +699,7 @@
                                             Take Photo
                                         </button>
                                         <input x-ref="incidentCameraCapture" id="incident_camera_capture" type="file" accept="image/*" capture="environment" class="sr-only" @change="addIncidentCameraImage($event)">
-                                        <input x-ref="incidentCameraImages" id="incident_camera_images" name="incident_camera_images[]" type="file" accept="image/*" multiple class="sr-only">
+                                        <input form="patrol-record-form" x-ref="incidentCameraImages" id="incident_camera_images" name="incident_camera_images[]" type="file" accept="image/*" multiple class="sr-only">
                                     </div>
 
                                     <p class="mt-2 text-xs text-slate-500">
@@ -725,7 +732,7 @@
                             <button type="button" class="inline-flex h-11 items-center justify-center rounded-md border border-blue-200 bg-white px-5 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60" @click="closeIncidentModal()" :disabled="submittingPatrol">
                                 Back to Checklist
                             </button>
-                            <button type="submit" class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" :disabled="! patrolLogId || ! areaSelfieComplete() || submittingPatrol || imageCompressionBusy">
+                            <button form="patrol-record-form" type="submit" class="inline-flex h-11 items-center justify-center rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300" :disabled="! patrolLogId || ! areaSelfieComplete() || submittingPatrol || imageCompressionBusy">
                                 <svg x-show="submittingPatrol || imageCompressionBusy" class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
@@ -735,6 +742,7 @@
                         </div>
                     </section>
                 </div>
+                </template>
 
                 <div x-show="submittingPatrol" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[95] flex items-center justify-center bg-white/75 px-4 backdrop-blur-md dark:bg-slate-950/80">
                     <x-brand-spinner dots class="brand-spinner-floating text-blue-950 dark:text-blue-100">
