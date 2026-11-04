@@ -11,7 +11,7 @@
 
 <div class="grid gap-5 md:grid-cols-2">
     <div>
-        <label for="{{ $fieldPrefix }}_code" class="sr-only">Checkpoint Code</label>
+        <label for="{{ $fieldPrefix }}_code" class="block text-sm font-medium text-slate-700">Checkpoint Code</label>
         <input
             id="{{ $fieldPrefix }}_code"
             @if ($formContext === 'create') x-ref="createCheckpointFirstField" @endif
@@ -26,19 +26,19 @@
     </div>
 
     <div>
-        <label for="{{ $fieldPrefix }}_name" class="sr-only">Checkpoint Name</label>
+        <label for="{{ $fieldPrefix }}_name" class="block text-sm font-medium text-slate-700">Checkpoint Name</label>
         <input id="{{ $fieldPrefix }}_name" name="name" value="{{ $valueFor('name', $checkpoint->name) }}" placeholder="IT" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
         <x-input-error :messages="$errorFor('name')" class="mt-2" />
     </div>
 
     <div>
-        <label for="{{ $fieldPrefix }}_location" class="sr-only">Location</label>
+        <label for="{{ $fieldPrefix }}_location" class="block text-sm font-medium text-slate-700">Location</label>
         <input id="{{ $fieldPrefix }}_location" name="location" value="{{ $valueFor('location', $checkpoint->location) }}" placeholder="IT Building" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
         <x-input-error :messages="$errorFor('location')" class="mt-2" />
     </div>
 
     <div>
-        <label for="{{ $fieldPrefix }}_device_uid" class="sr-only">Device UID</label>
+        <label for="{{ $fieldPrefix }}_device_uid" class="block text-sm font-medium text-slate-700">Device UID</label>
         <input id="{{ $fieldPrefix }}_device_uid" name="device_uid" value="{{ $valueFor('device_uid', $checkpoint->device_uid) }}" placeholder="ESP32-IT-01" class="mt-1 block w-full rounded-md border-slate-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500">
         <x-input-error :messages="$errorFor('device_uid')" class="mt-2" />
     </div>
