@@ -233,9 +233,9 @@
                                         aria-label="Open notifications"
                                         x-on:click.stop="open = ! open"
                                     >
-                                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                            <path d="M18 10a6 6 0 0 0-12 0c0 6.5-3 7-3 9h18c0-2-3-2.5-3-9Z" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M9 21h6a3 3 0 0 1-6 0Z" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M15 17H9m9-6a6 6 0 0 0-12 0c0 3-1 4.5-2 6h16c-1-1.5-2-3-2-6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M10 20a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                                         </svg>
                                         @if ($notificationCount > 0)
                                             <span class="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white ring-2 ring-white dark:ring-slate-900">
