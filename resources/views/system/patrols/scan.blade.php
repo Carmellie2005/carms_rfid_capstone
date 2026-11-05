@@ -719,7 +719,7 @@
 
                             <div>
                                 <span class="block text-sm font-medium text-slate-700">
-                                    Incident Images <span class="text-red-600">*</span>
+                                    Incident Images <span class="text-red-600">(2 required)</span>
                                 </span>
                                 <div class="mt-1 rounded-md border border-dashed border-blue-200 bg-blue-50/60 p-3">
                                     <div>
@@ -735,7 +735,7 @@
                                     </div>
 
                                     <p class="mt-2 text-xs text-slate-500">
-                                        Take a new photo or attach evidence saved from the actual incident location. Maximum 3 images total.
+                                        Take a new photo or attach evidence saved from the actual incident location. At least 2 and up to 3 images are required.
                                     </p>
 
                                     <div x-show="incidentImagePreviews.length" x-cloak class="mt-3">

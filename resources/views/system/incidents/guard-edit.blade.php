@@ -99,7 +99,7 @@
                     <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h3 class="text-base font-bold text-blue-950">Evidence Photos</h3>
-                            <p class="mt-1 text-sm text-slate-500">Keep at least one photo and up to three photos total.</p>
+                            <p class="mt-1 text-sm text-slate-500">Keep at least 2 photos and up to 3 photos total.</p>
                         </div>
                         <span class="w-fit rounded-md bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 ring-1 ring-blue-100">{{ $incidentImages->count() }} current</span>
                     </div>

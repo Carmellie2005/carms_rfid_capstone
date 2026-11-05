@@ -202,6 +202,91 @@ async function compressedImageFile(file, options = {}) {
     }
 }
 
+async function stampedIncidentImageFile(file, capturedAt, coords, options = {}) {
+    if (! file || (file.type && ! file.type.startsWith('image/'))) {
+        throw new Error('Choose a valid incident photo.');
+    }
+
+    const source = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('The incident photo could not be read.'));
+        reader.readAsDataURL(file);
+    });
+    const image = await imageFromDataUrl(source);
+    const maxSize = options.maxSize || 1280;
+    const width = image.naturalWidth || image.width;
+    const height = image.naturalHeight || image.height;
+    const scale = Math.min(1, maxSize / Math.max(width, height));
+    const canvas = document.createElement('canvas');
+
+    canvas.width = Math.max(1, Math.round(width * scale));
+    canvas.height = Math.max(1, Math.round(height * scale));
+
+    const context = canvas.getContext('2d');
+
+    if (! context) {
+        throw new Error('The incident photo could not be prepared.');
+    }
+
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    const latitude = Number(coords?.latitude);
+    const longitude = Number(coords?.longitude);
+    const accuracy = Number(coords?.accuracy);
+    const stampDate = capturedAt instanceof Date ? capturedAt : new Date(capturedAt);
+    const timeLabel = Number.isNaN(stampDate.getTime())
+        ? String(capturedAt || 'Time unavailable')
+        : stampDate.toLocaleString('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true,
+        });
+    const gpsLabel = Number.isFinite(latitude) && Number.isFinite(longitude)
+        ? `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
+        : 'GPS unavailable';
+    const accuracyLabel = Number.isFinite(accuracy) && accuracy > 0
+        ? `Accuracy: +/- ${Math.round(accuracy)}m`
+        : '';
+    const fontSize = Math.max(16, Math.round(canvas.width * 0.023));
+    const padding = Math.max(12, Math.round(canvas.width * 0.02));
+    const lineHeight = Math.round(fontSize * 1.35);
+    const lines = [
+        'INCIDENT EVIDENCE',
+        `Time: ${timeLabel}`,
+        `GPS: ${gpsLabel}`,
+        ...(accuracyLabel ? [accuracyLabel] : []),
+    ];
+    const boxHeight = (lineHeight * lines.length) + (padding * 2);
+    const boxTop = Math.max(0, canvas.height - boxHeight);
+
+    context.fillStyle = 'rgba(15, 23, 42, 0.82)';
+    context.fillRect(0, boxTop, canvas.width, boxHeight);
+    context.fillStyle = '#ffffff';
+    context.font = `600 ${fontSize}px Arial, sans-serif`;
+    context.textBaseline = 'top';
+
+    lines.forEach((line, index) => {
+        context.fillText(line, padding, boxTop + padding + (index * lineHeight));
+    });
+
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', options.quality || 0.8));
+
+    if (! blob?.size || typeof File === 'undefined') {
+        throw new Error('The stamped incident photo could not be prepared.');
+    }
+
+    return new File([blob], compressedImageName(file.name), {
+        type: 'image/jpeg',
+        lastModified: file.lastModified || Date.now(),
+    });
+}
+
 async function replaceInputImagesWithCompressedCopies(input, options = {}) {
     if (! input?.files?.length || typeof DataTransfer === 'undefined') {
         return false;
@@ -1564,7 +1649,7 @@ Alpine.data('patrolScan', (config = {}) => ({
                 maximumAge: 0,
                 timeout: 12000,
             });
-            const preparedFile = await compressedImageFile(file, {
+            const preparedFile = await stampedIncidentImageFile(file, capturedAt, position.coords, {
                 maxSize: 1600,
                 quality: 0.8,
             });
@@ -1718,19 +1803,6 @@ Alpine.data('patrolScan', (config = {}) => ({
             return false;
         }
 
-        this.imageCompressionBusy = true;
-        this.imageCompressionMessage = 'Preparing captured photo...';
-
-        try {
-            await replaceInputImagesWithCompressedCopies(input, {
-                maxSize: 1280,
-                quality: 0.72,
-            });
-        } finally {
-            this.imageCompressionBusy = false;
-            this.imageCompressionMessage = '';
-        }
-
         const file = input.files?.[0];
 
         if (! file) {
@@ -1743,9 +1815,36 @@ Alpine.data('patrolScan', (config = {}) => ({
             return false;
         }
 
+        this.imageCompressionBusy = true;
+        this.imageCompressionMessage = 'Getting GPS and stamping the incident photo...';
+
+        let preparedFile;
+
+        try {
+            const position = await this.getAreaSelfiePosition({
+                maximumAge: 0,
+                timeout: 12000,
+            });
+            preparedFile = await stampedIncidentImageFile(file, new Date(), position.coords, {
+                maxSize: 1280,
+                quality: 0.8,
+            });
+        } catch (error) {
+            input.value = '';
+            this.incidentImageError = error?.code
+                ? this.areaSelfieLocationErrorMessage(error)
+                : (error?.message || 'The incident photo could not be stamped with GPS and time.');
+            this.imageCompressionBusy = false;
+            this.imageCompressionMessage = '';
+            return false;
+        } finally {
+            this.imageCompressionBusy = false;
+            this.imageCompressionMessage = '';
+        }
+
         const cameraInput = this.$refs.incidentCameraImages;
         const currentCameraFiles = Array.from(cameraInput?.files || []);
-        const nextCameraFiles = [...currentCameraFiles, file];
+        const nextCameraFiles = [...currentCameraFiles, preparedFile];
         const total = nextCameraFiles.length + this.selectedIncidentEvidenceIds.length;
 
         if (total > 3) {
@@ -1810,8 +1909,8 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.refreshIncidentImagePreviews();
         this.incidentFormError = '';
 
-        if (this.incident && total === 0) {
-            this.incidentImageError = 'Please take at least one incident photo before submitting the incident report.';
+        if (this.incident && total < 2) {
+            this.incidentImageError = `Please attach at least ${2 - total} more incident photo${2 - total === 1 ? '' : 's'} before submitting the incident report.`;
 
             return false;
         }

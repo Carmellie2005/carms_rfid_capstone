@@ -131,10 +131,10 @@ class IncidentReportController extends Controller
         $remainingImageCount = $incidentReport->images->count() - $imagesToRemove->count() + $legacyImageCount;
         $totalImageCount = $remainingImageCount + count($newImageFiles);
 
-        if ($totalImageCount < 1) {
+        if ($totalImageCount < 2) {
             return back()
                 ->withInput()
-                ->withErrors(['incident_camera_images' => 'Keep at least one incident photo or take a new one before saving.']);
+                ->withErrors(['incident_camera_images' => 'Keep at least 2 incident photos or take another photo before saving.']);
         }
 
         if ($totalImageCount > 3) {

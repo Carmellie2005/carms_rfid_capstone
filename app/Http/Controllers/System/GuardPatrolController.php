@@ -259,7 +259,7 @@ class GuardPatrolController extends Controller
             'incident_category.required_if' => 'Please choose an incident category.',
             'incident_priority.required_if' => 'Please choose the incident priority.',
             'incident_description.required_if' => 'Please describe what happened in the incident report.',
-            'incident_camera_images.array' => 'Please take at least one incident photo before submitting the incident report.',
+            'incident_camera_images.array' => 'Please attach at least two incident photos before submitting the incident report.',
             'incident_camera_images.max' => 'Please take up to 3 incident photos only.',
             'incident_camera_images.*.image' => 'Please take a valid incident photo.',
             'incident_camera_images.*.mimes' => 'Incident photos must be JPG, PNG, or WEBP.',
@@ -703,8 +703,8 @@ class GuardPatrolController extends Controller
             return 'Please take up to 3 incident photos only.';
         }
 
-        if ($totalImages === 0) {
-            return 'Please take at least one incident photo before submitting the incident report.';
+        if ($totalImages < 2) {
+            return 'Please attach at least 2 incident photos before submitting the incident report.';
         }
 
         return null;

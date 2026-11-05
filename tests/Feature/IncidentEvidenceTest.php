@@ -90,6 +90,9 @@ class IncidentEvidenceTest extends TestCase
                 'incident_category' => 'Property Damage / Vandalism',
                 'incident_priority' => 'high',
                 'incident_description' => 'The incident was found away from the checkpoint.',
+                'incident_camera_images' => [
+                    UploadedFile::fake()->image('checkpoint-context.jpg', 320, 240),
+                ],
                 'incident_evidence_ids' => [$evidence->id],
             ]);
 
@@ -98,13 +101,44 @@ class IncidentEvidenceTest extends TestCase
             ->assertSessionHasNoErrors();
 
         $incident = IncidentReport::with('images.incidentEvidence')->firstOrFail();
-        $reportImage = $incident->images->firstOrFail();
+        $reportImage = $incident->images->firstWhere('source', 'evidence_storage');
 
+        $this->assertCount(2, $incident->images);
+        $this->assertNotNull($reportImage);
         $this->assertSame('evidence_storage', $reportImage->source);
         $this->assertSame($evidence->id, $reportImage->incident_evidence_id);
         $this->assertSame($incident->id, $evidence->fresh()->incident_report_id);
         $this->assertSame(10.1234567, (float) $reportImage->incidentEvidence->latitude);
         Storage::disk('public')->assertExists($reportImage->image_path);
+    }
+
+    public function test_incident_submission_requires_two_images(): void
+    {
+        Storage::fake('public');
+        [$user, $guard, $patrolLog] = $this->pendingPatrol();
+
+        $response = $this
+            ->actingAs($user)
+            ->from(route('patrol.scan'))
+            ->post(route('patrol.store'), [
+                'patrol_log_id' => $patrolLog->id,
+                ...$this->areaSelfiePayload(),
+                ...$this->normalChecklistStatuses(),
+                'has_incident' => '1',
+                'incident_category' => 'Safety Hazard',
+                'incident_priority' => 'normal',
+                'incident_description' => 'Only one photo was attached.',
+                'incident_camera_images' => [
+                    UploadedFile::fake()->image('one-photo.jpg', 320, 240),
+                ],
+            ]);
+
+        $response
+            ->assertRedirect(route('patrol.scan'))
+            ->assertSessionHasErrors(['incident_camera_images' => 'Please attach at least 2 incident photos before submitting the incident report.']);
+
+        $this->assertDatabaseCount('incident_reports', 0);
+        $this->assertSame($guard->id, $patrolLog->guard_id);
     }
 
     private function guardAndCheckpoint(): array
