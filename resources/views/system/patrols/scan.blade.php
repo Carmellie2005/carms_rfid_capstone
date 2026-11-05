@@ -20,17 +20,10 @@
             || $errors->has('incident_camera_images.*');
         $openIncident = $incidentDefault && old('patrol_log_id') && $incidentFormHasErrors;
         $openChecklist = ((($errors->any() && old('patrol_log_id') && $pendingSelfieCaptured) || $pendingSelfieCaptured) && ! $openIncident);
-        $patrolScheduleOpen = (bool) ($patrolScheduleOpen ?? true);
-        $patrolScheduleTestingMode = (bool) ($patrolScheduleTestingMode ?? false);
         $mustChangePassword = (bool) ($mustChangePassword ?? false);
         $showGuardTutorial = Auth::user()?->role === 'guard'
             && ! $mustChangePassword
             && blank(Auth::user()?->guard_tutorial_completed_at);
-        $patrolScheduleMessage = $patrolScheduleMessage ?? 'Guard patrol scanning is only available during the assigned patrol schedule.';
-        $patrolTestingNotice = $patrolTestingNotice ?? 'Testing mode is active, so patrol scanning is open anytime for demo/testing.';
-        $scanWaitingMessage = $patrolScheduleTestingMode
-            ? 'Testing mode is active. Waiting for your ESP32 checkpoint scan anytime.'
-            : 'Waiting for your ESP32 checkpoint scan.';
         $pendingScan = $pendingPatrol ? [
             'id' => $pendingPatrol->id,
             'checkpoint_code' => $pendingPatrol->checkpoint_code,
@@ -92,21 +85,6 @@
             @if (! $guardProfile)
                 <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
                     This account is not linked to a guard profile. Ask the supervisor to link this user to a guard record.
-                </div>
-            @endif
-
-            @if (! $mustChangePassword && $patrolScheduleTestingMode)
-                <div class="flex items-center gap-3 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800 dark:border-blue-400/30 dark:bg-blue-950/50 dark:text-blue-100">
-                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-blue-700 ring-1 ring-blue-100 dark:bg-blue-900 dark:text-blue-100 dark:ring-blue-400/30">
-                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                            <path d="M12 8h.01M11 12h1v5h1M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                    </span>
-                    <span>{{ $patrolTestingNotice }}</span>
-                </div>
-            @elseif (! $mustChangePassword && ! $patrolScheduleOpen)
-                <div class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
-                    Patrol scanning is open only from {{ $patrolScheduleLabel }}. Next patrol window starts {{ $patrolScheduleNextOpen }}.
                 </div>
             @endif
 
@@ -249,11 +227,7 @@
                     guardName: @js($guardName),
                     guardEmployeeNo: @js($guardEmployeeNo),
                     patrolLogId: @js(old('patrol_log_id', $pendingPatrol?->id)),
-                    scanMessage: @js($pendingScan ? ($pendingSelfieCaptured ? 'Area selfie captured. Complete the checklist.' : 'RFID accepted. Take the required area selfie.') : ($patrolScheduleOpen ? $scanWaitingMessage : $patrolScheduleMessage)),
-                    patrolScheduleOpen: @js($patrolScheduleOpen),
-                    patrolScheduleTestingMode: @js($patrolScheduleTestingMode),
-                    patrolScheduleMessage: @js($patrolScheduleMessage),
-                    patrolTestingNotice: @js($patrolTestingNotice),
+                    scanMessage: @js($pendingScan ? ($pendingSelfieCaptured ? 'Area selfie captured. Complete the checklist.' : 'RFID accepted. Take the required area selfie.') : 'Waiting for your ESP32 checkpoint scan.'),
                     openChecklist: @js((bool) $openChecklist),
                     openIncident: @js((bool) $openIncident),
                     areaSelfieCapture: @js($oldAreaSelfieCapture),
@@ -368,12 +342,9 @@
                                 <p class="mt-3 text-[0.68rem] font-semibold uppercase tracking-wide text-blue-700">Step 1</p>
                                 <h3 class="mt-0.5 text-base font-semibold text-blue-950">Scan RFID Card</h3>
                                 <p class="mt-1.5 max-w-md text-sm leading-5 text-slate-500" x-text="scanMessage"></p>
-                                <div x-show="patrolScheduleOpen" class="mt-4 inline-flex items-center gap-2 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-800 ring-1 ring-blue-100">
+                                <div class="mt-4 inline-flex items-center gap-2 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-800 ring-1 ring-blue-100">
                                     <span class="h-2 w-2 animate-pulse rounded-full bg-blue-700"></span>
-                                    <span x-text="patrolScheduleTestingMode ? 'Testing mode: open anytime' : 'Listening for ESP32 scan'"></span>
-                                </div>
-                                <div x-show="! patrolScheduleOpen" x-cloak class="mt-4 inline-flex items-center gap-2 rounded-md bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">
-                                    Scheduled patrol only
+                                    Listening for ESP32 scan
                                 </div>
                             </div>
 
@@ -572,9 +543,7 @@
                             <div class="min-w-0">
                                 <h4 class="text-base font-semibold text-blue-950">Checkpoint Checklist</h4>
                                 <p x-show="imageCompressionMessage" x-cloak x-text="imageCompressionMessage" class="mt-3 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-800"></p>
-                                <p x-show="checklistPhotoError" x-cloak x-text="checklistPhotoError" class="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700"></p>
                                 <x-input-error :messages="$errors->get('checklist_statuses')" class="mt-3" />
-                                <x-input-error :messages="$errors->get('checklist_photos')" class="mt-3" />
                                 <div class="mt-4 grid gap-3 sm:grid-cols-2">
                                     @foreach ($checkpointChecklistItems as $field => $label)
                                         @php
@@ -582,7 +551,7 @@
                                         @endphp
                                         <div class="min-h-24 rounded-md border border-blue-100 bg-white p-3 text-sm text-slate-700 shadow-sm transition hover:bg-blue-50/70">
                                             <label for="{{ $field }}_{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" class="flex h-full cursor-pointer items-start gap-3">
-                                                <input id="{{ $field }}_{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" form="patrol-record-form" type="checkbox" name="checklist_statuses[{{ $field }}]" value="{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" class="mt-0.5 h-5 w-5 shrink-0 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" @checked($selectedChecklistStatus === \App\Support\PatrolChecklist::STATUS_NORMAL) @change="checklistPhotoError = ''">
+                                                <input id="{{ $field }}_{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" form="patrol-record-form" type="checkbox" name="checklist_statuses[{{ $field }}]" value="{{ \App\Support\PatrolChecklist::STATUS_NORMAL }}" class="mt-0.5 h-5 w-5 shrink-0 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" @checked($selectedChecklistStatus === \App\Support\PatrolChecklist::STATUS_NORMAL)>
                                                 <span class="min-w-0 flex-1 font-semibold leading-6 text-slate-800">{{ $label }}</span>
                                             </label>
                                             <x-input-error :messages="$errors->get('checklist_statuses.'.$field)" class="mt-2" />
@@ -651,24 +620,6 @@
                         </div>
                     </section>
                     </div>
-                </template>
-
-                <template x-teleport="body">
-                <div x-show="checklistPhotoModalOpen" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[125] flex items-center justify-center bg-slate-950/70 p-3 sm:p-6" x-on:click.self="closeChecklistPhotoPreview()" x-on:keydown.escape.window="checklistPhotoModalOpen && closeChecklistPhotoPreview()">
-                    <section class="w-full max-w-2xl overflow-hidden rounded-md bg-white shadow-2xl">
-                        <div class="flex items-center justify-between gap-3 border-b border-blue-100 px-4 py-3">
-                            <p class="min-w-0 truncate text-sm font-semibold text-blue-950" x-text="selectedChecklistPhoto?.name || 'Checklist proof photo'"></p>
-                            <button type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-100 bg-white text-slate-700 hover:bg-blue-50" @click="closeChecklistPhotoPreview()" aria-label="Close proof photo preview">
-                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="bg-slate-950 p-2 sm:p-3">
-                            <img x-show="selectedChecklistPhoto" :src="selectedChecklistPhoto?.url" alt="Selected checklist proof photo" class="max-h-[78dvh] w-full rounded object-contain">
-                        </div>
-                    </section>
-                </div>
                 </template>
 
                 <template x-teleport="body">

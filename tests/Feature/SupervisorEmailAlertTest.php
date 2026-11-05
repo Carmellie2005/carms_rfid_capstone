@@ -58,6 +58,7 @@ class SupervisorEmailAlertTest extends TestCase
                 'incident_description' => 'Broken light was observed near the checkpoint.',
                 'incident_camera_images' => [
                     UploadedFile::fake()->image('incident-camera.jpg'),
+                    UploadedFile::fake()->image('incident-camera-2.jpg'),
                 ],
             ])
             ->assertRedirect(route('patrol.scan'))

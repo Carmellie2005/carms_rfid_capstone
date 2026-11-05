@@ -842,15 +842,11 @@ Alpine.data('patrolScan', (config = {}) => ({
     incidentEvidenceMessage: '',
     incidentEvidenceError: '',
     selectedIncidentEvidenceIds: [],
-    checklistPhotoError: '',
-    checklistPhotoPreviews: {},
     imageCompressionBusy: false,
     imageCompressionMessage: '',
     checklistItems: config.checklistItems || [],
     incidentDefaultPriorities: config.incidentDefaultPriorities || {},
     incidentDefaultPriority: config.incidentDefaultPriority || 'normal',
-    checklistPhotoModalOpen: false,
-    selectedChecklistPhoto: null,
     pendingScan: config.pendingScan || null,
     pendingScanUrl: config.pendingScanUrl,
     cancelScanUrl: config.cancelScanUrl,
@@ -859,10 +855,6 @@ Alpine.data('patrolScan', (config = {}) => ({
     guardEmployeeNo: config.guardEmployeeNo || '',
     patrolLogId: config.patrolLogId || '',
     scanMessage: config.scanMessage || 'Waiting for your ESP32 checkpoint scan.',
-    patrolScheduleOpen: config.patrolScheduleOpen ?? true,
-    patrolScheduleTestingMode: config.patrolScheduleTestingMode || false,
-    patrolScheduleMessage: config.patrolScheduleMessage || 'Guard patrol scanning is currently closed.',
-    patrolTestingNotice: config.patrolTestingNotice || '',
     areaSelfieCapture: config.areaSelfieCapture || '',
     areaSelfieCapturedAt: config.areaSelfieCapturedAt || '',
     areaSelfieLatitude: config.areaSelfieLatitude || '',
@@ -892,12 +884,6 @@ Alpine.data('patrolScan', (config = {}) => ({
     boot() {
         this.verificationMessage = 'Scan RFID, take the required area selfie, then complete the patrol checklist.';
         this.loadIncidentEvidence();
-
-        if (! this.patrolScheduleOpen) {
-            this.scanMessage = this.patrolScheduleMessage;
-            this.verificationMessage = this.patrolScheduleMessage;
-            return;
-        }
 
         if (this.incidentModalOpen) {
             this.checklistModalOpen = false;
@@ -1231,10 +1217,6 @@ Alpine.data('patrolScan', (config = {}) => ({
     },
 
     startPolling() {
-        if (! this.patrolScheduleOpen) {
-            return;
-        }
-
         this.fetchPendingScan();
         this.pollingTimer = setInterval(() => this.fetchPendingScan(), 3000);
     },
@@ -1352,15 +1334,9 @@ Alpine.data('patrolScan', (config = {}) => ({
         }
     },
 
-    clearChecklistPhotos() {
-        Object.keys(this.checklistPhotoPreviews).forEach((field) => this.removeChecklistPhoto(field));
-        this.checklistPhotoError = '';
-    },
-
     resetAfterPendingScanCancelled(message) {
         this.stopCamera();
         this.clearAreaSelfieFields();
-        this.clearChecklistPhotos();
         this.clearIncidentReport();
         this.pendingScan = null;
         this.patrolLogId = '';
@@ -1380,146 +1356,17 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.startPolling();
     },
 
-    checklistPhotoCount() {
-        return Object.keys(this.checklistPhotoPreviews).length;
-    },
-
-    checklistPhotoInput(field) {
-        return this.$refs[`checklistPhoto_${field}`];
-    },
-
-    checklistStatus(field) {
-        return document.querySelector(`input[name="checklist_statuses[${field}]"]:checked`)?.value || 'normal';
-    },
-
-    isChecklistIssue(field) {
-        return this.checklistStatus(field) === 'issue';
-    },
-
-    handleChecklistStatusChange(field, event) {
-        this.checklistPhotoError = '';
-
-        if (event?.target?.value !== 'issue') {
-            this.removeChecklistPhoto(field);
-        }
-    },
-
-    takeChecklistPhoto(field) {
-        if (this.submittingPatrol || ! this.isChecklistIssue(field)) {
-            return;
-        }
-
-        this.checklistPhotoInput(field)?.click();
-    },
-
-    async updateChecklistPhoto(field, event) {
-        this.imageCompressionBusy = true;
-        this.imageCompressionMessage = 'Preparing photo...';
-
-        try {
-            await replaceInputImagesWithCompressedCopies(event.target, {
-                maxSize: 1280,
-                quality: 0.72,
-            });
-        } finally {
-            this.imageCompressionBusy = false;
-            this.imageCompressionMessage = '';
-        }
-
-        const file = event.target.files?.[0];
-
-        if (! file) {
-            return;
-        }
-
-        if (file.type && ! file.type.startsWith('image/')) {
-            event.target.value = '';
-            this.checklistPhotoError = 'Choose a valid checklist proof photo.';
-            return;
-        }
-
-        this.removeChecklistPhoto(field, false);
-
-        this.checklistPhotoPreviews = {
-            ...this.checklistPhotoPreviews,
-            [field]: {
-                field,
-                name: file.name || 'Checklist proof photo',
-                url: URL.createObjectURL(file),
-            },
-        };
-        this.checklistPhotoError = '';
-    },
-
-    removeChecklistPhoto(field, clearInput = true) {
-        const preview = this.checklistPhotoPreviews[field];
-
-        if (preview?.url) {
-            URL.revokeObjectURL(preview.url);
-        }
-
-        const nextPreviews = { ...this.checklistPhotoPreviews };
-        delete nextPreviews[field];
-        this.checklistPhotoPreviews = nextPreviews;
-
-        if (this.selectedChecklistPhoto?.field === field) {
-            this.closeChecklistPhotoPreview();
-        }
-
-        if (clearInput) {
-            const input = this.checklistPhotoInput(field);
-
-            if (input) {
-                input.value = '';
-            }
-        }
-    },
-
-    openChecklistPhotoPreview(field) {
-        const preview = this.checklistPhotoPreviews[field];
-
-        if (! preview) {
-            return;
-        }
-
-        this.selectedChecklistPhoto = preview;
-        this.checklistPhotoModalOpen = true;
-    },
-
-    closeChecklistPhotoPreview() {
-        this.checklistPhotoModalOpen = false;
-        this.selectedChecklistPhoto = null;
-    },
-
     validateChecklistCompletion() {
         const missingItems = this.checklistItems
             .filter((item) => ! document.querySelector(`input[name="checklist_statuses[${item.field}]"]:checked`))
             .map((item) => item.label);
 
         if (missingItems.length > 0) {
-            this.checklistPhotoError = `Please check all patrol checklist items before submitting: ${missingItems.join(', ')}.`;
+            this.verificationMessage = `Please check all patrol checklist items before submitting: ${missingItems.join(', ')}.`;
             return false;
         }
 
-        this.checklistPhotoError = '';
-        return true;
-    },
-
-    validateChecklistPhotos() {
-        const missingIssuePhotos = this.checklistItems
-            .filter((item) => {
-                const selected = document.querySelector(`input[name="checklist_statuses[${item.field}]"]:checked`);
-
-                return selected?.value === 'issue' && ! this.checklistPhotoPreviews[item.field];
-            })
-            .map((item) => item.label);
-
-        if (missingIssuePhotos.length > 0) {
-            this.checklistPhotoError = `Take a proof photo for each Issue Found item: ${missingIssuePhotos.join(', ')}.`;
-            return false;
-        }
-
-        this.checklistPhotoError = '';
+        this.verificationMessage = '';
         return true;
     },
 
@@ -1937,12 +1784,6 @@ Alpine.data('patrolScan', (config = {}) => ({
             return;
         }
 
-        if (! this.patrolScheduleOpen) {
-            event.preventDefault();
-            this.verificationMessage = this.patrolScheduleMessage;
-            return;
-        }
-
         if (! this.patrolLogId || ! this.areaSelfieComplete()) {
             event.preventDefault();
             this.areaSelfieError = this.patrolLogId
@@ -1952,7 +1793,7 @@ Alpine.data('patrolScan', (config = {}) => ({
             return;
         }
 
-        if (! this.validateChecklistCompletion() || ! this.validateChecklistPhotos()) {
+        if (! this.validateChecklistCompletion()) {
             event.preventDefault();
             this.checklistModalOpen = true;
             return;

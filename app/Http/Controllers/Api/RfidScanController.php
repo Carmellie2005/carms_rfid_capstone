@@ -9,7 +9,6 @@ use App\Models\PatrolLog;
 use App\Services\SupervisorEmailNotifier;
 use App\Services\SupervisorPushNotifier;
 use App\Support\AuditLogger;
-use App\Support\PatrolSchedule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -22,9 +21,6 @@ class RfidScanController extends Controller
             return response()->json([
                 'message' => 'RFID endpoint is ready. Send rfid_uid and device_uid as query parameters or JSON fields.',
                 'example_get' => url('/api/rfid-scan?rfid_uid=F33C8D37&device_uid=ESP32-IT-01'),
-                'patrol_window' => PatrolSchedule::windowLabel(),
-                'testing_mode' => PatrolSchedule::isTestingMode(),
-                'testing_notice' => PatrolSchedule::isTestingMode() ? PatrolSchedule::testingNotice() : null,
                 'example_post' => [
                     'rfid_uid' => 'F33C8D37',
                     'device_uid' => 'ESP32-IT-01',
@@ -72,55 +68,9 @@ class RfidScanController extends Controller
                 'message' => $message,
                 'diagnostic' => $diagnostic,
                 'status' => 'unregistered_rfid',
-                'patrol_window' => PatrolSchedule::windowLabel(),
-                'testing_mode' => PatrolSchedule::isTestingMode(),
-                'testing_notice' => PatrolSchedule::isTestingMode() ? PatrolSchedule::testingNotice() : null,
                 'guard' => null,
                 'checkpoint' => $checkpoint?->only(['id', 'code', 'name', 'location']),
             ], 422);
-        }
-
-        if (! PatrolSchedule::isOpen()) {
-            $scheduleMessage = PatrolSchedule::closedMessage();
-            $patrolLog = PatrolLog::create([
-                'guard_id' => $matchedGuard->id,
-                'checkpoint_id' => $matchedCheckpoint?->id,
-                'rfid_uid' => $rfidUid,
-                'checkpoint_code' => $matchedCheckpoint?->code ?? $checkpointToken,
-                'rfid_status' => 'outside_schedule',
-                'status' => 'outside_schedule',
-                'scanned_at' => $scannedAt,
-                'notes' => $scheduleMessage.' '.$diagnostic,
-            ]);
-
-            $this->markReaderSeen($matchedCheckpoint, $request, $patrolLog->status, $scheduleMessage);
-
-            AuditLogger::record('rfid_scan_blocked_schedule', 'RFID scan blocked outside patrol schedule.', $patrolLog, [
-                'rfid_uid' => $rfidUid,
-                'checkpoint_token' => $checkpointToken,
-                'device_uid' => $data['device_uid'] ?? null,
-                'patrol_window' => PatrolSchedule::windowLabel(),
-                'testing_mode' => PatrolSchedule::isTestingMode(),
-                'current_time' => PatrolSchedule::manilaTime()->toDateTimeString(),
-                'diagnostic' => $diagnostic,
-                'guard_id' => $matchedGuard?->id,
-                'checkpoint_id' => $matchedCheckpoint?->id,
-            ]);
-
-            $emailNotifier->sendPatrolScanIssue($patrolLog);
-            $pushNotifier->sendPatrolScanIssue($patrolLog);
-
-            return response()->json([
-                'message' => $scheduleMessage,
-                'diagnostic' => $scheduleMessage,
-                'patrol_log_id' => $patrolLog->id,
-                'status' => $patrolLog->status,
-                'patrol_window' => PatrolSchedule::windowLabel(),
-                'testing_mode' => PatrolSchedule::isTestingMode(),
-                'testing_notice' => PatrolSchedule::isTestingMode() ? PatrolSchedule::testingNotice() : null,
-                'guard' => $guard?->only(['id', 'name', 'employee_no']),
-                'checkpoint' => $checkpoint?->only(['id', 'code', 'name', 'location']),
-            ], 409);
         }
 
         if ($isValid) {
@@ -164,8 +114,6 @@ class RfidScanController extends Controller
             'diagnostic' => $diagnostic,
             'guard_id' => $matchedGuard?->id,
             'checkpoint_id' => $matchedCheckpoint?->id,
-            'patrol_window' => PatrolSchedule::windowLabel(),
-            'testing_mode' => PatrolSchedule::isTestingMode(),
         ]);
 
         if (! $isValid) {
@@ -182,9 +130,6 @@ class RfidScanController extends Controller
             'diagnostic' => $diagnostic,
             'patrol_log_id' => $patrolLog->id,
             'status' => $patrolLog->status,
-            'patrol_window' => PatrolSchedule::windowLabel(),
-            'testing_mode' => PatrolSchedule::isTestingMode(),
-            'testing_notice' => PatrolSchedule::isTestingMode() ? PatrolSchedule::testingNotice() : null,
             'guard' => $guard?->only(['id', 'name', 'employee_no']),
             'checkpoint' => $checkpoint?->only(['id', 'code', 'name', 'location']),
         ], match (true) {

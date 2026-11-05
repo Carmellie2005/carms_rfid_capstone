@@ -42,7 +42,9 @@ class PatrolAreaSelfieTest extends TestCase
             ->assertJson([
                 'message' => 'RFID scan accepted. Take the required area selfie.',
                 'status' => 'pending_selfie',
-            ]);
+            ])
+            ->assertJsonMissingPath('patrol_window')
+            ->assertJsonMissingPath('testing_mode');
 
         $this->assertDatabaseHas('patrol_logs', [
             'guard_id' => $guard->id,
@@ -214,7 +216,6 @@ class PatrolAreaSelfieTest extends TestCase
                 'patrol_log_id' => $patrolLog->id,
                 ...$this->areaSelfiePayload(),
                 ...$checklistStatuses,
-                ...$this->checklistProofPhotos('doors_checked'),
             ]);
 
         $response
@@ -248,6 +249,9 @@ class PatrolAreaSelfieTest extends TestCase
             ->assertSee('openAreaSelfieCamera()', false)
             ->assertSee('captureAreaSelfie()', false)
             ->assertSee('checklist_statuses[doors_checked]', false)
+            ->assertDontSee('checklist_photos', false)
+            ->assertDontSee('Checklist proof photo')
+            ->assertDontSee('Scheduled patrol only')
             ->assertDontSee('Start Face Verification')
             ->assertDontSee('Face Verify')
             ->assertDontSee('face-verification-circle')
@@ -383,13 +387,11 @@ class PatrolAreaSelfieTest extends TestCase
             ->assertRedirect(route('patrol.scan'))
             ->assertSessionHasNoErrors();
 
-        $patrolLog->refresh()->load(['checklistResponse.proofPhotos', 'incidentReport.images']);
+        $patrolLog->refresh()->load('incidentReport.images');
 
         $this->assertSame($guard->id, $patrolLog->guard_id);
         $this->assertSame('image/jpeg', $patrolLog->area_selfie_mime_type);
         $this->assertStoredImageIsCompressedJpeg($patrolLog->area_selfie_path);
-
-        $this->assertCount(0, $patrolLog->checklistResponse->proofPhotos);
 
         $incidentImages = $patrolLog->incidentReport->images;
         $this->assertCount(2, $incidentImages);
@@ -417,15 +419,6 @@ class PatrolAreaSelfieTest extends TestCase
         $file = UploadedFile::fake()->image($name, 32, 32);
 
         return 'data:image/jpeg;base64,'.base64_encode(file_get_contents($file->getRealPath()));
-    }
-
-    private function checklistProofPhotos(string $field): array
-    {
-        return [
-            'checklist_photos' => [
-                $field => UploadedFile::fake()->image("proof-{$field}.jpg", 24, 24),
-            ],
-        ];
     }
 
     private function normalChecklistStatuses(): array

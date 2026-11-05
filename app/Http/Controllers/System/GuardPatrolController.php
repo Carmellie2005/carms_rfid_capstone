@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\System;
 
 use App\Http\Controllers\Controller;
-use App\Models\ChecklistResponse;
 use App\Models\Checkpoint;
 use App\Models\Guard;
 use App\Models\IncidentEvidence;
@@ -12,7 +11,6 @@ use App\Models\PatrolLog;
 use App\Support\AuditLogger;
 use App\Support\ImageCompressor;
 use App\Support\PatrolChecklist;
-use App\Support\PatrolSchedule;
 use App\Services\SupervisorEmailNotifier;
 use App\Services\SupervisorPushNotifier;
 use Illuminate\Http\JsonResponse;
@@ -35,8 +33,7 @@ class GuardPatrolController extends Controller
         $user = auth()->user();
         $guardProfile = $user?->guardProfile;
         $mustChangePassword = (bool) $user?->must_change_password;
-        $patrolScheduleOpen = PatrolSchedule::isOpen();
-        $pendingPatrol = $guardProfile && ! $mustChangePassword && $patrolScheduleOpen
+        $pendingPatrol = $guardProfile && ! $mustChangePassword
             ? $this->latestPendingPatrolFor($guardProfile)
             : null;
 
@@ -45,12 +42,6 @@ class GuardPatrolController extends Controller
             'guardProfile' => $guardProfile,
             'mustChangePassword' => $mustChangePassword,
             'pendingPatrol' => $pendingPatrol,
-            'patrolScheduleOpen' => $patrolScheduleOpen,
-            'patrolScheduleTestingMode' => PatrolSchedule::isTestingMode(),
-            'patrolScheduleLabel' => PatrolSchedule::windowLabel(),
-            'patrolScheduleMessage' => PatrolSchedule::isTestingMode() ? PatrolSchedule::testingNotice() : PatrolSchedule::closedMessage(),
-            'patrolTestingNotice' => PatrolSchedule::testingNotice(),
-            'patrolScheduleNextOpen' => PatrolSchedule::nextOpenAt()->format('M d, Y h:i A'),
         ]);
     }
 
@@ -191,23 +182,10 @@ class GuardPatrolController extends Controller
             ], 403);
         }
 
-        if (! PatrolSchedule::isOpen()) {
-            return response()->json([
-                'pending' => false,
-                'message' => PatrolSchedule::closedMessage(),
-                'patrol_window' => PatrolSchedule::windowLabel(),
-                'testing_mode' => PatrolSchedule::isTestingMode(),
-                'patrol_log' => null,
-            ]);
-        }
-
         $patrolLog = $this->latestPendingPatrolFor($guard);
 
         return response()->json([
             'pending' => (bool) $patrolLog,
-            'patrol_window' => PatrolSchedule::windowLabel(),
-            'testing_mode' => PatrolSchedule::isTestingMode(),
-            'testing_notice' => PatrolSchedule::isTestingMode() ? PatrolSchedule::testingNotice() : null,
             'patrol_log' => $patrolLog ? $this->patrolLogPayload($patrolLog) : null,
         ]);
     }
@@ -235,8 +213,6 @@ class GuardPatrolController extends Controller
             'area_selfie_longitude' => ['required', 'numeric', 'between:-180,180'],
             'area_selfie_accuracy' => ['nullable', 'numeric', 'min:0', 'max:10000'],
             ...PatrolChecklist::validationRules(),
-            'checklist_photos' => ['nullable', 'array', 'max:'.count(PatrolChecklist::fields())],
-            'checklist_photos.*' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
             'has_incident' => ['nullable', 'boolean'],
             'incident_category' => ['nullable', 'required_if:has_incident,1', 'string', 'max:100', Rule::in(PatrolChecklist::incidentCategories())],
             'incident_priority' => ['nullable', 'required_if:has_incident,1', Rule::in(array_keys(PatrolChecklist::incidentPriorityOptions()))],
@@ -267,12 +243,6 @@ class GuardPatrolController extends Controller
             'incident_evidence_ids.max' => 'Please attach up to 3 saved incident evidence images only.',
         ]);
 
-        if (! PatrolSchedule::isOpen()) {
-            return back()
-                ->withInput()
-                ->with('warning', PatrolSchedule::closedMessage());
-        }
-
         $patrolLog = PatrolLog::with('checkpoint')
             ->whereKey($data['patrol_log_id'])
             ->where('guard_id', $guard->id)
@@ -294,7 +264,6 @@ class GuardPatrolController extends Controller
 
         $patrolStatus = 'valid';
         $checkpoint = $patrolLog->checkpoint;
-        $checklistProofPhotoFiles = $this->checklistProofPhotoFiles($request);
         $incidentImageFiles = $this->incidentImageFiles($request);
         $incidentEvidenceIds = collect($data['incident_evidence_ids'] ?? [])
             ->map(fn ($id) => (int) $id)
@@ -302,17 +271,10 @@ class GuardPatrolController extends Controller
             ->unique()
             ->values();
         $incidentEvidence = $this->incidentEvidenceForSubmission($guard, $incidentEvidenceIds);
-        $checklistProofPhotoError = $this->checklistProofPhotoError($request, $checklistProofPhotoFiles);
         $incidentImageError = $this->incidentImageError($request, $incidentImageFiles, $incidentEvidence->count());
         $incidentReport = null;
         $submittedAt = now(config('app.timezone'));
         $selfieCapturedAt = Carbon::parse($data['area_selfie_captured_at'])->timezone(config('app.timezone'));
-
-        if ($checklistProofPhotoError) {
-            return back()
-                ->withInput()
-                ->withErrors(['checklist_photos' => $checklistProofPhotoError]);
-        }
 
         if ($incidentImageError) {
             return back()
@@ -326,7 +288,7 @@ class GuardPatrolController extends Controller
                 ->withErrors(['incident_evidence_ids' => 'One or more saved incident evidence images are no longer available. Please refresh the evidence list and select them again.']);
         }
 
-        DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $patrolStatus, $areaSelfieImage, $selfieCapturedAt, $checklistProofPhotoFiles, $incidentImageFiles, $incidentEvidence, $submittedAt, &$incidentReport) {
+        DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $patrolStatus, $areaSelfieImage, $selfieCapturedAt, $incidentImageFiles, $incidentEvidence, $submittedAt, &$incidentReport) {
             $areaSelfiePath = $this->storePatrolAreaSelfie($areaSelfieImage, $guard);
 
             $patrolLog->update([
@@ -347,8 +309,6 @@ class GuardPatrolController extends Controller
                 ...PatrolChecklist::valuesFromRequest($request),
                 'item_statuses' => PatrolChecklist::statusesFromRequest($request),
             ]);
-
-            $this->storeChecklistProofPhotos($checklistResponse, $checklistProofPhotoFiles);
 
             if ($request->boolean('has_incident')) {
                 $incidentPriority = $data['incident_priority'] ?? PatrolChecklist::defaultIncidentPriority($data['incident_category'] ?? null);
@@ -422,7 +382,7 @@ class GuardPatrolController extends Controller
             return $this->cancelResponse($request, 'Signed-in account is not linked to an active guard profile.', 403);
         }
 
-        $patrolLog = PatrolLog::with(['checkpoint', 'checklistProofPhotos'])
+        $patrolLog = PatrolLog::with('checkpoint')
             ->whereKey($data['patrol_log_id'])
             ->where('guard_id', $guard->id)
             ->where('rfid_status', 'valid')
@@ -607,55 +567,12 @@ class GuardPatrolController extends Controller
         return $path;
     }
 
-    private function checklistProofPhotoError(Request $request, array $checklistProofPhotoFiles): ?string
-    {
-        $photoFields = collect($checklistProofPhotoFiles)->pluck('field');
-        $missingIssuePhotoLabels = PatrolChecklist::issueFieldsFromRequest($request)
-            ->reject(fn (string $field) => $photoFields->contains($field))
-            ->map(fn (string $field) => PatrolChecklist::label($field))
-            ->filter()
-            ->values();
-
-        if ($missingIssuePhotoLabels->isNotEmpty()) {
-            return 'Take a proof photo for each checklist item marked Issue Found: '.$missingIssuePhotoLabels->implode(', ').'.';
-        }
-
-        return null;
-    }
-
-    private function checklistProofPhotoFiles(Request $request): array
-    {
-        $files = $request->file('checklist_photos', []);
-
-        if (! is_array($files)) {
-            return [];
-        }
-
-        $issueFields = PatrolChecklist::issueFieldsFromRequest($request);
-
-        return collect(PatrolChecklist::fields())
-            ->filter(fn (string $field) => $issueFields->contains($field)
-                && ($files[$field] ?? null) instanceof UploadedFile
-                && $files[$field]->isValid())
-            ->map(fn (string $field) => [
-                'field' => $field,
-                'file' => $files[$field],
-            ])
-            ->values()
-            ->all();
-    }
-
     private function deletePendingPatrolArtifacts(PatrolLog $patrolLog): void
     {
         if ($patrolLog->area_selfie_path) {
             Storage::disk('public')->delete($patrolLog->area_selfie_path);
         }
 
-        foreach ($patrolLog->checklistProofPhotos as $proofPhoto) {
-            if ($proofPhoto->image_path) {
-                Storage::disk('public')->delete($proofPhoto->image_path);
-            }
-        }
     }
 
     private function cancelResponse(Request $request, string $message, int $status = 200): JsonResponse|RedirectResponse
@@ -667,28 +584,6 @@ class GuardPatrolController extends Controller
         $flashKey = $status >= 400 ? 'warning' : 'status';
 
         return redirect()->route('patrol.scan')->with($flashKey, $message);
-    }
-
-    private function storeChecklistProofPhotos(ChecklistResponse $checklistResponse, array $checklistProofPhotoFiles): void
-    {
-        foreach ($checklistProofPhotoFiles as $index => $item) {
-            $file = $item['file'];
-            $image = $this->compressedUploadedImage($file);
-            $path = 'checklist-proof-photos/'.Str::uuid().'.'.$image['extension'];
-            Storage::disk('public')->put($path, $image['contents']);
-            $field = $item['field'];
-
-            $checklistResponse->proofPhotos()->create([
-                'patrol_log_id' => $checklistResponse->patrol_log_id,
-                'item_key' => $field,
-                'item_label' => PatrolChecklist::label($field) ?? Str::of($field)->replace('_', ' ')->title()->toString(),
-                'image_path' => $path,
-                'original_name' => $file->getClientOriginalName(),
-                'mime_type' => $image['mime_type'],
-                'image_data' => base64_encode($image['contents']),
-                'sort_order' => $index + 1,
-            ]);
-        }
     }
 
     private function incidentImageError(Request $request, array $incidentImageFiles, int $savedEvidenceCount = 0): ?string
