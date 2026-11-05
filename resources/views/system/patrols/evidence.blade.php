@@ -9,7 +9,7 @@
     <div
         class="py-5 sm:py-8"
         x-data="{
-            tab: 'incident',
+            tab: @js(request()->has('patrol_page') ? 'patrol' : 'incident'),
             photoOpen: false,
             photoUrl: '',
             photoTitle: '',
@@ -59,11 +59,11 @@
                             <h3 class="text-base font-bold text-amber-950">Saved evidence not yet attached</h3>
                             <p class="mt-1 text-sm text-amber-900/70">These photos are ready to attach to your next incident report.</p>
                         </div>
-                        <span class="w-fit rounded-md bg-white px-2.5 py-1 text-xs font-bold text-amber-800 ring-1 ring-amber-200">{{ $savedEvidence->count() }} saved</span>
+                        <span class="w-fit rounded-md bg-white px-2.5 py-1 text-xs font-bold text-amber-800 ring-1 ring-amber-200">{{ $savedEvidence->total() }} saved</span>
                     </div>
 
                     @if ($savedEvidence->isNotEmpty())
-                        <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        <div class="mt-4 grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
                             @foreach ($savedEvidence as $evidence)
                                 @php
                                     $evidenceUrl = route('patrol.incident-evidence.image', $evidence);
@@ -83,17 +83,18 @@
                                 </article>
                             @endforeach
                         </div>
+                        <x-pagination-panel :paginator="$savedEvidence" label="saved evidence photos" page-label="Evidence page" class="mt-4 border-t border-amber-200 pt-3" />
                     @else
                         <p class="mt-4 rounded-md border border-dashed border-amber-200 bg-white px-4 py-6 text-center text-sm text-slate-500">No unassigned incident evidence photos.</p>
                     @endif
                 </div>
 
-                <div class="space-y-4">
+                <div class="grid items-start gap-4 md:grid-cols-2">
                     @forelse ($incidentReports as $incident)
                         @php
                             $incidentImages = $incident->images->filter(fn ($image) => $image->image_data || ($image->image_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($image->image_path)))->values();
                         @endphp
-                        <article class="rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
+                        <article class="self-start rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
                             <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
                                     <h3 class="text-base font-bold text-blue-950">{{ $incident->category ?: 'Incident report' }}</h3>
@@ -103,7 +104,7 @@
                             </div>
 
                             @if ($incidentImages->isNotEmpty())
-                                <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                <div class="mt-4 grid grid-cols-2 items-start gap-2">
                                     @foreach ($incidentImages as $image)
                                         @php
                                             $imageUrl = route('incidents.images.show', [$incident, $image]);
@@ -132,15 +133,17 @@
                         <div class="rounded-md border border-dashed border-blue-200 bg-white px-4 py-8 text-center text-sm text-slate-500 shadow-sm">No submitted incident reports yet.</div>
                     @endforelse
                 </div>
+                <x-pagination-panel :paginator="$incidentReports" label="incident reports" page-label="Incident page" class="rounded-md border border-blue-100 bg-white px-4 py-3 shadow-sm" />
             </section>
 
             <section x-show="tab === 'patrol'" x-cloak class="space-y-4">
+                <div class="grid items-start gap-4 md:grid-cols-2">
                 @forelse ($patrolLogs as $log)
                     @php
                         $areaSelfieUrl = (filled($log->area_selfie_path) || filled($log->area_selfie_image_data)) ? route('patrol-logs.area-selfie.show', $log) : null;
                         $proofPhotos = $log->checklistResponse?->proofPhotos ?? collect();
                     @endphp
-                    <article class="rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
+                    <article class="self-start rounded-md border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
                         <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <h3 class="text-base font-bold text-blue-950">{{ $log->checkpoint?->name ?? $log->checkpoint_code ?? 'Patrol checkpoint' }}</h3>
@@ -150,7 +153,7 @@
                         </div>
 
                         @if ($areaSelfieUrl || $proofPhotos->isNotEmpty())
-                            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <div class="mt-4 grid grid-cols-2 items-start gap-2">
                                 @if ($areaSelfieUrl)
                                     <button type="button" class="group relative aspect-[4/3] overflow-hidden rounded-md border border-blue-100 bg-slate-100" @click="openPhoto(@js($areaSelfieUrl), 'Area selfie')" aria-label="Open area selfie">
                                         <img src="{{ $areaSelfieUrl }}" alt="Area selfie" class="h-full w-full object-cover transition group-hover:scale-[1.02]">
@@ -172,6 +175,8 @@
                 @empty
                     <div class="rounded-md border border-dashed border-blue-200 bg-white px-4 py-8 text-center text-sm text-slate-500 shadow-sm">No patrol photo records yet.</div>
                 @endforelse
+                </div>
+                <x-pagination-panel :paginator="$patrolLogs" label="patrol records" page-label="Patrol page" class="rounded-md border border-blue-100 bg-white px-4 py-3 shadow-sm" />
             </section>
         </div>
 

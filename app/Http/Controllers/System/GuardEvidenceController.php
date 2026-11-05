@@ -23,23 +23,20 @@ class GuardEvidenceController extends Controller
                 ->whereNull('incident_report_id')
                 ->latest('captured_at')
                 ->latest('id')
-                ->limit(30)
-                ->get(),
+                ->paginate(6, ['*'], 'evidence_page'),
             'incidentReports' => IncidentReport::query()
                 ->where('guard_id', $guard->id)
                 ->with(['images.incidentEvidence', 'checkpoint'])
                 ->latest('incident_at')
                 ->latest('id')
-                ->limit(30)
-                ->get(),
+                ->paginate(6, ['*'], 'incident_page'),
             'patrolLogs' => PatrolLog::query()
                 ->where('guard_id', $guard->id)
                 ->whereNotIn('status', ['pending_face', 'pending_selfie'])
                 ->with(['checkpoint', 'checklistResponse.proofPhotos'])
                 ->latest('scanned_at')
                 ->latest('id')
-                ->limit(30)
-                ->get(),
+                ->paginate(6, ['*'], 'patrol_page'),
         ]);
     }
 }
