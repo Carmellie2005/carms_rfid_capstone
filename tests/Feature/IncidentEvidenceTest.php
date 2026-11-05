@@ -141,6 +141,20 @@ class IncidentEvidenceTest extends TestCase
         $this->assertSame($guard->id, $patrolLog->guard_id);
     }
 
+    public function test_guard_can_open_their_evidence_library(): void
+    {
+        [$user] = $this->guardAndCheckpoint();
+
+        $this
+            ->actingAs($user)
+            ->get(route('patrol.evidence'))
+            ->assertOk()
+            ->assertSee('My Evidence')
+            ->assertSee('Incident Evidence')
+            ->assertSee('Patrol Photos')
+            ->assertSee('Use the X button to return to the system on your phone');
+    }
+
     private function guardAndCheckpoint(): array
     {
         $user = User::factory()->create([

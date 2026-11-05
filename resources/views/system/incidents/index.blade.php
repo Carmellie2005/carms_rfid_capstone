@@ -15,6 +15,9 @@
             pdfPreviewUrl: '',
             pdfDownloadUrl: '',
             pdfPreviewTitle: 'Incident PDF Preview',
+            photoPreviewOpen: false,
+            photoPreviewUrl: '',
+            photoPreviewTitle: 'Incident photo',
             openIncidentPdfPreview(previewUrl, downloadUrl, title) {
                 this.pdfPreviewUrl = previewUrl;
                 this.pdfDownloadUrl = downloadUrl;
@@ -29,8 +32,21 @@
                 this.pdfDownloadUrl = '';
                 document.body.classList.remove('overflow-y-hidden');
             },
+            openIncidentPhoto(url, title) {
+                this.photoPreviewUrl = url;
+                this.photoPreviewTitle = title || 'Incident photo';
+                this.photoPreviewOpen = true;
+                document.body.classList.add('overflow-y-hidden');
+                this.$nextTick(() => this.$refs.incidentPhotoCloseButton?.focus());
+            },
+            closeIncidentPhoto() {
+                this.photoPreviewOpen = false;
+                this.photoPreviewUrl = '';
+                this.photoPreviewTitle = 'Incident photo';
+                document.body.classList.remove('overflow-y-hidden');
+            },
         }"
-        x-on:keydown.escape.window="pdfPreviewOpen && closeIncidentPdfPreview()"
+        x-on:keydown.escape.window="pdfPreviewOpen ? closeIncidentPdfPreview() : (photoPreviewOpen && closeIncidentPhoto())"
     >
         <div class="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
             @if (session('status'))
@@ -127,9 +143,10 @@
                                     <div class="mt-4 grid gap-2" style="grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));">
                                         @foreach ($incidentImages as $incidentImage)
                                             <figure class="overflow-hidden rounded-md border border-blue-100 bg-blue-50">
-                                                <a href="{{ route('incidents.images.show', [$incident, $incidentImage]) }}" target="_blank" class="block">
-                                                    <img src="{{ route('incidents.images.show', [$incident, $incidentImage]) }}" alt="Incident image {{ $loop->iteration }}" class="h-36 w-full object-cover sm:h-44">
-                                                </a>
+                                                <button type="button" class="group relative block aspect-[4/3] w-full bg-slate-100" @click="openIncidentPhoto(@js(route('incidents.images.show', [$incident, $incidentImage])), @js('Incident image '.($loop->iteration)))" aria-label="Open incident image {{ $loop->iteration }}">
+                                                    <img src="{{ route('incidents.images.show', [$incident, $incidentImage]) }}" alt="Incident image {{ $loop->iteration }}" class="h-full w-full object-cover transition group-hover:scale-[1.02]">
+                                                    <span class="absolute bottom-2 left-2 rounded-md bg-slate-950/75 px-2 py-1 text-xs font-semibold text-white">View photo</span>
+                                                </button>
                                                 @if ($incidentImage->incidentEvidence)
                                                     <figcaption class="border-t border-blue-100 bg-white px-2 py-2 text-[0.68rem] leading-4 text-slate-600">
                                                         <span class="block font-semibold text-slate-700">Captured at incident location</span>
@@ -204,6 +221,22 @@
                 x-on:click="closeIncidentPdfPreview()"
                 aria-hidden="true"
             ></div>
+        </template>
+
+        <template x-teleport="body">
+            <div x-show="photoPreviewOpen" x-cloak x-transition.opacity.duration.150ms class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/75 p-3 sm:p-6" @click.self="closeIncidentPhoto()" role="dialog" aria-modal="true" aria-label="Incident photo preview">
+                <section class="flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-hidden rounded-md bg-white shadow-2xl">
+                    <div class="flex shrink-0 items-center justify-between gap-3 border-b border-blue-100 px-4 py-3">
+                        <p class="min-w-0 truncate text-sm font-semibold text-blue-950" x-text="photoPreviewTitle"></p>
+                        <button type="button" x-ref="incidentPhotoCloseButton" class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-blue-100 text-slate-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500" @click="closeIncidentPhoto()" aria-label="Close photo preview and return to system">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+                        </button>
+                    </div>
+                    <div class="min-h-0 overflow-auto bg-slate-950 p-2 sm:p-4">
+                        <img x-show="photoPreviewUrl" :src="photoPreviewUrl" :alt="photoPreviewTitle" class="mx-auto max-h-[78dvh] w-full object-contain">
+                    </div>
+                </section>
+            </div>
         </template>
 
         <template x-teleport="body">

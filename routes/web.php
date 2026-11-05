@@ -5,6 +5,7 @@ use App\Http\Controllers\System\AuditLogController;
 use App\Http\Controllers\System\CheckpointController;
 use App\Http\Controllers\System\DashboardController;
 use App\Http\Controllers\System\GuardController;
+use App\Http\Controllers\System\GuardEvidenceController;
 use App\Http\Controllers\System\GuardPatrolController;
 use App\Http\Controllers\System\GuardTutorialController;
 use App\Http\Controllers\System\IncidentReportController;
@@ -46,6 +47,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/presence/heartbeat', fn () => response()->noContent())->name('presence.heartbeat');
 
     Route::get('/patrol/scan', [GuardPatrolController::class, 'create'])->name('patrol.scan');
+    Route::get('/patrol/evidence', [GuardEvidenceController::class, 'index'])->name('patrol.evidence');
     Route::get('/patrol/pending-scan', [GuardPatrolController::class, 'pendingScan'])->name('patrol.pending-scan');
     Route::post('/patrol/scan', [GuardPatrolController::class, 'store'])->name('patrol.store');
     Route::post('/patrol/scan/cancel', [GuardPatrolController::class, 'cancel'])->name('patrol.cancel');
