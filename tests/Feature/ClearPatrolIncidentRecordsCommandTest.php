@@ -59,7 +59,7 @@ class ClearPatrolIncidentRecordsCommandTest extends TestCase
         $this->assertDatabaseMissing('rfid_enrollment_scans', ['rfid_uid' => 'TEST-ENROLLMENT']);
         $this->assertDatabaseMissing('audit_logs', ['subject_type' => PatrolLog::class, 'subject_id' => $patrolLog->id]);
         $this->assertDatabaseMissing('audit_logs', ['subject_type' => IncidentReport::class, 'subject_id' => $incidentReport->id]);
-        $this->assertDatabaseHas('audit_logs', ['subject_type' => Guard::class, 'subject_id' => $guard->id]);
+        $this->assertDatabaseMissing('audit_logs', ['subject_type' => Guard::class, 'subject_id' => $guard->id]);
 
         Storage::disk('public')->assertMissing('patrol-area-selfies/test.jpg');
         Storage::disk('public')->assertMissing('checklist-proof-photos/test.jpg');
