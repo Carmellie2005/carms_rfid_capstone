@@ -126,9 +126,18 @@
                                 @if ($incidentImages->isNotEmpty())
                                     <div class="mt-4 grid gap-2" style="grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));">
                                         @foreach ($incidentImages as $incidentImage)
-                                            <a href="{{ route('incidents.images.show', [$incident, $incidentImage]) }}" target="_blank" class="block overflow-hidden rounded-md border border-blue-100 bg-blue-50">
-                                                <img src="{{ route('incidents.images.show', [$incident, $incidentImage]) }}" alt="Incident image {{ $loop->iteration }}" class="h-36 w-full object-cover sm:h-44">
-                                            </a>
+                                            <figure class="overflow-hidden rounded-md border border-blue-100 bg-blue-50">
+                                                <a href="{{ route('incidents.images.show', [$incident, $incidentImage]) }}" target="_blank" class="block">
+                                                    <img src="{{ route('incidents.images.show', [$incident, $incidentImage]) }}" alt="Incident image {{ $loop->iteration }}" class="h-36 w-full object-cover sm:h-44">
+                                                </a>
+                                                @if ($incidentImage->incidentEvidence)
+                                                    <figcaption class="border-t border-blue-100 bg-white px-2 py-2 text-[0.68rem] leading-4 text-slate-600">
+                                                        <span class="block font-semibold text-slate-700">Captured at incident location</span>
+                                                        <span class="block">{{ $incidentImage->incidentEvidence->captured_at?->timezone(config('app.timezone'))->format('M d, Y h:i A') ?? 'Time not recorded' }}</span>
+                                                        <span class="block">GPS: {{ number_format((float) $incidentImage->incidentEvidence->latitude, 6) }}, {{ number_format((float) $incidentImage->incidentEvidence->longitude, 6) }}</span>
+                                                    </figcaption>
+                                                @endif
+                                            </figure>
                                         @endforeach
                                     </div>
                                 @elseif ($incident->image_path || $incident->images->isNotEmpty())

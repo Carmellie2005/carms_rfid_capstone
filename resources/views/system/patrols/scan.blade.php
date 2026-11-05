@@ -261,6 +261,8 @@
                     areaSelfieLatitude: @js(old('area_selfie_latitude', '')),
                     areaSelfieLongitude: @js(old('area_selfie_longitude', '')),
                     areaSelfieAccuracy: @js(old('area_selfie_accuracy', '')),
+                    incidentEvidenceUrl: @js(route('patrol.incident-evidence.index', [], false)),
+                    incidentEvidenceStoreUrl: @js(route('patrol.incident-evidence.store', [], false)),
                     checklistItems: @js(collect($checkpointChecklistItems)->map(fn ($label, $field) => ['field' => $field, 'label' => $label])->values()),
                     incidentDefaultPriorities: @js($incidentDefaultPriorities),
                     incidentDefaultPriority: @js(\App\Support\PatrolChecklist::defaultIncidentPriority($selectedIncidentCategory)),
@@ -277,6 +279,36 @@
                 <input type="hidden" name="area_selfie_latitude" :value="areaSelfieLatitude">
                 <input type="hidden" name="area_selfie_longitude" :value="areaSelfieLongitude">
                 <input type="hidden" name="area_selfie_accuracy" :value="areaSelfieAccuracy">
+                <template x-for="evidenceId in selectedIncidentEvidenceIds" :key="`incident-evidence-${evidenceId}`">
+                    <input type="hidden" name="incident_evidence_ids[]" :value="evidenceId">
+                </template>
+
+                <section class="rounded-md border border-amber-100 bg-white p-3 shadow-sm sm:p-4">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="min-w-0">
+                            <p class="text-[0.68rem] font-semibold uppercase tracking-wide text-amber-700">Incident Evidence Storage</p>
+                            <h3 class="mt-0.5 text-base font-semibold text-blue-950">Capture evidence at the actual incident location</h3>
+                            <p class="mt-1 text-sm leading-5 text-slate-500">The photo is saved with its capture time and GPS, then can be attached later without scanning the RFID again.</p>
+                        </div>
+                        <div class="shrink-0">
+                            <button type="button" class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-amber-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto" @click="$refs.incidentEvidenceCapture?.click()" :disabled="incidentEvidenceBusy || submittingPatrol">
+                                <svg x-show="! incidentEvidenceBusy" class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                                    <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" />
+                                </svg>
+                                <svg x-show="incidentEvidenceBusy" x-cloak class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                                </svg>
+                                <span x-text="incidentEvidenceBusy ? 'Saving...' : 'Take & Save Evidence Photo'"></span>
+                            </button>
+                            <input x-ref="incidentEvidenceCapture" type="file" accept="image/*" capture="environment" class="sr-only" @change="saveIncidentEvidence($event)">
+                        </div>
+                    </div>
+                    <p x-show="incidentEvidenceMessage" x-cloak class="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800" x-text="incidentEvidenceMessage"></p>
+                    <p x-show="incidentEvidenceError" x-cloak class="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700" x-text="incidentEvidenceError"></p>
+                    <p x-show="incidentEvidence.length" x-cloak class="mt-3 text-xs font-semibold text-blue-700" x-text="`${incidentEvidence.length} saved evidence image${incidentEvidence.length === 1 ? '' : 's'} available to attach.`"></p>
+                </section>
 
                 <section class="rounded-md border border-blue-100 bg-white p-3 shadow-sm sm:p-4">
                     <div class="space-y-3">
@@ -703,7 +735,7 @@
                                     </div>
 
                                     <p class="mt-2 text-xs text-slate-500">
-                                        Take the photo in landscape orientation. Take 1 to 3 photos with the camera. Maximum 3 images total.
+                                        Take a new photo or attach evidence saved from the actual incident location. Maximum 3 images total.
                                     </p>
 
                                     <div x-show="incidentImagePreviews.length" x-cloak class="mt-3">
@@ -722,9 +754,33 @@
                                     <p x-show="imageCompressionMessage" x-cloak class="mt-2 text-xs font-semibold text-blue-700" x-text="imageCompressionMessage"></p>
                                     <p x-show="incidentImageError" x-cloak class="mt-2 text-xs font-semibold text-red-700" x-text="incidentImageError"></p>
                                 </div>
+                                <div class="mt-3 rounded-md border border-amber-100 bg-amber-50/60 p-3">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p class="text-xs font-semibold uppercase tracking-wide text-amber-700">Saved Evidence</p>
+                                            <p class="mt-1 text-xs leading-5 text-slate-600">Select a photo captured earlier at the incident location. Its original capture time and GPS will stay with the evidence.</p>
+                                        </div>
+                                        <span class="shrink-0 rounded-md bg-white px-2 py-1 text-[0.65rem] font-bold text-amber-800 ring-1 ring-amber-200" x-text="`${selectedIncidentEvidenceIds.length}/3`"></span>
+                                    </div>
+                                    <p x-show="incidentEvidenceLoading" x-cloak class="mt-3 text-xs font-semibold text-amber-800">Loading saved evidence...</p>
+                                    <p x-show="! incidentEvidenceLoading && ! incidentEvidence.length" x-cloak class="mt-3 rounded-md border border-amber-200 bg-white px-3 py-2 text-xs text-slate-600">No saved evidence is available yet. Use “Take & Save Evidence Photo” above.</p>
+                                    <div x-show="incidentEvidence.length" x-cloak class="mt-3 grid gap-2 sm:grid-cols-2">
+                                        <template x-for="evidence in incidentEvidence" :key="evidence.id">
+                                            <label class="flex min-w-0 cursor-pointer gap-2 rounded-md border bg-white p-2 transition" :class="incidentEvidenceSelected(evidence.id) ? 'border-amber-500 ring-2 ring-amber-200' : 'border-amber-100 hover:border-amber-300'" @click.prevent="toggleIncidentEvidence(evidence.id)">
+                                                <img :src="evidence.image_url" :alt="evidence.original_name" class="h-16 w-20 shrink-0 rounded object-cover">
+                                                <span class="min-w-0">
+                                                    <span class="block truncate text-xs font-semibold text-slate-800" x-text="evidence.original_name"></span>
+                                                    <span class="mt-1 block text-[0.65rem] leading-4 text-slate-500" x-text="evidence.captured_at_label"></span>
+                                                    <span class="block text-[0.65rem] leading-4 text-slate-500" x-text="incidentEvidenceGpsLabel(evidence)"></span>
+                                                </span>
+                                            </label>
+                                        </template>
+                                    </div>
+                                </div>
                                 <x-input-error :messages="$errors->get('incident_image')" class="mt-2" />
                                 <x-input-error :messages="$errors->get('incident_camera_images')" class="mt-2" />
                                 <x-input-error :messages="$errors->get('incident_camera_images.*')" class="mt-2" />
+                                <x-input-error :messages="$errors->get('incident_evidence_ids')" class="mt-2" />
                             </div>
                         </div>
 

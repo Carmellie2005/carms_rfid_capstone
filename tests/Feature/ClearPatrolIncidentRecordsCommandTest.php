@@ -7,6 +7,7 @@ use App\Models\Checkpoint;
 use App\Models\ChecklistProofPhoto;
 use App\Models\ChecklistResponse;
 use App\Models\Guard;
+use App\Models\IncidentEvidence;
 use App\Models\IncidentReport;
 use App\Models\IncidentReportImage;
 use App\Models\NotificationRead;
@@ -51,6 +52,7 @@ class ClearPatrolIncidentRecordsCommandTest extends TestCase
         $this->assertDatabaseMissing('checklist_proof_photos', ['patrol_log_id' => $patrolLog->id]);
         $this->assertDatabaseMissing('incident_reports', ['id' => $incidentReport->id]);
         $this->assertDatabaseMissing('incident_report_images', ['incident_report_id' => $incidentReport->id]);
+        $this->assertDatabaseMissing('incident_evidence', ['incident_report_id' => $incidentReport->id]);
         $this->assertDatabaseMissing('notification_reads', ['notifiable_id' => $patrolLog->id]);
         $this->assertDatabaseMissing('notification_reads', ['notifiable_id' => $incidentReport->id]);
         $this->assertDatabaseMissing('system_notifications', ['user_id' => $user->id]);
@@ -63,6 +65,7 @@ class ClearPatrolIncidentRecordsCommandTest extends TestCase
         Storage::disk('public')->assertMissing('checklist-proof-photos/test.jpg');
         Storage::disk('public')->assertMissing('incident-reports/test-legacy.jpg');
         Storage::disk('public')->assertMissing('incident-reports/test-image.jpg');
+        Storage::disk('public')->assertMissing('incident-evidence/test.jpg');
     }
 
     private function createPatrolAndIncidentRecords(): array
@@ -133,6 +136,18 @@ class ClearPatrolIncidentRecordsCommandTest extends TestCase
             'source' => 'camera',
             'sort_order' => 1,
         ]);
+        IncidentEvidence::create([
+            'guard_id' => $guard->id,
+            'incident_report_id' => $incidentReport->id,
+            'image_path' => 'incident-evidence/test.jpg',
+            'original_name' => 'evidence.jpg',
+            'mime_type' => 'image/jpeg',
+            'image_data' => base64_encode('incident-evidence'),
+            'captured_at' => now(),
+            'latitude' => 10.1,
+            'longitude' => 124.1,
+            'accuracy' => 8.5,
+        ]);
         NotificationRead::create([
             'user_id' => $user->id,
             'notifiable_type' => PatrolLog::class,
@@ -188,6 +203,7 @@ class ClearPatrolIncidentRecordsCommandTest extends TestCase
             'checklist-proof-photos/test.jpg',
             'incident-reports/test-legacy.jpg',
             'incident-reports/test-image.jpg',
+            'incident-evidence/test.jpg',
         ] as $path) {
             Storage::disk('public')->put($path, 'image');
         }

@@ -49,6 +49,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/patrol/pending-scan', [GuardPatrolController::class, 'pendingScan'])->name('patrol.pending-scan');
     Route::post('/patrol/scan', [GuardPatrolController::class, 'store'])->name('patrol.store');
     Route::post('/patrol/scan/cancel', [GuardPatrolController::class, 'cancel'])->name('patrol.cancel');
+    Route::get('/patrol/incident-evidence', [GuardPatrolController::class, 'incidentEvidence'])->name('patrol.incident-evidence.index');
+    Route::post('/patrol/incident-evidence', [GuardPatrolController::class, 'storeIncidentEvidence'])->name('patrol.incident-evidence.store');
+    Route::get('/patrol/incident-evidence/{incidentEvidence}/image', [GuardPatrolController::class, 'incidentEvidenceImage'])->name('patrol.incident-evidence.image');
+    Route::delete('/patrol/incident-evidence/{incidentEvidence}', [GuardPatrolController::class, 'destroyIncidentEvidence'])->name('patrol.incident-evidence.destroy');
     Route::post('/guard/tutorial/complete', [GuardTutorialController::class, 'complete'])->name('guard.tutorial.complete');
     Route::get('/incidents/{incidentReport}/images/{incidentReportImage}', [IncidentReportController::class, 'image'])->name('incidents.images.show');
     Route::get('/patrol-logs/{patrolLog}/pdf', [PatrolLogController::class, 'downloadPdf'])->name('patrol-logs.pdf');

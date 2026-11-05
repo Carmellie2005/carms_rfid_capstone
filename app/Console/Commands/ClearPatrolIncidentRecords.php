@@ -66,8 +66,9 @@ class ClearPatrolIncidentRecords extends Command
         $patrolIds = $this->ids('patrol_logs');
         $incidentIds = $this->ids('incident_reports');
         $checklistIds = $this->ids('checklist_responses');
+        $incidentEvidenceIds = $this->ids('incident_evidence');
 
-        return compact('patrolIds', 'incidentIds', 'checklistIds');
+        return compact('patrolIds', 'incidentIds', 'checklistIds', 'incidentEvidenceIds');
     }
 
     private function deletionPlan(array $scope): array
@@ -78,6 +79,7 @@ class ClearPatrolIncidentRecords extends Command
             'rfid_enrollment_scans' => $this->tableCount('rfid_enrollment_scans'),
             'audit_logs' => $this->auditLogQuery($scope)->count(),
             'incident_images' => $this->countByColumn('incident_report_images', 'incident_report_id', $scope['incidentIds']),
+            'incident_evidence' => $scope['incidentEvidenceIds']->count(),
             'incident_reports' => $scope['incidentIds']->count(),
             'checklist_proof_photos' => $this->checklistProofPhotoCount($scope),
             'checklist_responses' => $scope['checklistIds']->count(),
@@ -105,6 +107,7 @@ class ClearPatrolIncidentRecords extends Command
             'audit_logs' => $this->auditLogQuery($scope)->delete(),
             'incident_images' => $this->deleteByColumn('incident_report_images', 'incident_report_id', $scope['incidentIds']),
             'incident_reports' => $this->deleteByIds('incident_reports', $scope['incidentIds']),
+            'incident_evidence' => $this->deleteByIds('incident_evidence', $scope['incidentEvidenceIds']),
             'checklist_proof_photos' => $this->deleteChecklistProofPhotos($scope),
             'checklist_responses' => $this->deleteByIds('checklist_responses', $scope['checklistIds']),
             'patrol_logs' => $this->deleteByIds('patrol_logs', $scope['patrolIds']),
@@ -206,6 +209,7 @@ class ClearPatrolIncidentRecords extends Command
             ->merge($this->pluckPaths('checklist_proof_photos', 'patrol_log_id', $scope['patrolIds'], 'image_path'))
             ->merge($this->pluckPaths('checklist_proof_photos', 'checklist_response_id', $scope['checklistIds'], 'image_path'))
             ->merge($this->pluckPaths('incident_report_images', 'incident_report_id', $scope['incidentIds'], 'image_path'))
+            ->merge($this->pluckPaths('incident_evidence', 'id', $scope['incidentEvidenceIds'], 'image_path'))
             ->filter()
             ->unique()
             ->values()

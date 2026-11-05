@@ -37,4 +37,9 @@ class Guard extends Model
     {
         return $this->hasMany(IncidentReport::class);
     }
+
+    public function incidentEvidence(): HasMany
+    {
+        return $this->hasMany(IncidentEvidence::class);
+    }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ChecklistResponse;
 use App\Models\Checkpoint;
 use App\Models\Guard;
+use App\Models\IncidentEvidence;
 use App\Models\IncidentReport;
 use App\Models\PatrolLog;
 use App\Support\AuditLogger;
@@ -17,8 +18,10 @@ use App\Services\SupervisorPushNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -49,6 +52,123 @@ class GuardPatrolController extends Controller
             'patrolTestingNotice' => PatrolSchedule::testingNotice(),
             'patrolScheduleNextOpen' => PatrolSchedule::nextOpenAt()->format('M d, Y h:i A'),
         ]);
+    }
+
+    public function incidentEvidence(Request $request): JsonResponse
+    {
+        $guard = $request->user()?->guardProfile;
+
+        if (! $guard) {
+            return response()->json([
+                'message' => 'Signed-in account is not linked to a guard profile.',
+                'evidence' => [],
+            ], 403);
+        }
+
+        $evidence = IncidentEvidence::query()
+            ->where('guard_id', $guard->id)
+            ->whereNull('incident_report_id')
+            ->latest('captured_at')
+            ->latest('id')
+            ->limit(30)
+            ->get();
+
+        return response()->json([
+            'evidence' => $evidence->map(fn (IncidentEvidence $item) => $this->incidentEvidencePayload($item))->values(),
+        ]);
+    }
+
+    public function storeIncidentEvidence(Request $request): JsonResponse
+    {
+        $guard = $request->user()?->guardProfile;
+
+        if (! $guard) {
+            return response()->json([
+                'message' => 'Signed-in account is not linked to a guard profile.',
+            ], 403);
+        }
+
+        $data = $request->validate([
+            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
+            'captured_at' => ['required', 'date'],
+            'latitude' => ['required', 'numeric', 'between:-90,90'],
+            'longitude' => ['required', 'numeric', 'between:-180,180'],
+            'accuracy' => ['nullable', 'numeric', 'min:0', 'max:10000'],
+        ]);
+
+        $image = $this->compressedUploadedImage($data['image']);
+
+        if ($image['contents'] === '') {
+            return response()->json([
+                'message' => 'The incident evidence image could not be saved. Please try again.',
+            ], 422);
+        }
+
+        $path = 'incident-evidence/'.$guard->id.'/'.Str::uuid().'.'.$image['extension'];
+        Storage::disk('public')->put($path, $image['contents']);
+
+        $evidence = IncidentEvidence::create([
+            'guard_id' => $guard->id,
+            'image_path' => $path,
+            'original_name' => $data['image']->getClientOriginalName(),
+            'mime_type' => $image['mime_type'],
+            'image_data' => base64_encode($image['contents']),
+            'captured_at' => Carbon::parse($data['captured_at'])->timezone(config('app.timezone')),
+            'latitude' => $data['latitude'],
+            'longitude' => $data['longitude'],
+            'accuracy' => $data['accuracy'] ?? null,
+        ]);
+
+        return response()->json([
+            'message' => 'Incident evidence saved with its capture time and GPS.',
+            'evidence' => $this->incidentEvidencePayload($evidence),
+        ], 201);
+    }
+
+    public function incidentEvidenceImage(Request $request, IncidentEvidence $incidentEvidence): Response
+    {
+        $guardId = $request->user()?->guardProfile?->id;
+
+        abort_unless($guardId && $incidentEvidence->guard_id === $guardId, 403);
+
+        $contents = null;
+        $mimeType = $incidentEvidence->mime_type ?: 'image/jpeg';
+
+        if ($incidentEvidence->image_path && Storage::disk('public')->exists($incidentEvidence->image_path)) {
+            $contents = Storage::disk('public')->get($incidentEvidence->image_path);
+            $mimeType = Storage::disk('public')->mimeType($incidentEvidence->image_path) ?: $mimeType;
+        } elseif ($incidentEvidence->image_data) {
+            $decoded = base64_decode($incidentEvidence->image_data, true);
+            $contents = $decoded === false ? null : $decoded;
+        }
+
+        abort_if($contents === null, 404);
+
+        return response($contents, 200, [
+            'Content-Type' => $mimeType,
+            'Cache-Control' => 'private, max-age=300',
+        ]);
+    }
+
+    public function destroyIncidentEvidence(Request $request, IncidentEvidence $incidentEvidence): JsonResponse
+    {
+        $guardId = $request->user()?->guardProfile?->id;
+
+        abort_unless($guardId && $incidentEvidence->guard_id === $guardId, 403);
+
+        if ($incidentEvidence->incident_report_id) {
+            return response()->json([
+                'message' => 'Evidence already attached to an incident report and cannot be removed here.',
+            ], 422);
+        }
+
+        if ($incidentEvidence->image_path) {
+            Storage::disk('public')->delete($incidentEvidence->image_path);
+        }
+
+        $incidentEvidence->delete();
+
+        return response()->json(['message' => 'Incident evidence removed.']);
     }
 
     public function pendingScan(Request $request): JsonResponse
@@ -124,6 +244,8 @@ class GuardPatrolController extends Controller
             'incident_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
             'incident_camera_images' => ['nullable', 'array', 'max:3'],
             'incident_camera_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
+            'incident_evidence_ids' => ['nullable', 'array', 'max:3'],
+            'incident_evidence_ids.*' => ['integer'],
         ], [
             ...PatrolChecklist::validationMessages(),
             'patrol_log_id.required' => 'Scan your RFID card before submitting the patrol record.',
@@ -142,6 +264,7 @@ class GuardPatrolController extends Controller
             'incident_camera_images.*.image' => 'Please take a valid incident photo.',
             'incident_camera_images.*.mimes' => 'Incident photos must be JPG, PNG, or WEBP.',
             'incident_camera_images.*.max' => 'Each incident photo must be 12 MB or smaller.',
+            'incident_evidence_ids.max' => 'Please attach up to 3 saved incident evidence images only.',
         ]);
 
         if (! PatrolSchedule::isOpen()) {
@@ -173,8 +296,14 @@ class GuardPatrolController extends Controller
         $checkpoint = $patrolLog->checkpoint;
         $checklistProofPhotoFiles = $this->checklistProofPhotoFiles($request);
         $incidentImageFiles = $this->incidentImageFiles($request);
+        $incidentEvidenceIds = collect($data['incident_evidence_ids'] ?? [])
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->values();
+        $incidentEvidence = $this->incidentEvidenceForSubmission($guard, $incidentEvidenceIds);
         $checklistProofPhotoError = $this->checklistProofPhotoError($request, $checklistProofPhotoFiles);
-        $incidentImageError = $this->incidentImageError($request, $incidentImageFiles);
+        $incidentImageError = $this->incidentImageError($request, $incidentImageFiles, $incidentEvidence->count());
         $incidentReport = null;
         $submittedAt = now(config('app.timezone'));
         $selfieCapturedAt = Carbon::parse($data['area_selfie_captured_at'])->timezone(config('app.timezone'));
@@ -191,7 +320,13 @@ class GuardPatrolController extends Controller
                 ->withErrors(['incident_camera_images' => $incidentImageError]);
         }
 
-        DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $patrolStatus, $areaSelfieImage, $selfieCapturedAt, $checklistProofPhotoFiles, $incidentImageFiles, $submittedAt, &$incidentReport) {
+        if ($request->boolean('has_incident') && $incidentEvidenceIds->count() !== $incidentEvidence->count()) {
+            return back()
+                ->withInput()
+                ->withErrors(['incident_evidence_ids' => 'One or more saved incident evidence images are no longer available. Please refresh the evidence list and select them again.']);
+        }
+
+        DB::transaction(function () use ($request, $data, $guard, $patrolLog, $checkpoint, $patrolStatus, $areaSelfieImage, $selfieCapturedAt, $checklistProofPhotoFiles, $incidentImageFiles, $incidentEvidence, $submittedAt, &$incidentReport) {
             $areaSelfiePath = $this->storePatrolAreaSelfie($areaSelfieImage, $guard);
 
             $patrolLog->update([
@@ -236,6 +371,8 @@ class GuardPatrolController extends Controller
                 ]);
 
                 $imagePaths = $this->storeIncidentImages($incidentReport, $incidentImageFiles);
+                $evidenceImagePaths = $this->attachStoredIncidentEvidence($incidentReport, $incidentEvidence, count($imagePaths));
+                $imagePaths = [...$imagePaths, ...$evidenceImagePaths];
 
                 if ($imagePaths !== []) {
                     $incidentReport->update(['image_path' => $imagePaths[0]]);
@@ -376,6 +513,73 @@ class GuardPatrolController extends Controller
         ];
     }
 
+    private function incidentEvidencePayload(IncidentEvidence $evidence): array
+    {
+        return [
+            'id' => $evidence->id,
+            'original_name' => $evidence->original_name ?: 'Incident evidence',
+            'image_url' => route('patrol.incident-evidence.image', $evidence, false),
+            'captured_at' => $evidence->captured_at?->toIso8601String(),
+            'captured_at_label' => $evidence->captured_at?->timezone(config('app.timezone'))->format('M d, Y h:i A'),
+            'latitude' => (float) $evidence->latitude,
+            'longitude' => (float) $evidence->longitude,
+            'accuracy' => $evidence->accuracy !== null ? (float) $evidence->accuracy : null,
+        ];
+    }
+
+    private function incidentEvidenceForSubmission(Guard $guard, Collection $ids): Collection
+    {
+        if ($ids->isEmpty()) {
+            return collect();
+        }
+
+        return IncidentEvidence::query()
+            ->where('guard_id', $guard->id)
+            ->whereNull('incident_report_id')
+            ->whereIn('id', $ids)
+            ->get()
+            ->sortBy(fn (IncidentEvidence $evidence) => $ids->search($evidence->id))
+            ->values();
+    }
+
+    private function attachStoredIncidentEvidence(IncidentReport $incidentReport, Collection $evidenceItems, int $existingCount = 0): array
+    {
+        $paths = [];
+
+        foreach ($evidenceItems->values() as $index => $evidence) {
+            $contents = null;
+
+            if ($evidence->image_path && Storage::disk('public')->exists($evidence->image_path)) {
+                $contents = Storage::disk('public')->get($evidence->image_path);
+            } elseif ($evidence->image_data) {
+                $decoded = base64_decode($evidence->image_data, true);
+                $contents = $decoded === false ? null : $decoded;
+            }
+
+            if (! is_string($contents) || $contents === '') {
+                continue;
+            }
+
+            $path = 'incident-reports/'.Str::uuid().'.jpg';
+            Storage::disk('public')->put($path, $contents);
+            $paths[] = $path;
+
+            $incidentReport->images()->create([
+                'incident_evidence_id' => $evidence->id,
+                'image_path' => $path,
+                'original_name' => $evidence->original_name,
+                'mime_type' => $evidence->mime_type ?: 'image/jpeg',
+                'image_data' => base64_encode($contents),
+                'source' => 'evidence_storage',
+                'sort_order' => $existingCount + $index + 1,
+            ]);
+
+            $evidence->update(['incident_report_id' => $incidentReport->id]);
+        }
+
+        return $paths;
+    }
+
     private function imageFromCaptureDataUrl(?string $captureDataUrl): ?array
     {
         if (! filled($captureDataUrl)) {
@@ -487,17 +691,19 @@ class GuardPatrolController extends Controller
         }
     }
 
-    private function incidentImageError(Request $request, array $incidentImageFiles): ?string
+    private function incidentImageError(Request $request, array $incidentImageFiles, int $savedEvidenceCount = 0): ?string
     {
         if (! $request->boolean('has_incident')) {
             return null;
         }
 
-        if (count($incidentImageFiles) > 3) {
+        $totalImages = count($incidentImageFiles) + $savedEvidenceCount;
+
+        if ($totalImages > 3) {
             return 'Please take up to 3 incident photos only.';
         }
 
-        if (count($incidentImageFiles) === 0) {
+        if ($totalImages === 0) {
             return 'Please take at least one incident photo before submitting the incident report.';
         }
 

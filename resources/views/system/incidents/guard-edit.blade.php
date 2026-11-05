@@ -109,6 +109,13 @@
                             @foreach ($incidentImages as $image)
                                 <label class="block overflow-hidden rounded-md border border-blue-100 bg-white shadow-sm">
                                     <img src="{{ route('incidents.images.show', [$incident, $image]) }}" alt="Incident evidence {{ $loop->iteration }}" class="h-40 w-full object-cover">
+                                    @if ($image->incidentEvidence)
+                                        <span class="block border-t border-blue-100 bg-blue-50/50 px-3 py-2 text-xs leading-5 text-slate-600">
+                                            <span class="block font-semibold text-slate-700">Captured at incident location</span>
+                                            <span class="block">{{ $image->incidentEvidence->captured_at?->timezone(config('app.timezone'))->format('M d, Y h:i A') ?? 'Time not recorded' }}</span>
+                                            <span class="block">GPS: {{ number_format((float) $image->incidentEvidence->latitude, 6) }}, {{ number_format((float) $image->incidentEvidence->longitude, 6) }}</span>
+                                        </span>
+                                    @endif
                                     <span class="flex items-start gap-2 border-t border-blue-100 px-3 py-2 text-sm text-slate-700">
                                         <input type="checkbox" name="remove_image_ids[]" value="{{ $image->id }}" class="mt-0.5 rounded border-slate-300 text-red-700 focus:ring-red-500" @checked($removeImageIds->contains((string) $image->id))>
                                         <span>

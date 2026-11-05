@@ -12,6 +12,7 @@ class IncidentReportImage extends Model
 
     protected $fillable = [
         'incident_report_id',
+        'incident_evidence_id',
         'image_path',
         'original_name',
         'mime_type',
@@ -23,5 +24,10 @@ class IncidentReportImage extends Model
     public function incidentReport(): BelongsTo
     {
         return $this->belongsTo(IncidentReport::class);
+    }
+
+    public function incidentEvidence(): BelongsTo
+    {
+        return $this->belongsTo(IncidentEvidence::class);
     }
 }

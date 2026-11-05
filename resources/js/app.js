@@ -251,11 +251,24 @@ function registerServiceWorker() {
 }
 
 async function fetchJsonWithCsrf(url, options = {}, retried = false) {
+    const isFormDataBody = typeof FormData !== 'undefined' && options.body instanceof FormData;
+    const requestHeaders = isFormDataBody
+        ? {
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+        : csrfJsonHeaders();
+    const token = csrfToken();
+
+    if (token) {
+        requestHeaders['X-CSRF-TOKEN'] = token;
+    }
+
     const response = await fetch(url, {
         credentials: 'same-origin',
         ...options,
         headers: {
-            ...csrfJsonHeaders(),
+            ...requestHeaders,
             ...(options.headers || {}),
         },
     });
@@ -738,6 +751,12 @@ Alpine.data('patrolScan', (config = {}) => ({
     incidentImageError: '',
     incidentFormError: '',
     incidentImagePreviews: [],
+    incidentEvidence: [],
+    incidentEvidenceLoading: false,
+    incidentEvidenceBusy: false,
+    incidentEvidenceMessage: '',
+    incidentEvidenceError: '',
+    selectedIncidentEvidenceIds: [],
     checklistPhotoError: '',
     checklistPhotoPreviews: {},
     imageCompressionBusy: false,
@@ -764,6 +783,8 @@ Alpine.data('patrolScan', (config = {}) => ({
     areaSelfieLatitude: config.areaSelfieLatitude || '',
     areaSelfieLongitude: config.areaSelfieLongitude || '',
     areaSelfieAccuracy: config.areaSelfieAccuracy || '',
+    incidentEvidenceUrl: config.incidentEvidenceUrl || '',
+    incidentEvidenceStoreUrl: config.incidentEvidenceStoreUrl || '',
     areaSelfieError: '',
     areaSelfieMessage: '',
     areaSelfieLocationBusy: false,
@@ -785,6 +806,7 @@ Alpine.data('patrolScan', (config = {}) => ({
 
     boot() {
         this.verificationMessage = 'Scan RFID, take the required area selfie, then complete the patrol checklist.';
+        this.loadIncidentEvidence();
 
         if (! this.patrolScheduleOpen) {
             this.scanMessage = this.patrolScheduleMessage;
@@ -1446,6 +1468,147 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.$nextTick(() => document.getElementById('doors_checked_normal')?.focus());
     },
 
+    async loadIncidentEvidence() {
+        if (! this.incidentEvidenceUrl || this.incidentEvidenceLoading) {
+            return;
+        }
+
+        this.incidentEvidenceLoading = true;
+
+        try {
+            const response = await fetchJsonWithCsrf(this.incidentEvidenceUrl, {
+                method: 'GET',
+            });
+            const payload = await response.json().catch(() => ({}));
+
+            if (! response.ok) {
+                throw new Error(payload.message || 'Saved incident evidence could not be loaded.');
+            }
+
+            this.incidentEvidence = Array.isArray(payload.evidence) ? payload.evidence : [];
+        } catch (error) {
+            this.incidentEvidenceError = error?.message || 'Saved incident evidence could not be loaded.';
+        } finally {
+            this.incidentEvidenceLoading = false;
+        }
+    },
+
+    incidentEvidenceSelected(id) {
+        return this.selectedIncidentEvidenceIds.includes(Number(id));
+    },
+
+    incidentEvidenceGpsLabel(evidence) {
+        const latitude = Number(evidence?.latitude);
+        const longitude = Number(evidence?.longitude);
+        const accuracy = Number(evidence?.accuracy);
+
+        if (! Number.isFinite(latitude) || ! Number.isFinite(longitude)) {
+            return 'GPS unavailable';
+        }
+
+        const suffix = Number.isFinite(accuracy) && accuracy > 0
+            ? ` (+/- ${Math.round(accuracy)}m)`
+            : '';
+
+        return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}${suffix}`;
+    },
+
+    toggleIncidentEvidence(id) {
+        const evidenceId = Number(id);
+
+        if (! evidenceId) {
+            return;
+        }
+
+        if (this.incidentEvidenceSelected(evidenceId)) {
+            this.selectedIncidentEvidenceIds = this.selectedIncidentEvidenceIds.filter((selectedId) => selectedId !== evidenceId);
+            this.incidentImageError = '';
+            this.updateIncidentImageCount();
+            return;
+        }
+
+        const currentPhotoCount = this.incidentFileCount('incidentCameraImages');
+
+        if (currentPhotoCount + this.selectedIncidentEvidenceIds.length >= 3) {
+            this.incidentImageError = 'Please attach up to 3 incident photos only.';
+            return;
+        }
+
+        this.selectedIncidentEvidenceIds = [...this.selectedIncidentEvidenceIds, evidenceId];
+        this.incidentImageError = '';
+        this.updateIncidentImageCount();
+    },
+
+    async saveIncidentEvidence(event) {
+        const input = event?.target;
+        const file = input?.files?.[0];
+
+        if (! input || ! file) {
+            return false;
+        }
+
+        input.value = '';
+
+        if (file.type && ! file.type.startsWith('image/')) {
+            this.incidentEvidenceError = 'Choose a valid incident evidence photo.';
+            return false;
+        }
+
+        this.incidentEvidenceBusy = true;
+        this.incidentEvidenceMessage = '';
+        this.incidentEvidenceError = '';
+        const capturedAt = new Date();
+
+        try {
+            const position = await this.getAreaSelfiePosition({
+                maximumAge: 0,
+                timeout: 12000,
+            });
+            const preparedFile = await compressedImageFile(file, {
+                maxSize: 1600,
+                quality: 0.8,
+            });
+            const formData = new FormData();
+
+            formData.append('image', preparedFile, preparedFile.name || file.name || 'incident-evidence.jpg');
+            formData.append('captured_at', capturedAt.toISOString());
+            formData.append('latitude', Number(position.coords.latitude).toFixed(7));
+            formData.append('longitude', Number(position.coords.longitude).toFixed(7));
+
+            if (Number.isFinite(Number(position.coords.accuracy))) {
+                formData.append('accuracy', Number(position.coords.accuracy).toFixed(2));
+            }
+
+            const response = await fetchJsonWithCsrf(this.incidentEvidenceStoreUrl, {
+                method: 'POST',
+                body: formData,
+            });
+            const payload = await response.json().catch(() => ({}));
+
+            if (! response.ok) {
+                throw new Error(payload.message || 'Incident evidence could not be saved.');
+            }
+
+            if (payload.evidence) {
+                this.incidentEvidence = [payload.evidence, ...this.incidentEvidence.filter((item) => item.id !== payload.evidence.id)];
+
+                if (this.incident && ! this.incidentEvidenceSelected(payload.evidence.id)) {
+                    this.toggleIncidentEvidence(payload.evidence.id);
+                }
+            }
+
+            this.incidentEvidenceMessage = 'Evidence saved with its capture time and GPS. Attach it from the incident report when ready.';
+        } catch (error) {
+            this.incidentEvidenceError = error?.code
+                ? this.areaSelfieLocationErrorMessage(error)
+                : (error?.message || 'Incident evidence could not be saved.');
+        } finally {
+            this.incidentEvidenceBusy = false;
+        }
+
+        return true;
+    },
+
     handleIncidentToggle(event) {
         if (event?.target?.checked) {
             this.openIncidentModal();
@@ -1461,6 +1624,7 @@ Alpine.data('patrolScan', (config = {}) => ({
         this.incidentFormError = '';
         this.incidentImageError = '';
         this.incidentImageCount = 0;
+        this.selectedIncidentEvidenceIds = [];
         this.clearIncidentImagePreviews();
 
         if (this.$refs.incidentCameraImages) {
@@ -1582,7 +1746,7 @@ Alpine.data('patrolScan', (config = {}) => ({
         const cameraInput = this.$refs.incidentCameraImages;
         const currentCameraFiles = Array.from(cameraInput?.files || []);
         const nextCameraFiles = [...currentCameraFiles, file];
-        const total = nextCameraFiles.length;
+        const total = nextCameraFiles.length + this.selectedIncidentEvidenceIds.length;
 
         if (total > 3) {
             input.value = '';
@@ -1629,7 +1793,7 @@ Alpine.data('patrolScan', (config = {}) => ({
 
     updateIncidentImageCount(event = null) {
         let cameraCount = this.incidentFileCount('incidentCameraImages');
-        let total = cameraCount;
+        let total = cameraCount + this.selectedIncidentEvidenceIds.length;
 
         if (total > 3 && event?.target) {
             event.target.value = '';
