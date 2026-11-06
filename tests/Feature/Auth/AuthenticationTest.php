@@ -126,8 +126,8 @@ class AuthenticationTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Remember me on this device')
-            ->assertSee('Do not use on shared devices.');
+            ->assertSee('Remember me')
+            ->assertSee('Avoid shared devices');
     }
 
     public function test_remember_me_sets_a_recaller_cookie(): void
