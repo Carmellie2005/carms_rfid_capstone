@@ -51,7 +51,10 @@ class LoginRequest extends FormRequest
             : ['username'];
 
         foreach ($fields as $field) {
-            if (Auth::attempt([$field => $login, 'password' => $this->string('password')->toString()], false)) {
+            if (Auth::attempt(
+                [$field => $login, 'password' => $this->string('password')->toString()],
+                $this->boolean('remember')
+            )) {
                 RateLimiter::clear($this->throttleKey());
 
                 return;

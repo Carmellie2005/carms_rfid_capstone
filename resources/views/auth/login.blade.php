@@ -157,6 +157,21 @@
                         <x-input-error :messages="$errors->get('password')" class="mt-2" />
                     </div>
 
+                    <div class="flex items-start justify-between gap-3 text-xs">
+                        <label for="remember" class="inline-flex cursor-pointer items-center gap-2 font-medium text-slate-600 dark:text-slate-300">
+                            <input
+                                id="remember"
+                                type="checkbox"
+                                name="remember"
+                                value="1"
+                                @checked(old('remember'))
+                                class="h-4 w-4 rounded border-slate-300 text-blue-700 shadow-sm focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-950 dark:text-blue-400"
+                            >
+                            <span>Remember me on this device</span>
+                        </label>
+                        <span class="max-w-[150px] text-right leading-4 text-slate-400 dark:text-slate-500">Do not use on shared devices.</span>
+                    </div>
+
                     <p
                         x-show="lockoutSeconds > 0"
                         x-cloak

@@ -120,16 +120,17 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('dashboard'));
     }
 
-    public function test_login_screen_does_not_show_remember_me(): void
+    public function test_login_screen_shows_optional_remember_me_control(): void
     {
         $response = $this->get('/login');
 
         $response
             ->assertOk()
-            ->assertDontSee('Remember me');
+            ->assertSee('Remember me on this device')
+            ->assertSee('Do not use on shared devices.');
     }
 
-    public function test_remember_me_input_is_ignored(): void
+    public function test_remember_me_sets_a_recaller_cookie(): void
     {
         $user = User::factory()->create();
 
@@ -140,7 +141,7 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertCookieMissing(Auth::guard('web')->getRecallerName());
+        $response->assertCookie(Auth::guard('web')->getRecallerName());
     }
 
     public function test_login_does_not_set_a_recaller_cookie(): void
