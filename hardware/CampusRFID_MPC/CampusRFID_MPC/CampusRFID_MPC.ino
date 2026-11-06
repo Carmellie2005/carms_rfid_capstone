@@ -840,7 +840,7 @@ void showWiFiConnected() {
 
   lcdMessage(
     "WiFi Connected",
-    WiFi.localIP().toString()
+    WiFi.SSID()
   );
 
   successBeep();

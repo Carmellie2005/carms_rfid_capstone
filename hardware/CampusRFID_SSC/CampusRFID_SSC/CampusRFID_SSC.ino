@@ -18,7 +18,7 @@
 // This will NEVER change in the setup page.
 // Only the password will be changed.
 
-const char* WIFI_SSID = "SSC Room";
+const char* WIFI_SSID = "SSC ROOM WiFi";
 const char* WIFI_PASSWORD = "SLSU_BC_SSC_2026";
 
 // Public/open fallback for pilot testing.
@@ -429,7 +429,7 @@ button.password-toggle svg {
 
 <strong>Campus WiFi:</strong><br>
 
-SSC Room
+SSC ROOM WiFi
 
 <br><br>
 
@@ -786,11 +786,160 @@ The RFID device will restart automatically.
 // CONNECT TO CAMPUS WIFI
 // =====================================================
 
+bool hasConfiguredText(
+  const char* value
+) {
+
+  return value != nullptr &&
+    String(value).length() > 0;
+}
+
+bool tryWiFiNetwork(
+  const char* ssid,
+  const char* password
+) {
+
+  if (
+    !hasConfiguredText(ssid)
+  ) {
+
+    return false;
+  }
+
+  Serial.print(
+    "Trying WiFi: "
+  );
+
+  Serial.println(
+    ssid
+  );
+
+  lcdMessage(
+    "Trying WiFi",
+    String(ssid)
+  );
+
+  WiFi.disconnect();
+
+  delay(500);
+
+  WiFi.mode(
+    WIFI_STA
+  );
+
+  WiFi.setSleep(
+    false
+  );
+
+  if (
+    hasConfiguredText(password)
+  ) {
+
+    WiFi.begin(
+      ssid,
+      password
+    );
+  }
+
+  else {
+
+    WiFi.begin(
+      ssid
+    );
+  }
+
+  int attempts = 0;
+
+  while (
+    WiFi.status() != WL_CONNECTED &&
+    attempts < WIFI_CONNECT_ATTEMPTS
+  ) {
+
+    delay(500);
+
+    Serial.print(
+      "."
+    );
+
+    attempts++;
+  }
+
+  Serial.println();
+
+  if (
+    WiFi.status() == WL_CONNECTED
+  ) {
+
+    return true;
+  }
+
+  Serial.print(
+    "Failed WiFi: "
+  );
+
+  Serial.println(
+    ssid
+  );
+
+  return false;
+}
+
+void showWiFiConnected() {
+
+  Serial.println(
+    "WiFi Connected"
+  );
+
+  Serial.print(
+    "SSID: "
+  );
+
+  Serial.println(
+    WiFi.SSID()
+  );
+
+  Serial.print(
+    "IP Address: "
+  );
+
+  Serial.println(
+    WiFi.localIP()
+  );
+
+  Serial.print(
+    "Device: "
+  );
+
+  Serial.println(
+    DEVICE_UID
+  );
+
+  Serial.print(
+    "API URL: "
+  );
+
+  Serial.println(
+    API_URL
+  );
+
+  lcdMessage(
+    "WiFi Connected",
+    WiFi.SSID()
+  );
+
+  successBeep();
+
+  delay(1500);
+
+  showReady();
+}
+
 void connectWiFi() {
 
   Serial.println();
+
   Serial.println(
-    "Connecting to campus WiFi..."
+    "Connecting SSC device to campus WiFi..."
   );
 
   lcdMessage(
@@ -802,238 +951,108 @@ void connectWiFi() {
     getSavedWiFiPassword();
 
   // =================================================
-  // NO PASSWORD SAVED YET
+  // PRIMARY WIFI USING BUILT-IN PASSWORD
   // =================================================
+
+  if (
+    tryWiFiNetwork(
+      WIFI_SSID,
+      WIFI_PASSWORD
+    )
+  ) {
+
+    showWiFiConnected();
+
+    return;
+  }
+
+  // =================================================
+  // PRIMARY WIFI USING SAVED PASSWORD FALLBACK
+  // =================================================
+
+  if (
+    savedPassword.length() > 0 &&
+    tryWiFiNetwork(
+      WIFI_SSID,
+      savedPassword.c_str()
+    )
+  ) {
+
+    showWiFiConnected();
+
+    return;
+  }
 
   if (
     savedPassword.length() == 0
   ) {
 
     Serial.println(
-      "No saved WiFi password. Trying built-in password."
+      "No saved password for primary WiFi."
     );
   }
-
-  // =================================================
-  // CONNECT USING BUILT-IN PASSWORD
-  // =================================================
-
-  WiFi.mode(
-    WIFI_STA
-  );
-
-  WiFi.setSleep(
-    false
-  );
-
-  WiFi.begin(
-    WIFI_SSID,
-    WIFI_PASSWORD
-  );
-
-  int attempts = 0;
-
-  while (
-    WiFi.status() != WL_CONNECTED &&
-    attempts < WIFI_CONNECT_ATTEMPTS
-  ) {
-
-    delay(500);
-
-    Serial.print(".");
-
-    attempts++;
-  }
-
-  // =================================================
-  // FALL BACK TO SAVED PASSWORD IF BUILT-IN FAILS
-  // =================================================
-
-  if (
-    WiFi.status() != WL_CONNECTED &&
-    savedPassword.length() > 0
-  ) {
-
-    Serial.println();
-
-    Serial.println(
-      "Built-in password failed. Trying saved password."
-    );
-
-    WiFi.disconnect();
-
-    delay(500);
-
-    WiFi.begin(
-      WIFI_SSID,
-      savedPassword.c_str()
-    );
-
-    attempts = 0;
-
-    while (
-      WiFi.status() != WL_CONNECTED &&
-      attempts < WIFI_CONNECT_ATTEMPTS
-    ) {
-
-      delay(500);
-
-      Serial.print(".");
-
-      attempts++;
-    }
-  }
-
-  // =================================================
-  // FALL BACK TO OPEN PUBLIC WIFI
-  // =================================================
-
-  if (
-    WiFi.status() != WL_CONNECTED
-  ) {
-
-    Serial.println();
-
-    Serial.println(
-      "Password WiFi failed. Trying public fallback WiFi."
-    );
-
-    WiFi.disconnect();
-
-    delay(500);
-
-    WiFi.begin(
-      OPEN_WIFI_SSID
-    );
-
-    attempts = 0;
-
-    while (
-      WiFi.status() != WL_CONNECTED &&
-      attempts < WIFI_CONNECT_ATTEMPTS
-    ) {
-
-      delay(500);
-
-      Serial.print(".");
-
-      attempts++;
-    }
-  }
-
-  // =================================================
-  // FALL BACK TO SECOND SECURED WIFI
-  // =================================================
-
-  if (
-    WiFi.status() != WL_CONNECTED
-  ) {
-
-    Serial.println();
-
-    Serial.println(
-      "Public WiFi failed. Trying second secured fallback WiFi."
-    );
-
-    WiFi.disconnect();
-
-    delay(500);
-
-    WiFi.begin(
-      SECOND_BACKUP_WIFI_SSID,
-      SECOND_BACKUP_WIFI_PASSWORD
-    );
-
-    attempts = 0;
-
-    while (
-      WiFi.status() != WL_CONNECTED &&
-      attempts < WIFI_CONNECT_ATTEMPTS
-    ) {
-
-      delay(500);
-
-      Serial.print(".");
-
-      attempts++;
-    }
-  }
-
-  // =================================================
-  // CONNECTED
-  // =================================================
-
-  if (
-    WiFi.status() == WL_CONNECTED
-  ) {
-
-    Serial.println();
-
-    Serial.println(
-      "WiFi Connected"
-    );
-
-    Serial.print(
-      "SSID: "
-    );
-
-    Serial.println(
-      WiFi.SSID()
-    );
-
-    Serial.print(
-      "IP Address: "
-    );
-
-    Serial.println(
-      WiFi.localIP()
-    );
-
-    Serial.print(
-      "Device: "
-    );
-
-    Serial.println(
-      DEVICE_UID
-    );
-
-    lcdMessage(
-      "WiFi Connected",
-      WiFi.localIP().toString()
-    );
-
-    successBeep();
-
-    delay(1500);
-
-    showReady();
-  }
-
-  // =================================================
-  // FAILED
-  // =================================================
 
   else {
 
-    Serial.println();
-
     Serial.println(
-      "All WiFi options failed."
+      "Saved primary WiFi password failed."
     );
-
-    Serial.println(
-      "Starting setup portal..."
-    );
-
-    lcdMessage(
-      "WiFi Changed?",
-      "Setup Required"
-    );
-
-    delay(2000);
-
-    startWiFiSetupPortal();
   }
+
+  // =================================================
+  // PUBLIC WIFI FALLBACK
+  // =================================================
+
+  if (
+    tryWiFiNetwork(
+      OPEN_WIFI_SSID,
+      nullptr
+    )
+  ) {
+
+    showWiFiConnected();
+
+    return;
+  }
+
+  // =================================================
+  // SECOND SECURED WIFI FALLBACK
+  // =================================================
+
+  if (
+    tryWiFiNetwork(
+      SECOND_BACKUP_WIFI_SSID,
+      SECOND_BACKUP_WIFI_PASSWORD
+    )
+  ) {
+
+    showWiFiConnected();
+
+    return;
+  }
+
+  // =================================================
+  // ALL WIFI OPTIONS FAILED
+  // =================================================
+
+  Serial.println();
+
+  Serial.println(
+    "All WiFi options failed."
+  );
+
+  Serial.println(
+    "Starting SSC WiFi setup portal..."
+  );
+
+  lcdMessage(
+    "WiFi Setup",
+    "Required"
+  );
+
+  delay(2000);
+
+  startWiFiSetupPortal();
 }
 
 // =====================================================

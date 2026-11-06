@@ -13,12 +13,17 @@ use Illuminate\Support\Facades\Storage;
 class ClearPatrolIncidentRecords extends Command
 {
     protected $signature = 'records:clear-patrol-incidents
-        {--force : Delete the records. Without this option, the command only previews counts}';
+        {--force : Delete the records. Without this option, the command only previews counts}
+        {--unassigned-evidence-only : Delete only incident evidence that is not attached to an incident report}';
 
     protected $description = 'Clear activity, notification, and enrollment records while keeping guard and user accounts';
 
     public function handle(): int
     {
+        if ($this->option('unassigned-evidence-only')) {
+            return $this->clearUnassignedEvidence();
+        }
+
         $scope = $this->scope();
         $plan = $this->deletionPlan($scope);
 
@@ -57,6 +62,72 @@ class ClearPatrolIncidentRecords extends Command
             ->all());
         $this->line('Deleted files: '.count($filePaths));
         $this->line('Kept user accounts, guard profiles, and checkpoints.');
+
+        return self::SUCCESS;
+    }
+
+    private function clearUnassignedEvidence(): int
+    {
+        if (! Schema::hasTable('incident_evidence')) {
+            $this->warn('The incident_evidence table does not exist. Nothing was deleted.');
+
+            return self::SUCCESS;
+        }
+
+        $evidence = DB::table('incident_evidence')
+            ->whereNull('incident_report_id')
+            ->orderBy('id')
+            ->get(['id', 'image_path']);
+
+        $this->line('This cleanup keeps all patrol logs and incident reports.');
+        $this->line('Only incident evidence with no attached incident report is included.');
+        $this->line('Unassigned evidence photos found: '.$evidence->count());
+
+        if (! $this->option('force')) {
+            $this->warn('Dry run only. No evidence was deleted.');
+            $this->line('Run php artisan records:clear-patrol-incidents --unassigned-evidence-only --force on the hosted server to delete these photos.');
+
+            return self::SUCCESS;
+        }
+
+        $ids = $evidence->pluck('id');
+
+        if ($ids->isEmpty()) {
+            $this->info('No unassigned incident evidence photos were found.');
+
+            return self::SUCCESS;
+        }
+
+        $result = DB::transaction(function () use ($ids): array {
+            $rows = DB::table('incident_evidence')
+                ->whereNull('incident_report_id')
+                ->whereIn('id', $ids)
+                ->lockForUpdate()
+                ->get(['id', 'image_path']);
+
+            if ($rows->isEmpty()) {
+                return ['count' => 0, 'paths' => []];
+            }
+
+            $deleted = DB::table('incident_evidence')
+                ->whereNull('incident_report_id')
+                ->whereIn('id', $rows->pluck('id'))
+                ->delete();
+
+            return [
+                'count' => $deleted,
+                'paths' => $rows->pluck('image_path')->filter()->unique()->values()->all(),
+            ];
+        });
+
+        if ($result['paths'] !== []) {
+            Storage::disk('public')->delete($result['paths']);
+        }
+
+        $this->info('Unassigned incident evidence cleanup completed.');
+        $this->line('Deleted evidence records: '.$result['count']);
+        $this->line('Deleted image files: '.count($result['paths']));
+        $this->line('Patrol logs and attached incident reports were kept.');
 
         return self::SUCCESS;
     }
