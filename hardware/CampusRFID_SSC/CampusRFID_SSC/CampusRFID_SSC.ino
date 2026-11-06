@@ -20,6 +20,8 @@
 
 const char* WIFI_SSID = "SSC ROOM WiFi";
 const char* WIFI_PASSWORD = "SLSU_BC_SSC_2026";
+const char* BACKUP_WIFI_SSID = "System-WiFi";
+const char* BACKUP_WIFI_PASSWORD = "SLSU_BC_System_Wifi";
 
 // Public/open fallback for pilot testing.
 // This must not require a captive portal/login page.
@@ -430,6 +432,12 @@ button.password-toggle svg {
 <strong>Campus WiFi:</strong><br>
 
 SSC ROOM WiFi
+
+<br><br>
+
+Backup WiFi:<br>
+
+System-WiFi
 
 <br><br>
 
@@ -997,6 +1005,22 @@ void connectWiFi() {
     Serial.println(
       "Saved primary WiFi password failed."
     );
+  }
+
+  // =================================================
+  // SECURED SYSTEM WIFI FALLBACK
+  // =================================================
+
+  if (
+    tryWiFiNetwork(
+      BACKUP_WIFI_SSID,
+      BACKUP_WIFI_PASSWORD
+    )
+  ) {
+
+    showWiFiConnected();
+
+    return;
   }
 
   // =================================================
