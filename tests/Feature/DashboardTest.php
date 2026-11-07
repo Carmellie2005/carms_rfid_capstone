@@ -278,8 +278,8 @@ class DashboardTest extends TestCase
             ->assertSee('BCP-004')
             ->assertSee('24-hour duty, 8:00 AM start')
             ->assertSee('Evening duty')
-            ->assertSee('Patrol Coverage')
-            ->assertSee('Checkpoint visits for today')
+            ->assertSee('Checkpoint Coverage Today')
+            ->assertSee('Unique valid checkpoint visits')
             ->assertSee('Offline')
             ->assertSee('Off duty today: BCP-001, BCP-002');
 

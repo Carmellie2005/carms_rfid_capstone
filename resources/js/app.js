@@ -2610,8 +2610,35 @@ Alpine.data('dashboardCharts', (analytics) => ({
         const options = this.baseOptions({ legend: true });
         options.plugins.legend.position = this.isCompactChart() ? 'bottom' : 'right';
 
+        const centerTextColor = this.chartTextColor();
+        const patrolCoverageCenterText = {
+            id: 'patrolCoverageCenterText',
+            afterDraw(chart) {
+                const chartData = analytics.patrolCoverage.data || [];
+                const scanned = Number(chartData[0] || 0);
+                const total = chartData.reduce((sum, value) => sum + Number(value || 0), 0);
+                const center = chart.getDatasetMeta(0).data?.[0];
+
+                if (! center || total === 0) {
+                    return;
+                }
+
+                const { ctx } = chart;
+                ctx.save();
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = centerTextColor;
+                ctx.font = '600 24px Poppins, sans-serif';
+                ctx.fillText(`${scanned}/${total}`, center.x, center.y - 7);
+                ctx.fillStyle = centerTextColor;
+                ctx.font = '500 11px Poppins, sans-serif';
+                ctx.fillText('visited', center.x, center.y + 14);
+                ctx.restore();
+            },
+        };
+
         this.charts.push(new Chart(this.$refs.patrolCoverageChart, {
-            type: 'pie',
+            type: 'doughnut',
             data: {
                 labels: analytics.patrolCoverage.labels,
                 datasets: [{
@@ -2621,7 +2648,11 @@ Alpine.data('dashboardCharts', (analytics) => ({
                     borderWidth: 3,
                 }],
             },
-            options,
+            options: {
+                ...options,
+                cutout: '62%',
+            },
+            plugins: [patrolCoverageCenterText],
         }));
     },
 }));
