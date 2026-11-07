@@ -13,6 +13,8 @@
             photoOpen: false,
             photoUrl: '',
             photoTitle: '',
+            deletingEvidenceId: null,
+            evidenceDeleteError: '',
             openPhoto(url, title) {
                 this.photoUrl = url;
                 this.photoTitle = title || 'Photo preview';
@@ -25,6 +27,37 @@
                 this.photoUrl = '';
                 this.photoTitle = '';
                 document.body.classList.remove('overflow-y-hidden');
+            },
+            async deleteEvidence(id, url) {
+                if (! window.confirm('Delete this evidence photo? It is not attached to an incident report. This action cannot be undone.')) {
+                    return;
+                }
+
+                this.deletingEvidenceId = Number(id);
+                this.evidenceDeleteError = '';
+
+                try {
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                    const response = await fetch(url, {
+                        method: 'DELETE',
+                        credentials: 'same-origin',
+                        headers: {
+                            Accept: 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+                        },
+                    });
+                    const payload = await response.json().catch(() => ({}));
+
+                    if (! response.ok) {
+                        throw new Error(payload.message || 'The evidence photo could not be deleted.');
+                    }
+
+                    window.location.reload();
+                } catch (error) {
+                    this.evidenceDeleteError = error?.message || 'The evidence photo could not be deleted.';
+                    this.deletingEvidenceId = null;
+                }
             },
         }"
         x-on:keydown.escape.window="photoOpen && closePhoto()"
@@ -61,6 +94,7 @@
                         </div>
                         <span class="w-fit rounded-md bg-white px-2.5 py-1 text-xs font-bold text-amber-800 ring-1 ring-amber-200">{{ $savedEvidence->total() }} saved</span>
                     </div>
+                    <p x-show="evidenceDeleteError" x-cloak class="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700" x-text="evidenceDeleteError"></p>
 
                     @if ($savedEvidence->isNotEmpty())
                         <div class="mt-4 grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -75,10 +109,23 @@
                                         <span class="absolute bottom-2 left-2 rounded-md bg-slate-950/75 px-2 py-1 text-xs font-semibold text-white">Saved evidence</span>
                                     </button>
                                     <div class="border-t border-amber-100 px-3 py-2 text-xs leading-5 text-slate-600">
-                                        <p class="truncate font-semibold text-slate-800">{{ $evidence->original_name ?: 'Incident evidence' }}</p>
-                                        <p>Time: {{ $evidenceTime?->format('M d, Y h:i A') ?? 'Not recorded' }}</p>
-                                        <p>GPS: {{ number_format((float) $evidence->latitude, 6) }}, {{ number_format((float) $evidence->longitude, 6) }}</p>
-                                        <p class="mt-1 font-semibold text-amber-700">Not attached to a report</p>
+                                        <div class="flex items-start justify-between gap-3">
+                                            <div class="min-w-0">
+                                                <p class="truncate font-semibold text-slate-800">{{ $evidence->original_name ?: 'Incident evidence' }}</p>
+                                                <p>Time: {{ $evidenceTime?->format('M d, Y h:i A') ?? 'Not recorded' }}</p>
+                                                <p>GPS: {{ number_format((float) $evidence->latitude, 6) }}, {{ number_format((float) $evidence->longitude, 6) }}</p>
+                                                <p class="mt-1 font-semibold text-amber-700">Not attached to a report</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                class="shrink-0 rounded-md border border-red-200 px-2.5 py-1.5 text-xs font-bold text-red-700 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+                                                @click="deleteEvidence({{ $evidence->id }}, @js(route('patrol.incident-evidence.destroy', $evidence)))"
+                                                :disabled="deletingEvidenceId === {{ $evidence->id }}"
+                                                :aria-busy="deletingEvidenceId === {{ $evidence->id }}"
+                                            >
+                                                <span x-text="deletingEvidenceId === {{ $evidence->id }} ? 'Deleting...' : 'Delete'">Delete</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </article>
                             @endforeach

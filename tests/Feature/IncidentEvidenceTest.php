@@ -112,6 +112,82 @@ class IncidentEvidenceTest extends TestCase
         Storage::disk('public')->assertExists($reportImage->image_path);
     }
 
+    public function test_guard_can_delete_unattached_incident_evidence(): void
+    {
+        Storage::fake('public');
+        [$user, $guard] = $this->guardAndCheckpoint();
+        $path = 'incident-evidence/'.$guard->id.'/unused-photo.jpg';
+
+        Storage::disk('public')->put($path, 'unused evidence');
+
+        $evidence = IncidentEvidence::create([
+            'guard_id' => $guard->id,
+            'image_path' => $path,
+            'original_name' => 'unused-photo.jpg',
+            'mime_type' => 'image/jpeg',
+            'image_data' => base64_encode('unused evidence'),
+            'captured_at' => '2026-11-05 10:00:00',
+            'latitude' => 10.1234567,
+            'longitude' => 124.1234567,
+            'accuracy' => 8.5,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->deleteJson(route('patrol.incident-evidence.destroy', $evidence));
+
+        $response
+            ->assertOk()
+            ->assertJson(['message' => 'Incident evidence removed.']);
+
+        $this->assertDatabaseMissing('incident_evidence', ['id' => $evidence->id]);
+        Storage::disk('public')->assertMissing($path);
+    }
+
+    public function test_guard_cannot_delete_incident_evidence_already_attached_to_a_report(): void
+    {
+        Storage::fake('public');
+        [$user, $guard, $patrolLog] = $this->pendingPatrol();
+        $incident = IncidentReport::create([
+            'patrol_log_id' => $patrolLog->id,
+            'guard_id' => $guard->id,
+            'checkpoint_id' => Checkpoint::firstOrFail()->id,
+            'category' => 'Safety Hazard',
+            'priority' => 'normal',
+            'severity' => 'medium',
+            'incident_at' => '2026-11-05 10:30:00',
+            'description' => 'Attached evidence must remain available.',
+            'status' => 'submitted',
+        ]);
+        $path = 'incident-evidence/'.$guard->id.'/attached-photo.jpg';
+
+        Storage::disk('public')->put($path, 'attached evidence');
+
+        $evidence = IncidentEvidence::create([
+            'guard_id' => $guard->id,
+            'incident_report_id' => $incident->id,
+            'image_path' => $path,
+            'original_name' => 'attached-photo.jpg',
+            'mime_type' => 'image/jpeg',
+            'image_data' => base64_encode('attached evidence'),
+            'captured_at' => '2026-11-05 10:00:00',
+            'latitude' => 10.1234567,
+            'longitude' => 124.1234567,
+            'accuracy' => 8.5,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->deleteJson(route('patrol.incident-evidence.destroy', $evidence));
+
+        $response
+            ->assertStatus(422)
+            ->assertJson(['message' => 'Evidence already attached to an incident report and cannot be removed here.']);
+
+        $this->assertDatabaseHas('incident_evidence', ['id' => $evidence->id]);
+        Storage::disk('public')->assertExists($path);
+    }
+
     public function test_incident_submission_requires_two_images(): void
     {
         Storage::fake('public');
