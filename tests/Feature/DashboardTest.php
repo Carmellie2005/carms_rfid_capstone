@@ -99,6 +99,77 @@ class DashboardTest extends TestCase
             ->assertDontSee('Expired Dashboard Checkpoint');
     }
 
+    public function test_patrol_coverage_counts_only_valid_scans_from_today(): void
+    {
+        $today = Carbon::parse('2026-11-07 10:00:00', config('app.timezone'));
+        Carbon::setTestNow($today);
+
+        $supervisor = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'supervisor',
+        ]);
+
+        $guardUser = User::factory()->create(['role' => 'guard']);
+        $guard = Guard::create([
+            'user_id' => $guardUser->id,
+            'employee_no' => 'SG-COVERAGE',
+            'name' => 'Coverage Guard',
+            'email' => 'coverage.guard@example.com',
+            'rfid_uid' => 'RFID-COVERAGE',
+            'shift' => '24-hour duty',
+            'status' => 'active',
+        ]);
+
+        $todayCheckpoint = Checkpoint::create([
+            'code' => 'CP-COVERAGE-TODAY',
+            'name' => 'Today Coverage Checkpoint',
+            'location' => 'Campus',
+            'device_uid' => 'ESP32-COVERAGE-TODAY',
+            'status' => 'active',
+        ]);
+
+        $yesterdayCheckpoint = Checkpoint::create([
+            'code' => 'CP-COVERAGE-YESTERDAY',
+            'name' => 'Yesterday Coverage Checkpoint',
+            'location' => 'Campus',
+            'device_uid' => 'ESP32-COVERAGE-YESTERDAY',
+            'status' => 'active',
+        ]);
+
+        PatrolLog::create([
+            'guard_id' => $guard->id,
+            'checkpoint_id' => $todayCheckpoint->id,
+            'rfid_uid' => 'RFID-COVERAGE',
+            'checkpoint_code' => $todayCheckpoint->code,
+            'rfid_status' => 'valid',
+            'status' => 'valid',
+            'scanned_at' => $today->copy()->setTime(8, 30),
+        ]);
+
+        PatrolLog::create([
+            'guard_id' => $guard->id,
+            'checkpoint_id' => $yesterdayCheckpoint->id,
+            'rfid_uid' => 'RFID-COVERAGE',
+            'checkpoint_code' => $yesterdayCheckpoint->code,
+            'rfid_status' => 'valid',
+            'status' => 'valid',
+            'scanned_at' => $today->copy()->subDay()->setTime(23, 59),
+        ]);
+
+        $response = $this
+            ->actingAs($supervisor)
+            ->get(route('dashboard'));
+
+        $response->assertOk();
+
+        $this->assertSame(
+            [1, 1],
+            $response->viewData('analytics')['patrolCoverage']['data']
+        );
+
+        Carbon::setTestNow();
+    }
+
     public function test_dashboard_normal_priority_badge_is_distinct_from_submitted_status(): void
     {
         $supervisor = User::factory()->create([

@@ -19,13 +19,15 @@ class DashboardController extends Controller
         $timezone = config('app.timezone');
         $today = now($timezone)->toDateString();
         $todayMoment = now($timezone);
+        $todayStart = $todayMoment->copy()->startOfDay();
+        $todayEnd = $todayMoment->copy()->endOfDay();
         $trendDates = collect(range(6, 0))->map(fn (int $daysAgo) => now($timezone)->subDays($daysAgo));
         $activeGuardProfiles = Guard::query()
             ->where('status', 'active')
             ->with('user')
             ->withCount([
                 'patrolLogs as today_patrols_count' => fn ($query) => $query
-                    ->whereDate('scanned_at', $today)
+                    ->whereBetween('scanned_at', [$todayStart, $todayEnd])
                     ->where('status', '!=', 'expired'),
             ])
             ->orderBy('employee_no')
@@ -36,7 +38,7 @@ class DashboardController extends Controller
         $coveredCheckpointCount = Checkpoint::query()
             ->where('status', 'active')
             ->whereHas('patrolLogs', fn ($query) => $query
-                ->whereDate('scanned_at', $today)
+                ->whereBetween('scanned_at', [$todayStart, $todayEnd])
                 ->where('status', 'valid'))
             ->count();
         $checkpointActivity = Checkpoint::withCount([
@@ -47,7 +49,9 @@ class DashboardController extends Controller
             'stats' => [
                 'activeGuards' => $activeGuardProfiles->count(),
                 'activeCheckpoints' => $activeCheckpointCount,
-                'todayPatrols' => PatrolLog::whereDate('scanned_at', $today)->where('status', 'valid')->count(),
+                'todayPatrols' => PatrolLog::whereBetween('scanned_at', [$todayStart, $todayEnd])
+                    ->where('status', 'valid')
+                    ->count(),
                 'openIncidents' => IncidentReport::whereIn('status', ['submitted', 'under_review'])->count(),
             ],
             'onDutyGuards' => $onDutyGuards,
