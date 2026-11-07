@@ -37,7 +37,7 @@
                 this.evidenceDeleteError = '';
 
                 try {
-                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                    const csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || '';
                     const response = await fetch(url, {
                         method: 'DELETE',
                         credentials: 'same-origin',
