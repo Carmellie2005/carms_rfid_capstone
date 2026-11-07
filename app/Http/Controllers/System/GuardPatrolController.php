@@ -8,6 +8,7 @@ use App\Models\Guard;
 use App\Models\IncidentEvidence;
 use App\Models\IncidentReport;
 use App\Models\PatrolLog;
+use App\Models\SystemNotification;
 use App\Support\AuditLogger;
 use App\Support\ImageCompressor;
 use App\Support\PatrolChecklist;
@@ -363,9 +364,27 @@ class GuardPatrolController extends Controller
                 'priority' => $incidentReport->priority,
             ]);
 
+            SystemNotification::create([
+                'user_id' => $user->id,
+                'type' => 'Incident',
+                'title' => 'Incident report submitted successfully',
+                'body' => 'Your '.$incidentReport->category.' incident report was submitted successfully.',
+                'href' => route('patrol-logs.index'),
+                'badge' => 'Incident',
+            ]);
+
             $emailNotifier->sendIncidentSubmitted($incidentReport);
             $pushNotifier->sendIncidentSubmitted($incidentReport);
         }
+
+        SystemNotification::create([
+            'user_id' => $user->id,
+            'type' => 'Patrol',
+            'title' => 'Patrol submitted successfully',
+            'body' => 'Your patrol at '.($checkpoint?->name ?? $patrolLog->checkpoint_code).' was recorded successfully.',
+            'href' => route('patrol-logs.index'),
+            'badge' => 'Patrol',
+        ]);
 
         return redirect()->route('patrol.scan')->with('status', 'Checkpoint visit recorded successfully.');
     }

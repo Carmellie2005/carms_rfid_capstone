@@ -152,6 +152,13 @@ class PatrolAreaSelfieTest extends TestCase
             'cctv_alarm_checked' => 1,
         ]);
         $this->assertDatabaseCount('checklist_proof_photos', 0);
+        $this->assertDatabaseHas('system_notifications', [
+            'user_id' => $user->id,
+            'type' => 'Patrol',
+            'title' => 'Patrol submitted successfully',
+            'body' => 'Your patrol at IT Building was recorded successfully.',
+            'badge' => 'Patrol',
+        ]);
     }
 
     public function test_guard_patrol_requires_area_selfie_before_submission(): void
@@ -359,6 +366,13 @@ class PatrolAreaSelfieTest extends TestCase
         $this->assertSame(['camera', 'camera', 'camera'], $incident->images->pluck('source')->all());
         $this->assertSame($incident->images->first()->image_path, $incident->image_path);
         $incident->images->each(fn ($image) => Storage::disk('public')->assertExists($image->image_path));
+        $this->assertDatabaseHas('system_notifications', [
+            'user_id' => $user->id,
+            'type' => 'Incident',
+            'title' => 'Incident report submitted successfully',
+            'body' => 'Your Property Damage / Vandalism incident report was submitted successfully.',
+            'badge' => 'Incident',
+        ]);
     }
 
     public function test_patrol_and_incident_images_are_compressed_before_storage(): void
