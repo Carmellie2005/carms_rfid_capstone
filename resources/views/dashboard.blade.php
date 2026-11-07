@@ -110,7 +110,7 @@
                 x-init="render()"
                 x-on:theme-changed.window="render()"
                 x-on:resize.window.debounce.300ms="render()"
-                class="grid gap-4 xl:grid-cols-[minmax(18rem,0.8fr)_minmax(26rem,1.2fr)]"
+                class="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.7fr)]"
             >
                 <div class="system-card-transition rounded-md border border-blue-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/80">
                     <div class="flex flex-col gap-2 border-b border-blue-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 dark:border-slate-800">
@@ -167,7 +167,7 @@
                         <h3 class="font-semibold text-blue-950 dark:text-white">Checkpoint Coverage Today</h3>
                         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Unique valid checkpoint visits</p>
                     </div>
-                    <div class="relative mx-auto mt-3 h-64 w-full min-w-0 sm:h-72">
+                    <div class="relative mt-2 h-44 min-w-0 sm:h-48">
                         <canvas x-ref="patrolCoverageChart" class="block h-full w-full" aria-label="Checkpoint coverage donut chart"></canvas>
                         @if ($coverageTotal === 0)
                             <div class="pointer-events-none absolute inset-0 flex items-center justify-center text-sm font-medium text-slate-400">
