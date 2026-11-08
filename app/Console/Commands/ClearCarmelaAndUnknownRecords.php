@@ -84,7 +84,8 @@ class ClearCarmelaAndUnknownRecords extends Command
         }
 
         $query->where(function ($where): void {
-            $where->whereRaw('LOWER(guards.name) LIKE ?', ['%carmela%'])
+            $where->whereRaw('UPPER(guards.employee_no) = ?', ['BCP-0007'])
+                ->orWhereRaw('LOWER(guards.name) LIKE ?', ['%carmela%'])
                 ->orWhereRaw('LOWER(guards.name) LIKE ?', ['%unknown%']);
 
             if (Schema::hasTable('users')) {
