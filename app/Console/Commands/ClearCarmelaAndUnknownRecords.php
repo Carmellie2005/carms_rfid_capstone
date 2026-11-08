@@ -62,7 +62,7 @@ class ClearCarmelaAndUnknownRecords extends Command
     private function scope(): array
     {
         $guardIds = $this->targetGuardIds();
-        $userIds = $this->idsByColumn('guards', 'user_id', $guardIds);
+        $userIds = $this->idsByColumn('guards', 'id', $guardIds, 'user_id');
         $patrolIds = $this->targetPatrolIds($guardIds);
         $incidentIds = $this->targetIncidentIds($guardIds, $patrolIds);
         $checklistIds = $this->idsByColumn('checklist_responses', 'patrol_log_id', $patrolIds);
@@ -312,13 +312,18 @@ class ClearCarmelaAndUnknownRecords extends Command
         return Guard::query()->whereIn('id', $guardIds)->pluck('name')->implode(', ');
     }
 
-    private function idsByColumn(string $table, string $column, Collection $ids): Collection
+    private function idsByColumn(string $table, string $column, Collection $ids, string $resultColumn = 'id'): Collection
     {
-        if (! Schema::hasTable($table) || ! Schema::hasColumn($table, $column) || $ids->isEmpty()) {
+        if (
+            ! Schema::hasTable($table)
+            || ! Schema::hasColumn($table, $column)
+            || ! Schema::hasColumn($table, $resultColumn)
+            || $ids->isEmpty()
+        ) {
             return collect();
         }
 
-        return DB::table($table)->whereIn($column, $ids)->pluck('user_id');
+        return DB::table($table)->whereIn($column, $ids)->pluck($resultColumn);
     }
 
     private function countByColumn(string $table, string $column, Collection $ids): int
