@@ -6,7 +6,6 @@ use App\Models\IncidentReport;
 use App\Models\PatrolLog;
 use App\Models\PushSubscription;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Minishlink\WebPush\Subscription;
 use Minishlink\WebPush\WebPush;
 use Throwable;
@@ -31,25 +30,20 @@ class SupervisorPushNotifier
         ]);
     }
 
-    public function sendPatrolScanIssue(PatrolLog $patrolLog): void
+    public function sendPatrolSubmitted(PatrolLog $patrolLog): void
     {
-        if (! in_array($patrolLog->status, ['invalid', 'profile_incomplete', 'outside_schedule', 'suspicious'], true)) {
-            return;
-        }
-
         $patrolLog->loadMissing(['securityGuard', 'checkpoint']);
 
-        $status = Str::of($patrolLog->status)->replace('_', ' ')->title()->toString();
-        $guard = $patrolLog->securityGuard?->name ?: 'Unknown guard';
+        $guard = $patrolLog->securityGuard?->name ?: 'A security guard';
         $checkpoint = $patrolLog->checkpoint?->name
             ?: $patrolLog->checkpoint_code
-            ?: 'unknown checkpoint';
+            ?: 'a checkpoint';
 
         $this->sendToSupervisors([
-            'title' => 'Patrol scan alert',
-            'body' => "{$status} scan by {$guard} at {$checkpoint}.",
-            'url' => route('scan-issues.index', ['status' => $patrolLog->status]),
-            'tag' => 'patrol-'.$patrolLog->id,
+            'title' => 'New patrol submitted',
+            'body' => "{$guard} completed a patrol at {$checkpoint}.",
+            'url' => route('patrol-logs.index', ['date' => $patrolLog->scanned_at?->toDateString()]),
+            'tag' => 'patrol-submitted-'.$patrolLog->id,
         ]);
     }
 

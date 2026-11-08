@@ -2661,7 +2661,7 @@ Alpine.data('webPushManager', (config = {}) => ({
     supported: false,
     enabled: false,
     busy: false,
-    message: 'Enable browser alerts for new incidents and scan issues.',
+    message: 'Enable browser alerts for new patrols and incident reports.',
 
     async init() {
         this.supported = Boolean(config.publicKey) && canUseWebPush();
@@ -2686,7 +2686,7 @@ Alpine.data('webPushManager', (config = {}) => ({
             ? 'Refresh push notifications for this browser.'
             : this.enabled
                 ? 'Push notifications are enabled on this browser.'
-                : 'Enable browser alerts for new incidents and scan issues.';
+                : 'Enable browser alerts for new patrols and incident reports.';
     },
 
     buttonLabel() {

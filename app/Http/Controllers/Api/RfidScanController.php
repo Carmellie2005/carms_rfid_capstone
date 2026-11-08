@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Checkpoint;
 use App\Models\Guard;
 use App\Models\PatrolLog;
-use App\Services\SupervisorEmailNotifier;
-use App\Services\SupervisorPushNotifier;
 use App\Support\AuditLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,7 +13,7 @@ use Illuminate\Support\Carbon;
 
 class RfidScanController extends Controller
 {
-    public function __invoke(Request $request, SupervisorEmailNotifier $emailNotifier, SupervisorPushNotifier $pushNotifier): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
         if ($request->isMethod('get') && ! $this->hasScanPayload($request)) {
             return response()->json([
@@ -115,11 +113,6 @@ class RfidScanController extends Controller
             'guard_id' => $matchedGuard?->id,
             'checkpoint_id' => $matchedCheckpoint?->id,
         ]);
-
-        if (! $isValid) {
-            $emailNotifier->sendPatrolScanIssue($patrolLog);
-            $pushNotifier->sendPatrolScanIssue($patrolLog);
-        }
 
         return response()->json([
             'message' => match (true) {

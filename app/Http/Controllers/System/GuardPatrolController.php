@@ -386,6 +386,8 @@ class GuardPatrolController extends Controller
             'badge' => 'Patrol',
         ]);
 
+        $pushNotifier->sendPatrolSubmitted($patrolLog);
+
         return redirect()->route('patrol.scan')->with('status', 'Checkpoint visit recorded successfully.');
     }
 

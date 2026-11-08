@@ -3,9 +3,7 @@
 namespace App\Services;
 
 use App\Mail\IncidentReportSubmittedMail;
-use App\Mail\RfidScanIssueMail;
 use App\Models\IncidentReport;
-use App\Models\PatrolLog;
 use App\Models\User;
 use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Log;
@@ -19,17 +17,6 @@ class SupervisorEmailNotifier
         $incidentReport->loadMissing(['securityGuard', 'checkpoint', 'patrolLog']);
 
         $this->send(new IncidentReportSubmittedMail($incidentReport));
-    }
-
-    public function sendPatrolScanIssue(PatrolLog $patrolLog): void
-    {
-        if (! in_array($patrolLog->status, ['invalid', 'profile_incomplete', 'outside_schedule', 'suspicious'], true)) {
-            return;
-        }
-
-        $patrolLog->loadMissing(['securityGuard', 'checkpoint']);
-
-        $this->send(new RfidScanIssueMail($patrolLog));
     }
 
     private function send(Mailable $mailable): void

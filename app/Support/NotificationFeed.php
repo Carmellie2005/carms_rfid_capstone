@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class NotificationFeed
 {
@@ -18,7 +17,7 @@ class NotificationFeed
     public const PAGE_SIZE = 12;
 
     public const SUPERVISOR_INCIDENT_STATUSES = ['submitted', 'under_review'];
-    public const SUPERVISOR_PATROL_STATUSES = ['suspicious', 'invalid', 'outside_schedule'];
+    public const SUPERVISOR_PATROL_STATUSES = ['valid'];
     private const GUARD_INCIDENT_STATUSES = [];
     private const GUARD_ACTION_PATROL_STATUSES = ['pending_selfie', 'pending_checklist'];
 
@@ -212,22 +211,23 @@ class NotificationFeed
     {
         $readAt = $patrol->notificationReads->first()?->read_at;
         $time = $patrol->scanned_at;
-        $statusLabel = $patrol->status === 'expired'
-            ? 'Replaced Scan'
-            : Str::of($patrol->status)->replace('_', ' ')->title()->toString();
 
         return [
             'read_type' => 'patrol',
             'read_id' => $patrol->id,
             'type' => 'Patrol',
-            'title' => $statusLabel.' scan',
-            'body' => collect([$patrol->securityGuard?->name, $patrol->checkpoint?->name])->filter()->implode(' - ') ?: 'Checkpoint scan needs review',
+            'title' => 'Patrol submitted',
+            'body' => collect([$patrol->securityGuard?->name, $patrol->checkpoint?->name])
+                ->filter()
+                ->pipe(fn (Collection $details) => $details->isEmpty()
+                    ? 'Patrol record submitted'
+                    : $details->first().' completed a patrol at '.($details->get(1) ?: 'a checkpoint').'.'),
             'time_label' => static::timeLabel($time),
             'relative_time' => $time?->diffForHumans(),
             'sort_timestamp' => $time?->timestamp ?? 0,
-            'badge' => $statusLabel,
+            'badge' => 'Patrol',
             'href' => $user->role === 'admin'
-                ? route('scan-issues.index', ['status' => $patrol->status])
+                ? route('patrol-logs.index', ['date' => $patrol->scanned_at?->toDateString()])
                 : route('patrol.scan'),
             'is_read' => (bool) $readAt,
             'read_at_label' => static::timeLabel($readAt),
