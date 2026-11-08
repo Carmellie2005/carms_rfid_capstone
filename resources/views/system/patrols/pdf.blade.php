@@ -371,7 +371,9 @@
 <body>
     @php
         $reportNumber = 'PL-'.str_pad((string) $patrolLog->id, 6, '0', STR_PAD_LEFT);
-        $status = str($patrolLog->status ?? 'valid')->replace('_', ' ')->title();
+        $status = $patrolLog->status === 'expired'
+            ? 'Replaced Scan'
+            : str($patrolLog->status ?? 'valid')->replace('_', ' ')->title();
         $rfidStatus = str($patrolLog->rfid_status ?? 'not recorded')->replace('_', ' ')->title();
         $scanDate = $patrolLog->scanned_at?->timezone(config('app.timezone'))->format('M d, Y h:i A') ?? 'Not recorded';
         $selfieDate = $patrolLog->area_selfie_captured_at?->timezone(config('app.timezone'))->format('M d, Y h:i A') ?? 'Not recorded';

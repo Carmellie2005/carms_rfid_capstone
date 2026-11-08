@@ -66,7 +66,7 @@
                     <label for="status" class="block text-xs font-semibold uppercase text-blue-800">Status</label>
                     <select id="status" name="status" class="mt-1 block h-9 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="">All</option>
-                        @foreach (['valid' => 'Valid', 'suspicious' => 'Suspicious', 'invalid' => 'Invalid', 'pending_checklist' => 'Pending Checklist', 'profile_incomplete' => 'Profile Incomplete', 'expired' => 'Expired'] as $value => $label)
+                        @foreach (['valid' => 'Valid', 'suspicious' => 'Suspicious', 'invalid' => 'Invalid', 'pending_checklist' => 'Pending Checklist', 'profile_incomplete' => 'Profile Incomplete', 'expired' => 'Replaced Scan'] as $value => $label)
                             <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
@@ -149,7 +149,7 @@
                                 <p class="mt-1 text-sm font-semibold text-blue-950">{{ $scanTime?->format('h:i A') ?? 'No time' }}</p>
                             </div>
                             <span class="max-w-[7rem] shrink-0 truncate whitespace-nowrap rounded-md px-2 py-1 text-[0.65rem] font-semibold ring-1 sm:px-2.5 sm:text-xs {{ \App\Support\StatusBadge::patrol($log->status) }}">
-                                {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
+                                {{ $log->status === 'pending_face' ? 'Pending Selfie' : ($log->status === 'expired' ? 'Replaced Scan' : str($log->status)->replace('_', ' ')->title()) }}
                             </span>
                         </div>
 
@@ -250,7 +250,7 @@
                                     </td>
                                     <td class="px-5 py-4">
                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ \App\Support\StatusBadge::patrol($log->status) }}">
-                                            {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
+                                            {{ $log->status === 'pending_face' ? 'Pending Selfie' : ($log->status === 'expired' ? 'Replaced Scan' : str($log->status)->replace('_', ' ')->title()) }}
                                         </span>
                                         @if ($log->notes)
                                             <div class="mt-2 max-w-xs text-xs text-slate-500">{{ $log->notes }}</div>
@@ -362,7 +362,7 @@
                                 <dt class="font-bold text-slate-600 dark:text-slate-300">Status</dt>
                                 <dd class="mt-1">
                                     <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-bold ring-1 {{ \App\Support\StatusBadge::patrol($log->status) }}">
-                                        {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
+                                        {{ $log->status === 'pending_face' ? 'Pending Selfie' : ($log->status === 'expired' ? 'Replaced Scan' : str($log->status)->replace('_', ' ')->title()) }}
                                     </span>
                                 </dd>
                             </div>

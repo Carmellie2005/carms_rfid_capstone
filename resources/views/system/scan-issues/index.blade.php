@@ -87,7 +87,7 @@
                                     </td>
                                     <td class="px-5 py-4">
                                         <span class="inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold ring-1 {{ $statusClass }}">
-                                            {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
+                                            {{ $log->status === 'pending_face' ? 'Pending Selfie' : ($log->status === 'expired' ? 'Replaced Scan' : str($log->status)->replace('_', ' ')->title()) }}
                                         </span>
                                     </td>
                                     <td class="max-w-xs px-5 py-4 text-sm text-slate-600">{{ $log->notes ?: 'No diagnosis recorded.' }}</td>
@@ -117,7 +117,7 @@
                                     <p class="mt-1 text-xs text-slate-500">{{ $scanTime?->format('M d, Y h:i A') ?? 'Not recorded' }}</p>
                                 </div>
                                 <span class="max-w-[7rem] shrink-0 truncate whitespace-nowrap rounded-md px-2 py-1 text-[0.65rem] font-semibold ring-1 {{ $statusClass }}">
-                                    {{ $log->status === 'pending_face' ? 'Pending Selfie' : str($log->status)->replace('_', ' ')->title() }}
+                                    {{ $log->status === 'pending_face' ? 'Pending Selfie' : ($log->status === 'expired' ? 'Replaced Scan' : str($log->status)->replace('_', ' ')->title()) }}
                                 </span>
                             </div>
                             <div class="mt-3 flex flex-wrap gap-1.5">

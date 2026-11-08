@@ -361,6 +361,10 @@ class GuardController extends Controller
 
     private function labelFor(?string $value): string
     {
+        if ($value === 'expired') {
+            return 'Replaced Scan';
+        }
+
         return Str::of($value ?: 'unknown')
             ->replace('_', ' ')
             ->title()

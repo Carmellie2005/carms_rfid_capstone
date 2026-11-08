@@ -153,6 +153,10 @@ class ScanIssueController extends Controller
 
     private function labelFor(?string $value): string
     {
+        if ($value === 'expired') {
+            return 'Replaced Scan';
+        }
+
         if ($value === 'pending_face') {
             return 'Pending Selfie Legacy';
         }

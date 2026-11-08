@@ -212,7 +212,9 @@ class NotificationFeed
     {
         $readAt = $patrol->notificationReads->first()?->read_at;
         $time = $patrol->scanned_at;
-        $statusLabel = Str::of($patrol->status)->replace('_', ' ')->title()->toString();
+        $statusLabel = $patrol->status === 'expired'
+            ? 'Replaced Scan'
+            : Str::of($patrol->status)->replace('_', ' ')->title()->toString();
 
         return [
             'read_type' => 'patrol',
