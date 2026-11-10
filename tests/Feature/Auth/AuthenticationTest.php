@@ -3,6 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use App\Models\Guard;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -56,6 +57,63 @@ class AuthenticationTest extends TestCase
             'body' => 'Welcome, '.$user->name.'. You are signed in.',
             'badge' => 'Sign-in',
         ]);
+    }
+
+    public function test_inactive_guards_cannot_sign_in(): void
+    {
+        $user = User::factory()->create([
+            'username' => 'inactive.guard',
+            'role' => 'guard',
+        ]);
+
+        Guard::create([
+            'user_id' => $user->id,
+            'employee_no' => 'BCP-0999',
+            'name' => $user->name,
+            'rfid_uid' => 'INACTIVE-UID',
+            'status' => 'inactive',
+        ]);
+
+        $response = $this->from('/login')->post('/login', [
+            'email' => $user->username,
+            'password' => 'password',
+        ]);
+
+        $this->assertGuest();
+        $response
+            ->assertRedirect('/login')
+            ->assertSessionHasErrors([
+                'email' => 'This guard account is inactive. Contact the supervisor.',
+            ]);
+    }
+
+    public function test_existing_guard_session_is_ended_after_deactivation(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'guard',
+        ]);
+
+        $guard = Guard::create([
+            'user_id' => $user->id,
+            'employee_no' => 'BCP-0998',
+            'name' => $user->name,
+            'rfid_uid' => 'ACTIVE-UID',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('patrol.scan'))
+            ->assertOk();
+
+        $guard->update(['status' => 'inactive']);
+
+        $this->get(route('patrol.scan'))
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors([
+                'email' => 'This guard account is inactive. Contact the supervisor.',
+            ]);
+
+        $this->assertGuest();
     }
 
     public function test_supervisors_receive_a_persistent_sign_in_notification(): void

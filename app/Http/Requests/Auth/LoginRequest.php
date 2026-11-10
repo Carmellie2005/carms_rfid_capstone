@@ -55,6 +55,14 @@ class LoginRequest extends FormRequest
                 [$field => $login, 'password' => $this->string('password')->toString()],
                 $this->boolean('remember')
             )) {
+                if (Auth::user()?->role === 'guard' && Auth::user()->guardProfile?->status === 'inactive') {
+                    Auth::logout();
+
+                    throw ValidationException::withMessages([
+                        'email' => 'This guard account is inactive. Contact the supervisor.',
+                    ]);
+                }
+
                 RateLimiter::clear($this->throttleKey());
 
                 return;

@@ -40,7 +40,7 @@ Route::get('/', function () {
         : redirect()->route('dashboard');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'active.guard'])->group(function () {
     Route::get('/csrf-token', fn () => response()->json([
         'token' => csrf_token(),
     ]))->name('csrf.refresh');
